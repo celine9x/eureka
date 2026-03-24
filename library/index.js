@@ -14,8 +14,8 @@
 // ===========================================
 import './atoms/button.js';
 import './atoms/table-cell.js';
+import './atoms/radio-button.js';
 // import './atoms/checkbox.js';    // Coming soon
-// import './atoms/radio.js';       // Coming soon
 // import './atoms/badge.js';       // Coming soon
 
 // ===========================================
