@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eureka Design System - Interactive Component Library</title>
+  <link rel="stylesheet" href="tokens/tokens.css">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: var(--font-family-primary);
+      font-size: var(--text-body-lg);
+      line-height: var(--line-height-body-lg);
+      color: var(--color-content-primary);
+      background: var(--color-general-neutral-lighter);
+    }
+
+    /* Sidebar Navigation */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 240px;
+      height: 100vh;
+      background: var(--color-general-white);
+      border-right: 1px solid var(--color-interaction-outline-enabled);
+      padding: var(--spacing-6);
+      overflow-y: auto;
+      z-index: 100;
+    }
+    .sidebar-logo {
+      font-size: var(--text-heading-h3);
+      font-weight: var(--font-weight-heading-h3);
+      color: var(--color-content-brand);
+      margin-bottom: var(--spacing-6);
+    }
+    .sidebar-section {
+      margin-bottom: var(--spacing-4);
+    }
+    .sidebar-title {
+      font-size: var(--text-body-md);
+      font-weight: var(--font-weight-highlight-md);
+      color: var(--color-content-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: var(--spacing-2);
+    }
+    .sidebar-nav {
+      list-style: none;
+    }
+    .sidebar-nav a {
+      display: block;
+      padding: var(--spacing-2) var(--spacing-3);
+      color: var(--color-content-secondary);
+      text-decoration: none;
+      border-radius: var(--radius-md);
+      font-size: var(--text-body-lg);
+      transition: all var(--transition-fast);
+    }
+    .sidebar-nav a:hover {
+      background: var(--color-general-neutral-light);
+      color: var(--color-content-primary);
+    }
+    .sidebar-nav a.active {
+      background: var(--color-action-fill-primary-enabled);
+      color: var(--color-general-white);
+    }
+
+    /* Main Content */
+    .main {
+      margin-left: 240px;
+      padding: var(--spacing-8);
+      min-height: 100vh;
+    }
+
+    /* Component Section */
+    .component-section {
+      background: var(--color-general-white);
+      border: 1px solid var(--color-interaction-outline-enabled);
+      border-radius: var(--radius-lg);
+      margin-bottom: var(--spacing-6);
+      overflow: hidden;
+    }
+    .component-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--spacing-4) var(--spacing-6);
+      border-bottom: 1px solid var(--color-interaction-outline-enabled);
+      background: var(--color-general-neutral-lighter);
+    }
+    .component-title {
+      font-size: var(--text-heading-h2);
+      font-weight: var(--font-weight-heading-h2);
+    }
+    .component-badge {
+      font-size: var(--text-body-md);
+      font-weight: var(--font-weight-highlight-md);
+      padding: var(--spacing-1) var(--spacing-2);
+      border-radius: var(--radius-sm);
+      background: var(--color-content-brand);
+      color: var(--color-general-white);
+    }
+    .component-body {
+      padding: var(--spacing-6);
+    }
+
+    /* Variant Display */
+    .variant-group {
+      margin-bottom: var(--spacing-6);
+    }
+    .variant-group:last-child {
+      margin-bottom: 0;
+    }
+    .variant-title {
+      font-size: var(--text-heading-h3);
+      font-weight: var(--font-weight-heading-h3);
+      color: var(--color-content-secondary);
+      margin-bottom: var(--spacing-3);
+    }
+    .variant-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--spacing-3);
+      margin-bottom: var(--spacing-3);
+    }
+    .variant-label {
+      min-width: 100px;
+      font-size: var(--text-body-md);
+      font-weight: var(--font-weight-highlight-md);
+      color: var(--color-content-tertiary);
+    }
+
+    /* Interactive Playground */
+    .playground {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: var(--spacing-6);
+      margin-top: var(--spacing-6);
+      padding-top: var(--spacing-6);
+      border-top: 1px solid var(--color-interaction-outline-enabled);
+    }
+    .playground-preview {
+      background: var(--color-general-neutral-lighter);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 200px;
+    }
+    .playground-controls {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-3);
+    }
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-1);
+    }
+    .control-label {
+      font-size: var(--text-body-md);
+      font-weight: var(--font-weight-highlight-md);
+      color: var(--color-content-secondary);
+    }
+    .control-select, .control-input, .control-checkbox-group {
+      padding: var(--spacing-2);
+      border: 1px solid var(--color-interaction-outline-enabled);
+      border-radius: var(--radius-md);
+      font-family: var(--font-family-primary);
+      font-size: var(--text-body-lg);
+      background: var(--color-general-white);
+    }
+    .control-checkbox-group {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-2);
+    }
+    .control-checkbox {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-2);
+      font-size: var(--text-body-md);
+      cursor: pointer;
+    }
+    .control-checkbox input {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+
+    /* Code Block */
+    .code-block {
+      background: var(--color-general-neutral-light);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-4);
+      margin-top: var(--spacing-4);
+      overflow-x: auto;
+    }
+    .code-block code {
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: var(--text-body-md);
+      color: var(--color-content-secondary);
+      white-space: pre-wrap;
+    }
+
+    /* Grid Layouts */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--spacing-4);
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--spacing-4);
+    }
+    @media (max-width: 1200px) {
+      .grid-3 { grid-template-columns: repeat(2, 1fr); }
+      .playground { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main { margin-left: 0; }
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    }
+
+    /* Intro section */
+    .intro {
+      margin-bottom: var(--spacing-6);
+    }
+    .intro h1 {
+      font-size: var(--text-heading-h1);
+      font-weight: var(--font-weight-heading-h1);
+      margin-bottom: var(--spacing-2);
+    }
+    .intro p {
+      color: var(--color-content-secondary);
+      font-size: var(--text-body-lg);
+    }
+
+    /* Event log */
+    .event-log {
+      margin-top: var(--spacing-4);
+      padding: var(--spacing-3);
+      background: var(--color-general-neutral-light);
+      border-radius: var(--radius-md);
+      font-family: monospace;
+      font-size: var(--text-body-md);
+      max-height: 100px;
+      overflow-y: auto;
+    }
+    .event-log-item {
+      padding: var(--spacing-1) 0;
+      color: var(--color-content-secondary);
+      border-bottom: 1px solid var(--color-interaction-outline-enabled);
+    }
+    .event-log-item:last-child {
+      border-bottom: none;
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">Eureka DS</div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-title">Atoms</div>
+      <ul class="sidebar-nav">
+        <li><a href="#button" class="active">Button</a></li>
+        <li><a href="#input">Input</a></li>
+        <li><a href="#label">Label</a></li>
+        <li><a href="#helper-text">Helper Text</a></li>
+      </ul>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-title">Molecules</div>
+      <ul class="sidebar-nav">
+        <li><a href="#text-field">Text Field</a></li>
+      </ul>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-title">Examples</div>
+      <ul class="sidebar-nav">
+        <li><a href="#form-example">Form Composition</a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main">
+    <div class="intro">
+      <h1>Eureka Design System</h1>
+      <p>Interactive component library for Inpart prototypes. Click on components, toggle states, and see live code output.</p>
+    </div>
+
+    <!-- ==================== BUTTON ATOM ==================== -->
+    <section id="button" class="component-section">
+      <div class="component-header">
+        <h2 class="component-title">Button</h2>
+        <span class="component-badge">Atom</span>
+      </div>
+      <div class="component-body">
+        <!-- All Variants Grid -->
+        <div class="variant-group">
+          <h3 class="variant-title">All Variants</h3>
+          <div class="variant-row">
+            <span class="variant-label">Primary</span>
+            <e-button variant="primary" size="lg">Large</e-button>
+            <e-button variant="primary" size="md">Medium</e-button>
+            <e-button variant="primary" size="sm">Small</e-button>
+          </div>
+          <div class="variant-row">
+            <span class="variant-label">Secondary</span>
+            <e-button variant="secondary" size="lg">Large</e-button>
+            <e-button variant="secondary" size="md">Medium</e-button>
+            <e-button variant="secondary" size="sm">Small</e-button>
+          </div>
+          <div class="variant-row">
+            <span class="variant-label">Tertiary</span>
+            <e-button variant="tertiary" size="lg">Large</e-button>
+            <e-button variant="tertiary" size="md">Medium</e-button>
+            <e-button variant="tertiary" size="sm">Small</e-button>
+          </div>
+          <div class="variant-row">
+            <span class="variant-label">Negative</span>
+            <e-button variant="negative" size="lg">Delete</e-button>
+            <e-button variant="negative" size="md">Delete</e-button>
+            <e-button variant="negative" size="sm">Delete</e-button>
+          </div>
+          <div class="variant-row">
+            <span class="variant-label">Positive</span>
+            <e-button variant="positive" size="lg">Confirm</e-button>
+            <e-button variant="positive" size="md">Confirm</e-button>
+            <e-button variant="positive" size="sm">Confirm</e-button>
+          </div>
+        </div>
+
+        <!-- Disabled States -->
+        <div class="variant-group">
+          <h3 class="variant-title">Disabled States</h3>
+          <div class="variant-row">
+            <e-button variant="primary" disabled>Primary</e-button>
+            <e-button variant="secondary" disabled>Secondary</e-button>
+            <e-button variant="tertiary" disabled>Tertiary</e-button>
+            <e-button variant="negative" disabled>Negative</e-button>
+            <e-button variant="positive" disabled>Positive</e-button>
+          </div>
+        </div>
+
+        <!-- Full Width -->
+        <div class="variant-group">
+          <h3 class="variant-title">Full Width</h3>
+          <div style="max-width: 400px;">
+            <e-button variant="primary" size="md" block>Full Width Button</e-button>
+          </div>
+        </div>
+
+        <!-- Interactive Playground -->
+        <div class="playground">
+          <div class="playground-preview">
+            <e-button id="button-preview" variant="primary" size="md">Click Me</e-button>
+          </div>
+          <div class="playground-controls">
+            <div class="control-group">
+              <label class="control-label">Variant</label>
+              <select id="button-variant" class="control-select">
+                <option value="primary">primary</option>
+                <option value="secondary">secondary</option>
+                <option value="tertiary">tertiary</option>
+                <option value="negative">negative</option>
+                <option value="positive">positive</option>
+              </select>
+            </div>
+            <div class="control-group">
+              <label class="control-label">Size</label>
+              <select id="button-size" class="control-select">
+                <option value="lg">lg (Large)</option>
+                <option value="md" selected>md (Medium)</option>
+                <option value="sm">sm (Small)</option>
+              </select>
+            </div>
+            <div class="control-group">
+              <label class="control-label">Label</label>
+              <input type="text" id="button-label" class="control-input" value="Click Me">
+            </div>
+            <div class="control-group">
+              <label class="control-label">States</label>
+              <div class="control-checkbox-group">
+                <label class="control-checkbox">
+                  <input type="checkbox" id="button-disabled"> Disabled
+                </label>
+                <label class="control-checkbox">
+                  <input type="checkbox" id="button-block"> Full Width (block)
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Generated Code -->
+        <div class="code-block">
+          <code id="button-code">&lt;e-button variant="primary" size="md"&gt;Click Me&lt;/e-button&gt;</code>
+        </div>
+
+        <!-- Event Log -->
+        <div class="event-log" id="button-events">
+          <div class="event-log-item">Events will appear here...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== INPUT ATOM ==================== -->
+    <section id="input" class="component-section">
+      <div class="component-header">
+        <h2 class="component-title">Input</h2>
+        <span class="component-badge">Atom</span>
+      </div>
+      <div class="component-body">
+        <!-- All States -->
+        <div class="variant-group">
+          <h3 class="variant-title">All States</h3>
+          <div class="grid-2">
+            <div>
+              <p style="font-size: var(--text-body-md); color: var(--color-content-tertiary); margin-bottom: var(--spacing-2);">Default</p>
+              <e-input placeholder="Enter text..."></e-input>
+            </div>
+            <div>
+              <p style="font-size: var(--text-body-md); color: var(--color-content-tertiary); margin-bottom: var(--spacing-2);">With Value</p>
+              <e-input value="Hello World"></e-input>
+            </div>
+            <div>
+              <p style="font-size: var(--text-body-md); color: var(--color-content-tertiary); margin-bottom: var(--spacing-2);">Disabled</p>
+              <e-input placeholder="Disabled input" disabled></e-input>
+            </div>
+            <div>
+              <p style="font-size: var(--text-body-md); color: var(--color-content-tertiary); margin-bottom: var(--spacing-2);">Read-only</p>
+              <e-input value="Read-only value" readonly></e-input>
+            </div>
+            <div>
+              <p style="font-size: var(--text-body-md); color: var(--color-content-tertiary); margin-bottom: var(--spacing-2);">Error</p>
+              <e-input value="Invalid input" error></e-input>
+            </div>
+            <div>
+              <p style="font-size: var(--text-body-md); color: var(--color-content-tertiary); margin-bottom: var(--spacing-2);">Password</p>
+              <e-input type="password" placeholder="Enter password"></e-input>
+            </div>
+          </div>
+        </div>
+
+        <!-- Interactive Playground -->
+        <div class="playground">
+          <div class="playground-preview">
+            <div style="width: 100%; max-width: 300px;">
+              <e-input id="input-preview" placeholder="Enter text..."></e-input>
+            </div>
+          </div>
+          <div class="playground-controls">
+            <div class="control-group">
+              <label class="control-label">Type</label>
+              <select id="input-type" class="control-select">
+                <option value="text">text</option>
+                <option value="email">email</option>
+                <option value="password">password</option>
+                <option value="number">number</option>
+                <option value="tel">tel</option>
+                <option value="url">url</option>
+              </select>
+            </div>
+            <div class="control-group">
+              <label class="control-label">Placeholder</label>
+              <input type="text" id="input-placeholder" class="control-input" value="Enter text...">
+            </div>
+            <div class="control-group">
+              <label class="control-label">Value</label>
+              <input type="text" id="input-value" class="control-input" value="">
+            </div>
+            <div class="control-group">
+              <label class="control-label">States</label>
+              <div class="control-checkbox-group">
+                <label class="control-checkbox">
+                  <input type="checkbox" id="input-disabled"> Disabled
+                </label>
+                <label class="control-checkbox">
+                  <input type="checkbox" id="input-readonly"> Readonly
+                </label>
+                <label class="control-checkbox">
+                  <input type="checkbox" id="input-error"> Error
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="code-block">
+          <code id="input-code">&lt;e-input placeholder="Enter text..."&gt;&lt;/e-input&gt;</code>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== LABEL ATOM ==================== -->
+    <section id="label" class="component-section">
+      <div class="component-header">
+        <h2 class="component-title">Label</h2>
+        <span class="component-badge">Atom</span>
+      </div>
+      <div class="component-body">
+        <div class="variant-group">
+          <h3 class="variant-title">Variants</h3>
+          <div class="variant-row">
+            <span class="variant-label">Default</span>
+            <e-label>Field Label</e-label>
+          </div>
+          <div class="variant-row">
+            <span class="variant-label">Required</span>
+            <e-label required>Required Field</e-label>
+          </div>
+        </div>
+
+        <div class="code-block">
+          <code>&lt;e-label&gt;Field Label&lt;/e-label&gt;
+&lt;e-label required&gt;Required Field&lt;/e-label&gt;</code>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== HELPER TEXT ATOM ==================== -->
+    <section id="helper-text" class="component-section">
+      <div class="component-header">
+        <h2 class="component-title">Helper Text</h2>
+        <span class="component-badge">Atom</span>
+      </div>
+      <div class="component-body">
+        <div class="variant-group">
+          <h3 class="variant-title">Variants</h3>
+          <div class="variant-row">
+            <span class="variant-label">Default</span>
+            <e-helper-text>This is helper text for the field</e-helper-text>
+          </div>
+          <div class="variant-row">
+            <span class="variant-label">Error</span>
+            <e-helper-text variant="error">This field is required</e-helper-text>
+          </div>
+        </div>
+
+        <div class="code-block">
+          <code>&lt;e-helper-text&gt;Helper message&lt;/e-helper-text&gt;
+&lt;e-helper-text variant="error"&gt;Error message&lt;/e-helper-text&gt;</code>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TEXT FIELD MOLECULE ==================== -->
+    <section id="text-field" class="component-section">
+      <div class="component-header">
+        <h2 class="component-title">Text Field</h2>
+        <span class="component-badge">Molecule</span>
+      </div>
+      <div class="component-body">
+        <p style="color: var(--color-content-secondary); margin-bottom: var(--spacing-4);">
+          Composed of: <code style="display: inline; padding: 2px 6px; background: var(--color-general-neutral-light); border-radius: var(--radius-sm);">e-label</code> +
+          <code style="display: inline; padding: 2px 6px; background: var(--color-general-neutral-light); border-radius: var(--radius-sm);">e-input</code> +
+          <code style="display: inline; padding: 2px 6px; background: var(--color-general-neutral-light); border-radius: var(--radius-sm);">e-helper-text</code>
+        </p>
+
+        <!-- All States -->
+        <div class="variant-group">
+          <h3 class="variant-title">All States</h3>
+          <div class="grid-2">
+            <e-text-field label="Basic Field" placeholder="Enter text..."></e-text-field>
+            <e-text-field label="With Helper" placeholder="Enter email" helper="We'll never share your email"></e-text-field>
+            <e-text-field label="Required Field" placeholder="Required" required></e-text-field>
+            <e-text-field label="With Error" value="invalid" error="Please enter a valid value"></e-text-field>
+            <e-text-field label="Disabled" placeholder="Cannot edit" disabled></e-text-field>
+            <e-text-field label="Read-only" value="Read-only value" readonly></e-text-field>
+          </div>
+        </div>
+
+        <!-- Interactive Playground -->
+        <div class="playground">
+          <div class="playground-preview">
+            <div style="width: 100%; max-width: 350px;">
+              <e-text-field id="textfield-preview" label="Email Address" placeholder="you@example.com"></e-text-field>
+            </div>
+          </div>
+          <div class="playground-controls">
+            <div class="control-group">
+              <label class="control-label">Label</label>
+              <input type="text" id="textfield-label" class="control-input" value="Email Address">
+            </div>
+            <div class="control-group">
+              <label class="control-label">Placeholder</label>
+              <input type="text" id="textfield-placeholder" class="control-input" value="you@example.com">
+            </div>
+            <div class="control-group">
+              <label class="control-label">Helper Text</label>
+              <input type="text" id="textfield-helper" class="control-input" value="">
+            </div>
+            <div class="control-group">
+              <label class="control-label">Error Text</label>
+              <input type="text" id="textfield-error" class="control-input" value="">
+            </div>
+            <div class="control-group">
+              <label class="control-label">Type</label>
+              <select id="textfield-type" class="control-select">
+                <option value="text">text</option>
+                <option value="email" selected>email</option>
+                <option value="password">password</option>
+                <option value="number">number</option>
+              </select>
+            </div>
+            <div class="control-group">
+              <label class="control-label">States</label>
+              <div class="control-checkbox-group">
+                <label class="control-checkbox">
+                  <input type="checkbox" id="textfield-required"> Required
+                </label>
+                <label class="control-checkbox">
+                  <input type="checkbox" id="textfield-disabled"> Disabled
+                </label>
+                <label class="control-checkbox">
+                  <input type="checkbox" id="textfield-readonly"> Readonly
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="code-block">
+          <code id="textfield-code">&lt;e-text-field label="Email Address" placeholder="you@example.com"&gt;&lt;/e-text-field&gt;</code>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== FORM EXAMPLE ==================== -->
+    <section id="form-example" class="component-section">
+      <div class="component-header">
+        <h2 class="component-title">Form Composition</h2>
+        <span class="component-badge">Example</span>
+      </div>
+      <div class="component-body">
+        <p style="color: var(--color-content-secondary); margin-bottom: var(--spacing-4);">
+          Combining Text Field molecules with Button atoms to create a complete form.
+        </p>
+
+        <form id="example-form" style="display: grid; gap: var(--spacing-4); max-width: 450px;" onsubmit="event.preventDefault();">
+          <e-text-field label="Full Name" placeholder="John Doe" required></e-text-field>
+          <e-text-field label="Email Address" type="email" placeholder="john@example.com" required></e-text-field>
+          <e-text-field label="Company" placeholder="Acme Inc." helper="Optional"></e-text-field>
+          <e-text-field label="Message" placeholder="How can we help?"></e-text-field>
+          <div style="display: flex; gap: var(--spacing-3); justify-content: flex-end; margin-top: var(--spacing-2);">
+            <e-button variant="secondary" size="md" type="button">Cancel</e-button>
+            <e-button variant="primary" size="md" type="submit">Submit</e-button>
+          </div>
+        </form>
+
+        <div class="code-block">
+          <code>&lt;form&gt;
+  &lt;e-text-field label="Full Name" placeholder="John Doe" required&gt;&lt;/e-text-field&gt;
+  &lt;e-text-field label="Email" type="email" placeholder="john@example.com" required&gt;&lt;/e-text-field&gt;
+  &lt;e-text-field label="Company" placeholder="Acme Inc." helper="Optional"&gt;&lt;/e-text-field&gt;
+  &lt;div&gt;
+    &lt;e-button variant="secondary"&gt;Cancel&lt;/e-button&gt;
+    &lt;e-button variant="primary" type="submit"&gt;Submit&lt;/e-button&gt;
+  &lt;/div&gt;
+&lt;/form&gt;</code>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Load Components -->
+  <script type="module" src="atoms/button.js"></script>
+  <script type="module" src="atoms/input.js"></script>
+  <script type="module" src="atoms/label.js"></script>
+  <script type="module" src="atoms/helper-text.js"></script>
+  <script type="module" src="molecules/text-field.js"></script>
+
+  <!-- Interactive Controls Script -->
+  <script>
+    // Wait for components to be defined
+    customElements.whenDefined('e-button').then(() => {
+      // ==================== BUTTON CONTROLS ====================
+      const buttonPreview = document.getElementById('button-preview');
+      const buttonVariant = document.getElementById('button-variant');
+      const buttonSize = document.getElementById('button-size');
+      const buttonLabel = document.getElementById('button-label');
+      const buttonDisabled = document.getElementById('button-disabled');
+      const buttonBlock = document.getElementById('button-block');
+      const buttonCode = document.getElementById('button-code');
+      const buttonEvents = document.getElementById('button-events');
+
+      function updateButton() {
+        const attrs = [];
+        attrs.push(`variant="${buttonVariant.value}"`);
+        attrs.push(`size="${buttonSize.value}"`);
+        if (buttonDisabled.checked) attrs.push('disabled');
+        if (buttonBlock.checked) attrs.push('block');
+
+        buttonPreview.setAttribute('variant', buttonVariant.value);
+        buttonPreview.setAttribute('size', buttonSize.value);
+        buttonDisabled.checked ? buttonPreview.setAttribute('disabled', '') : buttonPreview.removeAttribute('disabled');
+        buttonBlock.checked ? buttonPreview.setAttribute('block', '') : buttonPreview.removeAttribute('block');
+        buttonPreview.textContent = buttonLabel.value;
+
+        buttonCode.textContent = `<e-button ${attrs.join(' ')}>${buttonLabel.value}</e-button>`;
+      }
+
+      buttonVariant.addEventListener('change', updateButton);
+      buttonSize.addEventListener('change', updateButton);
+      buttonLabel.addEventListener('input', updateButton);
+      buttonDisabled.addEventListener('change', updateButton);
+      buttonBlock.addEventListener('change', updateButton);
+
+      // Button event logging
+      buttonPreview.addEventListener('click', () => {
+        const item = document.createElement('div');
+        item.className = 'event-log-item';
+        item.textContent = `[${new Date().toLocaleTimeString()}] click event fired`;
+        buttonEvents.insertBefore(item, buttonEvents.firstChild);
+        if (buttonEvents.children.length > 5) {
+          buttonEvents.removeChild(buttonEvents.lastChild);
+        }
+      });
+    });
+
+    customElements.whenDefined('e-input').then(() => {
+      // ==================== INPUT CONTROLS ====================
+      const inputPreview = document.getElementById('input-preview');
+      const inputType = document.getElementById('input-type');
+      const inputPlaceholder = document.getElementById('input-placeholder');
+      const inputValue = document.getElementById('input-value');
+      const inputDisabled = document.getElementById('input-disabled');
+      const inputReadonly = document.getElementById('input-readonly');
+      const inputError = document.getElementById('input-error');
+      const inputCode = document.getElementById('input-code');
+
+      function updateInput() {
+        const attrs = [];
+        attrs.push(`type="${inputType.value}"`);
+        if (inputPlaceholder.value) attrs.push(`placeholder="${inputPlaceholder.value}"`);
+        if (inputValue.value) attrs.push(`value="${inputValue.value}"`);
+        if (inputDisabled.checked) attrs.push('disabled');
+        if (inputReadonly.checked) attrs.push('readonly');
+        if (inputError.checked) attrs.push('error');
+
+        inputPreview.setAttribute('type', inputType.value);
+        inputPreview.setAttribute('placeholder', inputPlaceholder.value);
+        inputPreview.setAttribute('value', inputValue.value);
+        inputDisabled.checked ? inputPreview.setAttribute('disabled', '') : inputPreview.removeAttribute('disabled');
+        inputReadonly.checked ? inputPreview.setAttribute('readonly', '') : inputPreview.removeAttribute('readonly');
+        inputError.checked ? inputPreview.setAttribute('error', '') : inputPreview.removeAttribute('error');
+
+        inputCode.textContent = `<e-input ${attrs.join(' ')}></e-input>`;
+      }
+
+      inputType.addEventListener('change', updateInput);
+      inputPlaceholder.addEventListener('input', updateInput);
+      inputValue.addEventListener('input', updateInput);
+      inputDisabled.addEventListener('change', updateInput);
+      inputReadonly.addEventListener('change', updateInput);
+      inputError.addEventListener('change', updateInput);
+    });
+
+    customElements.whenDefined('e-text-field').then(() => {
+      // ==================== TEXT FIELD CONTROLS ====================
+      const textfieldPreview = document.getElementById('textfield-preview');
+      const textfieldLabel = document.getElementById('textfield-label');
+      const textfieldPlaceholder = document.getElementById('textfield-placeholder');
+      const textfieldHelper = document.getElementById('textfield-helper');
+      const textfieldError = document.getElementById('textfield-error');
+      const textfieldType = document.getElementById('textfield-type');
+      const textfieldRequired = document.getElementById('textfield-required');
+      const textfieldDisabled = document.getElementById('textfield-disabled');
+      const textfieldReadonly = document.getElementById('textfield-readonly');
+      const textfieldCode = document.getElementById('textfield-code');
+
+      function updateTextField() {
+        const attrs = [];
+        if (textfieldLabel.value) attrs.push(`label="${textfieldLabel.value}"`);
+        attrs.push(`type="${textfieldType.value}"`);
+        if (textfieldPlaceholder.value) attrs.push(`placeholder="${textfieldPlaceholder.value}"`);
+        if (textfieldHelper.value && !textfieldError.value) attrs.push(`helper="${textfieldHelper.value}"`);
+        if (textfieldError.value) attrs.push(`error="${textfieldError.value}"`);
+        if (textfieldRequired.checked) attrs.push('required');
+        if (textfieldDisabled.checked) attrs.push('disabled');
+        if (textfieldReadonly.checked) attrs.push('readonly');
+
+        textfieldPreview.setAttribute('label', textfieldLabel.value);
+        textfieldPreview.setAttribute('type', textfieldType.value);
+        textfieldPreview.setAttribute('placeholder', textfieldPlaceholder.value);
+
+        if (textfieldHelper.value && !textfieldError.value) {
+          textfieldPreview.setAttribute('helper', textfieldHelper.value);
+        } else {
+          textfieldPreview.removeAttribute('helper');
+        }
+
+        if (textfieldError.value) {
+          textfieldPreview.setAttribute('error', textfieldError.value);
+        } else {
+          textfieldPreview.removeAttribute('error');
+        }
+
+        textfieldRequired.checked ? textfieldPreview.setAttribute('required', '') : textfieldPreview.removeAttribute('required');
+        textfieldDisabled.checked ? textfieldPreview.setAttribute('disabled', '') : textfieldPreview.removeAttribute('disabled');
+        textfieldReadonly.checked ? textfieldPreview.setAttribute('readonly', '') : textfieldPreview.removeAttribute('readonly');
+
+        textfieldCode.textContent = `<e-text-field ${attrs.join(' ')}></e-text-field>`;
+      }
+
+      textfieldLabel.addEventListener('input', updateTextField);
+      textfieldPlaceholder.addEventListener('input', updateTextField);
+      textfieldHelper.addEventListener('input', updateTextField);
+      textfieldError.addEventListener('input', updateTextField);
+      textfieldType.addEventListener('change', updateTextField);
+      textfieldRequired.addEventListener('change', updateTextField);
+      textfieldDisabled.addEventListener('change', updateTextField);
+      textfieldReadonly.addEventListener('change', updateTextField);
+    });
+
+    // Sidebar navigation highlighting
+    const sections = document.querySelectorAll('.component-section');
+    const navLinks = document.querySelectorAll('.sidebar-nav a');
+
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(section => {
+        const sectionTop = section.offsetTop;
+        if (scrollY >= sectionTop - 100) {
+          current = section.getAttribute('id');
+        }
+      });
+
+      navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === '#' + current) {
+          link.classList.add('active');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
