@@ -1,0 +1,29 @@
+{
+  "name": "eureka",
+  "version": "1.0.0",
+  "description": "",
+  "main": "table.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/celine9x/eureka.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/celine9x/eureka/issues"
+  },
+  "homepage": "https://github.com/celine9x/eureka#readme",
+  "devDependencies": {
+    "vite": "^8.0.2"
+  },
+  "dependencies": {
+    "@heroicons/react": "^2.2.0"
+  }
+}
