@@ -1,16 +1,6 @@
-import { defineConfig } from 'vite';
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
 
 export default defineConfig({
-  root: 'nexus',
-  publicDir: false,
-  server: {
-    fs: {
-      // allow serving files from the whole repo root
-      allow: ['..'],
-    },
-  },
-  build: {
-    outDir: '../dist',
-    emptyOutDir: true,
-  },
+  plugins: [react()],
 });

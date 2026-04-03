@@ -33,13 +33,7 @@ class EInput extends HTMLElement {
     this.setupEventListeners();
   }
 
-  attributeChangedCallback(name) {
-    if (!this.shadowRoot.innerHTML) return;
-    if (name === 'value') {
-      const input = this.shadowRoot.querySelector('input');
-      if (input && input !== document.activeElement) input.value = this.value;
-      return;
-    }
+  attributeChangedCallback() {
     this.render();
     this.setupEventListeners();
   }

@@ -8,23 +8,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap');
 
 :root {
- /* ===========================================
-     COLOR - Background
-     =========================================== */
-    --color-background-neutral-light: rgba(239, 242, 249, 1);
-   --color-background-neutral-lighter: rgba(248, 249, 252, 1);
-   --color-background-white: rgba(255, 255, 255, 1);
-
-    /* ===========================================
-     COLOR - Outline
-     =========================================== */
-
-   --color-outline-neutral: rgba(217, 224, 237, 1);
-
-
-
-
-
   /* ===========================================
      COLOR - Content
      =========================================== */
@@ -188,15 +171,6 @@
   --text-button-md: 0.75rem;
   --font-weight-button-md: 400;
   --line-height-button-md: 1rem;
-
-  /* ===========================================
-     SIZE - Icons
-     =========================================== */
-  --size-icon-xs:  0.75rem;   /* 12px */
-  --size-icon-sm:  1rem;      /* 16px */
-  --size-icon-md:  1.25rem;   /* 20px */
-  --size-icon-lg:  1.5rem;    /* 24px */
-  --size-icon-xl:  2rem;      /* 32px */
 
   /* ===========================================
      SPACING

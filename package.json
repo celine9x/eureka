@@ -1,29 +1,25 @@
 {
-  "name": "eureka",
-  "version": "1.0.0",
-  "description": "",
-  "main": "table.js",
+  "name": "eureka-design-system",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/celine9x/eureka.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "module",
-  "bugs": {
-    "url": "https://github.com/celine9x/eureka/issues"
-  },
-  "homepage": "https://github.com/celine9x/eureka#readme",
-  "devDependencies": {
-    "vite": "^8.0.2"
-  },
   "dependencies": {
-    "@heroicons/react": "^2.2.0"
+    "@heroicons/react": "^2.2.0",
+    "@phosphor-icons/react": "^2.1.10",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-aria-components": "^1.16.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "vite": "^6.0.5"
   }
 }

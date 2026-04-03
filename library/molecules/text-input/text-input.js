@@ -49,15 +49,11 @@ class ETextInput extends HTMLElement {
     this.setupEventListeners();
   }
 
-  attributeChangedCallback(name) {
-    if (!this.shadowRoot.innerHTML) return;
-    if (name === 'value') {
-      const input = this.shadowRoot.querySelector('e-input');
-      if (input) input.value = this.value;
-      return;
+  attributeChangedCallback() {
+    if (this.shadowRoot.innerHTML) {
+      this.render();
+      this.setupEventListeners();
     }
-    this.render();
-    this.setupEventListeners();
   }
 
   get type() { return this.getAttribute('type') || 'text'; }
