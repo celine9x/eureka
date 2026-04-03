@@ -4,6 +4,14 @@
  * A tab navigation component with optional badges and icons.
  * Uses inline styles with CSS variables from tokens.css for consistent styling.
  *
+ * Token Mapping (from Figma):
+ * - Grey50 (#5371AC) → --color-content-secondary
+ * - Grey30 (#324467) → --color-action-content-secondary-hover
+ * - Grey90 (#D9E0ED) → --color-action-outline-secondary-enabled
+ * - Grey98 (#F8F9FC) → --color-general-neutral-lighter
+ * - Grey100 (white) → --color-general-white
+ * - Blue60 (#4649FF) → --color-content-brand
+ *
  * @example
  * <Tabs selectedKey={tab} onSelectionChange={setTab}>
  *   <Tab id="overview">Overview</Tab>
@@ -13,7 +21,6 @@
  */
 
 import { useState, useRef, useEffect, createContext, useContext } from "react";
-import { Icon } from "../atoms/icon.jsx";
 import { ChevronRightIcon } from "@heroicons/react/16/solid";
 
 // ─────────────────────────────────────────────
@@ -27,15 +34,23 @@ const TabsContext = createContext(null);
 // ─────────────────────────────────────────────
 
 const styles = {
+  // Container with bottom border (Grey90)
   container: {
     position: "relative",
     width: "100%",
     borderBottom: "1px solid var(--color-action-outline-secondary-enabled)",
+    display: "inline-flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "flex-start",
+    gap: 8,
   },
 
+  // Tab list with 24px gap
   list: {
     display: "inline-flex",
     alignItems: "center",
+    justifyContent: "center",
     gap: 24,
     height: 36,
     overflowX: "auto",
@@ -43,18 +58,18 @@ const styles = {
     msOverflowStyle: "none",
   },
 
+  // Overflow indicator with gradient (Grey95 → transparent)
   overflowIndicator: {
     width: 40,
     height: 36,
     paddingTop: 6,
     paddingBottom: 6,
     paddingLeft: 16,
-    paddingRight: 16,
     position: "absolute",
     right: 0,
     top: 0,
-    background: "linear-gradient(to right, transparent, var(--color-general-neutral-lighter))",
-    display: "flex",
+    background: "linear-gradient(90deg, rgba(239, 242, 249, 0) 0%, var(--color-general-neutral-light) 100%)",
+    display: "inline-flex",
     justifyContent: "flex-end",
     alignItems: "center",
     pointerEvents: "none",
@@ -80,16 +95,18 @@ const styles = {
     color: "var(--color-content-primary)",
   },
 
+  // Tab button base styles
   tab: {
     display: "flex",
     alignItems: "center",
+    justifyContent: "flex-start",
     gap: 8,
     paddingBottom: 8,
     borderBottom: "2px solid transparent",
     cursor: "pointer",
     userSelect: "none",
     flexShrink: 0,
-    transition: "all var(--transition-fast)",
+    transition: "border-color var(--transition-fast)",
     outline: "none",
     background: "transparent",
     border: "none",
@@ -97,31 +114,23 @@ const styles = {
     fontFamily: "var(--font-family-primary)",
   },
 
-  tabDefault: {
-    color: "var(--color-content-secondary)",
-  },
-
-  tabHover: {
-    color: "var(--color-content-primary)",
-  },
-
-  tabSelected: {
-    borderBottomColor: "var(--color-content-brand)",
-    color: "var(--color-content-brand)",
-  },
-
-  tabDisabled: {
-    cursor: "not-allowed",
-    opacity: 0.5,
-  },
-
+  // Tab inner container
   tabInner: {
     display: "flex",
     alignItems: "center",
+    justifyContent: "flex-start",
     gap: 8,
     padding: 4,
+    borderRadius: 8,
+    transition: "background var(--transition-fast)",
   },
 
+  // Tab inner hover state (Grey98 background)
+  tabInnerHover: {
+    background: "var(--color-general-neutral-lighter)",
+  },
+
+  // Tab icon
   tabIcon: {
     width: 16,
     height: 16,
@@ -129,20 +138,46 @@ const styles = {
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
-  },
-
-  tabLabel: {
-    fontFamily: "var(--font-family-primary)",
-    fontSize: "var(--text-body-lg)",
-    fontWeight: 400,
-    lineHeight: "var(--line-height-body-lg)",
-    whiteSpace: "nowrap",
     transition: "color var(--transition-fast)",
   },
 
+  // Tab label - Default state (Grey50)
+  tabLabel: {
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-lg)",
+    fontWeight: "var(--font-weight-regular)",
+    lineHeight: "var(--line-height-body-lg)",
+    whiteSpace: "nowrap",
+    color: "var(--color-content-secondary)",
+    transition: "color var(--transition-fast)",
+  },
+
+  // Tab label - Hover state (Grey30)
+  tabLabelHover: {
+    color: "var(--color-action-content-secondary-hover)",
+  },
+
+  // Tab label - Active/Selected state (Blue60)
+  tabLabelSelected: {
+    color: "var(--color-content-brand)",
+  },
+
+  // Tab selected border (Blue60)
+  tabSelected: {
+    borderBottomColor: "var(--color-content-brand)",
+  },
+
+  // Tab disabled state
+  tabDisabled: {
+    cursor: "not-allowed",
+    opacity: 0.5,
+  },
+
+  // Badge base styles
   badge: {
     display: "flex",
     alignItems: "center",
+    justifyContent: "flex-start",
     gap: 4,
     paddingTop: 2,
     paddingBottom: 2,
@@ -151,24 +186,28 @@ const styles = {
     borderRadius: "var(--radius-sm)",
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-body-md)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     lineHeight: "var(--line-height-body-md)",
     whiteSpace: "nowrap",
     transition: "all var(--transition-fast)",
   },
 
+  // Badge default state (Grey98 background, Grey90 outline, Grey50 text)
   badgeDefault: {
     background: "var(--color-general-neutral-lighter)",
     color: "var(--color-content-secondary)",
     outline: "1px solid var(--color-action-outline-secondary-enabled)",
-    outlineOffset: "-1px",
+    outlineOffset: -1,
   },
 
+  // Badge active state (Blue60 background, white text, no outline)
   badgeActive: {
     background: "var(--color-content-brand)",
     color: "var(--color-general-white)",
+    outline: "none",
   },
 
+  // Tab panel
   panel: {
     padding: "16px 0",
   },
@@ -218,23 +257,38 @@ export const Tab = ({
     }
   };
 
-  // Compose tab styles
+  // Compose tab button styles
   const tabStyle = {
     ...styles.tab,
-    ...styles.tabDefault,
-    ...(isHovered && !isTabDisabled && !isSelected && styles.tabHover),
     ...(isSelected && styles.tabSelected),
     ...(isTabDisabled && styles.tabDisabled),
     ...style,
   };
 
-  // Icon styles
-  const iconStyle = {
-    ...styles.tabIcon,
-    color: isSelected ? "var(--color-content-brand)" : isHovered ? "var(--color-content-primary)" : "var(--color-content-secondary)",
+  // Tab inner styles (hover shows Grey98 background)
+  const tabInnerStyle = {
+    ...styles.tabInner,
+    ...(isHovered && !isTabDisabled && !isSelected && styles.tabInnerHover),
   };
 
-  // Badge styles
+  // Tab label styles based on state
+  const tabLabelStyle = {
+    ...styles.tabLabel,
+    ...(isHovered && !isTabDisabled && !isSelected && styles.tabLabelHover),
+    ...(isSelected && styles.tabLabelSelected),
+  };
+
+  // Icon color based on state
+  const iconStyle = {
+    ...styles.tabIcon,
+    color: isSelected
+      ? "var(--color-content-brand)"
+      : isHovered && !isTabDisabled
+      ? "var(--color-action-content-secondary-hover)"
+      : "var(--color-content-secondary)",
+  };
+
+  // Badge styles - active when tab is selected
   const badgeStyle = {
     ...styles.badge,
     ...(isSelected ? styles.badgeActive : styles.badgeDefault),
@@ -256,9 +310,9 @@ export const Tab = ({
       onMouseLeave={() => setIsHovered(false)}
       {...props}
     >
-      <div style={styles.tabInner}>
+      <div style={tabInnerStyle}>
         {icon && <span style={iconStyle}>{icon}</span>}
-        <span style={styles.tabLabel}>{children}</span>
+        <span style={tabLabelStyle}>{children}</span>
         {badge !== undefined && badge !== null && (
           <span style={badgeStyle}>{badge}</span>
         )}

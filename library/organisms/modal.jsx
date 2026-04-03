@@ -1,8 +1,16 @@
 /**
- * Modal Component
+ * Modal Component (Organism)
  *
  * A full-featured modal dialog with header, content area, and footer actions.
  * Use for forms, complex content, and multi-step workflows.
+ *
+ * Token Mapping (from Figma):
+ * - Grey100 (white) → --color-general-white
+ * - Grey98 (#F8F9FC) → --color-general-neutral-lighter
+ * - Grey90 (#D9E0ED) → --color-action-outline-secondary-enabled
+ * - Grey50 (#5371AC) → --color-content-secondary
+ * - Blue20 (#15154C) → --color-content-primary
+ * - Blue60 (#4649FF) → --color-content-brand
  */
 
 import React, { useEffect, useRef } from "react";
@@ -15,6 +23,7 @@ import { Icon } from "../atoms/icon.jsx";
 
 const styles = {
   base: `
+    /* Overlay with Blue20 tint */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -30,15 +39,20 @@ const styles = {
       from { opacity: 0; }
       to { opacity: 1; }
     }
+
+    /* Modal container - Grey100 background, Grey90 outline */
     .modal {
       width: 100%;
       max-height: calc(100vh - 48px);
-      background: var(--color-background-white);
-      box-shadow: 0px 1px 2px rgba(83, 113, 172, 0.15), 0px 2px 4px rgba(83, 113, 172, 0.20);
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--color-outline-neutral);
-      display: flex;
+      background: var(--color-general-white);
+      box-shadow: var(--shadow-button-hover);
+      border-radius: var(--radius-md);
+      outline: 1px solid var(--color-action-outline-secondary-enabled);
+      outline-offset: -1px;
+      display: inline-flex;
       flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
       overflow: hidden;
       animation: modal-scale-in 0.15s ease-out;
     }
@@ -52,6 +66,8 @@ const styles = {
         transform: scale(1);
       }
     }
+
+    /* Modal sizes */
     .modal--sm {
       max-width: 400px;
     }
@@ -69,23 +85,37 @@ const styles = {
       max-height: calc(100vh - 48px);
     }
 
-    /* Header */
+    /* Header - Grey90 border bottom */
     .modal__header {
-      display: flex;
-      align-items: center;
+      align-self: stretch;
+      padding-left: var(--spacing-6);
+      padding-right: var(--spacing-6);
+      display: inline-flex;
       justify-content: space-between;
-      padding: var(--spacing-4) var(--spacing-6);
-      border-bottom: 1px solid var(--color-outline-neutral);
-      flex-shrink: 0;
+      align-items: flex-start;
     }
+    .modal__header-inner {
+      flex: 1 1 0;
+      padding-top: var(--spacing-4);
+      padding-bottom: var(--spacing-4);
+      border-bottom: 1px solid var(--color-action-outline-secondary-enabled);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Title - Blue20 color, 16px bold */
     .modal__title {
       font-family: var(--font-family-primary);
-      font-size: var(--text-heading-h4);
+      font-size: var(--text-heading-h3);
       font-weight: var(--font-weight-bold);
+      line-height: var(--line-height-heading-h3);
       color: var(--color-content-primary);
-      line-height: 1.5;
       margin: 0;
+      word-wrap: break-word;
     }
+
+    /* Close button - Grey50 icon */
     .modal__close {
       width: 24px;
       height: 24px;
@@ -97,39 +127,47 @@ const styles = {
       border-radius: var(--radius-sm);
       cursor: pointer;
       color: var(--color-content-secondary);
-      transition: background 0.15s ease, color 0.15s ease;
+      transition: background var(--transition-fast), color var(--transition-fast);
       flex-shrink: 0;
-      margin-left: var(--spacing-4);
+      overflow: hidden;
     }
     .modal__close:hover {
-      background: var(--color-background-neutral-light);
+      background: var(--color-general-neutral-lighter);
       color: var(--color-content-primary);
     }
     .modal__close:focus-visible {
-      outline: 2px solid var(--color-outline-focus);
+      outline: 2px solid var(--color-content-brand);
       outline-offset: 2px;
     }
 
-    /* Content */
+    /* Content area - 24px padding */
     .modal__content {
+      align-self: stretch;
       flex: 1;
       overflow-y: auto;
       padding: var(--spacing-6);
+      display: inline-flex;
+      justify-content: flex-start;
+      align-items: center;
+      gap: var(--spacing-2);
     }
     .modal__content--no-padding {
       padding: 0;
     }
 
-    /* Footer */
+    /* Footer - Grey98 background, Grey90 border top */
     .modal__footer {
-      display: flex;
-      align-items: center;
+      align-self: stretch;
+      padding-left: var(--spacing-6);
+      padding-right: var(--spacing-6);
+      padding-top: var(--spacing-4);
+      padding-bottom: var(--spacing-4);
+      background: var(--color-general-neutral-lighter);
+      border-top: 1px solid var(--color-action-outline-secondary-enabled);
+      display: inline-flex;
       justify-content: space-between;
-      padding: var(--spacing-4) var(--spacing-6);
-      background: var(--color-background-neutral-lighter);
-      border-top: 1px solid var(--color-outline-neutral);
+      align-items: center;
       flex-shrink: 0;
-      gap: var(--spacing-4);
     }
     .modal__footer--no-tertiary {
       justify-content: flex-end;
@@ -142,6 +180,7 @@ const styles = {
     .modal__footer-right {
       display: flex;
       align-items: center;
+      justify-content: flex-start;
       gap: var(--spacing-6);
     }
   `,
@@ -325,21 +364,23 @@ export const Modal = ({
         {/* Header */}
         {(title || showClose) && (
           <div className="modal__header">
-            {title && (
-              <h2 id="modal-title" className="modal__title">
-                {title}
-              </h2>
-            )}
-            {showClose && (
-              <button
-                className="modal__close"
-                onClick={onClose}
-                aria-label="Close modal"
-                type="button"
-              >
-                <Icon name="XMark" size="sm" />
-              </button>
-            )}
+            <div className="modal__header-inner">
+              {title && (
+                <h2 id="modal-title" className="modal__title">
+                  {title}
+                </h2>
+              )}
+              {showClose && (
+                <button
+                  className="modal__close"
+                  onClick={onClose}
+                  aria-label="Close modal"
+                  type="button"
+                >
+                  <Icon name="XMark" size="md" />
+                </button>
+              )}
+            </div>
           </div>
         )}
 
@@ -358,7 +399,7 @@ export const Modal = ({
                   {tertiaryLabel && (
                     <Button
                       variant="tertiary"
-                      size="md"
+                      size="lg"
                       onClick={onTertiaryClick}
                     >
                       {tertiaryLabel}
@@ -371,7 +412,7 @@ export const Modal = ({
                   {secondaryLabel && (
                     <Button
                       variant="secondary"
-                      size="md"
+                      size="lg"
                       onClick={onSecondaryClick || onClose}
                     >
                       {secondaryLabel}
@@ -380,9 +421,9 @@ export const Modal = ({
                   {primaryLabel && (
                     <Button
                       variant={primaryVariant}
-                      size="md"
+                      size="lg"
                       onClick={onPrimaryClick}
-                      disabled={primaryDisabled}
+                      isDisabled={primaryDisabled}
                       loading={primaryLoading}
                     >
                       {primaryLabel}
@@ -426,21 +467,23 @@ export const ModalHeader = ({
 
   return (
     <div className={`modal__header ${className}`} {...props}>
-      {children || (
-        <>
-          {title && <h2 className="modal__title">{title}</h2>}
-          {showClose && (
-            <button
-              className="modal__close"
-              onClick={onClose}
-              aria-label="Close modal"
-              type="button"
-            >
-              <Icon name="XMark" size="sm" />
-            </button>
-          )}
-        </>
-      )}
+      <div className="modal__header-inner">
+        {children || (
+          <>
+            {title && <h2 className="modal__title">{title}</h2>}
+            {showClose && (
+              <button
+                className="modal__close"
+                onClick={onClose}
+                aria-label="Close modal"
+                type="button"
+              >
+                <Icon name="XMark" size="md" />
+              </button>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 };
@@ -503,8 +546,6 @@ export const ModalFooter = ({
   ...props
 }) => {
   injectStyles();
-
-  const hasLeftRight = left || right;
 
   return (
     <div className={`modal__footer ${className}`} {...props}>

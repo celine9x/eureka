@@ -50,7 +50,39 @@ import { MiniInfobox } from "./library/molecules/miniinfobox.jsx";
 // ─────────────────────────────────────────────
 import { SideMenu } from "./library/organisms/side-menu/side-menu.jsx";
 import { Modal } from "./library/organisms/modal.jsx";
-import { Table, TableRow, TableCell, TableCellHeader } from "./library/organisms/table/table.jsx";
+import { Table, TableRow, TableCell, TableCellHeader, TableCellLinkRow, TableCellLinkedName } from "./library/organisms/table/table.jsx";
+import {
+  ObjectHeader,
+  ObjectHeaderTopBar,
+  ObjectHeaderTopBarLeft,
+  ObjectHeaderTopBarRight,
+  ObjectHeaderActionsGroup,
+  ObjectHeaderDivider,
+  ObjectHeaderMeta,
+  ObjectHeaderTitleSection,
+  ObjectHeaderTitle,
+  ObjectHeaderSubinfoRow,
+  ObjectHeaderSubinfoItem,
+  ObjectHeaderStepper,
+  ObjectHeaderTabs,
+} from "./library/organisms/object-header.jsx";
+import {
+  HubHeader,
+  HubHeaderTitle,
+  HubHeaderActions,
+  HubHeaderControls,
+  HubHeaderRow,
+  HubHeaderLeft,
+  HubHeaderRight,
+  HubHeaderSecondary,
+} from "./library/organisms/hub-header.jsx";
+import { Pagination as PaginationOrganism } from "./library/organisms/pagination.jsx";
+
+// ─────────────────────────────────────────────
+// TEMPLATES
+// ─────────────────────────────────────────────
+import { Hub } from "./library/templates/hub.jsx";
+import { ObjectPage } from "./library/templates/object-page.jsx";
 
 // ─────────────────────────────────────────────
 // SHARED PROPS
@@ -1543,6 +1575,246 @@ const ModalPage = () => {
 
 const TablePage = () => (
   <Section title="Table" description="A complete table system with header, body rows, and various cell types.">
+    <SubSection title="All Cell Variants">
+      <p style={{ marginBottom: 16, color: "var(--color-content-secondary)", fontSize: 14 }}>
+        Demonstration of all table cell column types from the design system.
+      </p>
+      <DemoBox>
+        <Table>
+          <TableRow variant="header">
+            <TableCellHeader>short-text</TableCellHeader>
+            <TableCellHeader>long-text</TableCellHeader>
+            <TableCellHeader>two-level</TableCellHeader>
+            <TableCellHeader>two-level-objects</TableCellHeader>
+            <TableCellHeader>badge</TableCellHeader>
+            <TableCellHeader>tags (chips)</TableCellHeader>
+            <TableCellHeader>tag-1line</TableCellHeader>
+            <TableCellHeader>checkbox</TableCellHeader>
+            <TableCellHeader>linked-value</TableCellHeader>
+            <TableCellHeader>linked-object</TableCellHeader>
+            <TableCellHeader>button</TableCellHeader>
+          </TableRow>
+          <TableRow>
+            {/* short-text: Simple text content */}
+            <TableCell variant="short-text">
+              Short text
+            </TableCell>
+
+            {/* long-text: Multi-line text with ellipsis */}
+            <TableCell variant="long-text">
+              This is a longer text that might wrap to multiple lines and get truncated with ellipsis after three lines.
+            </TableCell>
+
+            {/* two-level: Title + Content stacked */}
+            <TableCell variant="two-level">
+              <div style={{ color: "var(--color-content-secondary)", fontSize: 12 }}>Title</div>
+              <div style={{ color: "var(--color-content-primary)", fontSize: 12 }}>Content value</div>
+            </TableCell>
+
+            {/* two-level-objects: Links stacked (LG + MD) */}
+            <TableCell variant="two-level-objects">
+              <TableCellLinkRow size="lg" icon={<Icon name="Beaker" size="md" />}>Primary Link</TableCellLinkRow>
+              <TableCellLinkRow size="md" icon={<Icon name="Tag" size="sm" />}>Secondary Link</TableCellLinkRow>
+            </TableCell>
+
+            {/* badge: Status badge */}
+            <TableCell variant="badge">
+              <Badge color="positive">Active</Badge>
+            </TableCell>
+
+            {/* tags: Chips with colors */}
+            <TableCell variant="tags">
+              <Chip color="var(--color-accent-blue)">Tag 1</Chip>
+              <Chip color="var(--color-accent-cyan)">Tag 2</Chip>
+              <Chip color="var(--color-accent-yellow)">Tag 3</Chip>
+            </TableCell>
+
+            {/* tag-1line: Tags with overflow count */}
+            <TableCell variant="tag-1line">
+              <Chip color="var(--color-accent-blue)">Label</Chip>
+              <Chip color="var(--color-accent-cyan)">Label</Chip>
+              <Badge>+3</Badge>
+            </TableCell>
+
+            {/* checkbox: Selection checkbox */}
+            <TableCell variant="checkbox">
+              <Checkbox size="sm" />
+            </TableCell>
+
+            {/* linked-value: Icon + name + badge */}
+            <TableCell variant="linked-value" icon={<Icon name="Beaker" />}>
+              <TableCellLinkedName>Item Name</TableCellLinkedName>
+              <Badge>+1</Badge>
+            </TableCell>
+
+            {/* linked-object: Link with icons + badge */}
+            <TableCell variant="linked-object">
+              <Link size="lg" iconLeading={<Icon name="Beaker" />} iconTrailing={<Icon name="ChevronRight" />}>View Item</Link>
+              <Badge>+1</Badge>
+            </TableCell>
+
+            {/* button: Action button */}
+            <TableCell variant="button">
+              <Button variant="secondary" size="sm" iconLeading={<Icon name="Calendar" size="sm" />}>May 7, 2025</Button>
+            </TableCell>
+          </TableRow>
+
+          <TableRow>
+            <TableCell variant="short-text" icon={<Icon name="Tag" />}>With icon</TableCell>
+            <TableCell variant="long-text" icon={<Icon name="InformationCircle" />}>
+              Long text cell with leading icon that aligns to the top of the content block.
+            </TableCell>
+            <TableCell variant="two-level">
+              <div style={{ color: "var(--color-content-secondary)", fontSize: 12 }}>Phase</div>
+              <div style={{ color: "var(--color-content-primary)", fontSize: 12 }}>Phase 2 / Completed</div>
+            </TableCell>
+            <TableCell variant="two-level-objects">
+              <TableCellLinkRow size="lg" icon={<Icon name="Building" size="md" />}>Company Name</TableCellLinkRow>
+              <TableCellLinkRow size="md" icon={<Icon name="MapPin" size="sm" />}>Location Info</TableCellLinkRow>
+            </TableCell>
+            <TableCell variant="badge">
+              <Badge color="warning">Pending</Badge>
+            </TableCell>
+            <TableCell variant="tags">
+              <Chip color="var(--color-accent-red)">Urgent</Chip>
+              <Chip color="var(--color-accent-orange)">Review</Chip>
+            </TableCell>
+            <TableCell variant="tag-1line">
+              <Chip color="var(--color-accent-purple)">AI</Chip>
+              <Chip color="var(--color-accent-green)">ML</Chip>
+              <Chip color="var(--color-accent-pink)">Data</Chip>
+              <Badge>+2</Badge>
+            </TableCell>
+            <TableCell variant="checkbox">
+              <Checkbox size="sm" isSelected />
+            </TableCell>
+            <TableCell variant="linked-value" icon={<Icon name="User" />}>
+              <TableCellLinkedName>John Doe</TableCellLinkedName>
+            </TableCell>
+            <TableCell variant="linked-object">
+              <Link size="lg" iconLeading={<Icon name="Document" />}>Document.pdf</Link>
+            </TableCell>
+            <TableCell variant="button">
+              <Button variant="tertiary" size="sm">Edit</Button>
+            </TableCell>
+          </TableRow>
+
+          <TableRow>
+            <TableCell variant="short-text">Plain text</TableCell>
+            <TableCell variant="long-text">
+              Another example of multi-line content that demonstrates how the cell handles text overflow gracefully.
+            </TableCell>
+            <TableCell variant="two-level">
+              <div style={{ color: "var(--color-content-secondary)", fontSize: 12 }}>Status</div>
+              <div style={{ color: "var(--color-content-primary)", fontSize: 12 }}>In Progress</div>
+            </TableCell>
+            <TableCell variant="two-level-objects">
+              <TableCellLinkRow size="lg" icon={<Icon name="Cube" size="md" />}>Product Name</TableCellLinkRow>
+              <TableCellLinkRow size="md" icon={<Icon name="Tag" size="sm" />}>SKU-12345</TableCellLinkRow>
+            </TableCell>
+            <TableCell variant="badge">
+              <Badge color="negative">Error</Badge>
+            </TableCell>
+            <TableCell variant="tags">
+              <Chip color="var(--color-accent-brown)">Archive</Chip>
+            </TableCell>
+            <TableCell variant="tag-1line">
+              <Chip color="var(--color-accent-blue)">Only One</Chip>
+            </TableCell>
+            <TableCell variant="checkbox">
+              <Checkbox size="sm" isDisabled />
+            </TableCell>
+            <TableCell variant="linked-value" icon={<Icon name="Building" />}>
+              <TableCellLinkedName>Acme Corp</TableCellLinkedName>
+              <Badge>+5</Badge>
+            </TableCell>
+            <TableCell variant="linked-object">
+              <Link size="lg" iconLeading={<Icon name="Link" />} iconTrailing={<Icon name="ArrowTopRightOnSquare" />}>External</Link>
+              <Badge>New</Badge>
+            </TableCell>
+            <TableCell variant="button">
+              <Button variant="negative" size="sm">Delete</Button>
+            </TableCell>
+          </TableRow>
+        </Table>
+      </DemoBox>
+    </SubSection>
+
+    <SubSection title="tag-2lines Variant">
+      <p style={{ marginBottom: 16, color: "var(--color-content-secondary)", fontSize: 14 }}>
+        Tags that wrap to 2 lines with overflow count.
+      </p>
+      <DemoBox>
+        <Table>
+          <TableRow variant="header">
+            <TableCellHeader>Name</TableCellHeader>
+            <TableCellHeader>Tags (2 lines)</TableCellHeader>
+            <TableCellHeader>Status</TableCellHeader>
+          </TableRow>
+          <TableRow>
+            <TableCell>Item One</TableCell>
+            <TableCell variant="tag-2lines">
+              <Chip color="var(--color-accent-blue)">Label</Chip>
+              <Chip color="var(--color-accent-cyan)">Label</Chip>
+              <Chip color="var(--color-accent-yellow)">Label</Chip>
+              <Chip color="var(--color-accent-red)">Label</Chip>
+              <Chip color="var(--color-accent-orange)">Label</Chip>
+              <Badge>+1</Badge>
+            </TableCell>
+            <TableCell variant="badge"><Badge color="positive">Done</Badge></TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>Item Two</TableCell>
+            <TableCell variant="tag-2lines">
+              <Chip color="var(--color-accent-purple)">Category A</Chip>
+              <Chip color="var(--color-accent-green)">Category B</Chip>
+              <Chip color="var(--color-accent-pink)">Category C</Chip>
+            </TableCell>
+            <TableCell variant="badge"><Badge color="warning">Review</Badge></TableCell>
+          </TableRow>
+        </Table>
+      </DemoBox>
+    </SubSection>
+
+    <SubSection title="Input Variant">
+      <p style={{ marginBottom: 16, color: "var(--color-content-secondary)", fontSize: 14 }}>
+        Cells containing form inputs or dropdowns.
+      </p>
+      <DemoBox>
+        <Table>
+          <TableRow variant="header">
+            <TableCellHeader>Field Name</TableCellHeader>
+            <TableCellHeader>Input</TableCellHeader>
+            <TableCellHeader>Icon</TableCellHeader>
+          </TableRow>
+          <TableRow>
+            <TableCell>Assignee</TableCell>
+            <TableCell variant="input">
+              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: 4 }}>
+                <Icon name="User" size="md" />
+                <span style={{ color: "var(--color-content-primary)", fontSize: 14 }}>Select user...</span>
+              </div>
+            </TableCell>
+            <TableCell variant="checkbox">
+              <Icon name="Beaker" size="md" />
+            </TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>Category</TableCell>
+            <TableCell variant="input">
+              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: 4 }}>
+                <Icon name="Tag" size="md" />
+                <span style={{ color: "var(--color-content-primary)", fontSize: 14 }}>Choose category...</span>
+              </div>
+            </TableCell>
+            <TableCell variant="checkbox">
+              <Icon name="Cube" size="md" />
+            </TableCell>
+          </TableRow>
+        </Table>
+      </DemoBox>
+    </SubSection>
+
     <SubSection title="Basic Table">
       <DemoBox>
         <Table>
@@ -1555,20 +1827,20 @@ const TablePage = () => (
           <TableRow>
             <TableCell>Acme Corp</TableCell>
             <TableCell>$1,234,567</TableCell>
-            <TableCell><Badge color="positive">Active</Badge></TableCell>
-            <TableCell><Button variant="tertiary" size="sm">View</Button></TableCell>
+            <TableCell variant="badge"><Badge color="positive">Active</Badge></TableCell>
+            <TableCell variant="button"><Button variant="tertiary" size="sm">View</Button></TableCell>
           </TableRow>
           <TableRow>
             <TableCell>Tech Inc</TableCell>
             <TableCell>$987,654</TableCell>
-            <TableCell><Badge color="warning">Pending</Badge></TableCell>
-            <TableCell><Button variant="tertiary" size="sm">View</Button></TableCell>
+            <TableCell variant="badge"><Badge color="warning">Pending</Badge></TableCell>
+            <TableCell variant="button"><Button variant="tertiary" size="sm">View</Button></TableCell>
           </TableRow>
           <TableRow>
             <TableCell>Global Ltd</TableCell>
             <TableCell>$2,345,678</TableCell>
-            <TableCell><Badge color="neutral">Inactive</Badge></TableCell>
-            <TableCell><Button variant="tertiary" size="sm">View</Button></TableCell>
+            <TableCell variant="badge"><Badge color="neutral">Inactive</Badge></TableCell>
+            <TableCell variant="button"><Button variant="tertiary" size="sm">View</Button></TableCell>
           </TableRow>
         </Table>
       </DemoBox>
@@ -1578,21 +1850,19 @@ const TablePage = () => (
       <DemoBox>
         <Table>
           <TableRow variant="header">
-            <TableCellHeader style={{ width: 48 }}>
-              <Checkbox />
-            </TableCellHeader>
+            <TableCell variant="checkbox"><Checkbox /></TableCell>
             <TableCellHeader>Name</TableCellHeader>
             <TableCellHeader>Email</TableCellHeader>
             <TableCellHeader>Role</TableCellHeader>
           </TableRow>
           <TableRow selected>
-            <TableCell style={{ width: 48 }}><Checkbox isSelected /></TableCell>
+            <TableCell variant="checkbox"><Checkbox isSelected /></TableCell>
             <TableCell>John Doe</TableCell>
             <TableCell>john@example.com</TableCell>
             <TableCell>Admin</TableCell>
           </TableRow>
           <TableRow>
-            <TableCell style={{ width: 48 }}><Checkbox /></TableCell>
+            <TableCell variant="checkbox"><Checkbox /></TableCell>
             <TableCell>Jane Smith</TableCell>
             <TableCell>jane@example.com</TableCell>
             <TableCell>Editor</TableCell>
@@ -1602,6 +1872,530 @@ const TablePage = () => (
     </SubSection>
   </Section>
 );
+
+const ObjectHeaderPage = () => {
+  const [activeTab, setActiveTab] = useState("overview");
+
+  return (
+    <Section title="ObjectHeader" description="A comprehensive header for object detail pages.">
+      <SubSection title="Complete Example">
+        <DemoBox>
+          <ObjectHeader>
+            <ObjectHeaderTopBar>
+              <ObjectHeaderTopBarLeft>
+                <Button variant="secondary" size="md" iconLeading={<Icon name="ArrowLeft" size="sm" />}>
+                  Back
+                </Button>
+              </ObjectHeaderTopBarLeft>
+              <ObjectHeaderTopBarRight>
+                <ObjectHeaderActionsGroup>
+                  <AvatarGroup
+                    avatars={[
+                      { name: "John Doe" },
+                      { name: "Jane Smith" },
+                      { name: "Bob Wilson" },
+                    ]}
+                    max={3}
+                    size="sm"
+                  />
+                  <Button variant="secondary" size="md" iconLeading={<Icon name="UserPlus" size="sm" />}>
+                    Manage access
+                  </Button>
+                </ObjectHeaderActionsGroup>
+                <ObjectHeaderDivider />
+                <ObjectHeaderActionsGroup>
+                  <Button variant="secondary" size="md" iconLeading={<Icon name="Bookmark" size="sm" />} />
+                  <Button variant="secondary" size="md" iconLeading={<Icon name="Share" size="sm" />} />
+                </ObjectHeaderActionsGroup>
+              </ObjectHeaderTopBarRight>
+            </ObjectHeaderTopBar>
+
+            <ObjectHeaderTitleSection>
+              <ObjectHeaderMeta
+                label="Last updated on"
+                date="Tue, Oct 21, 2024"
+                time="9:21 PM"
+                author="John Doe"
+              />
+              <ObjectHeaderTitle iconName="LockClosed" iconVariant="warning">
+                Deal Title - Example Project
+              </ObjectHeaderTitle>
+            </ObjectHeaderTitleSection>
+
+            <ObjectHeaderSubinfoRow>
+              <ObjectHeaderSubinfoItem>
+                <Chip variant="positive">Active</Chip>
+              </ObjectHeaderSubinfoItem>
+              <ObjectHeaderSubinfoItem>
+                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                  <span style={{ fontSize: 12, color: "var(--color-content-secondary)" }}>Owner</span>
+                  <span style={{ fontSize: 14, color: "var(--color-content-primary)" }}>Emma Dupont</span>
+                </div>
+              </ObjectHeaderSubinfoItem>
+              <ObjectHeaderSubinfoItem>
+                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                  <span style={{ fontSize: 12, color: "var(--color-content-secondary)" }}>Company</span>
+                  <Link href="#">Abbvie Limited</Link>
+                </div>
+              </ObjectHeaderSubinfoItem>
+            </ObjectHeaderSubinfoRow>
+
+            <ObjectHeaderStepper>
+              <Stepper
+                currentStep={3}
+                steps={[
+                  { title: "Identification", subtitle: "Jul 15, 2024" },
+                  { title: "Review", subtitle: "Jul 20, 2024" },
+                  { title: "Evaluation", subtitle: "Jul 25, 2024" },
+                  { title: "Due Diligence", subtitle: "In Progress" },
+                  { title: "Negotiation" },
+                  { title: "Contracting" },
+                  { title: "Signed" },
+                ]}
+              />
+            </ObjectHeaderStepper>
+
+            <ObjectHeaderTabs>
+              <Tabs selectedKey={activeTab} onSelectionChange={setActiveTab}>
+                <Tab id="overview">Overview</Tab>
+                <Tab id="details">Details</Tab>
+                <Tab id="meetings" badge={5}>Meetings</Tab>
+                <Tab id="contacts" badge={12}>Contacts</Tab>
+                <Tab id="attachments" badge={3}>Attachments</Tab>
+              </Tabs>
+            </ObjectHeaderTabs>
+          </ObjectHeader>
+        </DemoBox>
+      </SubSection>
+
+      <SubSection title="Simple Header (No Stepper or Tabs)">
+        <DemoBox>
+          <ObjectHeader>
+            <ObjectHeaderTopBar>
+              <ObjectHeaderTopBarLeft>
+                <Button variant="secondary" size="md" iconLeading={<Icon name="ArrowLeft" size="sm" />}>
+                  Back to list
+                </Button>
+              </ObjectHeaderTopBarLeft>
+              <ObjectHeaderTopBarRight>
+                <ObjectHeaderActionsGroup>
+                  <Button variant="primary" size="md">Save</Button>
+                  <Button variant="secondary" size="md" iconLeading={<Icon name="EllipsisVertical" size="sm" />} />
+                </ObjectHeaderActionsGroup>
+              </ObjectHeaderTopBarRight>
+            </ObjectHeaderTopBar>
+
+            <ObjectHeaderTitleSection>
+              <ObjectHeaderMeta date="Jan 15, 2024" />
+              <ObjectHeaderTitle iconName="Document">
+                Simple Document Title
+              </ObjectHeaderTitle>
+            </ObjectHeaderTitleSection>
+          </ObjectHeader>
+        </DemoBox>
+      </SubSection>
+    </Section>
+  );
+};
+
+const HubHeaderPage = () => (
+  <Section title="HubHeader" description="A flexible page-section header for list and detail views.">
+    <SubSection title="List Variant (Default)">
+      <DemoBox>
+        <HubHeader
+          title="Companies"
+          badge="124"
+          rightContent={
+            <HubHeaderActions>
+              <Button variant="secondary" size="md" iconLeading={<Icon name="ArrowDownTray" size="sm" />}>Export</Button>
+              <Button variant="primary" size="md" iconLeading={<Icon name="Plus" size="sm" />}>Add Company</Button>
+            </HubHeaderActions>
+          }
+        />
+      </DemoBox>
+    </SubSection>
+
+    <SubSection title="With Controls">
+      <DemoBox>
+        <HubHeader
+          title="Portfolio"
+          badge="12"
+          leftContent={
+            <HubHeaderControls>
+              <Search size="md" placeholder="Search..." />
+              <Button variant="secondary" size="md" iconLeading={<Icon name="Funnel" size="sm" />}>Filter</Button>
+            </HubHeaderControls>
+          }
+          rightContent={
+            <HubHeaderActions>
+              <Button variant="secondary" size="md" iconLeading={<Icon name="ArrowDownTray" size="sm" />}>Export</Button>
+              <Button variant="primary" size="md" iconLeading={<Icon name="Plus" size="sm" />}>Create</Button>
+            </HubHeaderActions>
+          }
+        />
+      </DemoBox>
+    </SubSection>
+
+    <SubSection title="Detail Variant with Back Button">
+      <DemoBox>
+        <HubHeader
+          variant="detail"
+          title="Company Name"
+          titleSize="lg"
+          badge="Active"
+          onBack={() => alert("Back clicked")}
+          rightContent={
+            <HubHeaderActions>
+              <Button variant="primary" size="md">Save</Button>
+              <Button variant="secondary" size="md" iconLeading={<Icon name="EllipsisVertical" size="sm" />} />
+            </HubHeaderActions>
+          }
+          secondaryContent={
+            <ButtonGroup value="overview">
+              <ButtonGroupItem value="overview">Overview</ButtonGroupItem>
+              <ButtonGroupItem value="details">Details</ButtonGroupItem>
+              <ButtonGroupItem value="history">History</ButtonGroupItem>
+            </ButtonGroup>
+          }
+        />
+      </DemoBox>
+    </SubSection>
+
+    <SubSection title="Composition Mode">
+      <DemoBox>
+        <HubHeader showBorder={false}>
+          <HubHeaderRow>
+            <HubHeaderLeft>
+              <HubHeaderTitle size="md" badge="New">Dashboard</HubHeaderTitle>
+            </HubHeaderLeft>
+            <HubHeaderRight>
+              <HubHeaderActions>
+                <Button variant="primary" size="md">Action</Button>
+              </HubHeaderActions>
+            </HubHeaderRight>
+          </HubHeaderRow>
+          <HubHeaderSecondary>
+            <Tabs defaultSelectedKey="all">
+              <Tab id="all">All</Tab>
+              <Tab id="active">Active</Tab>
+              <Tab id="archived">Archived</Tab>
+            </Tabs>
+          </HubHeaderSecondary>
+        </HubHeader>
+      </DemoBox>
+    </SubSection>
+
+    <SubSection title="Title Sizes">
+      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <DemoBox>
+          <HubHeader title="Small Title" titleSize="sm" showBorder={false} />
+        </DemoBox>
+        <DemoBox>
+          <HubHeader title="Medium Title" titleSize="md" showBorder={false} />
+        </DemoBox>
+        <DemoBox>
+          <HubHeader title="Large Title" titleSize="lg" showBorder={false} />
+        </DemoBox>
+      </div>
+    </SubSection>
+  </Section>
+);
+
+const PaginationOrganismPage = () => {
+  const [page, setPage] = useState(4);
+  const [pageSize, setPageSize] = useState(10);
+
+  return (
+    <Section title="Pagination (Organism)" description="A complete pagination control with page size selector, page navigation, and optional action button.">
+      <SubSection title="Full Pagination">
+        <DemoBox>
+          <PaginationOrganism
+            currentPage={page}
+            totalPages={8}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+          />
+          <p style={{ marginTop: 16, color: "var(--color-content-secondary)", fontSize: 14 }}>
+            Current page: {page}, Page size: {pageSize}
+          </p>
+        </DemoBox>
+      </SubSection>
+
+      <SubSection title="Without Page Numbers">
+        <DemoBox>
+          <PaginationOrganism
+            currentPage={page}
+            totalPages={8}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+            showPageNumbers={false}
+            showInfo
+          />
+        </DemoBox>
+      </SubSection>
+
+      <SubSection title="With Custom Action">
+        <DemoBox>
+          <PaginationOrganism
+            currentPage={page}
+            totalPages={8}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+            actionButton={
+              <Button variant="secondary" size="md" iconLeading={<Icon name="ArrowDownTray" size="sm" />}>
+                Download
+              </Button>
+            }
+          />
+        </DemoBox>
+      </SubSection>
+
+      <SubSection title="Minimal (No Per Page)">
+        <DemoBox>
+          <PaginationOrganism
+            currentPage={page}
+            totalPages={8}
+            onPageChange={setPage}
+            showPerPage={false}
+          />
+        </DemoBox>
+      </SubSection>
+    </Section>
+  );
+};
+
+// ─────────────────────────────────────────────
+// TEMPLATE PAGES
+// ─────────────────────────────────────────────
+
+const HubTemplatePage = () => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [selectedRows, setSelectedRows] = useState([]);
+
+  const sampleData = [
+    { id: 1, name: "Acme Corp", status: "Active", revenue: "$1.2M", employees: 150 },
+    { id: 2, name: "Tech Inc", status: "Pending", revenue: "$800K", employees: 85 },
+    { id: 3, name: "Global Ltd", status: "Active", revenue: "$2.5M", employees: 320 },
+  ];
+
+  const columns = [
+    { key: "name", label: "Company Name", sortable: true },
+    { key: "status", label: "Status", render: (val) => <Badge color={val === "Active" ? "positive" : "warning"}>{val}</Badge> },
+    { key: "revenue", label: "Revenue", sortable: true },
+    { key: "employees", label: "Employees", sortable: true },
+  ];
+
+  return (
+    <Section title="Hub Template" description="A complete page layout template for list/hub pages.">
+      <SubSection title="Preview">
+        <p style={{ marginBottom: 16, color: "var(--color-content-secondary)", fontSize: 14 }}>
+          The Hub template combines SideMenu, HubHeader, Table, and Pagination into a complete page layout.
+          Below is a scaled-down preview.
+        </p>
+        <DemoBox>
+          <div style={{ height: 500, border: "1px solid var(--color-neutral-200)", borderRadius: 8, overflow: "hidden" }}>
+            <div style={{ display: "flex", height: "100%", background: "var(--color-general-neutral-lighter)" }}>
+              {/* Mini Sidebar Preview */}
+              <div style={{ width: 200, background: "var(--color-general-white)", borderRight: "1px solid var(--color-action-outline-secondary-enabled)", padding: 16 }}>
+                <div style={{ fontSize: 16, fontWeight: 700, color: "var(--color-content-brand)", marginBottom: 24 }}>Eureka</div>
+                <div style={{ fontSize: 12, color: "var(--color-content-secondary)" }}>Side Menu Preview</div>
+              </div>
+
+              {/* Main Content Preview */}
+              <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+                {/* Header */}
+                <div style={{ padding: 16, background: "var(--color-general-white)", borderBottom: "1px solid var(--color-action-outline-secondary-enabled)" }}>
+                  <HubHeader
+                    title="Companies"
+                    badge="124"
+                    showBorder={false}
+                    rightContent={
+                      <HubHeaderActions>
+                        <Button variant="primary" size="sm">Add Company</Button>
+                      </HubHeaderActions>
+                    }
+                  />
+                </div>
+
+                {/* Table Area */}
+                <div style={{ flex: 1, padding: 16, overflow: "auto" }}>
+                  <Table>
+                    <TableRow variant="header">
+                      {columns.map((col) => (
+                        <TableCellHeader key={col.key} sortable={col.sortable}>{col.label}</TableCellHeader>
+                      ))}
+                    </TableRow>
+                    {sampleData.map((row) => (
+                      <TableRow key={row.id}>
+                        <TableCell>{row.name}</TableCell>
+                        <TableCell variant="badge"><Badge color={row.status === "Active" ? "positive" : "warning"}>{row.status}</Badge></TableCell>
+                        <TableCell>{row.revenue}</TableCell>
+                        <TableCell>{row.employees}</TableCell>
+                      </TableRow>
+                    ))}
+                  </Table>
+                </div>
+
+                {/* Footer with Pagination */}
+                <div style={{ padding: 16, background: "var(--color-general-white)", borderTop: "1px solid var(--color-action-outline-secondary-enabled)" }}>
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={10}
+                    perPage={pageSize}
+                    onPageChange={setCurrentPage}
+                    onPerPageChange={setPageSize}
+                    showPerPage
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </DemoBox>
+      </SubSection>
+
+      <SubSection title="Props">
+        <DemoBox>
+          <ul style={{ fontSize: 14, color: "var(--color-content-secondary)", paddingLeft: 20, lineHeight: 1.8 }}>
+            <li><strong>title:</strong> Page title for the header</li>
+            <li><strong>badge:</strong> Badge text (e.g., item count)</li>
+            <li><strong>headerActions:</strong> Action buttons for the header</li>
+            <li><strong>menuSections:</strong> Sections for the side menu</li>
+            <li><strong>columns:</strong> Table column definitions</li>
+            <li><strong>data:</strong> Table row data</li>
+            <li><strong>showCheckbox:</strong> Enable row selection</li>
+            <li><strong>currentPage, totalPages, pageSize:</strong> Pagination props</li>
+          </ul>
+        </DemoBox>
+      </SubSection>
+    </Section>
+  );
+};
+
+const ObjectPageTemplatePage = () => {
+  const [activeTab, setActiveTab] = useState("overview");
+
+  return (
+    <Section title="ObjectPage Template" description="A complete detail page layout with header, stepper, and two-column content.">
+      <SubSection title="Preview">
+        <p style={{ marginBottom: 16, color: "var(--color-content-secondary)", fontSize: 14 }}>
+          The ObjectPage template combines SideMenu, ObjectHeader with stepper/tabs, and a two-column accordion layout.
+        </p>
+        <DemoBox>
+          <div style={{ height: 600, border: "1px solid var(--color-neutral-200)", borderRadius: 8, overflow: "hidden" }}>
+            <div style={{ display: "flex", height: "100%", background: "var(--color-general-neutral-lighter)" }}>
+              {/* Mini Sidebar Preview */}
+              <div style={{ width: 200, background: "var(--color-general-white)", borderRight: "1px solid var(--color-action-outline-secondary-enabled)", padding: 16 }}>
+                <div style={{ fontSize: 16, fontWeight: 700, color: "var(--color-content-brand)", marginBottom: 24 }}>Eureka</div>
+                <div style={{ fontSize: 12, color: "var(--color-content-secondary)" }}>Side Menu Preview</div>
+              </div>
+
+              {/* Main Content Preview */}
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+                {/* Header */}
+                <div style={{ padding: 16, background: "var(--color-general-white)", borderBottom: "1px solid var(--color-action-outline-secondary-enabled)" }}>
+                  <ObjectHeader>
+                    <ObjectHeaderTopBar>
+                      <ObjectHeaderTopBarLeft>
+                        <Button variant="secondary" size="sm" iconLeading={<Icon name="ArrowLeft" size="sm" />}>Back</Button>
+                      </ObjectHeaderTopBarLeft>
+                      <ObjectHeaderTopBarRight>
+                        <ObjectHeaderActionsGroup>
+                          <Button variant="primary" size="sm">Save</Button>
+                        </ObjectHeaderActionsGroup>
+                      </ObjectHeaderTopBarRight>
+                    </ObjectHeaderTopBar>
+
+                    <ObjectHeaderTitleSection>
+                      <ObjectHeaderMeta date="Jan 15, 2024" author="John Doe" />
+                      <ObjectHeaderTitle iconName="Beaker">Initiative Name</ObjectHeaderTitle>
+                    </ObjectHeaderTitleSection>
+
+                    <ObjectHeaderStepper>
+                      <Stepper
+                        currentStep={2}
+                        steps={[
+                          { title: "Draft" },
+                          { title: "Review" },
+                          { title: "Approved" },
+                          { title: "Active" },
+                        ]}
+                      />
+                    </ObjectHeaderStepper>
+
+                    <ObjectHeaderTabs>
+                      <Tabs selectedKey={activeTab} onSelectionChange={setActiveTab}>
+                        <Tab id="overview">Overview</Tab>
+                        <Tab id="details">Details</Tab>
+                        <Tab id="history">History</Tab>
+                      </Tabs>
+                    </ObjectHeaderTabs>
+                  </ObjectHeader>
+                </div>
+
+                {/* Two Column Content */}
+                <div style={{ flex: 1, padding: 16, overflow: "auto" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                    {/* Left Column */}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                      <Accordion title="General Information" defaultExpanded>
+                        <div style={{ padding: 16 }}>
+                          <TextInput label="Name" placeholder="Enter name..." />
+                          <div style={{ marginTop: 16 }}>
+                            <TextInput label="Description" placeholder="Enter description..." />
+                          </div>
+                        </div>
+                      </Accordion>
+                      <Accordion title="Settings">
+                        <div style={{ padding: 16 }}>
+                          <Toggle label="Enable notifications" />
+                        </div>
+                      </Accordion>
+                    </div>
+
+                    {/* Right Column */}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                      <Accordion title="Related Items" defaultExpanded>
+                        <div style={{ padding: 16 }}>
+                          <p style={{ color: "var(--color-content-secondary)", fontSize: 14 }}>No related items yet.</p>
+                        </div>
+                      </Accordion>
+                      <Accordion title="Activity Log">
+                        <div style={{ padding: 16 }}>
+                          <p style={{ color: "var(--color-content-secondary)", fontSize: 14 }}>Recent activity will appear here.</p>
+                        </div>
+                      </Accordion>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </DemoBox>
+      </SubSection>
+
+      <SubSection title="Props">
+        <DemoBox>
+          <ul style={{ fontSize: 14, color: "var(--color-content-secondary)", paddingLeft: 20, lineHeight: 1.8 }}>
+            <li><strong>title:</strong> Page/object title</li>
+            <li><strong>titleIconName:</strong> Icon for the title</li>
+            <li><strong>meta:</strong> Metadata object (label, date, time, author)</li>
+            <li><strong>subinfoItems:</strong> Array of subinfo items</li>
+            <li><strong>steps:</strong> Stepper steps array</li>
+            <li><strong>currentStep:</strong> Current step index</li>
+            <li><strong>tabs:</strong> Tabs component</li>
+            <li><strong>onBack:</strong> Back button handler</li>
+            <li><strong>leftColumnSections / rightColumnSections:</strong> Accordion sections</li>
+            <li><strong>singleColumn:</strong> Use single column layout</li>
+          </ul>
+        </DemoBox>
+      </SubSection>
+    </Section>
+  );
+};
 
 // ─────────────────────────────────────────────
 // PAGE CONFIG
@@ -1644,6 +2438,12 @@ const PAGES = {
   sideMenu: { title: "SideMenu", component: SideMenuPage, category: "organisms" },
   modal: { title: "Modal", component: ModalPage, category: "organisms" },
   table: { title: "Table", component: TablePage, category: "organisms" },
+  objectHeader: { title: "ObjectHeader", component: ObjectHeaderPage, category: "organisms" },
+  hubHeader: { title: "HubHeader", component: HubHeaderPage, category: "organisms" },
+  paginationOrganism: { title: "Pagination (Organism)", component: PaginationOrganismPage, category: "organisms" },
+  // Templates
+  hubTemplate: { title: "Hub", component: HubTemplatePage, category: "templates" },
+  objectPageTemplate: { title: "ObjectPage", component: ObjectPageTemplatePage, category: "templates" },
 };
 
 // ─────────────────────────────────────────────
@@ -1682,6 +2482,18 @@ export const ComponentLibraryDemo = () => {
       dividerBefore: true,
       items: Object.entries(PAGES)
         .filter(([, page]) => page.category === "organisms")
+        .map(([key, page]) => ({
+          label: page.title,
+          iconName: getIconForPage(key),
+          state: activePage === key ? "active" : "enabled",
+          onClick: () => setActivePage(key),
+        })),
+    },
+    {
+      title: "Templates",
+      dividerBefore: true,
+      items: Object.entries(PAGES)
+        .filter(([, page]) => page.category === "templates")
         .map(([key, page]) => ({
           label: page.title,
           iconName: getIconForPage(key),
@@ -1770,6 +2582,11 @@ function getIconForPage(pageKey) {
     sideMenu: "Bars3",
     modal: "Square2Stack",
     table: "TableCells",
+    objectHeader: "DocumentText",
+    hubHeader: "RectangleGroup",
+    paginationOrganism: "ChevronDoubleRight",
+    hubTemplate: "ViewColumns",
+    objectPageTemplate: "Document",
   };
   return iconMap[pageKey] || "DocumentText";
 }

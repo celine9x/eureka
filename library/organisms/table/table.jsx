@@ -23,9 +23,9 @@ const styles = {
       flex-direction: column;
       width: 100%;
       box-sizing: border-box;
-      background: var(--color-background-white);
+      background: var(--color-general-white);
       border-radius: var(--radius-md);
-      border: 1px solid var(--color-interaction-outline-enabled);
+      border: 1px solid var(--color-action-outline-secondary-enabled);
       box-shadow: var(--shadow-light-down);
       overflow: hidden;
     }
@@ -39,23 +39,23 @@ const styles = {
       box-sizing: border-box;
     }
     .table-row-header {
-      background: var(--color-background-neutral-lighter);
-      border-bottom: 1px solid var(--color-interaction-outline-enabled);
+      background: var(--color-general-neutral-lighter);
+      border-bottom: 1px solid var(--color-action-outline-secondary-enabled);
     }
     .table-row-body {
-      background: var(--color-background-white);
-      border-bottom: 1px solid var(--color-interaction-outline-enabled);
+      background: var(--color-general-white);
+      border-bottom: 1px solid var(--color-action-outline-secondary-enabled);
       cursor: pointer;
       transition: background var(--transition-fast);
     }
     .table-row-body:nth-child(even) {
-      background: var(--color-background-neutral-lighter);
+      background: var(--color-general-neutral-lighter);
     }
     .table-row-body:last-child {
       border-bottom: none;
     }
     .table-row-body:not(.disabled):not(.selected):hover {
-      background: var(--color-background-neutral-lighter);
+      background: var(--color-general-neutral-lighter);
     }
     .table-row-body.selected {
       background: var(--color-general-informative);
@@ -64,7 +64,7 @@ const styles = {
       background: var(--color-general-informative);
     }
     .table-row-body.disabled {
-      background: var(--color-background-neutral-light);
+      background: var(--color-general-neutral-light);
       cursor: not-allowed;
     }
   `,

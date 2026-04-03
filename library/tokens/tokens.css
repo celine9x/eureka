@@ -124,6 +124,24 @@
   --font-family-primary: 'Sora', sans-serif;
   --font-family-secondary: 'Lato', sans-serif;
 
+  /* Base font weights */
+  --font-weight-regular: 400;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Base font sizes (px values for reference) */
+  --font-size-xs: 0.5625rem;   /* 9px */
+  --font-size-sm: 0.75rem;     /* 12px */
+  --font-size-md: 0.875rem;    /* 14px */
+  --font-size-lg: 1rem;        /* 16px */
+  --font-size-xl: 1.25rem;     /* 20px */
+  --font-size-2xl: 1.5rem;     /* 24px */
+
+  /* Base line heights */
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+
   --text-heading-h1: 1.5rem;
   --font-weight-heading-h1: 700;
   --line-height-heading-h1: 2rem;
@@ -188,6 +206,14 @@
   --spacing-12: 3rem;
 
   /* ===========================================
+     SIZING (icons, avatars, etc.)
+     =========================================== */
+  --size-icon-xs: 12px;
+  --size-icon-sm: 16px;
+  --size-icon-md: 20px;
+  --size-icon-lg: 24px;
+
+  /* ===========================================
      RADIUS
      =========================================== */
   --radius-none: 0;
@@ -203,6 +229,12 @@
   --shadow-light-down: 0 0.0625rem 0.125rem 0 rgba(83, 113, 172, 0.08);
   --shadow-medium-down: 0 0.0625rem 0.1875rem 0 rgba(83, 113, 172, 0.2);
   --shadow-dark-down: 0 0.125rem 0.25rem 0 rgba(83, 113, 172, 0.2);
+
+  /* Button shadows (matching Figma) */
+  --shadow-button-enabled: 0px 1px 1px rgba(83, 113, 172, 0.15), 0px 1px 3px rgba(83, 113, 172, 0.20);
+  --shadow-button-hover: 0px 1px 2px rgba(83, 113, 172, 0.15), 0px 2px 4px rgba(83, 113, 172, 0.20);
+  --shadow-button-focus: 0px 0px 4px rgba(56, 58, 204, 0.40);
+  --shadow-button-light: 0px 0px 1px rgba(83, 113, 172, 0.08), 0px 1px 2px rgba(83, 113, 172, 0.08);
 
   /* ===========================================
      TRANSITION
