@@ -2,13 +2,22 @@
  * ChipInput Component
  *
  * A tag/chip input field with label, search functionality, and chip management.
- * Uses Tailwind CSS with design tokens.
+ * Uses inline styles with CSS variables from tokens.css for consistent styling.
+ *
+ * @example
+ * <ChipInput
+ *   label="Tags"
+ *   required
+ *   placeholder="Search for tags"
+ *   chips={[{ id: '1', label: 'React' }, { id: '2', label: 'TypeScript' }]}
+ *   onChange={setChips}
+ * />
  */
 
 import React, { useState, useRef, forwardRef } from "react";
-import { cx } from "../utils/cx.js";
 import { Chip } from "../atoms/chip.jsx";
 import { Icon } from "../atoms/icon.jsx";
+import { XCircleIcon, ChevronDownIcon } from "@heroicons/react/16/solid";
 
 // ─────────────────────────────────────────────
 // CONSTANTS
@@ -26,72 +35,212 @@ export const CHIP_COLORS = {
 };
 
 // ─────────────────────────────────────────────
-// STYLES
+// STYLES (Token-mapped inline styles)
 // ─────────────────────────────────────────────
 
 const styles = {
-  wrapper: "inline-flex flex-col gap-2 w-full",
+  wrapper: {
+    display: "inline-flex",
+    flexDirection: "column",
+    gap: 8,
+    width: "100%",
+  },
 
-  label: "inline-flex items-center gap-1",
-  labelText: "font-primary text-body-caption font-normal text-content-primary",
-  labelRequired: "font-primary text-body-caption font-normal text-content-negative",
+  label: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 4,
+  },
 
-  container: [
-    "flex items-center gap-2 py-1 px-2 min-h-8",
-    "bg-background-white rounded-md",
-    "outline outline-1 -outline-offset-1 outline-outline-neutral",
-    "shadow-light-down transition-all duration-fast",
-  ].join(" "),
+  labelText: {
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-caption)",
+    fontWeight: 400,
+    color: "var(--color-content-primary)",
+  },
 
-  containerHover: "hover:not-disabled:not-[data-error]:outline-neutral-300 hover:not-disabled:not-[data-error]:shadow-light-up",
-  containerFocus: "focus-within:not-disabled:not-[data-error]:outline-outline-focus focus-within:not-disabled:not-[data-error]:shadow-focus",
-  containerDisabled: "bg-background-neutral-light cursor-not-allowed",
-  containerError: "outline-content-negative",
-  containerEmpty: "py-1.5 px-2",
+  labelRequired: {
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-caption)",
+    fontWeight: 400,
+    color: "var(--color-content-negative)",
+  },
 
-  content: "flex-1 flex flex-wrap items-center content-center gap-2",
-  chips: "flex flex-wrap items-center content-center gap-2",
+  container: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    padding: "4px 8px",
+    minHeight: 32,
+    background: "var(--color-general-white)",
+    borderRadius: "var(--radius-md)",
+    outline: "1px solid var(--color-action-outline-secondary-enabled)",
+    outlineOffset: "-1px",
+    boxShadow: "var(--shadow-light-down)",
+    transition: "all var(--transition-fast)",
+    boxSizing: "border-box",
+  },
 
-  input: [
-    "flex-1 min-w-20 border-none outline-none bg-transparent",
-    "font-primary text-body-md font-normal text-content-primary p-0",
-    "placeholder:text-content-tertiary",
-    "disabled:cursor-not-allowed disabled:text-content-tertiary",
-  ].join(" "),
+  containerHover: {
+    outlineColor: "var(--color-general-neutral-dark)",
+    boxShadow: "var(--shadow-light-up)",
+  },
 
-  actions: "flex items-center gap-2 flex-shrink-0",
+  containerFocus: {
+    outlineColor: "var(--color-interaction-outline-active)",
+    boxShadow: "var(--shadow-focus)",
+  },
 
-  action: [
-    "flex items-center justify-center size-4 p-0",
-    "border-none bg-transparent text-content-secondary cursor-pointer",
-    "transition-colors duration-fast",
-    "hover:not-disabled:text-content-primary",
-    "disabled:text-content-tertiary disabled:cursor-not-allowed",
-  ].join(" "),
+  containerDisabled: {
+    background: "var(--color-general-neutral-light)",
+    cursor: "not-allowed",
+  },
 
-  chevron: "transition-transform duration-fast",
-  chevronOpen: "rotate-180",
+  containerError: {
+    outlineColor: "var(--color-content-negative)",
+  },
 
-  helper: "flex items-start gap-1",
-  helperIcon: "flex-shrink-0 size-4 text-content-negative",
-  helperText: "font-primary text-body-caption text-content-secondary",
-  helperTextError: "text-content-negative",
+  containerEmpty: {
+    padding: "6px 8px",
+  },
+
+  content: {
+    flex: 1,
+    display: "flex",
+    flexWrap: "wrap",
+    alignItems: "center",
+    alignContent: "center",
+    gap: 8,
+  },
+
+  chips: {
+    display: "flex",
+    flexWrap: "wrap",
+    alignItems: "center",
+    alignContent: "center",
+    gap: 8,
+  },
+
+  input: {
+    flex: 1,
+    minWidth: 80,
+    border: "none",
+    outline: "none",
+    background: "transparent",
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-md)",
+    fontWeight: 400,
+    color: "var(--color-content-primary)",
+    padding: 0,
+  },
+
+  inputDisabled: {
+    cursor: "not-allowed",
+    color: "var(--color-content-tertiary)",
+  },
+
+  actions: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    flexShrink: 0,
+  },
+
+  action: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: 16,
+    height: 16,
+    padding: 0,
+    border: "none",
+    background: "transparent",
+    color: "var(--color-content-secondary)",
+    cursor: "pointer",
+    transition: "color var(--transition-fast)",
+  },
+
+  actionHover: {
+    color: "var(--color-content-primary)",
+  },
+
+  actionDisabled: {
+    color: "var(--color-content-tertiary)",
+    cursor: "not-allowed",
+  },
+
+  chevronOpen: {
+    transform: "rotate(180deg)",
+  },
+
+  helper: {
+    display: "flex",
+    alignItems: "flex-start",
+    gap: 4,
+  },
+
+  helperIcon: {
+    flexShrink: 0,
+    width: 16,
+    height: 16,
+    color: "var(--color-content-negative)",
+  },
+
+  helperText: {
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-caption)",
+    color: "var(--color-content-secondary)",
+  },
+
+  helperTextError: {
+    color: "var(--color-content-negative)",
+  },
 };
 
 // ─────────────────────────────────────────────
 // CHIP INPUT LABEL
 // ─────────────────────────────────────────────
 
-export const ChipInputLabel = ({ children, required = false, className }) => {
+export const ChipInputLabel = ({ children, required = false, style }) => {
   return (
-    <div className={cx(styles.label, className)}>
-      <span className={styles.labelText}>{children}</span>
-      {required && <span className={styles.labelRequired}>*</span>}
+    <div style={{ ...styles.label, ...style }}>
+      <span style={styles.labelText}>{children}</span>
+      {required && <span style={styles.labelRequired}>*</span>}
     </div>
   );
 };
 
 ChipInputLabel.displayName = "ChipInputLabel";
+
+// ─────────────────────────────────────────────
+// ACTION BUTTON
+// ─────────────────────────────────────────────
+
+const ActionButton = ({ onClick, disabled, ariaLabel, isOpen, children }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  const btnStyle = {
+    ...styles.action,
+    ...(isHovered && !disabled && styles.actionHover),
+    ...(disabled && styles.actionDisabled),
+    ...(isOpen && styles.chevronOpen),
+    transition: "all var(--transition-fast)",
+  };
+
+  return (
+    <button
+      type="button"
+      style={btnStyle}
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={ariaLabel}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {children}
+    </button>
+  );
+};
 
 // ─────────────────────────────────────────────
 // CHIP INPUT COMPONENT
@@ -117,18 +266,7 @@ ChipInputLabel.displayName = "ChipInputLabel";
  * @param {function} onDropdownClick - Called when dropdown chevron clicked
  * @param {function} onChipRemove - Called when a chip is removed (receives chip id)
  * @param {function} onKeyDown - Called on input keydown (for Enter handling)
- *
- * @example
- * <ChipInput
- *   label="Tags"
- *   required
- *   placeholder="Search for tags"
- *   chips={[
- *     { id: '1', label: 'React', color: CHIP_COLORS.blue },
- *     { id: '2', label: 'TypeScript', color: CHIP_COLORS.skyblue },
- *   ]}
- *   onChange={setChips}
- * />
+ * @param {object} style - Additional inline styles
  */
 export const ChipInput = forwardRef(
   (
@@ -141,7 +279,7 @@ export const ChipInput = forwardRef(
       onInputChange,
       inputValue,
       isDisabled = false,
-      disabled, // Support legacy prop
+      disabled,
       error = false,
       helperText,
       showClear = true,
@@ -151,13 +289,15 @@ export const ChipInput = forwardRef(
       onDropdownClick,
       onChipRemove,
       onKeyDown,
-      className,
+      style,
       ...props
     },
     ref
   ) => {
     const inputRef = useRef(null);
     const [internalInputValue, setInternalInputValue] = useState("");
+    const [isHovered, setIsHovered] = useState(false);
+    const [isFocused, setIsFocused] = useState(false);
 
     const isInputDisabled = isDisabled || disabled;
     const controlledInput = inputValue !== undefined;
@@ -209,38 +349,53 @@ export const ChipInput = forwardRef(
     };
 
     const handleKeyDown = (e) => {
-      // Remove last chip on backspace if input is empty
       if (e.key === "Backspace" && currentInputValue === "" && chips.length > 0) {
         const lastChip = chips[chips.length - 1];
         handleChipRemove(lastChip.id);
       }
-
       onKeyDown?.(e);
     };
 
-    const containerClasses = cx(
-      styles.container,
-      styles.containerHover,
-      styles.containerFocus,
-      isInputDisabled && styles.containerDisabled,
-      error && styles.containerError,
-      !hasChips && styles.containerEmpty
-    );
+    // Compose container styles
+    const containerStyle = {
+      ...styles.container,
+      ...(isHovered && !isInputDisabled && !isFocused && styles.containerHover),
+      ...(isFocused && !isInputDisabled && !error && styles.containerFocus),
+      ...(isInputDisabled && styles.containerDisabled),
+      ...(error && styles.containerError),
+      ...(!hasChips && styles.containerEmpty),
+    };
 
-    const chevronClasses = cx(styles.chevron, isOpen && styles.chevronOpen);
+    // Input styles
+    const inputStyle = {
+      ...styles.input,
+      ...(isInputDisabled && styles.inputDisabled),
+    };
+
+    // Helper text styles
+    const helperTextStyle = {
+      ...styles.helperText,
+      ...(error && styles.helperTextError),
+    };
+
+    const wrapperStyle = {
+      ...styles.wrapper,
+      ...style,
+    };
 
     return (
-      <div className={cx(styles.wrapper, className)} ref={ref} {...props}>
+      <div style={wrapperStyle} ref={ref} {...props}>
         {label && <ChipInputLabel required={required}>{label}</ChipInputLabel>}
 
         <div
-          className={containerClasses}
+          style={containerStyle}
           onClick={handleContainerClick}
-          data-error={error || undefined}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
         >
-          <div className={styles.content}>
+          <div style={styles.content}>
             {hasChips && (
-              <div className={styles.chips}>
+              <div style={styles.chips}>
                 {chips.map((chip) => (
                   <Chip
                     key={chip.id}
@@ -259,54 +414,51 @@ export const ChipInput = forwardRef(
               <input
                 ref={inputRef}
                 type="text"
-                className={styles.input}
+                style={inputStyle}
                 placeholder={!hasChips ? placeholder : ""}
                 value={currentInputValue}
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
                 disabled={isInputDisabled}
                 aria-invalid={error || undefined}
               />
             )}
           </div>
 
-          <div className={styles.actions}>
+          <div style={styles.actions}>
             {showClear && hasChips && !isInputDisabled && (
-              <button
-                type="button"
-                className={styles.action}
+              <ActionButton
                 onClick={handleClear}
                 disabled={isInputDisabled}
-                aria-label="Clear all"
+                ariaLabel="Clear all"
               >
-                <Icon name="XCircle" variant="solid" size="sm" />
-              </button>
+                <XCircleIcon style={{ width: 16, height: 16 }} />
+              </ActionButton>
             )}
 
             {showDropdown && (
-              <button
-                type="button"
-                className={cx(styles.action, chevronClasses)}
+              <ActionButton
                 onClick={handleDropdownClick}
                 disabled={isInputDisabled}
-                aria-label={isOpen ? "Close dropdown" : "Open dropdown"}
+                ariaLabel={isOpen ? "Close dropdown" : "Open dropdown"}
+                isOpen={isOpen}
               >
-                <Icon name="ChevronDown" size="sm" />
-              </button>
+                <ChevronDownIcon style={{ width: 16, height: 16 }} />
+              </ActionButton>
             )}
           </div>
         </div>
 
         {helperText && (
-          <div className={styles.helper}>
+          <div style={styles.helper}>
             {error && (
-              <span className={styles.helperIcon}>
+              <span style={styles.helperIcon}>
                 <Icon name="ExclamationCircle" variant="solid" size="sm" />
               </span>
             )}
-            <span className={cx(styles.helperText, error && styles.helperTextError)}>
-              {helperText}
-            </span>
+            <span style={helperTextStyle}>{helperText}</span>
           </div>
         )}
       </div>
@@ -324,20 +476,6 @@ ChipInput.displayName = "ChipInput";
  * ChipInputWithSuggestions
  *
  * Extended ChipInput with built-in dropdown suggestions functionality.
- * Handles filtering, selection, and chip creation from suggestions.
- *
- * @param {string} label - Label text above the input
- * @param {boolean} required - Shows required asterisk
- * @param {string} placeholder - Placeholder text when empty
- * @param {array} chips - Array of chip objects: { id, label, color? }
- * @param {function} onChange - Called when chips array changes
- * @param {array} suggestions - Array of suggestion objects: { id, label, color? }
- * @param {boolean} isDisabled - Disables the input
- * @param {boolean} error - Shows error state
- * @param {string} helperText - Helper text below the input
- * @param {boolean} allowCreate - Allow creating new chips from input
- * @param {string} createLabel - Label for create action
- * @param {string} className - Additional CSS classes
  */
 export const ChipInputWithSuggestions = ({
   label,
@@ -347,12 +485,12 @@ export const ChipInputWithSuggestions = ({
   onChange,
   suggestions = [],
   isDisabled = false,
-  disabled, // Support legacy prop
+  disabled,
   error = false,
   helperText,
   allowCreate = false,
   createLabel = "Create",
-  className,
+  style,
   ...props
 }) => {
   const [inputValue, setInputValue] = useState("");
@@ -360,7 +498,6 @@ export const ChipInputWithSuggestions = ({
 
   const isInputDisabled = isDisabled || disabled;
 
-  // Filter suggestions based on input and already selected chips
   const filteredSuggestions = suggestions.filter((suggestion) => {
     const isAlreadySelected = chips.some((chip) => chip.id === suggestion.id);
     const matchesSearch = suggestion.label.toLowerCase().includes(inputValue.toLowerCase());
@@ -399,7 +536,6 @@ export const ChipInputWithSuggestions = ({
     if (e.key === "Enter" && inputValue.trim()) {
       e.preventDefault();
 
-      // Check if there's a matching suggestion
       const matchingSuggestion = filteredSuggestions.find(
         (s) => s.label.toLowerCase() === inputValue.toLowerCase()
       );
@@ -421,7 +557,7 @@ export const ChipInputWithSuggestions = ({
   };
 
   return (
-    <div className={className}>
+    <div style={style}>
       <ChipInput
         label={label}
         required={required}
@@ -438,8 +574,6 @@ export const ChipInputWithSuggestions = ({
         onKeyDown={handleKeyDown}
         {...props}
       />
-
-      {/* Dropdown would go here - can be implemented with DropdownList molecule */}
     </div>
   );
 };

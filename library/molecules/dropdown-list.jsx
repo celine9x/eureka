@@ -2,101 +2,244 @@
  * DropdownList Component (Molecule)
  *
  * A searchable, sectioned list with optional "Add" action.
- * Uses Tailwind CSS with design tokens.
+ * Uses inline styles with CSS variables from tokens.css for consistent styling.
  */
 
-import React, { useState, useCallback } from "react";
-import { cx } from "../utils/cx.js";
+import { useState, useCallback } from "react";
 import { Button } from "../atoms/button.jsx";
 import { Checkbox } from "../atoms/checkbox.jsx";
 import { Icon } from "../atoms/icon.jsx";
 
 // ─────────────────────────────────────────────
-// STYLES
+// STYLES (Token-mapped inline styles)
 // ─────────────────────────────────────────────
 
 const styles = {
-  section: "flex flex-col self-stretch p-2 gap-1",
+  section: {
+    display: "flex",
+    flexDirection: "column",
+    alignSelf: "stretch",
+    padding: 8,
+    gap: 4,
+  },
 
-  sectionTitle: [
-    "p-1 font-primary text-highlight-md font-semibold",
-    "uppercase tracking-[0.04em] text-content-tertiary",
-  ].join(" "),
+  sectionHidden: {
+    display: "none",
+  },
 
-  item: [
-    "inline-flex self-stretch w-full box-border p-2",
-    "justify-between items-center gap-2 rounded-sm",
-    "cursor-pointer select-none transition-colors duration-fast",
-    "hover:bg-background-neutral-lighter hover:rounded-md",
-    "focus-visible:outline-2 focus-visible:outline-content-brand focus-visible:-outline-offset-2 focus-visible:rounded-md",
-  ].join(" "),
+  sectionTitle: {
+    padding: 4,
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-highlight-md)",
+    fontWeight: 600,
+    textTransform: "uppercase",
+    letterSpacing: "0.04em",
+    color: "var(--color-content-tertiary)",
+  },
 
-  itemDisabled: "cursor-not-allowed opacity-50",
-  itemHidden: "hidden",
+  item: {
+    display: "inline-flex",
+    alignSelf: "stretch",
+    width: "100%",
+    boxSizing: "border-box",
+    padding: 8,
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 8,
+    borderRadius: "var(--radius-sm)",
+    cursor: "pointer",
+    userSelect: "none",
+    transition: "all var(--transition-fast)",
+    background: "transparent",
+    border: "none",
+  },
 
-  itemLeft: "flex items-center gap-2 flex-1 min-w-0",
-  itemCheckbox: "flex-shrink-0 pointer-events-none",
+  itemHover: {
+    background: "var(--color-general-neutral-lighter)",
+    borderRadius: "var(--radius-md)",
+  },
 
-  itemIcon: [
-    "flex-shrink-0 size-icon-sm flex items-center justify-center",
-    "text-content-secondary overflow-hidden [&_svg]:w-full [&_svg]:h-full",
-  ].join(" "),
+  itemDisabled: {
+    cursor: "not-allowed",
+    opacity: 0.5,
+  },
 
-  itemColor: "flex-shrink-0 w-1 h-icon-sm rounded-sm bg-content-secondary",
+  itemHidden: {
+    display: "none",
+  },
 
-  itemLabelBlock: "flex flex-col justify-center items-start min-w-0 gap-0",
+  itemLeft: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    flex: 1,
+    minWidth: 0,
+  },
 
-  itemLabel: [
-    "font-primary text-body-lg font-normal text-content-primary",
-    "whitespace-nowrap overflow-hidden text-ellipsis",
-  ].join(" "),
+  itemCheckbox: {
+    flexShrink: 0,
+    pointerEvents: "none",
+  },
 
-  itemSubinfo: [
-    "font-primary text-body-md font-normal text-content-secondary",
-    "whitespace-nowrap overflow-hidden text-ellipsis",
-  ].join(" "),
+  itemIcon: {
+    flexShrink: 0,
+    width: 16,
+    height: 16,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "var(--color-content-secondary)",
+    overflow: "hidden",
+  },
 
-  itemLabelDisabled: "text-content-tertiary",
-  itemSubinfoDisabled: "text-content-tertiary",
+  itemColor: {
+    flexShrink: 0,
+    width: 4,
+    height: 16,
+    borderRadius: "var(--radius-sm)",
+    background: "var(--color-content-secondary)",
+  },
 
-  itemRight: "flex items-center justify-end gap-2 flex-shrink-0",
+  itemLabelBlock: {
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "flex-start",
+    minWidth: 0,
+    gap: 0,
+  },
 
-  itemBadge: [
-    "flex items-center p-1 bg-background-neutral-lighter rounded-sm",
-    "outline outline-1 -outline-offset-1 outline-outline-neutral",
-  ].join(" "),
+  itemLabel: {
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-lg)",
+    fontWeight: 400,
+    color: "var(--color-content-primary)",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+  },
 
-  itemAction: "flex items-center",
+  itemLabelDisabled: {
+    color: "var(--color-content-tertiary)",
+  },
 
-  list: [
-    "flex flex-col w-full bg-background-white rounded-md",
-    "outline outline-1 -outline-offset-1 outline-outline-neutral",
-    "shadow-light-down box-border",
-  ].join(" "),
+  itemSubinfo: {
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-md)",
+    fontWeight: 400,
+    color: "var(--color-content-secondary)",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+  },
 
-  listTop: "flex flex-col self-stretch",
+  itemSubinfoDisabled: {
+    color: "var(--color-content-tertiary)",
+  },
 
-  listSearch: "self-stretch p-2 border-b border-outline-neutral",
+  itemRight: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    gap: 8,
+    flexShrink: 0,
+  },
 
-  listSearchInput: [
-    "w-full py-2 px-3 font-primary text-body-lg font-normal text-content-primary",
-    "bg-interaction-fill border border-interaction-outline rounded-md",
-    "outline-none transition-all duration-fast box-border",
-    "placeholder:text-content-tertiary",
-    "hover:border-interaction-outline-hover",
-    "focus:border-interaction-outline-active focus:shadow-focus",
-  ].join(" "),
+  itemBadge: {
+    display: "flex",
+    alignItems: "center",
+    padding: 4,
+    background: "var(--color-general-neutral-lighter)",
+    borderRadius: "var(--radius-sm)",
+    outline: "1px solid var(--color-action-outline-secondary-enabled)",
+    outlineOffset: -1,
+  },
 
-  listContent: [
-    "flex flex-col self-stretch max-h-[var(--dropdown-list-max-height,280px)]",
-    "overflow-y-auto scrollbar-thin scrollbar-thumb-[rgba(21,21,76,0.35)] scrollbar-track-transparent",
-  ].join(" "),
+  itemAction: {
+    display: "flex",
+    alignItems: "center",
+  },
 
-  listNoResults: "self-stretch p-4 border-b border-outline-neutral",
-  listNoResultsHidden: "hidden",
-  listNoResultsText: "font-primary text-body-lg font-normal text-content-secondary",
+  list: {
+    display: "flex",
+    flexDirection: "column",
+    width: "100%",
+    background: "var(--color-general-white)",
+    borderRadius: "var(--radius-md)",
+    outline: "1px solid var(--color-action-outline-secondary-enabled)",
+    outlineOffset: -1,
+    boxShadow: "var(--shadow-light-down)",
+    boxSizing: "border-box",
+  },
 
-  listAdd: "self-stretch flex items-center py-2 px-4 border-t border-outline-neutral",
+  listTop: {
+    display: "flex",
+    flexDirection: "column",
+    alignSelf: "stretch",
+  },
+
+  listSearch: {
+    alignSelf: "stretch",
+    padding: 8,
+    borderBottom: "1px solid var(--color-action-outline-secondary-enabled)",
+  },
+
+  listSearchInput: {
+    width: "100%",
+    padding: "8px 12px",
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-lg)",
+    fontWeight: 400,
+    color: "var(--color-content-primary)",
+    background: "var(--color-interaction-fill-enabled)",
+    border: "1px solid var(--color-interaction-outline-enabled)",
+    borderRadius: "var(--radius-md)",
+    outline: "none",
+    transition: "all var(--transition-fast)",
+    boxSizing: "border-box",
+  },
+
+  listSearchInputHover: {
+    borderColor: "var(--color-interaction-outline-hover)",
+  },
+
+  listSearchInputFocus: {
+    borderColor: "var(--color-interaction-outline-active)",
+    boxShadow: "var(--shadow-focus)",
+  },
+
+  listContent: {
+    display: "flex",
+    flexDirection: "column",
+    alignSelf: "stretch",
+    maxHeight: "var(--dropdown-list-max-height, 280px)",
+    overflowY: "auto",
+  },
+
+  listNoResults: {
+    alignSelf: "stretch",
+    padding: 16,
+    borderBottom: "1px solid var(--color-action-outline-secondary-enabled)",
+  },
+
+  listNoResultsHidden: {
+    display: "none",
+  },
+
+  listNoResultsText: {
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-lg)",
+    fontWeight: 400,
+    color: "var(--color-content-secondary)",
+  },
+
+  listAdd: {
+    alignSelf: "stretch",
+    display: "flex",
+    alignItems: "center",
+    padding: "8px 16px",
+    borderTop: "1px solid var(--color-action-outline-secondary-enabled)",
+  },
 };
 
 // ─────────────────────────────────────────────
@@ -111,11 +254,18 @@ const styles = {
  * @param {string} title - Optional uppercase section title
  * @param {boolean} hidden - Hides the section
  * @param {ReactNode} children - Section items
+ * @param {object} style - Additional inline styles
  */
-export const DropdownSection = ({ title, hidden = false, className = "", children, ...props }) => {
+export const DropdownSection = ({ title, hidden = false, style, children, ...props }) => {
+  const sectionStyle = {
+    ...styles.section,
+    ...(hidden && styles.sectionHidden),
+    ...style,
+  };
+
   return (
-    <div className={cx(styles.section, hidden && "hidden", className)} {...props}>
-      {title && <div className={styles.sectionTitle}>{title}</div>}
+    <div style={sectionStyle} {...props}>
+      {title && <div style={styles.sectionTitle}>{title}</div>}
       {children}
     </div>
   );
@@ -142,6 +292,7 @@ DropdownSection.displayName = "DropdownSection";
  * @param {ReactNode} action - Action element on the right
  * @param {function} onChange - Called with { value, label, checked }
  * @param {ReactNode} children - Label text
+ * @param {object} style - Additional inline styles
  *
  * @example
  * <DropdownListItem value="ad" checked>Alzheimer's disease</DropdownListItem>
@@ -161,10 +312,11 @@ export const DropdownListItem = ({
   action,
   hidden = false,
   onChange,
-  className = "",
+  style,
   children,
   ...props
 }) => {
+  const [isHovered, setIsHovered] = useState(false);
   const isItemDisabled = isDisabled || disabled;
 
   const handleToggle = () => {
@@ -179,49 +331,60 @@ export const DropdownListItem = ({
     }
   };
 
-  const classes = cx(
-    styles.item,
-    isItemDisabled && styles.itemDisabled,
-    hidden && styles.itemHidden,
-    className
-  );
+  const itemStyle = {
+    ...styles.item,
+    ...(isHovered && !isItemDisabled && styles.itemHover),
+    ...(isItemDisabled && styles.itemDisabled),
+    ...(hidden && styles.itemHidden),
+    ...style,
+  };
+
+  const labelStyle = {
+    ...styles.itemLabel,
+    ...(isItemDisabled && styles.itemLabelDisabled),
+  };
+
+  const subinfoStyle = {
+    ...styles.itemSubinfo,
+    ...(isItemDisabled && styles.itemSubinfoDisabled),
+  };
+
+  const colorStyle = color
+    ? { ...styles.itemColor, background: color }
+    : styles.itemColor;
 
   return (
     <div
-      className={classes}
+      style={itemStyle}
       tabIndex={isItemDisabled ? -1 : 0}
       role="checkbox"
       aria-checked={checked}
       aria-disabled={isItemDisabled}
       onClick={handleToggle}
       onKeyDown={handleKeyDown}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       {...props}
     >
-      <div className={styles.itemLeft}>
-        <div className={styles.itemCheckbox}>
+      <div style={styles.itemLeft}>
+        <div style={styles.itemCheckbox}>
           <Checkbox isSelected={checked} isDisabled={isItemDisabled} size="sm" onChange={() => {}} />
         </div>
 
-        {icon && <div className={styles.itemIcon}>{icon}</div>}
+        {icon && <div style={styles.itemIcon}>{icon}</div>}
 
-        {color && <div className={styles.itemColor} style={{ background: color }} />}
+        {color && <div style={colorStyle} />}
 
-        <div className={styles.itemLabelBlock}>
-          <span className={cx(styles.itemLabel, isItemDisabled && styles.itemLabelDisabled)}>
-            {children}
-          </span>
-          {subinfo && (
-            <span className={cx(styles.itemSubinfo, isItemDisabled && styles.itemSubinfoDisabled)}>
-              {subinfo}
-            </span>
-          )}
+        <div style={styles.itemLabelBlock}>
+          <span style={labelStyle}>{children}</span>
+          {subinfo && <span style={subinfoStyle}>{subinfo}</span>}
         </div>
       </div>
 
       {(badge || action) && (
-        <div className={styles.itemRight}>
-          {badge && <div className={styles.itemBadge}>{badge}</div>}
-          {action && <div className={styles.itemAction}>{action}</div>}
+        <div style={styles.itemRight}>
+          {badge && <div style={styles.itemBadge}>{badge}</div>}
+          {action && <div style={styles.itemAction}>{action}</div>}
         </div>
       )}
     </div>
@@ -246,6 +409,7 @@ DropdownListItem.displayName = "DropdownListItem";
  * @param {function} onAdd - Called when add button is clicked
  * @param {function} onSearch - Called with search query when searching
  * @param {ReactNode} children - DropdownSection and item components
+ * @param {object} style - Additional inline styles
  *
  * @example
  * <DropdownList>
@@ -262,12 +426,14 @@ export const DropdownList = ({
   addLabel = "Add value",
   onAdd,
   onSearch,
-  className = "",
+  style,
   children,
   ...props
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [noResults, setNoResults] = useState(false);
+  const [isSearchHovered, setIsSearchHovered] = useState(false);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
 
   const handleSearchChange = useCallback(
     (e) => {
@@ -282,32 +448,52 @@ export const DropdownList = ({
     onAdd?.();
   };
 
+  const listStyle = {
+    ...styles.list,
+    ...style,
+  };
+
+  const searchInputStyle = {
+    ...styles.listSearchInput,
+    ...(isSearchHovered && !isSearchFocused && styles.listSearchInputHover),
+    ...(isSearchFocused && styles.listSearchInputFocus),
+  };
+
+  const noResultsStyle = {
+    ...styles.listNoResults,
+    ...(!noResults && styles.listNoResultsHidden),
+  };
+
   return (
-    <div className={cx(styles.list, className)} {...props}>
-      <div className={styles.listTop}>
+    <div style={listStyle} {...props}>
+      <div style={styles.listTop}>
         {!noSearch && (
-          <div className={styles.listSearch}>
+          <div style={styles.listSearch}>
             <input
               type="text"
-              className={styles.listSearchInput}
+              style={searchInputStyle}
               placeholder={searchPlaceholder}
               value={searchQuery}
               onChange={handleSearchChange}
+              onMouseEnter={() => setIsSearchHovered(true)}
+              onMouseLeave={() => setIsSearchHovered(false)}
+              onFocus={() => setIsSearchFocused(true)}
+              onBlur={() => setIsSearchFocused(false)}
             />
           </div>
         )}
 
-        <div className={styles.listContent}>{children}</div>
+        <div style={styles.listContent}>{children}</div>
 
-        <div className={cx(styles.listNoResults, !noResults && styles.listNoResultsHidden)}>
-          <span className={styles.listNoResultsText}>
+        <div style={noResultsStyle}>
+          <span style={styles.listNoResultsText}>
             '{searchQuery.trim()}' does not exist
           </span>
         </div>
       </div>
 
       {!noAdd && (
-        <div className={styles.listAdd}>
+        <div style={styles.listAdd}>
           <Button
             variant="tertiary"
             size="sm"

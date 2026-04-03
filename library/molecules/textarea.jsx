@@ -2,83 +2,176 @@
  * Textarea Component (Molecule)
  *
  * A complete textarea with label, textarea field, and helper/error text.
- * Uses Tailwind CSS with design tokens and react-aria-components for accessibility.
+ * Uses inline styles with CSS variables from tokens.css for consistent styling.
+ *
+ * @example
+ * <Textarea label="Description" isRequired />
+ * <Textarea label="Notes" helper="Additional information" />
+ * <Textarea label="Comments" error="This field is required" />
  */
 
-import React, { useId, forwardRef } from "react";
-import {
-  TextField,
-  Label as AriaLabel,
-  TextArea as AriaTextArea,
-  Text,
-} from "react-aria-components";
-import { cx } from "../utils/cx.js";
-import { INPUT_STATES } from "../utils/props.js";
+import { useState, useId, forwardRef } from "react";
 import { Icon } from "../atoms/icon.jsx";
 
 // ─────────────────────────────────────────────
 // CONSTANTS
 // ─────────────────────────────────────────────
 
-/** Re-export input states */
-export { INPUT_STATES };
-
-/** Helper text variants */
-export const TEXTAREA_HELPER_VARIANTS = {
+export const TEXTAREA_STATES = {
   default: "default",
   error: "error",
+  success: "success",
+};
+
+export const HELPER_VARIANTS = {
+  default: "default",
+  error: "error",
+  success: "success",
 };
 
 // ─────────────────────────────────────────────
-// STYLES
+// STYLES (Token-mapped inline styles)
 // ─────────────────────────────────────────────
 
 const styles = {
-  container: "flex flex-col gap-2 w-full",
-
-  inputGroup: "flex flex-col gap-1",
-
-  label: [
-    "flex items-center gap-0",
-    "font-primary text-body-md font-normal text-content-primary cursor-pointer",
-  ].join(" "),
-
-  required: "text-content-negative",
-
-  fieldWrapper: "relative w-full",
-
-  textarea: [
-    "w-full min-h-16 py-1.5 px-1.5",
-    "font-primary text-body-lg font-normal text-content-primary",
-    "bg-interaction-fill border border-interaction-outline rounded-md",
-    "outline-none transition-all duration-fast box-border resize-y",
-    "shadow-light-down",
-    "placeholder:text-content-tertiary",
-    "hover:not-disabled:not-[data-error]:border-interaction-outline-hover hover:not-disabled:not-[data-error]:shadow-medium-down",
-    "focus:not-[data-error]:border-interaction-outline-active focus:not-[data-error]:shadow-focus",
-    "disabled:bg-interaction-fill-disabled disabled:border-interaction-outline-disabled",
-    "disabled:text-content-tertiary disabled:cursor-not-allowed disabled:resize-none",
-    "read-only:bg-background-neutral-lighter",
-  ].join(" "),
-
-  textareaError: [
-    "border-interaction-outline-negative",
-    "focus:border-interaction-outline-negative focus:shadow-[0_0_0.25rem_0_rgba(255,115,115,0.4)]",
-  ].join(" "),
-
-  resizeHandle: [
-    "absolute right-1.5 bottom-1.5 w-1.5 h-1.5",
-    "pointer-events-none text-content-tertiary",
-  ].join(" "),
-
-  helper: "flex items-start gap-1 font-primary text-body-md font-normal",
-
-  helperVariants: {
-    default: "text-content-secondary [&_.helper-icon]:text-content-informative",
-    error: "text-content-secondary [&_.helper-icon]:text-content-negative",
+  field: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 4,
+    width: "100%",
   },
 
-  helperIcon: "helper-icon flex-shrink-0 flex items-center justify-center",
+  label: {
+    display: "flex",
+    alignItems: "center",
+    gap: 4,
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-md)",
+    fontWeight: 400,
+    lineHeight: "var(--line-height-body-md)",
+    color: "var(--color-content-primary)",
+    cursor: "pointer",
+  },
+
+  required: {
+    color: "var(--color-content-negative)",
+  },
+
+  fieldWrapper: {
+    position: "relative",
+    width: "100%",
+  },
+
+  textarea: {
+    width: "100%",
+    minHeight: 64,
+    padding: "6px 6px",
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-lg)",
+    fontWeight: 400,
+    lineHeight: "var(--line-height-body-lg)",
+    color: "var(--color-content-primary)",
+    background: "var(--color-interaction-fill-enabled)",
+    border: "none",
+    borderRadius: "var(--radius-md)",
+    outline: "1px solid var(--color-interaction-outline-enabled)",
+    outlineOffset: "-1px",
+    boxSizing: "border-box",
+    boxShadow: "var(--shadow-light-down)",
+    transition: "all var(--transition-fast)",
+    resize: "vertical",
+  },
+
+  textareaHover: {
+    outlineColor: "var(--color-interaction-outline-hover)",
+    boxShadow: "var(--shadow-medium-down)",
+  },
+
+  textareaFocus: {
+    outlineColor: "var(--color-interaction-outline-active)",
+    boxShadow: "var(--shadow-focus)",
+  },
+
+  textareaError: {
+    outlineColor: "var(--color-interaction-outline-negative)",
+  },
+
+  textareaErrorFocus: {
+    outlineColor: "var(--color-interaction-outline-negative)",
+    boxShadow: "0 0 0.25rem 0 rgba(255, 115, 115, 0.4)",
+  },
+
+  textareaSuccess: {
+    outlineColor: "var(--color-content-positive)",
+  },
+
+  textareaSuccessFocus: {
+    outlineColor: "var(--color-content-positive)",
+    boxShadow: "0 0 0.25rem 0 rgba(115, 229, 172, 0.4)",
+  },
+
+  textareaDisabled: {
+    background: "var(--color-interaction-fill-disabled)",
+    outlineColor: "var(--color-interaction-outline-disabled)",
+    color: "var(--color-content-tertiary)",
+    cursor: "not-allowed",
+    resize: "none",
+  },
+
+  textareaReadOnly: {
+    background: "var(--color-general-neutral-lighter)",
+  },
+
+  resizeHandle: {
+    position: "absolute",
+    right: 6,
+    bottom: 6,
+    width: 6,
+    height: 6,
+    pointerEvents: "none",
+    color: "var(--color-content-tertiary)",
+  },
+
+  helper: {
+    display: "flex",
+    alignItems: "flex-start",
+    gap: 4,
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-md)",
+    fontWeight: 400,
+    lineHeight: "var(--line-height-body-md)",
+  },
+
+  helperVariants: {
+    default: {
+      color: "var(--color-content-secondary)",
+    },
+    error: {
+      color: "var(--color-content-secondary)",
+    },
+    success: {
+      color: "var(--color-content-secondary)",
+    },
+  },
+
+  helperIconVariants: {
+    default: {
+      color: "var(--color-content-informative)",
+    },
+    error: {
+      color: "var(--color-content-negative)",
+    },
+    success: {
+      color: "var(--color-content-positive)",
+    },
+  },
+
+  helperIcon: {
+    flexShrink: 0,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
 };
 
 // ─────────────────────────────────────────────
@@ -91,13 +184,18 @@ const styles = {
  * @param {string} htmlFor - Textarea id to link
  * @param {boolean} required - Shows * indicator
  * @param {ReactNode} children - Label text
- * @param {string} className - Additional CSS classes
+ * @param {object} style - Additional inline styles
  */
-export const TextareaLabel = ({ htmlFor, required = false, className, children, ...props }) => {
+export const TextareaLabel = ({ htmlFor, required = false, style, children, ...props }) => {
+  const labelStyle = {
+    ...styles.label,
+    ...style,
+  };
+
   return (
-    <label htmlFor={htmlFor} className={cx(styles.label, className)} {...props}>
+    <label htmlFor={htmlFor} style={labelStyle} {...props}>
       {children}
-      {required && <span className={styles.required}>*</span>}
+      {required && <span style={styles.required}>*</span>}
     </label>
   );
 };
@@ -111,25 +209,35 @@ TextareaLabel.displayName = "TextareaLabel";
 /**
  * TextareaHelperText
  *
- * @param {string} variant - default | error (default: default)
+ * @param {string} variant - default | error | success (default: default)
  * @param {boolean} showIcon - Show helper icon (default: true)
  * @param {ReactNode} children - Helper text
- * @param {string} className - Additional CSS classes
+ * @param {object} style - Additional inline styles
  */
 export const TextareaHelperText = ({
-  variant = TEXTAREA_HELPER_VARIANTS.default,
+  variant = HELPER_VARIANTS.default,
   showIcon = true,
-  className,
+  style,
   children,
   ...props
 }) => {
-  const classes = cx(styles.helper, styles.helperVariants[variant], className);
+  const helperStyle = {
+    ...styles.helper,
+    ...styles.helperVariants[variant],
+    ...style,
+  };
+
+  const iconStyle = {
+    ...styles.helperIcon,
+    ...styles.helperIconVariants[variant],
+  };
+
   const iconName = variant === "error" ? "ExclamationTriangle" : "InformationCircle";
 
   return (
-    <span className={classes} {...props}>
+    <span style={helperStyle} {...props}>
       {showIcon && (
-        <span className={styles.helperIcon}>
+        <span style={iconStyle}>
           <Icon name={iconName} variant="solid" size="sm" />
         </span>
       )}
@@ -139,7 +247,7 @@ export const TextareaHelperText = ({
 };
 
 TextareaHelperText.displayName = "TextareaHelperText";
-TextareaHelperText.variants = TEXTAREA_HELPER_VARIANTS;
+TextareaHelperText.variants = HELPER_VARIANTS;
 
 // ─────────────────────────────────────────────
 // TEXTAREA FIELD COMPONENT
@@ -148,36 +256,68 @@ TextareaHelperText.variants = TEXTAREA_HELPER_VARIANTS;
 /**
  * TextareaField
  *
- * @param {boolean} error - Triggers error styling
+ * @param {string} state - default | error | success (default: default)
  * @param {string} value - Textarea value
  * @param {number} rows - Number of visible text lines (default: 3)
  * @param {boolean} resizable - Allow resize (default: true)
+ * @param {boolean} isDisabled - Disables the textarea
+ * @param {boolean} isReadOnly - Makes textarea read-only
  * @param {function} onChange - Change handler
- * @param {string} className - Additional CSS classes
+ * @param {object} style - Additional inline styles
  */
 export const TextareaField = forwardRef(
-  ({ error = false, rows = 3, resizable = true, disabled = false, className, style, ...props }, ref) => {
-    const classes = cx(styles.textarea, error && styles.textareaError, className);
+  (
+    {
+      state = TEXTAREA_STATES.default,
+      rows = 3,
+      resizable = true,
+      isDisabled = false,
+      disabled,
+      isReadOnly = false,
+      readOnly,
+      style,
+      ...props
+    },
+    ref
+  ) => {
+    const [isHovered, setIsHovered] = useState(false);
+    const [isFocused, setIsFocused] = useState(false);
 
-    const combinedStyle = {
-      resize: resizable && !disabled ? "vertical" : "none",
+    const isTextareaDisabled = isDisabled || disabled;
+    const isTextareaReadOnly = isReadOnly || readOnly;
+
+    // Compose textarea styles
+    const textareaStyle = {
+      ...styles.textarea,
+      ...(isHovered && !isTextareaDisabled && !isFocused && styles.textareaHover),
+      ...(isFocused && !isTextareaDisabled && state === TEXTAREA_STATES.default && styles.textareaFocus),
+      ...(state === TEXTAREA_STATES.error && !isFocused && styles.textareaError),
+      ...(state === TEXTAREA_STATES.error && isFocused && styles.textareaErrorFocus),
+      ...(state === TEXTAREA_STATES.success && !isFocused && styles.textareaSuccess),
+      ...(state === TEXTAREA_STATES.success && isFocused && styles.textareaSuccessFocus),
+      ...(isTextareaDisabled && styles.textareaDisabled),
+      ...(isTextareaReadOnly && styles.textareaReadOnly),
+      resize: resizable && !isTextareaDisabled ? "vertical" : "none",
       ...style,
     };
 
     return (
-      <div className={styles.fieldWrapper}>
+      <div style={styles.fieldWrapper}>
         <textarea
           ref={ref}
           rows={rows}
-          className={classes}
-          style={combinedStyle}
-          disabled={disabled}
-          data-error={error || undefined}
+          style={textareaStyle}
+          disabled={isTextareaDisabled}
+          readOnly={isTextareaReadOnly}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
           {...props}
         />
-        {resizable && !disabled && (
-          <span className={styles.resizeHandle}>
-            <svg viewBox="0 0 6 6" fill="currentColor" className="w-full h-full rotate-90">
+        {resizable && !isTextareaDisabled && (
+          <span style={styles.resizeHandle}>
+            <svg viewBox="0 0 6 6" fill="currentColor" style={{ width: "100%", height: "100%", transform: "rotate(90deg)" }}>
               <path d="M6 6L0 6L6 0L6 6Z" />
             </svg>
           </span>
@@ -188,6 +328,7 @@ export const TextareaField = forwardRef(
 );
 
 TextareaField.displayName = "TextareaField";
+TextareaField.states = TEXTAREA_STATES;
 
 // ─────────────────────────────────────────────
 // TEXTAREA COMPONENT (MOLECULE)
@@ -203,6 +344,7 @@ TextareaField.displayName = "TextareaField";
  * @param {string} value - Textarea value
  * @param {string} helper - Helper text below textarea
  * @param {string} error - Error message (triggers error state)
+ * @param {string} success - Success message (triggers success state)
  * @param {boolean} isDisabled - Disables the textarea
  * @param {boolean} isRequired - Shows required indicator
  * @param {boolean} isReadOnly - Makes textarea read-only
@@ -213,12 +355,7 @@ TextareaField.displayName = "TextareaField";
  * @param {function} onChange - Change handler
  * @param {function} onFocus - Focus handler
  * @param {function} onBlur - Blur handler
- *
- * @example
- * <Textarea label="Description" isRequired />
- * <Textarea label="Notes" helper="Additional information" />
- * <Textarea label="Comments" error="This field is required" />
- * <Textarea label="Bio" rows={5} maxLength={500} />
+ * @param {object} style - Additional inline styles
  */
 export const Textarea = forwardRef(
   (
@@ -228,12 +365,13 @@ export const Textarea = forwardRef(
       value,
       helper,
       error,
+      success,
       isDisabled = false,
-      disabled, // Support legacy prop
+      disabled,
       isRequired = false,
-      required, // Support legacy prop
+      required,
       isReadOnly = false,
-      readOnly, // Support legacy prop
+      readOnly,
       resizable = true,
       rows = 3,
       name,
@@ -242,7 +380,7 @@ export const Textarea = forwardRef(
       onChange,
       onFocus,
       onBlur,
-      className,
+      style,
       ...props
     },
     ref
@@ -255,69 +393,63 @@ export const Textarea = forwardRef(
     const fieldRequired = isRequired || required;
     const fieldReadOnly = isReadOnly || readOnly;
 
+    // Determine state
     const hasError = !!error;
+    const hasSuccess = !!success && !hasError;
+    const textareaState = hasError
+      ? TEXTAREA_STATES.error
+      : hasSuccess
+      ? TEXTAREA_STATES.success
+      : TEXTAREA_STATES.default;
+
+    // Determine helper text and variant
+    const helperMessage = error || success || helper;
+    const helperVariant = hasError
+      ? HELPER_VARIANTS.error
+      : hasSuccess
+      ? HELPER_VARIANTS.success
+      : HELPER_VARIANTS.default;
+
+    const fieldStyle = {
+      ...styles.field,
+      ...style,
+    };
 
     return (
-      <TextField
-        isDisabled={fieldDisabled}
-        isRequired={fieldRequired}
-        isReadOnly={fieldReadOnly}
-        isInvalid={hasError}
-        className={cx(styles.container, className)}
-        {...props}
-      >
+      <div style={fieldStyle} {...props}>
         {label && (
-          <AriaLabel className={styles.label}>
+          <TextareaLabel htmlFor={textareaId} required={fieldRequired}>
             {label}
-            {fieldRequired && <span className={styles.required}>*</span>}
-          </AriaLabel>
+          </TextareaLabel>
         )}
-        <div className={styles.inputGroup}>
-          <div className={styles.fieldWrapper}>
-            <AriaTextArea
-              ref={ref}
-              id={textareaId}
-              name={name}
-              placeholder={placeholder}
-              value={value}
-              rows={rows}
-              maxLength={maxLength}
-              onChange={onChange}
-              onFocus={onFocus}
-              onBlur={onBlur}
-              className={cx(styles.textarea, hasError && styles.textareaError)}
-              style={{ resize: resizable && !fieldDisabled ? "vertical" : "none" }}
-            />
-            {resizable && !fieldDisabled && (
-              <span className={styles.resizeHandle}>
-                <svg viewBox="0 0 6 6" fill="currentColor" className="w-full h-full rotate-90">
-                  <path d="M6 6L0 6L6 0L6 6Z" />
-                </svg>
-              </span>
-            )}
-          </div>
-          {(error || helper) && (
-            <Text
-              slot={hasError ? "errorMessage" : "description"}
-              className={cx(styles.helper, styles.helperVariants[hasError ? "error" : "default"])}
-            >
-              <span className={styles.helperIcon}>
-                <Icon
-                  name={hasError ? "ExclamationTriangle" : "InformationCircle"}
-                  variant="solid"
-                  size="sm"
-                />
-              </span>
-              <span>{error || helper}</span>
-            </Text>
-          )}
-        </div>
-      </TextField>
+
+        <TextareaField
+          ref={ref}
+          id={textareaId}
+          name={name}
+          placeholder={placeholder}
+          value={value}
+          state={textareaState}
+          rows={rows}
+          maxLength={maxLength}
+          resizable={resizable}
+          isDisabled={fieldDisabled}
+          isReadOnly={fieldReadOnly}
+          onChange={onChange}
+          onFocus={onFocus}
+          onBlur={onBlur}
+        />
+
+        {helperMessage && (
+          <TextareaHelperText variant={helperVariant}>{helperMessage}</TextareaHelperText>
+        )}
+      </div>
     );
   }
 );
 
 Textarea.displayName = "Textarea";
-Textarea.helperVariants = TEXTAREA_HELPER_VARIANTS;
+Textarea.states = TEXTAREA_STATES;
+Textarea.helperVariants = HELPER_VARIANTS;
 
 export default Textarea;

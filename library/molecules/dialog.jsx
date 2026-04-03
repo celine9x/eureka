@@ -2,18 +2,21 @@
  * Dialog Component
  *
  * A modal dialog component for confirmations, alerts, and user interactions.
- * Uses Tailwind CSS with design tokens and react-aria-components for accessibility.
+ * Uses inline styles with CSS variables from tokens.css for consistent styling.
+ *
+ * @example
+ * <Dialog
+ *   isOpen={isOpen}
+ *   onOpenChange={setIsOpen}
+ *   title="Confirm Action"
+ *   primaryLabel="Confirm"
+ *   secondaryLabel="Cancel"
+ * >
+ *   Are you sure you want to proceed?
+ * </Dialog>
  */
 
-import React, { useEffect, useRef } from "react";
-import {
-  DialogTrigger,
-  Modal,
-  ModalOverlay,
-  Dialog as AriaDialog,
-  Heading,
-} from "react-aria-components";
-import { cx } from "../utils/cx.js";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "../atoms/button.jsx";
 import { Icon } from "../atoms/icon.jsx";
 
@@ -21,7 +24,6 @@ import { Icon } from "../atoms/icon.jsx";
 // CONSTANTS
 // ─────────────────────────────────────────────
 
-/** Dialog variants */
 export const DIALOG_VARIANTS = {
   info: "info",
   success: "success",
@@ -29,80 +31,16 @@ export const DIALOG_VARIANTS = {
   error: "error",
 };
 
-/** Dialog sizes */
 export const DIALOG_SIZES = {
   sm: "sm",
   md: "md",
   lg: "lg",
 };
 
-/** Actions alignment */
 export const DIALOG_ACTIONS_ALIGN = {
   spread: "spread",
   center: "center",
   end: "end",
-};
-
-// ─────────────────────────────────────────────
-// STYLES
-// ─────────────────────────────────────────────
-
-const styles = {
-  overlay: [
-    "fixed inset-0 bg-[rgba(21,21,76,0.4)] z-[1000]",
-    "flex items-center justify-center",
-    "entering:animate-[dialog-overlay-fade-in_0.15s_ease-out]",
-    "exiting:animate-[dialog-overlay-fade-out_0.15s_ease-in]",
-  ].join(" "),
-
-  modal: [
-    "w-[500px] max-w-[calc(100vw-32px)] p-6 relative",
-    "bg-background-white shadow-medium-down rounded-lg border border-outline-neutral",
-    "flex flex-col items-center gap-6",
-    "entering:animate-[dialog-scale-in_0.15s_ease-out]",
-    "exiting:animate-[dialog-scale-out_0.15s_ease-in]",
-    "outline-none",
-  ].join(" "),
-
-  sizes: {
-    sm: "w-[400px]",
-    md: "w-[500px]",
-    lg: "w-[600px]",
-  },
-
-  close: [
-    "absolute top-4 right-4 size-6 flex items-center justify-center",
-    "bg-transparent border-none rounded-sm cursor-pointer",
-    "text-content-secondary transition-all duration-fast",
-    "hover:bg-background-neutral-light hover:text-content-primary",
-    "focus-visible:outline-2 focus-visible:outline-[var(--color-outline-focus)] focus-visible:outline-offset-2",
-  ].join(" "),
-
-  content: "flex flex-col items-center gap-2 self-stretch",
-
-  icon: "size-10 rounded-full flex items-center justify-center",
-
-  iconVariants: {
-    info: "bg-primary-100 text-primary-600",
-    success: "bg-success-100 text-success-600",
-    warning: "bg-warning-100 text-warning-600",
-    error: "bg-error-100 text-error-600",
-  },
-
-  title: "font-primary text-heading-h4 font-semibold text-content-primary text-center m-0",
-
-  message: "font-primary text-body-md font-normal text-content-primary text-center leading-relaxed m-0",
-
-  actions: "flex items-center self-stretch gap-4",
-
-  actionsAlign: {
-    spread: "justify-between",
-    center: "justify-center",
-    end: "justify-end",
-  },
-
-  actionsLeft: "flex items-center gap-4",
-  actionsRight: "flex items-center gap-3",
 };
 
 /** Icon mapping for variants */
@@ -111,6 +49,146 @@ const VARIANT_ICONS = {
   success: "CheckCircle",
   warning: "ExclamationTriangle",
   error: "ExclamationCircle",
+};
+
+// ─────────────────────────────────────────────
+// STYLES (Token-mapped inline styles)
+// ─────────────────────────────────────────────
+
+const styles = {
+  overlay: {
+    position: "fixed",
+    inset: 0,
+    background: "rgba(21, 21, 76, 0.4)",
+    zIndex: 1000,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  modal: {
+    width: 500,
+    maxWidth: "calc(100vw - 32px)",
+    padding: 24,
+    position: "relative",
+    background: "var(--color-general-white)",
+    boxShadow: "var(--shadow-medium-down)",
+    borderRadius: "var(--radius-lg)",
+    border: "1px solid var(--color-action-outline-secondary-enabled)",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 24,
+    outline: "none",
+  },
+
+  sizes: {
+    sm: { width: 400 },
+    md: { width: 500 },
+    lg: { width: 600 },
+  },
+
+  close: {
+    position: "absolute",
+    top: 16,
+    right: 16,
+    width: 24,
+    height: 24,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    background: "transparent",
+    border: "none",
+    borderRadius: "var(--radius-sm)",
+    cursor: "pointer",
+    color: "var(--color-content-secondary)",
+    transition: "all var(--transition-fast)",
+  },
+
+  closeHover: {
+    background: "var(--color-general-neutral-light)",
+    color: "var(--color-content-primary)",
+  },
+
+  content: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 8,
+    alignSelf: "stretch",
+  },
+
+  icon: {
+    width: 40,
+    height: 40,
+    borderRadius: "var(--radius-full)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  iconVariants: {
+    info: {
+      background: "var(--color-general-informative)",
+      color: "var(--color-action-fill-primary-enabled)",
+    },
+    success: {
+      background: "rgba(115, 229, 172, 0.2)",
+      color: "var(--color-content-positive)",
+    },
+    warning: {
+      background: "rgba(255, 199, 0, 0.2)",
+      color: "var(--color-content-warning)",
+    },
+    error: {
+      background: "rgba(255, 115, 115, 0.2)",
+      color: "var(--color-content-negative)",
+    },
+  },
+
+  title: {
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-heading-h4)",
+    fontWeight: 600,
+    color: "var(--color-content-primary)",
+    textAlign: "center",
+    margin: 0,
+  },
+
+  message: {
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-md)",
+    fontWeight: 400,
+    color: "var(--color-content-primary)",
+    textAlign: "center",
+    lineHeight: 1.6,
+    margin: 0,
+  },
+
+  actions: {
+    display: "flex",
+    alignItems: "center",
+    alignSelf: "stretch",
+    gap: 16,
+  },
+
+  actionsAlign: {
+    spread: { justifyContent: "space-between" },
+    center: { justifyContent: "center" },
+    end: { justifyContent: "flex-end" },
+  },
+
+  actionsLeft: {
+    display: "flex",
+    alignItems: "center",
+    gap: 16,
+  },
+
+  actionsRight: {
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+  },
 };
 
 // ─────────────────────────────────────────────
@@ -142,21 +220,7 @@ const VARIANT_ICONS = {
  * @param {string} primaryVariant - Primary button variant (default: "primary", or "negative" for error)
  * @param {boolean} isDismissable - Allow closing by clicking overlay (default: true)
  * @param {string} actionsAlign - Actions alignment: spread | center | end (default: spread)
- * @param {string} className - Additional CSS classes
- *
- * @example
- * // Simple confirmation
- * <Dialog
- *   isOpen={isOpen}
- *   onOpenChange={setIsOpen}
- *   title="Confirm Action"
- *   primaryLabel="Confirm"
- *   secondaryLabel="Cancel"
- *   onPrimaryPress={handleConfirm}
- *   onSecondaryPress={() => setIsOpen(false)}
- * >
- *   Are you sure you want to proceed?
- * </Dialog>
+ * @param {object} style - Additional inline styles
  */
 export const Dialog = ({
   isOpen = false,
@@ -185,9 +249,12 @@ export const Dialog = ({
   isDismissable = true,
   closeOnOverlayClick, // Support legacy prop
   actionsAlign = DIALOG_ACTIONS_ALIGN.spread,
-  className = "",
+  style,
   ...props
 }) => {
+  const [closeHovered, setCloseHovered] = useState(false);
+  const modalRef = useRef(null);
+
   // Support legacy props
   const resolvedIsOpen = isOpen ?? open ?? false;
   const resolvedOnOpenChange = onOpenChange ?? ((open) => !open && onClose?.());
@@ -204,111 +271,160 @@ export const Dialog = ({
 
   const handleClose = () => resolvedOnOpenChange(false);
 
-  const modalClasses = cx(
-    styles.modal,
-    size !== DIALOG_SIZES.md && styles.sizes[size],
-    className
-  );
+  const handleOverlayClick = (e) => {
+    if (resolvedIsDismissable && e.target === e.currentTarget) {
+      handleClose();
+    }
+  };
 
-  const actionsClasses = cx(
-    styles.actions,
-    styles.actionsAlign[actionsAlign]
-  );
+  // Handle escape key
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === "Escape" && resolvedIsOpen) {
+        handleClose();
+      }
+    };
+
+    if (resolvedIsOpen) {
+      document.addEventListener("keydown", handleEscape);
+      document.body.style.overflow = "hidden";
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+      document.body.style.overflow = "";
+    };
+  }, [resolvedIsOpen]);
+
+  // Focus trap
+  useEffect(() => {
+    if (resolvedIsOpen && modalRef.current) {
+      modalRef.current.focus();
+    }
+  }, [resolvedIsOpen]);
+
+  if (!resolvedIsOpen) return null;
+
+  // Compose modal styles
+  const modalStyle = {
+    ...styles.modal,
+    ...styles.sizes[size],
+    ...style,
+  };
+
+  // Icon styles
+  const iconStyle = {
+    ...styles.icon,
+    ...styles.iconVariants[variant],
+  };
+
+  // Actions styles
+  const actionsStyle = {
+    ...styles.actions,
+    ...styles.actionsAlign[actionsAlign],
+  };
+
+  // Close button styles
+  const closeStyle = {
+    ...styles.close,
+    ...(closeHovered && styles.closeHover),
+  };
 
   return (
-    <ModalOverlay
-      isOpen={resolvedIsOpen}
-      onOpenChange={resolvedOnOpenChange}
-      isDismissable={resolvedIsDismissable}
-      className={styles.overlay}
-    >
-      <Modal className={modalClasses} {...props}>
-        <AriaDialog className="outline-none w-full flex flex-col items-center gap-6">
-          {/* Close Button */}
-          {showClose && (
-            <button
-              className={styles.close}
-              onClick={handleClose}
-              aria-label="Close dialog"
-              type="button"
-            >
-              <Icon name="XMark" size="sm" />
-            </button>
-          )}
+    <div style={styles.overlay} onClick={handleOverlayClick}>
+      <div
+        ref={modalRef}
+        style={modalStyle}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={title ? "dialog-title" : undefined}
+        tabIndex={-1}
+        {...props}
+      >
+        {/* Close Button */}
+        {showClose && (
+          <button
+            type="button"
+            style={closeStyle}
+            onClick={handleClose}
+            onMouseEnter={() => setCloseHovered(true)}
+            onMouseLeave={() => setCloseHovered(false)}
+            aria-label="Close dialog"
+          >
+            <Icon name="XMark" size="sm" />
+          </button>
+        )}
 
-          {/* Content */}
-          <div className={styles.content}>
-            {/* Icon */}
-            {showIcon && (
-              <div className={cx(styles.icon, styles.iconVariants[variant])}>
-                {icon || <Icon name={resolvedIconName} size="md" />}
-              </div>
-            )}
-
-            {/* Title */}
-            {title && (
-              <Heading slot="title" className={styles.title}>
-                {title}
-              </Heading>
-            )}
-
-            {/* Message */}
-            {children && (
-              <p className={styles.message}>{children}</p>
-            )}
-          </div>
-
-          {/* Actions */}
-          {(actions || hasLeftActions || hasPrimaryAction) && (
-            <div className={actionsClasses}>
-              {actions || (
-                <>
-                  {/* Left Actions */}
-                  {hasLeftActions && (
-                    <div className={styles.actionsLeft}>
-                      {tertiaryLabel && (
-                        <Button
-                          variant="tertiary"
-                          size="md"
-                          onPress={resolvedOnTertiaryPress || handleClose}
-                        >
-                          {tertiaryLabel}
-                        </Button>
-                      )}
-                      {secondaryLabel && (
-                        <Button
-                          variant="secondary"
-                          size="md"
-                          onPress={resolvedOnSecondaryPress || handleClose}
-                        >
-                          {secondaryLabel}
-                        </Button>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Spacer when no left actions but spread alignment */}
-                  {!hasLeftActions && actionsAlign === "spread" && <div />}
-
-                  {/* Primary Action */}
-                  {hasPrimaryAction && (
-                    <div className={styles.actionsRight}>
-                      <Button
-                        variant={resolvedPrimaryVariant}
-                        size="lg"
-                        onPress={resolvedOnPrimaryPress}
-                      >
-                        {primaryLabel}
-                      </Button>
-                    </div>
-                  )}
-                </>
-              )}
+        {/* Content */}
+        <div style={styles.content}>
+          {/* Icon */}
+          {showIcon && (
+            <div style={iconStyle}>
+              {icon || <Icon name={resolvedIconName} size="md" />}
             </div>
           )}
-        </AriaDialog>
-      </Modal>
-    </ModalOverlay>
+
+          {/* Title */}
+          {title && (
+            <h2 id="dialog-title" style={styles.title}>
+              {title}
+            </h2>
+          )}
+
+          {/* Message */}
+          {children && <p style={styles.message}>{children}</p>}
+        </div>
+
+        {/* Actions */}
+        {(actions || hasLeftActions || hasPrimaryAction) && (
+          <div style={actionsStyle}>
+            {actions || (
+              <>
+                {/* Left Actions */}
+                {hasLeftActions && (
+                  <div style={styles.actionsLeft}>
+                    {tertiaryLabel && (
+                      <Button
+                        variant="tertiary"
+                        size="md"
+                        onClick={resolvedOnTertiaryPress || handleClose}
+                      >
+                        {tertiaryLabel}
+                      </Button>
+                    )}
+                    {secondaryLabel && (
+                      <Button
+                        variant="secondary"
+                        size="md"
+                        onClick={resolvedOnSecondaryPress || handleClose}
+                      >
+                        {secondaryLabel}
+                      </Button>
+                    )}
+                  </div>
+                )}
+
+                {/* Spacer when no left actions but spread alignment */}
+                {!hasLeftActions && actionsAlign === "spread" && <div />}
+
+                {/* Primary Action */}
+                {hasPrimaryAction && (
+                  <div style={styles.actionsRight}>
+                    <Button
+                      variant={resolvedPrimaryVariant}
+                      size="lg"
+                      onClick={resolvedOnPrimaryPress}
+                    >
+                      {primaryLabel}
+                    </Button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 

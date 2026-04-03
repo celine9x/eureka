@@ -2,74 +2,182 @@
  * Pagination Component
  *
  * A pagination control with page numbers, navigation buttons, and per-page selector.
- * Uses Tailwind CSS with design tokens.
+ * Uses inline styles with CSS variables from tokens.css for consistent styling.
+ *
+ * @example
+ * <Pagination
+ *   currentPage={1}
+ *   totalPages={10}
+ *   onPageChange={(page) => setPage(page)}
+ *   perPage={10}
+ *   showPerPage
+ *   showInfo
+ * />
  */
 
-import React from "react";
-import { cx } from "../utils/cx.js";
+import React, { useState } from "react";
 import { Icon } from "../atoms/icon.jsx";
+import { ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon } from "@heroicons/react/16/solid";
 
 // ─────────────────────────────────────────────
-// STYLES
+// STYLES (Token-mapped inline styles)
 // ─────────────────────────────────────────────
 
 const styles = {
-  pagination: "inline-flex items-center gap-4",
-  paginationDisabled: "opacity-50 pointer-events-none",
+  pagination: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 16,
+  },
 
-  perPage: "flex items-center gap-2",
+  paginationDisabled: {
+    opacity: 0.5,
+    pointerEvents: "none",
+  },
 
-  perPageSelect: "relative inline-flex",
+  perPage: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+  },
 
-  perPageBtn: [
-    "flex items-center justify-between w-16 h-8 px-2",
-    "bg-background-white border-none rounded-md",
-    "outline outline-1 -outline-offset-1 outline-outline-neutral",
-    "shadow-light-down cursor-pointer",
-    "font-primary text-body-caption font-normal text-content-secondary",
-    "transition-all duration-fast",
-    "hover:not-disabled:outline-neutral-300",
-    "focus:outline-outline-focus focus:shadow-focus",
-    "disabled:bg-background-neutral-light disabled:cursor-not-allowed",
-  ].join(" "),
+  perPageSelect: {
+    position: "relative",
+    display: "inline-flex",
+  },
 
-  perPageLabel: "font-primary text-body-caption font-normal text-content-secondary",
+  perPageBtn: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    width: 64,
+    height: 32,
+    padding: "0 8px",
+    background: "var(--color-general-white)",
+    border: "none",
+    borderRadius: "var(--radius-md)",
+    outline: "1px solid var(--color-action-outline-secondary-enabled)",
+    outlineOffset: "-1px",
+    boxShadow: "var(--shadow-light-down)",
+    cursor: "pointer",
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-caption)",
+    fontWeight: 400,
+    color: "var(--color-content-secondary)",
+    transition: "all var(--transition-fast)",
+  },
 
-  navBtn: [
-    "flex items-center justify-center size-8 p-0",
-    "bg-background-white border-none rounded-md",
-    "outline outline-1 -outline-offset-1 outline-outline-neutral",
-    "shadow-light-down cursor-pointer text-content-secondary",
-    "transition-all duration-fast",
-    "hover:not-disabled:outline-neutral-300 hover:not-disabled:text-content-primary",
-    "focus:outline-outline-focus focus:shadow-focus",
-    "disabled:bg-background-neutral-light disabled:text-content-tertiary disabled:cursor-not-allowed",
-  ].join(" "),
+  perPageBtnHover: {
+    outlineColor: "var(--color-general-neutral-dark)",
+  },
 
-  pages: "flex items-center gap-2",
+  perPageLabel: {
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-caption)",
+    fontWeight: 400,
+    color: "var(--color-content-secondary)",
+  },
 
-  pageBtn: [
-    "flex items-center justify-center min-w-8 h-8 px-2",
-    "bg-background-white border-none rounded-md",
-    "outline outline-1 -outline-offset-1 outline-outline-neutral",
-    "shadow-light-down cursor-pointer",
-    "font-primary text-body-caption font-normal text-content-secondary",
-    "transition-all duration-fast",
-    "hover:not-disabled:not-[data-active]:outline-neutral-300 hover:not-disabled:not-[data-active]:text-content-primary",
-    "focus:outline-outline-focus focus:shadow-focus",
-    "disabled:bg-background-neutral-light disabled:text-content-tertiary disabled:cursor-not-allowed",
-  ].join(" "),
+  nativeSelect: {
+    position: "absolute",
+    inset: 0,
+    opacity: 0,
+    cursor: "pointer",
+  },
 
-  pageBtnActive: [
-    "bg-action-fill-primary text-action-content-primary outline-action-fill-primary",
-    "hover:bg-action-fill-primary-hover hover:outline-action-fill-primary-hover",
-  ].join(" "),
+  navBtn: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: 32,
+    height: 32,
+    padding: 0,
+    background: "var(--color-general-white)",
+    border: "none",
+    borderRadius: "var(--radius-md)",
+    outline: "1px solid var(--color-action-outline-secondary-enabled)",
+    outlineOffset: "-1px",
+    boxShadow: "var(--shadow-light-down)",
+    cursor: "pointer",
+    color: "var(--color-content-secondary)",
+    transition: "all var(--transition-fast)",
+  },
 
-  ellipsis: "flex items-center justify-center size-8 text-content-secondary",
+  navBtnHover: {
+    outlineColor: "var(--color-general-neutral-dark)",
+    color: "var(--color-content-primary)",
+  },
 
-  divider: "w-px h-8 bg-outline-neutral",
+  navBtnDisabled: {
+    background: "var(--color-general-neutral-light)",
+    color: "var(--color-content-tertiary)",
+    cursor: "not-allowed",
+  },
 
-  info: "font-primary text-body-caption font-normal text-content-secondary",
+  pages: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+  },
+
+  pageBtn: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    minWidth: 32,
+    height: 32,
+    padding: "0 8px",
+    background: "var(--color-general-white)",
+    border: "none",
+    borderRadius: "var(--radius-md)",
+    outline: "1px solid var(--color-action-outline-secondary-enabled)",
+    outlineOffset: "-1px",
+    boxShadow: "var(--shadow-light-down)",
+    cursor: "pointer",
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-caption)",
+    fontWeight: 400,
+    color: "var(--color-content-secondary)",
+    transition: "all var(--transition-fast)",
+  },
+
+  pageBtnHover: {
+    outlineColor: "var(--color-general-neutral-dark)",
+    color: "var(--color-content-primary)",
+  },
+
+  pageBtnActive: {
+    background: "var(--color-action-fill-primary-enabled)",
+    color: "var(--color-general-white)",
+    outlineColor: "var(--color-action-fill-primary-enabled)",
+  },
+
+  pageBtnActiveHover: {
+    background: "var(--color-action-fill-primary-hover)",
+    outlineColor: "var(--color-action-fill-primary-hover)",
+  },
+
+  ellipsis: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: 32,
+    height: 32,
+    color: "var(--color-content-secondary)",
+  },
+
+  divider: {
+    width: 1,
+    height: 32,
+    background: "var(--color-action-outline-secondary-enabled)",
+  },
+
+  info: {
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-caption)",
+    fontWeight: 400,
+    color: "var(--color-content-secondary)",
+  },
 };
 
 // ─────────────────────────────────────────────
@@ -77,19 +185,19 @@ const styles = {
 // ─────────────────────────────────────────────
 
 const EllipsisIcon = () => (
-  <svg viewBox="0 0 16 16" fill="currentColor" className="size-4">
+  <svg viewBox="0 0 16 16" fill="currentColor" style={{ width: 16, height: 16 }}>
     <rect x="3" y="7" width="10" height="2" rx="1" />
   </svg>
 );
 
 const DoubleChevronLeftIcon = () => (
-  <svg viewBox="0 0 16 16" fill="currentColor" className="size-4">
+  <svg viewBox="0 0 16 16" fill="currentColor" style={{ width: 16, height: 16 }}>
     <path d="M8 3l-5 5 5 5V3zm5 0l-5 5 5 5V3z" />
   </svg>
 );
 
 const DoubleChevronRightIcon = () => (
-  <svg viewBox="0 0 16 16" fill="currentColor" className="size-4">
+  <svg viewBox="0 0 16 16" fill="currentColor" style={{ width: 16, height: 16 }}>
     <path d="M3 3l5 5-5 5V3zm5 0l5 5-5 5V3z" />
   </svg>
 );
@@ -107,41 +215,33 @@ const getPageNumbers = (currentPage, totalPages, maxVisible = 5) => {
   }
 
   const pages = [];
-  const sidePages = Math.floor((maxVisible - 3) / 2); // Pages on each side of current
+  const sidePages = Math.floor((maxVisible - 3) / 2);
 
-  // Always show first page
   pages.push(1);
 
-  // Calculate range around current page
   let startPage = Math.max(2, currentPage - sidePages);
   let endPage = Math.min(totalPages - 1, currentPage + sidePages);
 
-  // Adjust if at the beginning
   if (currentPage <= sidePages + 2) {
     endPage = Math.min(totalPages - 1, maxVisible - 2);
   }
 
-  // Adjust if at the end
   if (currentPage >= totalPages - sidePages - 1) {
     startPage = Math.max(2, totalPages - maxVisible + 3);
   }
 
-  // Add ellipsis before if needed
   if (startPage > 2) {
     pages.push("ellipsis-start");
   }
 
-  // Add middle pages
   for (let i = startPage; i <= endPage; i++) {
     pages.push(i);
   }
 
-  // Add ellipsis after if needed
   if (endPage < totalPages - 1) {
     pages.push("ellipsis-end");
   }
 
-  // Always show last page
   if (totalPages > 1) {
     pages.push(totalPages);
   }
@@ -158,28 +258,39 @@ export const PaginationPerPage = ({
   options = [10, 20, 50, 100],
   onChange,
   isDisabled = false,
-  disabled, // Support legacy prop
+  disabled,
   label = "per page",
 }) => {
+  const [isHovered, setIsHovered] = useState(false);
   const isSelectDisabled = isDisabled || disabled;
 
   const handleChange = (e) => {
     onChange?.(Number(e.target.value));
   };
 
+  const btnStyle = {
+    ...styles.perPageBtn,
+    ...(isHovered && !isSelectDisabled && styles.perPageBtnHover),
+  };
+
   return (
-    <div className={styles.perPage}>
-      <div className={styles.perPageSelect}>
-        <button type="button" className={styles.perPageBtn} disabled={isSelectDisabled}>
+    <div style={styles.perPage}>
+      <div style={styles.perPageSelect}>
+        <button
+          type="button"
+          style={btnStyle}
+          disabled={isSelectDisabled}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        >
           <span>{value}</span>
-          <Icon name="ChevronDown" size="sm" />
+          <ChevronDownIcon style={{ width: 16, height: 16 }} />
         </button>
-        {/* Native select overlay for accessibility */}
         <select
           value={value}
           onChange={handleChange}
           disabled={isSelectDisabled}
-          className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed"
+          style={{ ...styles.nativeSelect, cursor: isSelectDisabled ? "not-allowed" : "pointer" }}
           aria-label="Items per page"
         >
           {options.map((opt) => (
@@ -189,7 +300,7 @@ export const PaginationPerPage = ({
           ))}
         </select>
       </div>
-      {label && <span className={styles.perPageLabel}>{label}</span>}
+      {label && <span style={styles.perPageLabel}>{label}</span>}
     </div>
   );
 };
@@ -201,13 +312,71 @@ export const PaginationInfo = ({ currentPage, totalPages, totalItems, perPage })
   const endItem = Math.min(currentPage * perPage, totalItems);
 
   return (
-    <span className={styles.info}>
+    <span style={styles.info}>
       {startItem}-{endItem} of {totalItems}
     </span>
   );
 };
 
 PaginationInfo.displayName = "PaginationInfo";
+
+// ─────────────────────────────────────────────
+// NAV BUTTON COMPONENT
+// ─────────────────────────────────────────────
+
+const NavButton = ({ onClick, disabled, ariaLabel, children }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  const btnStyle = {
+    ...styles.navBtn,
+    ...(isHovered && !disabled && styles.navBtnHover),
+    ...(disabled && styles.navBtnDisabled),
+  };
+
+  return (
+    <button
+      type="button"
+      style={btnStyle}
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={ariaLabel}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {children}
+    </button>
+  );
+};
+
+// ─────────────────────────────────────────────
+// PAGE BUTTON COMPONENT
+// ─────────────────────────────────────────────
+
+const PageButton = ({ page, isActive, disabled, onClick }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  const btnStyle = {
+    ...styles.pageBtn,
+    ...(isHovered && !disabled && !isActive && styles.pageBtnHover),
+    ...(isActive && styles.pageBtnActive),
+    ...(isActive && isHovered && styles.pageBtnActiveHover),
+  };
+
+  return (
+    <button
+      type="button"
+      style={btnStyle}
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={`Page ${page}`}
+      aria-current={isActive ? "page" : undefined}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {page}
+    </button>
+  );
+};
 
 // ─────────────────────────────────────────────
 // PAGINATION COMPONENT
@@ -228,19 +397,7 @@ PaginationInfo.displayName = "PaginationInfo";
  * @param {boolean} showFirstLast - Show first/last page buttons
  * @param {boolean} showInfo - Show items info text
  * @param {number} maxVisiblePages - Max page buttons to show
- * @param {string} size - Button size: sm | md
- *
- * @example
- * <Pagination
- *   currentPage={1}
- *   totalPages={10}
- *   onPageChange={(page) => setPage(page)}
- *   perPage={10}
- *   onPerPageChange={(size) => setPerPage(size)}
- *   totalItems={100}
- *   showPerPage
- *   showInfo
- * />
+ * @param {object} style - Additional inline styles
  */
 export const Pagination = ({
   currentPage = 1,
@@ -251,12 +408,12 @@ export const Pagination = ({
   perPageOptions = [10, 20, 50, 100],
   totalItems,
   isDisabled = false,
-  disabled, // Support legacy prop
+  disabled,
   showPerPage = true,
   showFirstLast = false,
   showInfo = false,
   maxVisiblePages = 5,
-  className,
+  style,
   ...props
 }) => {
   const isPaginationDisabled = isDisabled || disabled;
@@ -275,14 +432,14 @@ export const Pagination = ({
 
   const pageNumbers = getPageNumbers(currentPage, totalPages, maxVisiblePages);
 
-  const classes = cx(
-    styles.pagination,
-    isPaginationDisabled && styles.paginationDisabled,
-    className
-  );
+  const paginationStyle = {
+    ...styles.pagination,
+    ...(isPaginationDisabled && styles.paginationDisabled),
+    ...style,
+  };
 
   return (
-    <div className={classes} {...props}>
+    <div style={paginationStyle} {...props}>
       {/* Per Page Selector */}
       {showPerPage && (
         <PaginationPerPage
@@ -295,86 +452,71 @@ export const Pagination = ({
 
       {/* First Page Button */}
       {showFirstLast && (
-        <button
-          type="button"
-          className={styles.navBtn}
+        <NavButton
           onClick={handleFirst}
           disabled={isPaginationDisabled || isFirstPage}
-          aria-label="First page"
+          ariaLabel="First page"
         >
           <DoubleChevronLeftIcon />
-        </button>
+        </NavButton>
       )}
 
       {/* Previous Button */}
-      <button
-        type="button"
-        className={styles.navBtn}
+      <NavButton
         onClick={handlePrevious}
         disabled={isPaginationDisabled || isFirstPage}
-        aria-label="Previous page"
+        ariaLabel="Previous page"
       >
-        <Icon name="ChevronLeft" size="sm" />
-      </button>
+        <ChevronLeftIcon style={{ width: 16, height: 16 }} />
+      </NavButton>
 
       {/* Page Numbers */}
-      <div className={styles.pages}>
+      <div style={styles.pages}>
         {pageNumbers.map((page) => {
           if (typeof page === "string" && page.startsWith("ellipsis")) {
             return (
-              <span key={page} className={styles.ellipsis}>
+              <span key={page} style={styles.ellipsis}>
                 <EllipsisIcon />
               </span>
             );
           }
 
-          const isActive = page === currentPage;
-
           return (
-            <button
+            <PageButton
               key={page}
-              type="button"
-              className={cx(styles.pageBtn, isActive && styles.pageBtnActive)}
-              onClick={() => handlePageChange(page)}
+              page={page}
+              isActive={page === currentPage}
               disabled={isPaginationDisabled}
-              aria-label={`Page ${page}`}
-              aria-current={isActive ? "page" : undefined}
-              data-active={isActive || undefined}
-            >
-              {page}
-            </button>
+              onClick={() => handlePageChange(page)}
+            />
           );
         })}
       </div>
 
       {/* Next Button */}
-      <button
-        type="button"
-        className={styles.navBtn}
+      <NavButton
         onClick={handleNext}
         disabled={isPaginationDisabled || isLastPage}
-        aria-label="Next page"
+        ariaLabel="Next page"
       >
-        <Icon name="ChevronRight" size="sm" />
-      </button>
+        <ChevronRightIcon style={{ width: 16, height: 16 }} />
+      </NavButton>
 
       {/* Last Page Button */}
       {showFirstLast && (
-        <button
-          type="button"
-          className={styles.navBtn}
+        <NavButton
           onClick={handleLast}
           disabled={isPaginationDisabled || isLastPage}
-          aria-label="Last page"
+          ariaLabel="Last page"
         >
           <DoubleChevronRightIcon />
-        </button>
+        </NavButton>
       )}
 
       {/* Divider & Info */}
       {showInfo && totalItems !== undefined && (
         <>
-          <div className={styles.divider} />
+          <div style={styles.divider} />
           <PaginationInfo
             currentPage={currentPage}
             totalPages={totalPages}
@@ -397,22 +539,15 @@ Pagination.displayName = "Pagination";
  * SimplePagination
  *
  * A minimal pagination with just previous/next buttons.
- *
- * @param {number} currentPage - Current active page (1-indexed)
- * @param {number} totalPages - Total number of pages
- * @param {function} onPageChange - Called when page changes
- * @param {boolean} isDisabled - Disables all controls
- * @param {boolean} showPageInfo - Show page info text (default: true)
- * @param {string} className - Additional CSS classes
  */
 export const SimplePagination = ({
   currentPage = 1,
   totalPages = 1,
   onPageChange,
   isDisabled = false,
-  disabled, // Support legacy prop
+  disabled,
   showPageInfo = true,
-  className,
+  style,
   ...props
 }) => {
   const isPaginationDisabled = isDisabled || disabled;
@@ -431,39 +566,35 @@ export const SimplePagination = ({
     }
   };
 
-  const classes = cx(
-    styles.pagination,
-    isPaginationDisabled && styles.paginationDisabled,
-    className
-  );
+  const paginationStyle = {
+    ...styles.pagination,
+    ...(isPaginationDisabled && styles.paginationDisabled),
+    ...style,
+  };
 
   return (
-    <div className={classes} {...props}>
-      <button
-        type="button"
-        className={styles.navBtn}
+    <div style={paginationStyle} {...props}>
+      <NavButton
         onClick={handlePrevious}
         disabled={isPaginationDisabled || isFirstPage}
-        aria-label="Previous page"
+        ariaLabel="Previous page"
       >
-        <Icon name="ChevronLeft" size="sm" />
-      </button>
+        <ChevronLeftIcon style={{ width: 16, height: 16 }} />
+      </NavButton>
 
       {showPageInfo && (
-        <span className={styles.info}>
+        <span style={styles.info}>
           Page {currentPage} of {totalPages}
         </span>
       )}
 
-      <button
-        type="button"
-        className={styles.navBtn}
+      <NavButton
         onClick={handleNext}
         disabled={isPaginationDisabled || isLastPage}
-        aria-label="Next page"
+        ariaLabel="Next page"
       >
-        <Icon name="ChevronRight" size="sm" />
-      </button>
+        <ChevronRightIcon style={{ width: 16, height: 16 }} />
+      </NavButton>
     </div>
   );
 };

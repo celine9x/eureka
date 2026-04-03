@@ -2,11 +2,10 @@
  * DropdownMenu Component
  *
  * A dropdown menu container with sections, items, and optional footer.
- * Uses Tailwind CSS with design tokens.
+ * Uses inline styles with CSS variables from tokens.css for consistent styling.
  */
 
 import React, { useState, useRef, useEffect, createContext, useContext } from "react";
-import { cx } from "../utils/cx.js";
 import { DropdownMenuItem, DropdownMenuDivider, DropdownMenuLabel } from "./dropdown-menu-item.jsx";
 
 // ─────────────────────────────────────────────
@@ -27,40 +26,115 @@ export const DROPDOWN_ALIGNMENTS = {
 };
 
 // ─────────────────────────────────────────────
-// STYLES
+// STYLES (Token-mapped inline styles)
 // ─────────────────────────────────────────────
 
 const styles = {
-  wrapper: "relative inline-flex",
+  wrapper: {
+    position: "relative",
+    display: "inline-flex",
+  },
 
-  menu: [
-    "absolute z-[1000] min-w-[200px] max-w-[320px]",
-    "bg-background-white rounded-md",
-    "outline outline-1 -outline-offset-1 outline-outline-neutral",
-    "shadow-medium-down overflow-hidden",
-  ].join(" "),
+  menu: {
+    position: "absolute",
+    zIndex: 1000,
+    minWidth: 200,
+    maxWidth: 320,
+    background: "var(--color-general-white)",
+    borderRadius: "var(--radius-md)",
+    outline: "1px solid var(--color-action-outline-secondary-enabled)",
+    outlineOffset: -1,
+    boxShadow: "var(--shadow-medium-down)",
+    overflow: "hidden",
+  },
 
   positions: {
-    top: "bottom-full mb-1",
-    bottom: "top-full mt-1",
+    top: {
+      bottom: "100%",
+      marginBottom: 4,
+    },
+    bottom: {
+      top: "100%",
+      marginTop: 4,
+    },
   },
 
   alignments: {
-    left: "left-0",
-    right: "right-0",
-    center: "left-1/2 -translate-x-1/2",
+    left: {
+      left: 0,
+    },
+    right: {
+      right: 0,
+    },
+    center: {
+      left: "50%",
+      transform: "translateX(-50%)",
+    },
   },
 
-  animated: "animate-[dropdown-fade-in_0.15s_ease-out]",
-  animatedTop: "animate-[dropdown-fade-in-up_0.15s_ease-out]",
+  section: {
+    padding: "8px 0",
+  },
 
-  section: "py-2 [&+&]:border-t [&+&]:border-outline-neutral",
-  sectionContent: "px-4",
+  sectionDivider: {
+    borderTop: "1px solid var(--color-action-outline-secondary-enabled)",
+  },
 
-  footer: [
-    "py-2 px-6 bg-background-neutral-light border-t border-outline-neutral",
-  ].join(" "),
-  footerText: "font-primary text-[9px] font-normal leading-3 text-content-secondary",
+  sectionContent: {
+    padding: "0 16px",
+  },
+
+  footer: {
+    padding: "8px 24px",
+    background: "var(--color-general-neutral-light)",
+    borderTop: "1px solid var(--color-action-outline-secondary-enabled)",
+  },
+
+  footerText: {
+    fontFamily: "var(--font-family-primary)",
+    fontSize: 9,
+    fontWeight: 400,
+    lineHeight: "12px",
+    color: "var(--color-content-secondary)",
+  },
+};
+
+// ─────────────────────────────────────────────
+// KEYFRAME ANIMATION (via style tag)
+// ─────────────────────────────────────────────
+
+const animationKeyframes = `
+@keyframes dropdown-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes dropdown-fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+`;
+
+// Inject animation styles once
+let animationStylesInjected = false;
+const injectAnimationStyles = () => {
+  if (animationStylesInjected || typeof document === "undefined") return;
+  const styleEl = document.createElement("style");
+  styleEl.textContent = animationKeyframes;
+  document.head.appendChild(styleEl);
+  animationStylesInjected = true;
 };
 
 // ─────────────────────────────────────────────
@@ -79,12 +153,19 @@ const DropdownMenuContext = createContext(null);
  * A section within the dropdown menu, visually separated by dividers.
  *
  * @param {ReactNode} children - Section content
- * @param {string} className - Additional CSS classes
+ * @param {boolean} showDivider - Show top border divider
+ * @param {object} style - Additional inline styles
  */
-export const DropdownMenuSection = ({ children, className }) => {
+export const DropdownMenuSection = ({ children, showDivider = false, style }) => {
+  const sectionStyle = {
+    ...styles.section,
+    ...(showDivider && styles.sectionDivider),
+    ...style,
+  };
+
   return (
-    <div className={cx(styles.section, className)}>
-      <div className={styles.sectionContent}>{children}</div>
+    <div style={sectionStyle}>
+      <div style={styles.sectionContent}>{children}</div>
     </div>
   );
 };
@@ -101,13 +182,18 @@ DropdownMenuSection.displayName = "DropdownMenuSection";
  * Footer section with background, typically for version info or secondary actions.
  *
  * @param {ReactNode} children - Footer content
- * @param {string} className - Additional CSS classes
+ * @param {object} style - Additional inline styles
  */
-export const DropdownMenuFooter = ({ children, className }) => {
+export const DropdownMenuFooter = ({ children, style }) => {
+  const footerStyle = {
+    ...styles.footer,
+    ...style,
+  };
+
   return (
-    <div className={cx(styles.footer, className)}>
+    <div style={footerStyle}>
       {typeof children === "string" ? (
-        <div className={styles.footerText}>{children}</div>
+        <div style={styles.footerText}>{children}</div>
       ) : (
         children
       )}
@@ -131,7 +217,7 @@ DropdownMenuFooter.displayName = "DropdownMenuFooter";
  * @param {string} align - left | right | center (default: left)
  * @param {string|number} width - Custom width
  * @param {boolean} animated - Enable animation (default: true)
- * @param {string} className - Additional CSS classes
+ * @param {object} style - Additional inline styles
  */
 export const DropdownMenuContent = ({
   children,
@@ -139,28 +225,42 @@ export const DropdownMenuContent = ({
   align = DROPDOWN_ALIGNMENTS.left,
   width,
   animated = true,
-  className,
   style = {},
   ...props
 }) => {
-  const classes = cx(
-    styles.menu,
-    styles.positions[position],
-    styles.alignments[align],
-    animated && (position === "top" ? styles.animatedTop : styles.animated),
-    className
-  );
+  // Inject animation styles
+  if (animated) {
+    injectAnimationStyles();
+  }
+
+  const animationStyle = animated
+    ? {
+        animation: position === "top"
+          ? "dropdown-fade-in-up 0.15s ease-out"
+          : "dropdown-fade-in 0.15s ease-out",
+      }
+    : {};
+
+  // Handle center alignment with animation
+  const alignmentStyle = { ...styles.alignments[align] };
+  if (align === "center" && animated) {
+    // Combine transforms
+    alignmentStyle.transform = position === "top"
+      ? "translateX(-50%)"
+      : "translateX(-50%)";
+  }
+
+  const menuStyle = {
+    ...styles.menu,
+    ...styles.positions[position],
+    ...alignmentStyle,
+    ...animationStyle,
+    ...(width && { width }),
+    ...style,
+  };
 
   return (
-    <div
-      className={classes}
-      role="menu"
-      style={{
-        width: width || undefined,
-        ...style,
-      }}
-      {...props}
-    >
+    <div style={menuStyle} role="menu" {...props}>
       {children}
     </div>
   );
@@ -177,7 +277,7 @@ DropdownMenuContent.displayName = "DropdownMenuContent";
  *
  * The button/element that triggers the dropdown.
  */
-export const DropdownMenuTrigger = ({ children, asChild = false, className = "", ...props }) => {
+export const DropdownMenuTrigger = ({ children, asChild = false, style, ...props }) => {
   const context = useContext(DropdownMenuContext);
 
   if (!context) {
@@ -219,7 +319,7 @@ export const DropdownMenuTrigger = ({ children, asChild = false, className = "",
   return (
     <button
       type="button"
-      className={className}
+      style={style}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       aria-expanded={context.isOpen}
@@ -272,7 +372,7 @@ export const DropdownMenu = ({
   onOpenChange,
   closeOnSelect = true,
   closeOnClickOutside = true,
-  className = "",
+  style,
   ...props
 }) => {
   const [internalOpen, setInternalOpen] = useState(defaultOpen);
@@ -365,9 +465,14 @@ export const DropdownMenu = ({
     });
   };
 
+  const wrapperStyle = {
+    ...styles.wrapper,
+    ...style,
+  };
+
   return (
     <DropdownMenuContext.Provider value={contextValue}>
-      <div ref={wrapperRef} className={cx(styles.wrapper, className)} {...props}>
+      <div ref={wrapperRef} style={wrapperStyle} {...props}>
         {processChildren(children)}
       </div>
     </DropdownMenuContext.Provider>
@@ -403,11 +508,11 @@ export const SimpleDropdownMenu = ({
   align = "left",
   width,
   footer,
-  className = "",
+  style,
   ...props
 }) => {
   return (
-    <DropdownMenu className={className} {...props}>
+    <DropdownMenu style={style} {...props}>
       <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
 
       <DropdownMenuContent position={position} align={align} width={width}>

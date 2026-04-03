@@ -3,11 +3,9 @@
  *
  * A compact inline message with an icon and text.
  * Supports success, warning, error, info, neutral, and AI variants.
- * Uses Tailwind CSS with design tokens.
+ * Uses inline styles with CSS variables from tokens.css for consistent styling.
  */
 
-import React from "react";
-import { cx } from "../utils/cx.js";
 import { Icon } from "../atoms/icon.jsx";
 
 // ─────────────────────────────────────────────
@@ -35,37 +33,86 @@ const VARIANT_ICONS = {
 };
 
 // ─────────────────────────────────────────────
-// STYLES
+// STYLES (Token-mapped inline styles)
 // ─────────────────────────────────────────────
 
 const styles = {
-  base: "inline-flex items-center gap-1 font-primary text-body-md font-normal text-content-secondary",
-
-  variants: {
-    success: "[&_.miniinfobox-icon]:text-success-500",
-    warning: "[&_.miniinfobox-icon]:text-warning-400",
-    error: "[&_.miniinfobox-icon]:text-error-400",
-    info: "[&_.miniinfobox-icon]:text-primary-400",
-    neutral: "[&_.miniinfobox-icon]:text-neutral-500",
-    ai: "text-content-brand [&_.miniinfobox-icon]:bg-gradient-to-r [&_.miniinfobox-icon]:from-[#4649FF] [&_.miniinfobox-icon]:to-[#0EDDA5] [&_.miniinfobox-icon]:bg-clip-text [&_.miniinfobox-icon]:text-transparent",
+  base: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 4,
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-md)",
+    fontWeight: 400,
+    color: "var(--color-content-secondary)",
   },
 
-  icon: "miniinfobox-icon flex-shrink-0 flex items-center justify-center size-icon-sm",
-  message: "flex-1",
+  variants: {
+    success: {
+      icon: { color: "var(--color-content-positive)" },
+    },
+    warning: {
+      icon: { color: "var(--color-content-warning)" },
+    },
+    error: {
+      icon: { color: "var(--color-content-negative)" },
+    },
+    info: {
+      icon: { color: "var(--color-action-fill-primary-enabled)" },
+    },
+    neutral: {
+      icon: { color: "var(--color-content-secondary)" },
+    },
+    ai: {
+      text: { color: "var(--color-content-brand)" },
+      // AI gradient is handled via SVG fill
+    },
+  },
+
+  icon: {
+    flexShrink: 0,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: 16,
+    height: 16,
+  },
+
+  message: {
+    flex: 1,
+  },
 };
 
 // ─────────────────────────────────────────────
-// AI GRADIENT SVG DEFINITION
+// AI GRADIENT ICON
 // ─────────────────────────────────────────────
 
-const AIGradientDef = () => (
-  <svg width="0" height="0" style={{ position: "absolute" }}>
+const AIGradientIcon = () => (
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 16 16"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
     <defs>
       <linearGradient id="miniinfobox-ai-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
         <stop offset="0%" stopColor="#4649FF" />
         <stop offset="100%" stopColor="#0EDDA5" />
       </linearGradient>
     </defs>
+    <path
+      d="M8.05 1.067a.6.6 0 0 0-1.1 0L5.983 3.4a.6.6 0 0 1-.283.283L3.367 4.65a.6.6 0 0 0 0 1.1l2.333.967a.6.6 0 0 1 .283.283l.967 2.333a.6.6 0 0 0 1.1 0l.967-2.333a.6.6 0 0 1 .283-.283l2.333-.967a.6.6 0 0 0 0-1.1L9.3 3.683a.6.6 0 0 1-.283-.283L8.05 1.067Z"
+      fill="url(#miniinfobox-ai-gradient)"
+    />
+    <path
+      d="M12.05 8.067a.6.6 0 0 0-1.1 0l-.617 1.483a.6.6 0 0 1-.283.283l-1.483.617a.6.6 0 0 0 0 1.1l1.483.617a.6.6 0 0 1 .283.283l.617 1.483a.6.6 0 0 0 1.1 0l.617-1.483a.6.6 0 0 1 .283-.283l1.483-.617a.6.6 0 0 0 0-1.1l-1.483-.617a.6.6 0 0 1-.283-.283l-.617-1.483Z"
+      fill="url(#miniinfobox-ai-gradient)"
+    />
+    <path
+      d="M4.55 9.567a.6.6 0 0 0-1.1 0l-.367.883a.6.6 0 0 1-.283.283l-.883.367a.6.6 0 0 0 0 1.1l.883.367a.6.6 0 0 1 .283.283l.367.883a.6.6 0 0 0 1.1 0l.367-.883a.6.6 0 0 1 .283-.283l.883-.367a.6.6 0 0 0 0-1.1l-.883-.367a.6.6 0 0 1-.283-.283l-.367-.883Z"
+      fill="url(#miniinfobox-ai-gradient)"
+    />
   </svg>
 );
 
@@ -80,7 +127,7 @@ const AIGradientDef = () => (
  * @param {string} message - The message text to display (required)
  * @param {ReactNode} icon - Custom icon to override the default variant icon
  * @param {string} iconName - Custom icon name to use instead of variant default
- * @param {string} className - Additional CSS classes
+ * @param {object} style - Additional inline styles
  *
  * @example
  * <MiniInfobox variant="success" message="Operation completed successfully" />
@@ -93,25 +140,60 @@ export const MiniInfobox = ({
   message,
   icon,
   iconName,
-  className,
+  style,
   children,
   ...props
 }) => {
-  const classes = cx(styles.base, styles.variants[variant], className);
-
+  const variantStyles = styles.variants[variant] || styles.variants.info;
   const defaultIconName = VARIANT_ICONS[variant] || VARIANT_ICONS.info;
   const finalIconName = iconName || defaultIconName;
 
   // Use children as message if message prop not provided
   const displayMessage = message || children;
 
-  return (
-    <div className={classes} role="status" {...props}>
-      {variant === "ai" && <AIGradientDef />}
-      <span className={styles.icon}>
-        {icon || <Icon name={finalIconName} variant="solid" size="sm" />}
+  // Compose base styles
+  const baseStyle = {
+    ...styles.base,
+    ...style,
+  };
+
+  // Icon styles
+  const iconStyle = {
+    ...styles.icon,
+    ...(variantStyles.icon || {}),
+  };
+
+  // Message styles (for AI variant)
+  const messageStyle = {
+    ...styles.message,
+    ...(variantStyles.text || {}),
+  };
+
+  // Render icon based on variant
+  const renderIcon = () => {
+    if (icon) {
+      return <span style={iconStyle}>{icon}</span>;
+    }
+
+    if (variant === "ai") {
+      return (
+        <span style={styles.icon}>
+          <AIGradientIcon />
+        </span>
+      );
+    }
+
+    return (
+      <span style={iconStyle}>
+        <Icon name={finalIconName} variant="solid" size="sm" />
       </span>
-      <span className={styles.message}>{displayMessage}</span>
+    );
+  };
+
+  return (
+    <div style={baseStyle} role="status" {...props}>
+      {renderIcon()}
+      <span style={messageStyle}>{displayMessage}</span>
     </div>
   );
 };

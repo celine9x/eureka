@@ -2,40 +2,85 @@
  * AvatarGroup Component (Molecule)
  *
  * A stacked group of avatars with overflow indicator.
- * Uses Tailwind CSS with design tokens.
+ * Uses inline styles with CSS variables from tokens.css for consistent styling.
+ *
+ * @example
+ * <AvatarGroup
+ *   size="lg"
+ *   avatars={[
+ *     { name: "John Doe" },
+ *     { initials: "AB" },
+ *     { src: "/avatar.jpg", alt: "Jane" },
+ *   ]}
+ *   max={4}
+ * />
  */
 
 import React from "react";
-import { cx } from "../utils/cx.js";
-import { AVATAR_SIZES } from "../utils/props.js";
-import { Avatar } from "../atoms/avatar.jsx";
+import { Avatar, AVATAR_SIZES } from "../atoms/avatar.jsx";
 
 // ─────────────────────────────────────────────
 // CONSTANTS
 // ─────────────────────────────────────────────
 
-/** Re-export avatar sizes for group */
 export { AVATAR_SIZES };
 
 // ─────────────────────────────────────────────
-// STYLES
+// STYLES (Token-mapped inline styles)
 // ─────────────────────────────────────────────
 
 const styles = {
-  group: "inline-flex items-start justify-start [&_.avatar]:ml-[-0.25rem] [&_.avatar:first-child]:ml-0",
+  group: {
+    display: "inline-flex",
+    alignItems: "flex-start",
+    justifyContent: "flex-start",
+  },
 
-  overflow: [
-    "inline-flex items-center justify-start gap-1",
-    "bg-background-neutral-lighter rounded-full",
-    "outline outline-1 -outline-offset-1 outline-outline-neutral",
-    "font-primary font-normal text-content-secondary whitespace-nowrap",
-  ].join(" "),
+  avatar: {
+    marginLeft: -4,
+  },
+
+  avatarFirst: {
+    marginLeft: 0,
+  },
+
+  overflow: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "flex-start",
+    gap: 4,
+    background: "var(--color-general-neutral-lighter)",
+    borderRadius: "var(--radius-full)",
+    outline: "1px solid var(--color-action-outline-secondary-enabled)",
+    outlineOffset: "-1px",
+    fontFamily: "var(--font-family-primary)",
+    fontWeight: 400,
+    color: "var(--color-content-secondary)",
+    whiteSpace: "nowrap",
+    marginLeft: -4,
+  },
 
   overflowSizes: {
-    xl: "p-1.5 text-body-lg",
-    lg: "p-1 text-body-md",
-    md: "py-0.5 px-1 text-body-md",
-    sm: "px-1 text-body-caption",
+    xl: {
+      padding: 6,
+      fontSize: "var(--text-body-lg)",
+      lineHeight: "var(--line-height-body-lg)",
+    },
+    lg: {
+      padding: 4,
+      fontSize: "var(--text-body-md)",
+      lineHeight: "var(--line-height-body-md)",
+    },
+    md: {
+      padding: "2px 4px",
+      fontSize: "var(--text-body-md)",
+      lineHeight: "var(--line-height-body-md)",
+    },
+    sm: {
+      padding: "0 4px",
+      fontSize: "var(--text-body-caption)",
+      lineHeight: "var(--line-height-body-caption)",
+    },
   },
 };
 
@@ -54,28 +99,7 @@ const styles = {
  * @param {boolean} showOverflow - Show overflow badge when exceeding max (default: true)
  * @param {function} onOverflowClick - Called when overflow badge is clicked
  * @param {ReactNode} children - Alternative to avatars prop (Avatar components)
- * @param {string} className - Additional CSS classes
- *
- * @example
- * // With avatars prop
- * <AvatarGroup
- *   size="lg"
- *   avatars={[
- *     { name: "John Doe" },
- *     { initials: "AB" },
- *     { src: "/avatar.jpg", alt: "Jane" },
- *     { name: "Bob Smith" },
- *     { name: "Alice Brown" },
- *   ]}
- *   max={4}
- * />
- *
- * // With children
- * <AvatarGroup size="md">
- *   <Avatar name="John Doe" />
- *   <Avatar initials="AB" />
- *   <Avatar src="/avatar.jpg" />
- * </AvatarGroup>
+ * @param {object} style - Additional inline styles
  */
 export const AvatarGroup = ({
   size = AVATAR_SIZES.md,
@@ -83,21 +107,28 @@ export const AvatarGroup = ({
   max = 4,
   showOverflow = true,
   onOverflowClick,
-  className,
+  style,
   children,
   ...props
 }) => {
-  const classes = cx(styles.group, className);
-  const overflowClasses = cx(styles.overflow, styles.overflowSizes[size]);
+  const groupStyle = {
+    ...styles.group,
+    ...style,
+  };
 
   const renderOverflow = (count) => {
     if (!showOverflow || count <= 0) return null;
 
+    const overflowStyle = {
+      ...styles.overflow,
+      ...styles.overflowSizes[size],
+      ...(onOverflowClick && { cursor: "pointer" }),
+    };
+
     return (
       <span
-        className={overflowClasses}
+        style={overflowStyle}
         onClick={onOverflowClick}
-        style={onOverflowClick ? { cursor: "pointer" } : undefined}
         role={onOverflowClick ? "button" : undefined}
         tabIndex={onOverflowClick ? 0 : undefined}
       >
@@ -113,11 +144,15 @@ export const AvatarGroup = ({
     const overflowCount = childArray.length - max;
 
     return (
-      <div className={classes} {...props}>
+      <div style={groupStyle} {...props}>
         {visibleChildren.map((child, index) =>
           React.cloneElement(child, {
             key: index,
             size,
+            style: {
+              ...child.props.style,
+              ...(index === 0 ? styles.avatarFirst : styles.avatar),
+            },
           })
         )}
         {renderOverflow(overflowCount)}
@@ -130,7 +165,7 @@ export const AvatarGroup = ({
   const overflowCount = avatars.length - max;
 
   return (
-    <div className={classes} {...props}>
+    <div style={groupStyle} {...props}>
       {visibleAvatars.map((avatar, index) => (
         <Avatar
           key={index}
@@ -139,6 +174,7 @@ export const AvatarGroup = ({
           name={avatar.name}
           src={avatar.src}
           alt={avatar.alt}
+          style={index === 0 ? styles.avatarFirst : styles.avatar}
         />
       ))}
       {renderOverflow(overflowCount)}

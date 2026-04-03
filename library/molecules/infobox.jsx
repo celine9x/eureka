@@ -2,11 +2,15 @@
  * Infobox Component
  *
  * A contextual message box with variants for success, warning, error, info, and neutral states.
- * Uses Tailwind CSS with design tokens.
+ * Uses inline styles with CSS variables from tokens.css for consistent styling.
+ *
+ * @example
+ * <Infobox variant="success" title="Operation complete" />
+ * <Infobox variant="warning" title="Warning" description="Please review your changes" />
+ * <Infobox variant="error" title="Error" actionLabel="Retry" onAction={() => {}} />
  */
 
 import React from "react";
-import { cx } from "../utils/cx.js";
 import { Button } from "../atoms/button.jsx";
 import { Icon } from "../atoms/icon.jsx";
 
@@ -14,7 +18,6 @@ import { Icon } from "../atoms/icon.jsx";
 // CONSTANTS
 // ─────────────────────────────────────────────
 
-/** Infobox variants */
 export const INFOBOX_VARIANTS = {
   success: "success",
   warning: "warning",
@@ -33,25 +36,91 @@ const VARIANT_ICONS = {
 };
 
 // ─────────────────────────────────────────────
-// STYLES
+// STYLES (Token-mapped inline styles)
 // ─────────────────────────────────────────────
 
 const styles = {
-  base: "flex items-center gap-2 p-4 rounded-md w-full box-border",
-
-  variants: {
-    success: "bg-success-50 [&_.infobox-icon]:text-success-500",
-    warning: "bg-warning-100 [&_.infobox-icon]:text-warning-400",
-    error: "bg-error-200 [&_.infobox-icon]:text-error-400",
-    info: "bg-primary-50 [&_.infobox-icon]:text-primary-400",
-    neutral: "bg-neutral-100 [&_.infobox-icon]:text-neutral-500",
+  base: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    padding: 16,
+    borderRadius: "var(--radius-md)",
+    width: "100%",
+    boxSizing: "border-box",
   },
 
-  content: "flex-1 flex flex-col gap-1",
-  header: "flex items-center gap-2",
-  icon: "infobox-icon flex items-center justify-center flex-shrink-0",
-  title: "flex-1 font-primary text-body-md font-normal text-content-primary",
-  description: "pl-7 font-primary text-body-md font-normal text-content-secondary",
+  variants: {
+    success: {
+      background: "rgba(115, 229, 172, 0.15)",
+    },
+    warning: {
+      background: "rgba(255, 199, 0, 0.2)",
+    },
+    error: {
+      background: "rgba(255, 115, 115, 0.2)",
+    },
+    info: {
+      background: "var(--color-general-informative)",
+    },
+    neutral: {
+      background: "var(--color-general-neutral-light)",
+    },
+  },
+
+  iconVariants: {
+    success: {
+      color: "var(--color-content-positive)",
+    },
+    warning: {
+      color: "var(--color-content-warning)",
+    },
+    error: {
+      color: "var(--color-content-negative)",
+    },
+    info: {
+      color: "var(--color-action-fill-primary-enabled)",
+    },
+    neutral: {
+      color: "var(--color-content-secondary)",
+    },
+  },
+
+  content: {
+    flex: 1,
+    display: "flex",
+    flexDirection: "column",
+    gap: 4,
+  },
+
+  header: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+  },
+
+  icon: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+
+  title: {
+    flex: 1,
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-md)",
+    fontWeight: 400,
+    color: "var(--color-content-primary)",
+  },
+
+  description: {
+    paddingLeft: 28,
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-md)",
+    fontWeight: 400,
+    color: "var(--color-content-secondary)",
+  },
 };
 
 // ─────────────────────────────────────────────
@@ -67,12 +136,7 @@ const styles = {
  * @param {string} actionLabel - Label for the action button (optional)
  * @param {function} onAction - Callback function when action button is clicked
  * @param {ReactNode} icon - Custom icon to override the default variant icon
- * @param {string} className - Additional CSS classes
- *
- * @example
- * <Infobox variant="success" title="Operation complete" />
- * <Infobox variant="warning" title="Warning" description="Please review your changes" />
- * <Infobox variant="error" title="Error" description="Something went wrong" actionLabel="Retry" onAction={() => {}} />
+ * @param {object} style - Additional inline styles
  */
 export const Infobox = ({
   variant = INFOBOX_VARIANTS.info,
@@ -81,25 +145,37 @@ export const Infobox = ({
   actionLabel,
   onAction,
   icon,
-  className,
+  style,
   ...props
 }) => {
-  const classes = cx(styles.base, styles.variants[variant], className);
   const iconName = VARIANT_ICONS[variant] || VARIANT_ICONS.info;
 
+  // Compose box styles
+  const boxStyle = {
+    ...styles.base,
+    ...styles.variants[variant],
+    ...style,
+  };
+
+  // Icon styles
+  const iconStyle = {
+    ...styles.icon,
+    ...styles.iconVariants[variant],
+  };
+
   return (
-    <div className={classes} role="status" {...props}>
-      <div className={styles.content}>
-        <div className={styles.header}>
-          <span className={styles.icon}>
+    <div style={boxStyle} role="status" {...props}>
+      <div style={styles.content}>
+        <div style={styles.header}>
+          <span style={iconStyle}>
             {icon || <Icon name={iconName} variant="solid" size="md" />}
           </span>
-          <span className={styles.title}>{title}</span>
+          <span style={styles.title}>{title}</span>
         </div>
-        {description && <div className={styles.description}>{description}</div>}
+        {description && <div style={styles.description}>{description}</div>}
       </div>
       {actionLabel && (
-        <Button variant="secondary" size="md" onPress={onAction}>
+        <Button variant="secondary" size="md" onClick={onAction}>
           {actionLabel}
         </Button>
       )}

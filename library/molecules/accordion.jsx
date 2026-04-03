@@ -2,19 +2,23 @@
  * Accordion Component
  *
  * An expandable/collapsible content container with header and optional actions.
- * Uses Tailwind CSS with design tokens.
+ * Uses inline styles with CSS variables from tokens.css for consistent styling.
+ *
+ * @example
+ * <Accordion title="Container title" defaultExpanded>
+ *   <p>Content here</p>
+ * </Accordion>
  */
 
-import React, { useState, useRef, useEffect, createContext, useContext, useId } from "react";
-import { cx } from "../utils/cx.js";
+import { useState, useRef, useEffect, createContext, useContext, useId } from "react";
 import { Button } from "../atoms/button.jsx";
 import { Icon } from "../atoms/icon.jsx";
+import { ChevronDownIcon } from "@heroicons/react/16/solid";
 
 // ─────────────────────────────────────────────
 // CONSTANTS
 // ─────────────────────────────────────────────
 
-/** Accordion sizes */
 export const ACCORDION_SIZES = {
   sm: "sm",
   md: "md",
@@ -22,69 +26,185 @@ export const ACCORDION_SIZES = {
 };
 
 // ─────────────────────────────────────────────
-// STYLES
-// ─────────────────────────────────────────────
-
-const styles = {
-  accordion: "inline-flex flex-col justify-start items-start w-full",
-
-  header: [
-    "self-stretch inline-flex justify-start items-center gap-4 px-6",
-    "bg-background-white rounded-lg border-none cursor-pointer text-left",
-    "outline outline-1 -outline-offset-1 outline-outline-neutral",
-    "transition-all duration-fast",
-    "hover:not-disabled:bg-background-neutral-lighter hover:not-disabled:outline-neutral-300",
-    "focus-visible:outline-primary-600 focus-visible:shadow-focus",
-    "disabled:bg-background-neutral-light disabled:cursor-not-allowed disabled:opacity-50",
-  ].join(" "),
-
-  headerExpanded: "rounded-t-lg rounded-b-none",
-
-  headerSizes: {
-    sm: "py-2",
-    md: "py-4",
-    lg: "py-5",
-  },
-
-  headerLeft: "flex-1 flex justify-start items-center gap-2 min-w-0",
-  headerRight: "flex justify-start items-center gap-2 flex-shrink-0",
-
-  icon: "flex-shrink-0 size-5 flex items-center justify-center text-content-secondary",
-
-  title: "font-primary text-content-primary whitespace-nowrap overflow-hidden text-ellipsis",
-
-  titleSizes: {
-    sm: "text-body-md font-semibold",
-    md: "text-body-lg font-bold",
-    lg: "text-heading-sm font-bold",
-  },
-
-  secondaryText: "font-primary text-body-md font-normal text-content-secondary",
-
-  chevron: [
-    "flex-shrink-0 size-5 flex items-center justify-center",
-    "text-content-secondary transition-transform duration-fast",
-  ].join(" "),
-
-  chevronExpanded: "rotate-180",
-
-  content: [
-    "self-stretch overflow-hidden bg-background-white",
-    "rounded-b-lg border border-outline-neutral border-t-0",
-  ].join(" "),
-
-  contentAnimated: "transition-[height] duration-normal",
-
-  contentInner: "p-6 min-h-14",
-
-  group: "flex flex-col gap-3 w-full",
-};
-
-// ─────────────────────────────────────────────
 // CONTEXT
 // ─────────────────────────────────────────────
 
 const AccordionContext = createContext(null);
+
+// ─────────────────────────────────────────────
+// STYLES (Token-mapped inline styles)
+// ─────────────────────────────────────────────
+
+const styles = {
+  accordion: {
+    display: "inline-flex",
+    flexDirection: "column",
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
+    width: "100%",
+  },
+
+  header: {
+    alignSelf: "stretch",
+    display: "inline-flex",
+    justifyContent: "flex-start",
+    alignItems: "center",
+    gap: 16,
+    paddingLeft: 24,
+    paddingRight: 24,
+    background: "var(--color-general-white)",
+    borderRadius: 8,
+    border: "none",
+    cursor: "pointer",
+    textAlign: "left",
+    outline: "1px solid var(--color-action-outline-secondary-enabled)",
+    outlineOffset: "-1px",
+    transition: "all var(--transition-fast)",
+    boxSizing: "border-box",
+  },
+
+  headerHover: {
+    background: "var(--color-general-neutral-lighter)",
+    outlineColor: "var(--color-action-outline-secondary-hover)",
+  },
+
+  headerFocus: {
+    outlineColor: "var(--color-action-fill-primary-enabled)",
+    boxShadow: "var(--shadow-focus)",
+  },
+
+  headerExpanded: {
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+  },
+
+  headerDisabled: {
+    background: "var(--color-general-neutral-light)",
+    cursor: "not-allowed",
+    opacity: 0.5,
+  },
+
+  headerSizes: {
+    sm: {
+      paddingTop: 8,
+      paddingBottom: 8,
+    },
+    md: {
+      paddingTop: 16,
+      paddingBottom: 16,
+    },
+    lg: {
+      paddingTop: 20,
+      paddingBottom: 20,
+    },
+  },
+
+  headerLeft: {
+    flex: 1,
+    display: "flex",
+    justifyContent: "flex-start",
+    alignItems: "center",
+    gap: 8,
+    minWidth: 0,
+  },
+
+  headerRight: {
+    display: "flex",
+    justifyContent: "flex-start",
+    alignItems: "center",
+    gap: 8,
+    flexShrink: 0,
+  },
+
+  icon: {
+    flexShrink: 0,
+    width: 20,
+    height: 20,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "var(--color-content-secondary)",
+  },
+
+  title: {
+    fontFamily: "var(--font-family-primary)",
+    color: "var(--color-content-primary)",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+  },
+
+  titleSizes: {
+    sm: {
+      fontSize: "var(--text-body-md)",
+      fontWeight: 600,
+      lineHeight: "var(--line-height-body-md)",
+    },
+    md: {
+      fontSize: "var(--text-body-lg)",
+      fontWeight: 700,
+      lineHeight: "var(--line-height-body-lg)",
+    },
+    lg: {
+      fontSize: "var(--text-heading-h3)",
+      fontWeight: 700,
+      lineHeight: "var(--line-height-heading-h3)",
+    },
+  },
+
+  secondaryText: {
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-md)",
+    fontWeight: 400,
+    lineHeight: "var(--line-height-body-md)",
+    color: "var(--color-content-secondary)",
+  },
+
+  chevron: {
+    flexShrink: 0,
+    width: 20,
+    height: 20,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "var(--color-content-secondary)",
+    transition: "transform var(--transition-fast)",
+  },
+
+  chevronExpanded: {
+    transform: "rotate(180deg)",
+  },
+
+  content: {
+    alignSelf: "stretch",
+    overflow: "hidden",
+    background: "var(--color-general-white)",
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
+    borderLeft: "1px solid var(--color-action-outline-secondary-enabled)",
+    borderRight: "1px solid var(--color-action-outline-secondary-enabled)",
+    borderBottom: "1px solid var(--color-action-outline-secondary-enabled)",
+    boxSizing: "border-box",
+  },
+
+  contentAnimated: {
+    transition: "height var(--transition-normal)",
+  },
+
+  contentInner: {
+    padding: 24,
+    minHeight: 56,
+  },
+
+  group: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 12,
+    width: "100%",
+  },
+};
 
 // ─────────────────────────────────────────────
 // ACCORDION ITEM COMPONENT
@@ -108,7 +228,7 @@ const AccordionContext = createContext(null);
  * @param {function} onToggle - Called when toggled
  * @param {boolean} animated - Enable height animation (default: true)
  * @param {ReactNode} children - Content to display when expanded
- * @param {string} className - Additional CSS classes
+ * @param {object} style - Additional inline styles
  */
 export const AccordionItem = ({
   id,
@@ -119,18 +239,20 @@ export const AccordionItem = ({
   action,
   size = ACCORDION_SIZES.md,
   isDisabled = false,
-  disabled, // Support legacy prop
+  disabled,
   expanded: controlledExpanded,
   defaultExpanded = false,
   onToggle,
   animated = true,
   children,
-  className,
+  style,
   ...props
 }) => {
   const context = useContext(AccordionContext);
   const contentRef = useRef(null);
   const [height, setHeight] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
 
   const isItemDisabled = isDisabled || disabled;
 
@@ -164,52 +286,78 @@ export const AccordionItem = ({
     }
   }, [children, isExpanded]);
 
-  const accordionClasses = cx(styles.accordion, className);
+  // Compose accordion styles
+  const accordionStyle = {
+    ...styles.accordion,
+    ...style,
+  };
 
-  const headerClasses = cx(
-    styles.header,
-    styles.headerSizes[size],
-    isExpanded && styles.headerExpanded
-  );
+  // Compose header styles
+  const headerStyle = {
+    ...styles.header,
+    ...styles.headerSizes[size],
+    ...(isHovered && !isItemDisabled && styles.headerHover),
+    ...(isFocused && !isItemDisabled && styles.headerFocus),
+    ...(isExpanded && styles.headerExpanded),
+    ...(isItemDisabled && styles.headerDisabled),
+  };
 
-  const titleClasses = cx(styles.title, styles.titleSizes[size]);
+  // Title styles
+  const titleStyle = {
+    ...styles.title,
+    ...styles.titleSizes[size],
+  };
 
-  const chevronClasses = cx(styles.chevron, isExpanded && styles.chevronExpanded);
+  // Chevron styles
+  const chevronStyle = {
+    ...styles.chevron,
+    ...(isExpanded && styles.chevronExpanded),
+  };
 
-  const contentClasses = cx(styles.content, animated && styles.contentAnimated);
+  // Content styles
+  const contentStyle = {
+    ...styles.content,
+    ...(animated && styles.contentAnimated),
+    height: animated && isExpanded ? height : isExpanded ? "auto" : 0,
+  };
 
   const renderIcon = () => {
-    if (icon) return <span className={styles.icon}>{icon}</span>;
-    if (iconName)
+    if (icon) return <span style={styles.icon}>{icon}</span>;
+    if (iconName) {
       return (
-        <span className={styles.icon}>
-          <Icon name={iconName} size="md" />
+        <span style={styles.icon}>
+          <Icon name={iconName} size="md" style={{ color: "inherit" }} />
         </span>
       );
+    }
     return null;
   };
 
   return (
-    <div className={accordionClasses} data-open={isExpanded} {...props}>
+    <div style={accordionStyle} data-open={isExpanded} {...props}>
       <button
         type="button"
-        className={headerClasses}
+        style={headerStyle}
         onClick={handleToggle}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
         disabled={isItemDisabled}
         aria-expanded={isExpanded}
         aria-controls={`accordion-content-${id}`}
         id={`accordion-header-${id}`}
       >
-        <div className={styles.headerLeft}>
+        <div style={styles.headerLeft}>
           {renderIcon()}
-          <span className={titleClasses}>{title}</span>
-          {secondaryText && <span className={styles.secondaryText}>{secondaryText}</span>}
+          <span style={titleStyle}>{title}</span>
+          {secondaryText && <span style={styles.secondaryText}>{secondaryText}</span>}
         </div>
 
-        <div className={styles.headerRight}>
+        <div style={styles.headerRight}>
           {action && <span onClick={(e) => e.stopPropagation()}>{action}</span>}
-          <span className={chevronClasses}>
-            <Icon name="ChevronDown" size="md" />
+          <span style={chevronStyle}>
+            <ChevronDownIcon style={{ width: 20, height: 20 }} />
           </span>
         </div>
       </button>
@@ -217,14 +365,11 @@ export const AccordionItem = ({
       {isExpanded && (
         <div
           id={`accordion-content-${id}`}
-          className={contentClasses}
+          style={contentStyle}
           role="region"
           aria-labelledby={`accordion-header-${id}`}
-          style={{
-            height: animated ? height : "auto",
-          }}
         >
-          <div ref={contentRef} className={styles.contentInner}>
+          <div ref={contentRef} style={styles.contentInner}>
             {children}
           </div>
         </div>
@@ -250,7 +395,7 @@ AccordionItem.sizes = ACCORDION_SIZES;
  * @param {string|array} expanded - Controlled expanded state
  * @param {function} onExpandedChange - Called when expanded state changes
  * @param {ReactNode} children - AccordionItem children
- * @param {string} className - Additional CSS classes
+ * @param {object} style - Additional inline styles
  */
 export const AccordionGroup = ({
   children,
@@ -258,7 +403,7 @@ export const AccordionGroup = ({
   defaultExpanded,
   expanded: controlledExpanded,
   onExpandedChange,
-  className,
+  style,
   ...props
 }) => {
   const [internalExpanded, setInternalExpanded] = useState(() => {
@@ -293,9 +438,14 @@ export const AccordionGroup = ({
 
   const isExpanded = (id) => expanded.includes(id);
 
+  const groupStyle = {
+    ...styles.group,
+    ...style,
+  };
+
   return (
     <AccordionContext.Provider value={{ toggleItem, isExpanded }}>
-      <div className={cx(styles.group, className)} {...props}>
+      <div style={groupStyle} {...props}>
         {children}
       </div>
     </AccordionContext.Provider>
@@ -327,23 +477,7 @@ AccordionGroup.displayName = "AccordionGroup";
  * @param {function} onToggle - Called when toggled
  * @param {boolean} animated - Enable height animation
  * @param {ReactNode} children - Content to display when expanded
- * @param {string} className - Additional CSS classes
- *
- * @example
- * // Basic usage
- * <Accordion title="Container title">
- *   <p>Content here</p>
- * </Accordion>
- *
- * @example
- * // With action button
- * <Accordion
- *   title="Container title"
- *   actionLabel="Button"
- *   onActionClick={() => console.log('clicked')}
- * >
- *   <p>Content here</p>
- * </Accordion>
+ * @param {object} style - Additional inline styles
  */
 export const Accordion = ({
   title,
@@ -355,13 +489,13 @@ export const Accordion = ({
   onActionClick,
   size = ACCORDION_SIZES.md,
   isDisabled = false,
-  disabled, // Support legacy prop
+  disabled,
   expanded,
   defaultExpanded = false,
   onToggle,
   animated = true,
   children,
-  className,
+  style,
   ...props
 }) => {
   const generatedId = useId();
@@ -376,7 +510,7 @@ export const Accordion = ({
       <Button
         variant="secondary"
         size="sm"
-        onPress={onActionClick}
+        onClick={onActionClick}
         isDisabled={isAccordionDisabled}
       >
         {actionLabel}
@@ -397,7 +531,7 @@ export const Accordion = ({
       defaultExpanded={defaultExpanded}
       onToggle={onToggle}
       animated={animated}
-      className={className}
+      style={style}
       {...props}
     >
       {children}

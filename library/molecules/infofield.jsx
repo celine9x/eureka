@@ -3,11 +3,14 @@
  *
  * A read-only field displaying a label with various value types:
  * text, badges, or chips. Supports header actions and overflow indicators.
- * Uses Tailwind CSS with design tokens.
+ * Uses inline styles with CSS variables from tokens.css for consistent styling.
+ *
+ * @example
+ * <Infofield label="Name" value="John Doe" />
+ * <Infofield label="Tags" variant="badges" values={['Tag 1', 'Tag 2']} />
  */
 
-import React from "react";
-import { cx } from "../utils/cx.js";
+import React, { useState } from "react";
 import { Badge } from "../atoms/badge.jsx";
 import { Chip } from "../atoms/chip.jsx";
 import { Icon } from "../atoms/icon.jsx";
@@ -16,7 +19,6 @@ import { Icon } from "../atoms/icon.jsx";
 // CONSTANTS
 // ─────────────────────────────────────────────
 
-/** Infofield variants */
 export const INFOFIELD_VARIANTS = {
   text: "text",
   badges: "badges",
@@ -24,29 +26,79 @@ export const INFOFIELD_VARIANTS = {
 };
 
 // ─────────────────────────────────────────────
-// STYLES
+// STYLES (Token-mapped inline styles)
 // ─────────────────────────────────────────────
 
 const styles = {
-  base: "flex flex-col gap-1 font-primary",
+  base: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 4,
+    fontFamily: "var(--font-family-primary)",
+  },
 
-  header: "flex items-center gap-2",
-  label: "flex-1 text-body-lg font-normal text-content-secondary",
-  actions: "flex items-center gap-2",
+  header: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+  },
 
-  value: "flex items-center gap-1 text-body-md font-normal text-content-primary",
-  valueIcon: "flex-shrink-0 flex items-center justify-center text-content-secondary",
+  label: {
+    flex: 1,
+    fontSize: "var(--text-body-lg)",
+    fontWeight: 400,
+    color: "var(--color-content-secondary)",
+  },
 
-  items: "flex flex-wrap items-start gap-2",
+  actions: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+  },
 
-  overflow: [
-    "inline-flex items-center justify-center py-0.5 px-1",
-    "bg-background-neutral-lighter rounded-sm",
-    "outline outline-1 -outline-offset-1 outline-outline-neutral",
-    "text-body-md font-normal text-content-secondary cursor-default",
-  ].join(" "),
+  value: {
+    display: "flex",
+    alignItems: "center",
+    gap: 4,
+    fontSize: "var(--text-body-md)",
+    fontWeight: 400,
+    color: "var(--color-content-primary)",
+  },
 
-  empty: "text-content-tertiary italic",
+  valueIcon: {
+    flexShrink: 0,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "var(--color-content-secondary)",
+  },
+
+  items: {
+    display: "flex",
+    flexWrap: "wrap",
+    alignItems: "flex-start",
+    gap: 8,
+  },
+
+  overflow: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "2px 4px",
+    background: "var(--color-general-neutral-lighter)",
+    borderRadius: "var(--radius-sm)",
+    outline: "1px solid var(--color-action-outline-secondary-enabled)",
+    outlineOffset: "-1px",
+    fontSize: "var(--text-body-md)",
+    fontWeight: 400,
+    color: "var(--color-content-secondary)",
+    cursor: "default",
+  },
+
+  empty: {
+    color: "var(--color-content-tertiary)",
+    fontStyle: "italic",
+  },
 };
 
 // ─────────────────────────────────────────────
@@ -69,30 +121,7 @@ const styles = {
  * @param {function} onOverflowClick - Callback when overflow indicator is clicked
  * @param {object} badgeProps - Props to pass to Badge components
  * @param {object} chipProps - Props to pass to Chip components
- * @param {string} className - Additional CSS classes
- *
- * @example
- * // Text variant
- * <Infofield label="Name" value="John Doe" />
- * <Infofield label="Status" value="Active" iconName="CheckCircle" />
- *
- * // Badge variant
- * <Infofield
- *   label="Tags"
- *   variant="badges"
- *   values={['Tag 1', 'Tag 2', 'Tag 3']}
- *   maxItems={5}
- * />
- *
- * // Chip variant
- * <Infofield
- *   label="Categories"
- *   variant="chips"
- *   values={[
- *     { label: 'Neurology', color: '#4649FF' },
- *     { label: 'Cardiology', color: '#02C39A' }
- *   ]}
- * />
+ * @param {object} style - Additional inline styles
  */
 export const Infofield = ({
   label,
@@ -108,7 +137,7 @@ export const Infofield = ({
   onOverflowClick,
   badgeProps = {},
   chipProps = {},
-  className,
+  style,
   ...props
 }) => {
   // Auto-detect variant if not specified
@@ -120,24 +149,32 @@ export const Infofield = ({
         : INFOFIELD_VARIANTS.badges
       : INFOFIELD_VARIANTS.text);
 
-  const classes = cx(styles.base, className);
-
   // Determine visible items and overflow count
   const hasOverflow = maxItems && values.length > maxItems;
   const visibleValues = hasOverflow ? values.slice(0, maxItems) : values;
   const overflowCount = hasOverflow ? values.length - maxItems : 0;
 
+  const baseStyle = {
+    ...styles.base,
+    ...style,
+  };
+
+  const overflowStyle = {
+    ...styles.overflow,
+    ...(onOverflowClick && { cursor: "pointer" }),
+  };
+
   const renderValue = () => {
     // Text variant
     if (detectedVariant === "text") {
       if (!value && value !== 0) {
-        return <span className={cx(styles.value, styles.empty)}>{emptyText}</span>;
+        return <span style={{ ...styles.value, ...styles.empty }}>{emptyText}</span>;
       }
 
       return (
-        <div className={styles.value}>
+        <div style={styles.value}>
           {(icon || iconName) && (
-            <span className={styles.valueIcon}>
+            <span style={styles.valueIcon}>
               {icon || <Icon name={iconName} size="md" />}
             </span>
           )}
@@ -148,13 +185,13 @@ export const Infofield = ({
 
     // Empty state for array variants
     if (values.length === 0) {
-      return <span className={cx(styles.value, styles.empty)}>{emptyText}</span>;
+      return <span style={{ ...styles.value, ...styles.empty }}>{emptyText}</span>;
     }
 
     // Badges variant
     if (detectedVariant === "badges") {
       return (
-        <div className={styles.items}>
+        <div style={styles.items}>
           {visibleValues.map((item, index) => {
             const badgeLabel = typeof item === "string" ? item : item.label;
             const itemProps = typeof item === "object" ? item : {};
@@ -174,7 +211,7 @@ export const Infofield = ({
           })}
           {hasOverflow && (
             <span
-              className={styles.overflow}
+              style={overflowStyle}
               onClick={onOverflowClick}
               role={onOverflowClick ? "button" : undefined}
               tabIndex={onOverflowClick ? 0 : undefined}
@@ -189,7 +226,7 @@ export const Infofield = ({
     // Chips variant
     if (detectedVariant === "chips") {
       return (
-        <div className={styles.items}>
+        <div style={styles.items}>
           {visibleValues.map((item, index) => {
             const chipLabel = typeof item === "string" ? item : item.label;
             const chipColor = typeof item === "object" ? item.color : undefined;
@@ -197,7 +234,6 @@ export const Infofield = ({
             const chipIconName = typeof item === "object" ? item.iconName : undefined;
             const itemProps = typeof item === "object" ? item : {};
 
-            // Remove label/color/icon from props to avoid conflicts
             const {
               label: _,
               color: __,
@@ -221,7 +257,7 @@ export const Infofield = ({
           })}
           {hasOverflow && (
             <span
-              className={styles.overflow}
+              style={overflowStyle}
               onClick={onOverflowClick}
               role={onOverflowClick ? "button" : undefined}
               tabIndex={onOverflowClick ? 0 : undefined}
@@ -237,10 +273,10 @@ export const Infofield = ({
   };
 
   return (
-    <div className={classes} {...props}>
-      <div className={styles.header}>
-        <span className={styles.label}>{label}</span>
-        {headerAction && <div className={styles.actions}>{headerAction}</div>}
+    <div style={baseStyle} {...props}>
+      <div style={styles.header}>
+        <span style={styles.label}>{label}</span>
+        {headerAction && <div style={styles.actions}>{headerAction}</div>}
       </div>
       {renderValue()}
     </div>
@@ -260,32 +296,26 @@ Infofield.variants = INFOFIELD_VARIANTS;
  * A container for multiple Infofield components with consistent spacing.
  *
  * @param {string} direction - row | column (default: column)
- * @param {string} gap - Spacing between fields (default: 4)
- * @param {string} className - Additional CSS classes
+ * @param {number} gap - Spacing between fields (default: 16)
+ * @param {object} style - Additional inline styles
  * @param {ReactNode} children - Infofield components
- *
- * @example
- * <InfofieldGroup>
- *   <Infofield label="Name" value="John Doe" />
- *   <Infofield label="Email" value="john@example.com" />
- * </InfofieldGroup>
  */
 export const InfofieldGroup = ({
   direction = "column",
-  gap = 4,
-  className,
+  gap = 16,
+  style,
   children,
   ...props
 }) => {
-  const classes = cx(
-    "flex",
-    direction === "column" ? "flex-col" : "flex-row",
-    `gap-${gap}`,
-    className
-  );
+  const groupStyle = {
+    display: "flex",
+    flexDirection: direction === "column" ? "column" : "row",
+    gap,
+    ...style,
+  };
 
   return (
-    <div className={classes} {...props}>
+    <div style={groupStyle} {...props}>
       {children}
     </div>
   );

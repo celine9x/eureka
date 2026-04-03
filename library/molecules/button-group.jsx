@@ -3,46 +3,95 @@
  *
  * A horizontal group of connected buttons using ButtonBadge atoms.
  * Supports single selection with active state management.
- * Uses Tailwind CSS with design tokens.
+ * Uses inline styles with CSS variables from tokens.css for consistent styling.
+ *
+ * @example
+ * <ButtonGroup value={view} onChange={setView}>
+ *   <ButtonGroupItem value="list" iconName="QueueList">List</ButtonGroupItem>
+ *   <ButtonGroupItem value="grid" iconName="Squares2x2">Grid</ButtonGroupItem>
+ * </ButtonGroup>
  */
 
 import React, { Children, cloneElement, isValidElement } from "react";
-import { cx } from "../utils/cx.js";
 import { ButtonBadge } from "../atoms/button-badge.jsx";
 
 // ─────────────────────────────────────────────
 // CONSTANTS
 // ─────────────────────────────────────────────
 
-/** Button group sizes */
 export const BUTTON_GROUP_SIZES = {
   md: "md",
   lg: "lg",
 };
 
-/** Button group orientations */
 export const BUTTON_GROUP_ORIENTATIONS = {
   horizontal: "horizontal",
   vertical: "vertical",
 };
 
 // ─────────────────────────────────────────────
-// STYLES
+// STYLES (Token-mapped inline styles)
 // ─────────────────────────────────────────────
 
 const styles = {
-  group: "inline-flex items-center",
-  groupVertical: "flex-col",
+  group: {
+    display: "inline-flex",
+    alignItems: "center",
+  },
 
-  // Horizontal button styling
-  horizontalFirst: "[&>*:first-child]:rounded-l-md [&>*:first-child]:rounded-r-none [&>*:first-child]:border-l",
-  horizontalLast: "[&>*:last-child]:rounded-r-md [&>*:last-child]:rounded-l-none",
-  horizontalMiddle: "[&>*:not(:first-child):not(:last-child)]:rounded-none",
+  groupVertical: {
+    flexDirection: "column",
+  },
 
-  // Vertical button styling
-  verticalFirst: "[&>*:first-child]:rounded-t-md [&>*:first-child]:rounded-b-none [&>*:first-child]:border-b-0",
-  verticalLast: "[&>*:last-child]:rounded-b-md [&>*:last-child]:rounded-t-none",
-  verticalMiddle: "[&>*:not(:first-child):not(:last-child)]:rounded-none [&>*:not(:first-child):not(:last-child)]:border-b-0",
+  item: {
+    borderRadius: 0,
+    border: "1px solid var(--color-action-outline-secondary-enabled)",
+    borderLeft: "none",
+    outline: "none",
+    boxShadow: "none",
+  },
+
+  itemFirst: {
+    borderRadius: "var(--radius-md) 0 0 var(--radius-md)",
+    borderLeft: "1px solid var(--color-action-outline-secondary-enabled)",
+  },
+
+  itemLast: {
+    borderRadius: "0 var(--radius-md) var(--radius-md) 0",
+  },
+
+  itemOnly: {
+    borderRadius: "var(--radius-md)",
+    borderLeft: "1px solid var(--color-action-outline-secondary-enabled)",
+  },
+
+  itemActive: {
+    borderColor: "var(--color-action-fill-primary-enabled)",
+    zIndex: 10,
+    position: "relative",
+  },
+
+  // Vertical styles
+  itemVerticalFirst: {
+    borderRadius: "var(--radius-md) var(--radius-md) 0 0",
+    borderLeft: "1px solid var(--color-action-outline-secondary-enabled)",
+    borderTop: "1px solid var(--color-action-outline-secondary-enabled)",
+    borderBottom: "none",
+  },
+
+  itemVerticalLast: {
+    borderRadius: "0 0 var(--radius-md) var(--radius-md)",
+    borderLeft: "1px solid var(--color-action-outline-secondary-enabled)",
+    borderTop: "none",
+    borderBottom: "1px solid var(--color-action-outline-secondary-enabled)",
+  },
+
+  itemVerticalMiddle: {
+    borderRadius: 0,
+    borderLeft: "1px solid var(--color-action-outline-secondary-enabled)",
+    borderTop: "none",
+    borderBottom: "none",
+  },
 };
 
 // ─────────────────────────────────────────────
@@ -64,30 +113,49 @@ const styles = {
  * @param {ReactNode} iconRight - Icon element on the right
  * @param {string} iconRightName - Right icon name
  * @param {function} onPress - Press handler (managed by ButtonGroup)
- * @param {string} className - Additional CSS classes
+ * @param {object} style - Additional inline styles
  * @param {ReactNode} children - Button label
- *
- * @example
- * <ButtonGroupItem value="list" iconName="QueueList">List</ButtonGroupItem>
- * <ButtonGroupItem value="grid" iconName="Squares2x2">Grid</ButtonGroupItem>
  */
 export const ButtonGroupItem = ({
   value,
   size = BUTTON_GROUP_SIZES.md,
   active = false,
   isDisabled = false,
-  disabled, // Support legacy prop
+  disabled,
   icon,
   iconName,
   iconRight,
   iconRightName,
   onPress,
-  onClick, // Support legacy prop
-  className,
+  onClick,
+  style,
+  _position, // Internal: first, middle, last, only
+  _orientation, // Internal: horizontal, vertical
   children,
   ...props
 }) => {
   const isButtonDisabled = isDisabled || disabled;
+  const isHorizontal = _orientation !== "vertical";
+
+  // Compose position styles
+  let positionStyle = {};
+  if (isHorizontal) {
+    if (_position === "first") positionStyle = styles.itemFirst;
+    else if (_position === "last") positionStyle = styles.itemLast;
+    else if (_position === "only") positionStyle = styles.itemOnly;
+  } else {
+    if (_position === "first") positionStyle = styles.itemVerticalFirst;
+    else if (_position === "last") positionStyle = styles.itemVerticalLast;
+    else if (_position === "middle") positionStyle = styles.itemVerticalMiddle;
+    else if (_position === "only") positionStyle = styles.itemOnly;
+  }
+
+  const itemStyle = {
+    ...styles.item,
+    ...positionStyle,
+    ...(active && styles.itemActive),
+    ...style,
+  };
 
   return (
     <ButtonBadge
@@ -99,11 +167,7 @@ export const ButtonGroupItem = ({
       iconRight={iconRight}
       iconRightName={iconRightName}
       onPress={onPress || onClick}
-      className={cx(
-        "rounded-none border border-outline-neutral border-l-0 outline-none shadow-none",
-        active && "border-primary-600 z-10 relative",
-        className
-      )}
+      style={itemStyle}
       {...props}
     >
       {children}
@@ -126,35 +190,15 @@ ButtonGroupItem.displayName = "ButtonGroupItem";
  * @param {string} orientation - horizontal | vertical (default: horizontal)
  * @param {string|number} value - Currently active value
  * @param {function} onChange - Called with new value when selection changes
- * @param {string} className - Additional CSS classes
+ * @param {object} style - Additional inline styles
  * @param {ReactNode} children - ButtonGroupItem or ButtonBadge components
- *
- * @example
- * // With ButtonGroupItem (simple buttons)
- * <ButtonGroup value={view} onChange={setView}>
- *   <ButtonGroupItem value="list" iconName="QueueList" />
- *   <ButtonGroupItem value="grid" iconName="Squares2x2" />
- * </ButtonGroup>
- *
- * // With ButtonBadge (buttons with badges)
- * <ButtonGroup value={filter} onChange={setFilter}>
- *   <ButtonBadge value="all" badgeLabel="10">All</ButtonBadge>
- *   <ButtonBadge value="active" badgeLabel="5">Active</ButtonBadge>
- *   <ButtonBadge value="done" badgeLabel="5">Done</ButtonBadge>
- * </ButtonGroup>
- *
- * // Vertical orientation
- * <ButtonGroup orientation="vertical" value={selected} onChange={setSelected}>
- *   <ButtonGroupItem value="option1">Option 1</ButtonGroupItem>
- *   <ButtonGroupItem value="option2">Option 2</ButtonGroupItem>
- * </ButtonGroup>
  */
 export const ButtonGroup = ({
   size = BUTTON_GROUP_SIZES.md,
   orientation = BUTTON_GROUP_ORIENTATIONS.horizontal,
   value,
   onChange,
-  className,
+  style,
   children,
   ...props
 }) => {
@@ -166,38 +210,40 @@ export const ButtonGroup = ({
 
   const isHorizontal = orientation === "horizontal";
 
-  const classes = cx(
-    styles.group,
-    !isHorizontal && styles.groupVertical,
-    isHorizontal && styles.horizontalFirst,
-    isHorizontal && styles.horizontalLast,
-    isHorizontal && styles.horizontalMiddle,
-    !isHorizontal && styles.verticalFirst,
-    !isHorizontal && styles.verticalLast,
-    !isHorizontal && styles.verticalMiddle,
-    className
-  );
+  const groupStyle = {
+    ...styles.group,
+    ...(!isHorizontal && styles.groupVertical),
+    ...style,
+  };
+
+  const childArray = Children.toArray(children).filter(isValidElement);
+  const childCount = childArray.length;
 
   const renderChildren = () => {
-    return Children.map(children, (child) => {
-      if (!isValidElement(child)) return null;
-
+    return childArray.map((child, index) => {
       const itemValue = child.props.value;
       const isActive = itemValue === value;
 
-      // Clone with active state and click handler
+      // Determine position
+      let position = "middle";
+      if (childCount === 1) position = "only";
+      else if (index === 0) position = "first";
+      else if (index === childCount - 1) position = "last";
+
       return cloneElement(child, {
         size: child.props.size || size,
         state: isActive ? "active" : child.props.state || "enabled",
         active: isActive,
         onPress: () => handleClick(itemValue),
         "aria-pressed": isActive,
+        _position: position,
+        _orientation: orientation,
       });
     });
   };
 
   return (
-    <div className={classes} role="group" {...props}>
+    <div style={groupStyle} role="group" {...props}>
       {renderChildren()}
     </div>
   );

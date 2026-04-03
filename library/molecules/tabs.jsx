@@ -2,75 +2,176 @@
  * Tabs Component (Molecule)
  *
  * A tab navigation component with optional badges and icons.
- * Uses Tailwind CSS with design tokens and react-aria-components for accessibility.
+ * Uses inline styles with CSS variables from tokens.css for consistent styling.
+ *
+ * @example
+ * <Tabs selectedKey={tab} onSelectionChange={setTab}>
+ *   <Tab id="overview">Overview</Tab>
+ *   <Tab id="details" badge={12}>Details</Tab>
+ *   <Tab id="settings" icon={<Icon name="Cog6Tooth" />}>Settings</Tab>
+ * </Tabs>
  */
 
-import React, { useRef, useState, useEffect } from "react";
-import {
-  Tabs as AriaTabs,
-  TabList as AriaTabList,
-  Tab as AriaTab,
-  TabPanel as AriaTabPanel,
-} from "react-aria-components";
-import { cx } from "../utils/cx.js";
+import { useState, useRef, useEffect, createContext, useContext } from "react";
 import { Icon } from "../atoms/icon.jsx";
+import { ChevronRightIcon } from "@heroicons/react/16/solid";
 
 // ─────────────────────────────────────────────
-// STYLES
+// CONTEXT
+// ─────────────────────────────────────────────
+
+const TabsContext = createContext(null);
+
+// ─────────────────────────────────────────────
+// STYLES (Token-mapped inline styles)
 // ─────────────────────────────────────────────
 
 const styles = {
-  container: "relative w-full border-b border-outline-neutral",
+  container: {
+    position: "relative",
+    width: "100%",
+    borderBottom: "1px solid var(--color-action-outline-secondary-enabled)",
+  },
 
-  list: [
-    "inline-flex items-center gap-6 h-9 overflow-x-auto",
-    "scrollbar-none",
-  ].join(" "),
+  list: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 24,
+    height: 36,
+    overflowX: "auto",
+    scrollbarWidth: "none",
+    msOverflowStyle: "none",
+  },
 
-  overflowIndicator: [
-    "w-10 h-9 py-1.5 px-4 absolute right-0 top-0",
-    "bg-gradient-to-r from-transparent to-background-neutral-light",
-    "flex justify-end items-center pointer-events-none",
-  ].join(" "),
+  overflowIndicator: {
+    width: 40,
+    height: 36,
+    paddingTop: 6,
+    paddingBottom: 6,
+    paddingLeft: 16,
+    paddingRight: 16,
+    position: "absolute",
+    right: 0,
+    top: 0,
+    background: "linear-gradient(to right, transparent, var(--color-general-neutral-lighter))",
+    display: "flex",
+    justifyContent: "flex-end",
+    alignItems: "center",
+    pointerEvents: "none",
+  },
 
-  overflowBtn: [
-    "size-6 flex items-center justify-center text-content-secondary",
-    "cursor-pointer pointer-events-auto bg-transparent border-none p-0 rounded-sm",
-    "transition-colors duration-fast hover:text-content-primary",
-  ].join(" "),
+  overflowBtn: {
+    width: 24,
+    height: 24,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "var(--color-content-secondary)",
+    cursor: "pointer",
+    pointerEvents: "auto",
+    background: "transparent",
+    border: "none",
+    padding: 0,
+    borderRadius: "var(--radius-sm)",
+    transition: "color var(--transition-fast)",
+  },
 
-  tab: [
-    "flex items-center gap-2 pb-2 border-b-2 border-transparent",
-    "cursor-pointer select-none flex-shrink-0 transition-colors duration-fast",
-    "outline-none",
-    "focus-visible:outline-2 focus-visible:outline-content-brand focus-visible:outline-offset-2 focus-visible:rounded-sm",
-    // Default state
-    "text-content-secondary",
-    "[&_.tab-icon]:text-content-secondary",
-    "hover:text-content-primary [&:hover_.tab-icon]:text-content-primary",
-    // Selected state
-    "selected:border-content-brand selected:text-content-brand",
-    "[&.selected_.tab-icon]:text-content-brand",
-    // Disabled state
-    "disabled:cursor-not-allowed disabled:opacity-50",
-    "disabled:hover:text-content-secondary",
-  ].join(" "),
+  overflowBtnHover: {
+    color: "var(--color-content-primary)",
+  },
 
-  tabInner: "flex items-center gap-2 p-1",
+  tab: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    paddingBottom: 8,
+    borderBottom: "2px solid transparent",
+    cursor: "pointer",
+    userSelect: "none",
+    flexShrink: 0,
+    transition: "all var(--transition-fast)",
+    outline: "none",
+    background: "transparent",
+    border: "none",
+    borderRadius: 0,
+    fontFamily: "var(--font-family-primary)",
+  },
 
-  tabIcon: "tab-icon size-icon-sm flex items-center justify-center flex-shrink-0 [&_svg]:w-full [&_svg]:h-full",
+  tabDefault: {
+    color: "var(--color-content-secondary)",
+  },
 
-  tabLabel: "font-primary text-body-lg font-normal whitespace-nowrap transition-colors duration-fast",
+  tabHover: {
+    color: "var(--color-content-primary)",
+  },
 
-  badge: [
-    "flex items-center gap-1 py-0.5 px-1 rounded-sm",
-    "font-primary text-body-md font-normal whitespace-nowrap",
-    "transition-all duration-fast",
-  ].join(" "),
+  tabSelected: {
+    borderBottomColor: "var(--color-content-brand)",
+    color: "var(--color-content-brand)",
+  },
 
-  badgeDefault: "bg-background-neutral-lighter text-content-secondary outline outline-1 -outline-offset-1 outline-outline-neutral",
+  tabDisabled: {
+    cursor: "not-allowed",
+    opacity: 0.5,
+  },
 
-  badgeActive: "bg-content-brand text-background-white",
+  tabInner: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    padding: 4,
+  },
+
+  tabIcon: {
+    width: 16,
+    height: 16,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+
+  tabLabel: {
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-lg)",
+    fontWeight: 400,
+    lineHeight: "var(--line-height-body-lg)",
+    whiteSpace: "nowrap",
+    transition: "color var(--transition-fast)",
+  },
+
+  badge: {
+    display: "flex",
+    alignItems: "center",
+    gap: 4,
+    paddingTop: 2,
+    paddingBottom: 2,
+    paddingLeft: 4,
+    paddingRight: 4,
+    borderRadius: "var(--radius-sm)",
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-md)",
+    fontWeight: 400,
+    lineHeight: "var(--line-height-body-md)",
+    whiteSpace: "nowrap",
+    transition: "all var(--transition-fast)",
+  },
+
+  badgeDefault: {
+    background: "var(--color-general-neutral-lighter)",
+    color: "var(--color-content-secondary)",
+    outline: "1px solid var(--color-action-outline-secondary-enabled)",
+    outlineOffset: "-1px",
+  },
+
+  badgeActive: {
+    background: "var(--color-content-brand)",
+    color: "var(--color-general-white)",
+  },
+
+  panel: {
+    padding: "16px 0",
+  },
 };
 
 // ─────────────────────────────────────────────
@@ -87,48 +188,82 @@ const styles = {
  * @param {ReactNode} icon - Icon element to display before the label
  * @param {string|number} badge - Badge content (e.g., count)
  * @param {ReactNode} children - Tab label text
- *
- * @example
- * <Tab id="overview">Overview</Tab>
- * <Tab id="details" badge={5}>Details</Tab>
- * <Tab id="settings" icon={<Icon name="Cog6Tooth" />}>Settings</Tab>
+ * @param {object} style - Additional inline styles
  */
 export const Tab = ({
   id,
   isDisabled = false,
-  disabled, // Support legacy prop
+  disabled,
   icon,
   badge,
-  className = "",
+  style,
   children,
   ...props
 }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const context = useContext(TabsContext);
+
+  const isTabDisabled = isDisabled || disabled;
+  const isSelected = context?.selectedKey === id;
+
+  const handleClick = () => {
+    if (isTabDisabled) return;
+    context?.onSelectionChange?.(id);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      handleClick();
+    }
+  };
+
+  // Compose tab styles
+  const tabStyle = {
+    ...styles.tab,
+    ...styles.tabDefault,
+    ...(isHovered && !isTabDisabled && !isSelected && styles.tabHover),
+    ...(isSelected && styles.tabSelected),
+    ...(isTabDisabled && styles.tabDisabled),
+    ...style,
+  };
+
+  // Icon styles
+  const iconStyle = {
+    ...styles.tabIcon,
+    color: isSelected ? "var(--color-content-brand)" : isHovered ? "var(--color-content-primary)" : "var(--color-content-secondary)",
+  };
+
+  // Badge styles
+  const badgeStyle = {
+    ...styles.badge,
+    ...(isSelected ? styles.badgeActive : styles.badgeDefault),
+  };
+
   return (
-    <AriaTab
-      id={id}
-      isDisabled={isDisabled || disabled}
-      className={({ isSelected, isDisabled }) =>
-        cx(
-          styles.tab,
-          isSelected && "selected",
-          isDisabled && "opacity-50 cursor-not-allowed",
-          className
-        )
-      }
+    <button
+      type="button"
+      role="tab"
+      id={`tab-${id}`}
+      aria-selected={isSelected}
+      aria-controls={`tabpanel-${id}`}
+      tabIndex={isSelected ? 0 : -1}
+      disabled={isTabDisabled}
+      style={tabStyle}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       {...props}
     >
-      {({ isSelected }) => (
-        <div className={styles.tabInner}>
-          {icon && <span className={styles.tabIcon}>{icon}</span>}
-          <span className={styles.tabLabel}>{children}</span>
-          {badge !== undefined && badge !== null && (
-            <span className={cx(styles.badge, isSelected ? styles.badgeActive : styles.badgeDefault)}>
-              {badge}
-            </span>
-          )}
-        </div>
-      )}
-    </AriaTab>
+      <div style={styles.tabInner}>
+        {icon && <span style={iconStyle}>{icon}</span>}
+        <span style={styles.tabLabel}>{children}</span>
+        {badge !== undefined && badge !== null && (
+          <span style={badgeStyle}>{badge}</span>
+        )}
+      </div>
+    </button>
   );
 };
 
@@ -144,18 +279,11 @@ Tab.displayName = "Tab";
  * A tab navigation container that manages active state.
  *
  * @param {string} selectedKey - Currently active tab key
+ * @param {string} defaultSelectedKey - Initial selected key (uncontrolled)
  * @param {function} onSelectionChange - Called with new tab key when selection changes
  * @param {boolean} showOverflow - Show overflow indicator when tabs overflow (default: true)
  * @param {ReactNode} children - Tab components
- *
- * @example
- * const [tab, setTab] = useState('overview');
- *
- * <Tabs selectedKey={tab} onSelectionChange={setTab}>
- *   <Tab id="overview">Overview</Tab>
- *   <Tab id="details" badge={12}>Details</Tab>
- *   <Tab id="settings" icon={<Icon name="Cog6Tooth" />}>Settings</Tab>
- * </Tabs>
+ * @param {object} style - Additional inline styles
  */
 export const Tabs = ({
   selectedKey,
@@ -164,12 +292,26 @@ export const Tabs = ({
   value, // Support legacy prop
   onChange, // Support legacy prop
   showOverflow = true,
-  className = "",
+  style,
   children,
   ...props
 }) => {
   const listRef = useRef(null);
   const [hasOverflow, setHasOverflow] = useState(false);
+  const [overflowHovered, setOverflowHovered] = useState(false);
+  const [internalSelected, setInternalSelected] = useState(defaultSelectedKey);
+
+  // Support legacy props and controlled/uncontrolled modes
+  const isControlled = selectedKey !== undefined || value !== undefined;
+  const resolvedSelectedKey = selectedKey ?? value ?? internalSelected;
+  const resolvedOnChange = onSelectionChange ?? onChange;
+
+  const handleSelectionChange = (key) => {
+    if (!isControlled) {
+      setInternalSelected(key);
+    }
+    resolvedOnChange?.(key);
+  };
 
   useEffect(() => {
     const checkOverflow = () => {
@@ -190,34 +332,46 @@ export const Tabs = ({
     }
   };
 
-  // Support legacy props
-  const resolvedSelectedKey = selectedKey ?? value;
-  const resolvedOnChange = onSelectionChange ?? onChange;
+  // Container styles
+  const containerStyle = {
+    ...styles.container,
+    ...style,
+  };
+
+  // Overflow button styles
+  const overflowBtnStyle = {
+    ...styles.overflowBtn,
+    ...(overflowHovered && styles.overflowBtnHover),
+  };
 
   return (
-    <AriaTabs
-      selectedKey={resolvedSelectedKey}
-      defaultSelectedKey={defaultSelectedKey}
-      onSelectionChange={resolvedOnChange}
-      className={cx(styles.container, className)}
-      {...props}
+    <TabsContext.Provider
+      value={{
+        selectedKey: resolvedSelectedKey,
+        onSelectionChange: handleSelectionChange,
+      }}
     >
-      <AriaTabList ref={listRef} className={styles.list}>
-        {children}
-      </AriaTabList>
-      {showOverflow && hasOverflow && (
-        <div className={styles.overflowIndicator}>
-          <button
-            type="button"
-            className={styles.overflowBtn}
-            onClick={scrollRight}
-            aria-label="Scroll tabs"
-          >
-            <Icon name="ChevronRight" size="sm" />
-          </button>
+      <div style={containerStyle} {...props}>
+        <div ref={listRef} role="tablist" style={styles.list}>
+          {children}
         </div>
-      )}
-    </AriaTabs>
+
+        {showOverflow && hasOverflow && (
+          <div style={styles.overflowIndicator}>
+            <button
+              type="button"
+              style={overflowBtnStyle}
+              onClick={scrollRight}
+              onMouseEnter={() => setOverflowHovered(true)}
+              onMouseLeave={() => setOverflowHovered(false)}
+              aria-label="Scroll tabs"
+            >
+              <ChevronRightIcon style={{ width: 16, height: 16 }} />
+            </button>
+          </div>
+        )}
+      </div>
+    </TabsContext.Provider>
   );
 };
 
@@ -234,17 +388,30 @@ Tabs.displayName = "Tabs";
  *
  * @param {string} id - Tab id this panel is associated with
  * @param {ReactNode} children - Panel content
- *
- * @example
- * <TabPanel id="overview">
- *   <p>Overview content</p>
- * </TabPanel>
+ * @param {object} style - Additional inline styles
  */
-export const TabPanel = ({ id, className = "", children, ...props }) => {
+export const TabPanel = ({ id, style, children, ...props }) => {
+  const context = useContext(TabsContext);
+  const isSelected = context?.selectedKey === id;
+
+  if (!isSelected) return null;
+
+  const panelStyle = {
+    ...styles.panel,
+    ...style,
+  };
+
   return (
-    <AriaTabPanel id={id} className={className} {...props}>
+    <div
+      role="tabpanel"
+      id={`tabpanel-${id}`}
+      aria-labelledby={`tab-${id}`}
+      tabIndex={0}
+      style={panelStyle}
+      {...props}
+    >
       {children}
-    </AriaTabPanel>
+    </div>
   );
 };
 

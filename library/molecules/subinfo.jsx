@@ -3,21 +3,21 @@
  *
  * A flexible info display component for showing various types of data.
  * Supports multiple variants: label, chip, button, avatar, icon-text, links, chips.
- * Uses design tokens from tokens.css.
+ * Uses inline styles with CSS variables from tokens.css for consistent styling.
+ *
+ * @example
+ * <Subinfo iconName="User">John Doe</Subinfo>
+ * <Subinfo variant="avatar" initials="JD" href="/user/1">John Doe</Subinfo>
  */
 
-import React from "react";
-import { createStyleInjector, cx } from "../utils/styles.js";
+import React, { useState } from "react";
 import { Icon } from "../atoms/icon.jsx";
 import { Badge } from "../atoms/badge.jsx";
-import { Chip } from "../atoms/chip.jsx";
-import { Link } from "../atoms/link.jsx";
 
 // ─────────────────────────────────────────────
 // CONSTANTS
 // ─────────────────────────────────────────────
 
-/** Subinfo variants */
 export const SUBINFO_VARIANTS = {
   label: "label",
   value: "value",
@@ -27,190 +27,181 @@ export const SUBINFO_VARIANTS = {
 };
 
 // ─────────────────────────────────────────────
-// STYLES
+// STYLES (Token-mapped inline styles)
 // ─────────────────────────────────────────────
 
 const styles = {
-  base: `
-    .subinfo {
-      display: inline-flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      align-items: flex-start;
-      align-self: stretch;
-      min-width: 120px;
-      max-width: 250px;
-       padding-left: var(--spacing-2);
-    }
-    .subinfo--bordered {
-     padding-left: var(--spacing-2);
-      padding-right: var(--spacing-4);
-      border-right: 1px solid var(--color-outline-neutral);
-    }
-    .subinfo--full-width {
-      max-width: none;
-      flex: 1;
-    }
-  `,
+  base: {
+    display: "inline-flex",
+    flexDirection: "column",
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
+    alignSelf: "stretch",
+    minWidth: 120,
+    maxWidth: 250,
+    paddingLeft: 8,
+  },
 
-  label: `
-    .subinfo-label {
-      color: var(--color-content-tertiary);
-      font-family: var(--font-family-primary);
-      font-size: var(--text-body-md);
-      font-weight: var(--font-weight-regular);
-      line-height: var(--line-height-body-md);
-    }
-  `,
+  bordered: {
+    paddingLeft: 8,
+    paddingRight: 16,
+    borderRight: "1px solid var(--color-action-outline-secondary-enabled)",
+  },
 
-  value: `
-    .subinfo-value {
-      display: inline-flex;
-      align-items: flex-start;
-      gap: var(--spacing-1);
-      align-self: stretch;
-    }
-    .subinfo-value-text {
-      flex: 1;
-      color: var(--color-content-primary);
-      font-family: var(--font-family-primary);
-      font-size: var(--text-body-md);
-      font-weight: var(--font-weight-regular);
-      line-height: var(--line-height-body-md);
-    }
-    .subinfo-value-link {
-      flex: 1;
-      color: var(--color-content-brand);
-      font-family: var(--font-family-primary);
-      font-size: var(--text-body-md);
-      font-weight: var(--font-weight-regular);
-      line-height: var(--line-height-body-md);
-      text-decoration: none;
-      cursor: pointer;
-    }
-    .subinfo-value-link:hover {
-      text-decoration: underline;
-    }
-    .subinfo-value-icon {
-      flex-shrink: 0;
-      width: var(--size-icon-sm);
-      height: var(--size-icon-sm);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--color-content-secondary);
-    }
-    .subinfo-value-icon svg {
-      width: 100%;
-      height: 100%;
-    }
-  `,
+  fullWidth: {
+    maxWidth: "none",
+    flex: 1,
+  },
 
-  avatar: `
-    .subinfo-avatar {
-      width: var(--size-icon-sm);
-      height: var(--size-icon-sm);
-      flex-shrink: 0;
-      border-radius: var(--radius-full);
-      background: var(--color-primary-50);
-      outline: 0.5px solid var(--color-background-white);
-      outline-offset: -0.5px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .subinfo-avatar-text {
-      color: var(--color-primary-400);
-      font-family: var(--font-family-primary);
-      font-size: 8px;
-      font-weight: var(--font-weight-bold);
-      line-height: 12px;
-      text-transform: uppercase;
-      text-align: center;
-    }
-  `,
+  label: {
+    color: "var(--color-content-tertiary)",
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-md)",
+    fontWeight: 400,
+    lineHeight: "var(--line-height-body-md)",
+  },
 
-  list: `
-    .subinfo-list {
-      display: flex;
-      flex-direction: column;
-      gap: var(--spacing-2);
-      width: 100%;
-    }
-    .subinfo-list-item {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--spacing-1);
-      width: 100%;
-    }
-    .subinfo-list-item-icon {
-      flex-shrink: 0;
-      width: var(--size-icon-sm);
-      height: var(--size-icon-sm);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--color-content-secondary);
-    }
-    .subinfo-list-item-icon svg {
-      width: 100%;
-      height: 100%;
-    }
-    .subinfo-list-item-text {
-      flex: 1;
-      color: var(--color-content-primary);
-      font-family: var(--font-family-primary);
-      font-size: var(--text-body-md);
-      font-weight: var(--font-weight-regular);
-      line-height: var(--line-height-body-md);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .subinfo-list-item-link {
-      flex: 1;
-      color: var(--color-content-brand);
-      font-family: var(--font-family-primary);
-      font-size: var(--text-body-md);
-      font-weight: var(--font-weight-regular);
-      line-height: var(--line-height-body-md);
-      text-decoration: none;
-      cursor: pointer;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .subinfo-list-item-link:hover {
-      text-decoration: underline;
-    }
-    .subinfo-list-footer {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--spacing-2);
-      width: 100%;
-    }
-    .subinfo-list-footer-content {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      gap: var(--spacing-1);
-    }
-  `,
+  value: {
+    display: "inline-flex",
+    alignItems: "flex-start",
+    gap: 4,
+    alignSelf: "stretch",
+  },
 
-  chips: `
-    .subinfo-chips {
-      display: inline-flex;
-      flex-wrap: wrap;
-      align-items: flex-start;
-      align-content: flex-start;
-      gap: var(--spacing-1);
-      align-self: stretch;
-    }
-  `,
+  valueText: {
+    flex: 1,
+    color: "var(--color-content-primary)",
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-md)",
+    fontWeight: 400,
+    lineHeight: "var(--line-height-body-md)",
+  },
+
+  valueLink: {
+    flex: 1,
+    color: "var(--color-content-brand)",
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-md)",
+    fontWeight: 400,
+    lineHeight: "var(--line-height-body-md)",
+    textDecoration: "none",
+    cursor: "pointer",
+  },
+
+  valueLinkHover: {
+    textDecoration: "underline",
+  },
+
+  valueIcon: {
+    flexShrink: 0,
+    width: 16,
+    height: 16,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "var(--color-content-secondary)",
+  },
+
+  avatar: {
+    width: 16,
+    height: 16,
+    flexShrink: 0,
+    borderRadius: "var(--radius-full)",
+    background: "var(--color-general-informative)",
+    outline: "0.5px solid var(--color-general-white)",
+    outlineOffset: "-0.5px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  avatarText: {
+    color: "var(--color-action-fill-primary-enabled)",
+    fontFamily: "var(--font-family-primary)",
+    fontSize: 8,
+    fontWeight: 700,
+    lineHeight: "12px",
+    textTransform: "uppercase",
+    textAlign: "center",
+  },
+
+  list: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
+    width: "100%",
+  },
+
+  listItem: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 4,
+    width: "100%",
+  },
+
+  listItemIcon: {
+    flexShrink: 0,
+    width: 16,
+    height: 16,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "var(--color-content-secondary)",
+  },
+
+  listItemText: {
+    flex: 1,
+    color: "var(--color-content-primary)",
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-md)",
+    fontWeight: 400,
+    lineHeight: "var(--line-height-body-md)",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+  },
+
+  listItemLink: {
+    flex: 1,
+    color: "var(--color-content-brand)",
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-md)",
+    fontWeight: 400,
+    lineHeight: "var(--line-height-body-md)",
+    textDecoration: "none",
+    cursor: "pointer",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+  },
+
+  listItemLinkHover: {
+    textDecoration: "underline",
+  },
+
+  listFooter: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 8,
+    width: "100%",
+  },
+
+  listFooterContent: {
+    flex: 1,
+    display: "flex",
+    alignItems: "center",
+    gap: 4,
+  },
+
+  chips: {
+    display: "inline-flex",
+    flexWrap: "wrap",
+    alignItems: "flex-start",
+    alignContent: "flex-start",
+    gap: 4,
+    alignSelf: "stretch",
+  },
 };
-
-const injectStyles = createStyleInjector("subinfo");
-const css = Object.values(styles).join("\n");
 
 // ─────────────────────────────────────────────
 // SUBINFO AVATAR
@@ -222,12 +213,12 @@ const css = Object.values(styles).join("\n");
  * Small avatar with initials.
  *
  * @param {string} initials - Avatar initials
- * @param {string} className - Additional CSS classes
+ * @param {object} style - Additional inline styles
  */
-export const SubinfoAvatar = ({ initials, className }) => {
+export const SubinfoAvatar = ({ initials, style }) => {
   return (
-    <div className={cx("subinfo-avatar", className)}>
-      <span className="subinfo-avatar-text">{initials}</span>
+    <div style={{ ...styles.avatar, ...style }}>
+      <span style={styles.avatarText}>{initials}</span>
     </div>
   );
 };
@@ -248,7 +239,7 @@ SubinfoAvatar.displayName = "SubinfoAvatar";
  * @param {string} href - Link URL
  * @param {function} onClick - Click handler
  * @param {boolean} truncate - Truncate text with ellipsis (default: true)
- * @param {string} className - Additional CSS classes
+ * @param {object} style - Additional inline styles
  * @param {ReactNode} children - Item content
  */
 export const SubinfoListItem = ({
@@ -257,35 +248,37 @@ export const SubinfoListItem = ({
   href,
   onClick,
   truncate = true,
-  className,
+  style,
   children,
 }) => {
-  injectStyles(css);
+  const [isHovered, setIsHovered] = useState(false);
 
-  const iconElement = icon || (iconName ? <Icon name={iconName} /> : null);
+  const iconElement = icon || (iconName ? <Icon name={iconName} size="sm" /> : null);
   const isLink = href || onClick;
 
+  const textStyle = truncate ? {} : { whiteSpace: "normal" };
+
+  const linkStyle = {
+    ...styles.listItemLink,
+    ...textStyle,
+    ...(isHovered && styles.listItemLinkHover),
+  };
+
   return (
-    <div className={cx("subinfo-list-item", className)}>
-      {iconElement && (
-        <span className="subinfo-list-item-icon">{iconElement}</span>
-      )}
+    <div style={{ ...styles.listItem, ...style }}>
+      {iconElement && <span style={styles.listItemIcon}>{iconElement}</span>}
       {isLink ? (
         <a
           href={href}
           onClick={onClick}
-          className="subinfo-list-item-link"
-          style={truncate ? {} : { whiteSpace: "normal" }}
+          style={linkStyle}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
         >
           {children}
         </a>
       ) : (
-        <span
-          className="subinfo-list-item-text"
-          style={truncate ? {} : { whiteSpace: "normal" }}
-        >
-          {children}
-        </span>
+        <span style={{ ...styles.listItemText, ...textStyle }}>{children}</span>
       )}
     </div>
   );
@@ -311,36 +304,10 @@ SubinfoListItem.displayName = "SubinfoListItem";
  * @param {string} href - Makes value a link
  * @param {function} onClick - Click handler for value
  * @param {string} initials - Avatar initials (for avatar variant)
- * @param {array} items - Array of items for list variant: [{ text, icon?, iconName?, href?, onClick? }]
+ * @param {array} items - Array of items for list variant
  * @param {number} maxItems - Max items to show before "more" badge (default: 5)
- * @param {ReactNode} children - Content (value text, chips, or custom content)
- *
- * @example
- * // Label only
- * <Subinfo variant="label">Label</Subinfo>
- *
- * // Value with icon
- * <Subinfo iconName="User">John Doe</Subinfo>
- *
- * // Avatar with link
- * <Subinfo variant="avatar" initials="JD" href="/user/1">John Doe</Subinfo>
- *
- * // List of links
- * <Subinfo
- *   variant="list"
- *   items={[
- *     { text: "Abbvie Limited", iconName: "Building", href: "/company/1" },
- *     { text: "Pfizer Inc", iconName: "Building", href: "/company/2" },
- *   ]}
- *   maxItems={4}
- * />
- *
- * // Chips
- * <Subinfo variant="chips">
- *   <Chip>Tag 1</Chip>
- *   <Chip>Tag 2</Chip>
- *   <Chip>Tag 3</Chip>
- * </Subinfo>
+ * @param {ReactNode} children - Content
+ * @param {object} style - Additional inline styles
  */
 export const Subinfo = ({
   variant = SUBINFO_VARIANTS.value,
@@ -354,26 +321,26 @@ export const Subinfo = ({
   initials,
   items = [],
   maxItems = 5,
-  className,
+  style,
   children,
   ...props
 }) => {
-  injectStyles(css);
+  const [isHovered, setIsHovered] = useState(false);
 
-  const classes = cx(
-    "subinfo",
-    bordered && "subinfo--bordered",
-    fullWidth && "subinfo--full-width",
-    className
-  );
+  const baseStyle = {
+    ...styles.base,
+    ...(bordered && styles.bordered),
+    ...(fullWidth && styles.fullWidth),
+    ...style,
+  };
 
-  const iconElement = icon || (iconName ? <Icon name={iconName} /> : null);
+  const iconElement = icon || (iconName ? <Icon name={iconName} size="sm" /> : null);
 
   // Label variant
   if (variant === "label") {
     return (
-      <div className={classes} {...props}>
-        <span className="subinfo-label">{children || label}</span>
+      <div style={baseStyle} {...props}>
+        <span style={styles.label}>{children || label}</span>
       </div>
     );
   }
@@ -381,16 +348,27 @@ export const Subinfo = ({
   // Avatar variant
   if (variant === "avatar") {
     const isLink = href || onClick;
+    const linkStyle = {
+      ...styles.valueLink,
+      ...(isHovered && styles.valueLinkHover),
+    };
+
     return (
-      <div className={classes} {...props}>
-        <div className="subinfo-value">
+      <div style={baseStyle} {...props}>
+        <div style={styles.value}>
           {initials && <SubinfoAvatar initials={initials} />}
           {isLink ? (
-            <a href={href} onClick={onClick} className="subinfo-value-link">
+            <a
+              href={href}
+              onClick={onClick}
+              style={linkStyle}
+              onMouseEnter={() => setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
+            >
               {children}
             </a>
           ) : (
-            <span className="subinfo-value-text">{children}</span>
+            <span style={styles.valueText}>{children}</span>
           )}
         </div>
       </div>
@@ -404,15 +382,15 @@ export const Subinfo = ({
     const hasMore = remainingCount > 0;
 
     return (
-      <div className={classes} {...props}>
-        <div className="subinfo-list">
+      <div style={baseStyle} {...props}>
+        <div style={styles.list}>
           {visibleItems.map((item, index) => {
             const isLast = index === visibleItems.length - 1 && hasMore;
 
             if (isLast) {
               return (
-                <div key={index} className="subinfo-list-footer">
-                  <div className="subinfo-list-footer-content">
+                <div key={index} style={styles.listFooter}>
+                  <div style={styles.listFooterContent}>
                     <SubinfoListItem
                       icon={item.icon}
                       iconName={item.iconName}
@@ -447,26 +425,35 @@ export const Subinfo = ({
   // Chips variant
   if (variant === "chips") {
     return (
-      <div className={classes} {...props}>
-        <div className="subinfo-chips">{children}</div>
+      <div style={baseStyle} {...props}>
+        <div style={styles.chips}>{children}</div>
       </div>
     );
   }
 
   // Default: value variant
   const isLink = href || onClick;
+  const linkStyle = {
+    ...styles.valueLink,
+    ...(isHovered && styles.valueLinkHover),
+  };
+
   return (
-    <div className={classes} {...props}>
-      <div className="subinfo-value">
-        {iconElement && (
-          <span className="subinfo-value-icon">{iconElement}</span>
-        )}
+    <div style={baseStyle} {...props}>
+      <div style={styles.value}>
+        {iconElement && <span style={styles.valueIcon}>{iconElement}</span>}
         {isLink ? (
-          <a href={href} onClick={onClick} className="subinfo-value-link">
+          <a
+            href={href}
+            onClick={onClick}
+            style={linkStyle}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+          >
             {children}
           </a>
         ) : (
-          <span className="subinfo-value-text">{children}</span>
+          <span style={styles.valueText}>{children}</span>
         )}
       </div>
     </div>

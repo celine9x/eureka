@@ -2,11 +2,10 @@
  * DatePicker Component (Molecule)
  *
  * A calendar date picker with single date and range selection support.
- * Uses Tailwind CSS with design tokens.
+ * Uses inline styles with CSS variables from tokens.css for consistent styling.
  */
 
-import React, { useState, useMemo } from "react";
-import { cx } from "../utils/cx.js";
+import { useState, useMemo } from "react";
 import { Icon } from "../atoms/icon.jsx";
 
 // ─────────────────────────────────────────────
@@ -42,69 +41,202 @@ const MONTHS = [
 ];
 
 // ─────────────────────────────────────────────
-// STYLES
+// STYLES (Token-mapped inline styles)
 // ─────────────────────────────────────────────
 
 const styles = {
-  day: [
-    "w-[1.625rem] h-[1.625rem] p-1 rounded-full",
-    "inline-flex flex-col justify-center items-center",
-    "font-primary text-body-md font-normal",
-    "cursor-pointer select-none border-none bg-transparent",
-    "transition-all duration-fast box-border",
-    "focus-visible:outline-2 focus-visible:outline-primary-500 focus-visible:outline-offset-1",
-  ].join(" "),
-
-  dayVariants: {
-    default: "text-content-secondary hover:not-disabled:bg-primary-50 hover:not-disabled:text-neutral-700",
-    outside: "text-content-tertiary hover:not-disabled:bg-primary-50 hover:not-disabled:text-neutral-700",
-    disabled: "text-content-tertiary cursor-not-allowed",
-    today: [
-      "bg-background-white text-content-secondary",
-      "outline outline-1 -outline-offset-1 outline-outline-neutral",
-      "hover:not-disabled:bg-neutral-50 hover:not-disabled:outline-neutral-400 hover:not-disabled:text-neutral-700",
-    ].join(" "),
-    selected: "bg-primary-500 text-content-inverted hover:not-disabled:bg-primary-600",
-    inbetween: "bg-primary-50 text-neutral-900 rounded-none hover:not-disabled:bg-primary-100",
-    "range-start": "bg-primary-500 text-content-inverted rounded-l-full rounded-r-none",
-    "range-end": "bg-primary-500 text-content-inverted rounded-r-full rounded-l-none",
+  day: {
+    width: 26,
+    height: 26,
+    padding: 4,
+    borderRadius: "var(--radius-full)",
+    display: "inline-flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-md)",
+    fontWeight: 400,
+    cursor: "pointer",
+    userSelect: "none",
+    border: "none",
+    background: "transparent",
+    transition: "all var(--transition-fast)",
+    boxSizing: "border-box",
   },
 
-  calendar: [
-    "inline-flex flex-col gap-2 p-3",
-    "bg-background-white rounded-md",
-    "outline outline-1 -outline-offset-1 outline-outline-neutral",
-    "font-primary",
-  ].join(" "),
+  dayVariants: {
+    default: {
+      color: "var(--color-content-secondary)",
+    },
+    defaultHover: {
+      background: "var(--color-general-informative)",
+      color: "var(--color-content-primary)",
+    },
+    outside: {
+      color: "var(--color-content-tertiary)",
+    },
+    outsideHover: {
+      background: "var(--color-general-informative)",
+      color: "var(--color-content-primary)",
+    },
+    disabled: {
+      color: "var(--color-content-tertiary)",
+      cursor: "not-allowed",
+    },
+    today: {
+      background: "var(--color-general-white)",
+      color: "var(--color-content-secondary)",
+      outline: "1px solid var(--color-action-outline-secondary-enabled)",
+      outlineOffset: -1,
+    },
+    todayHover: {
+      background: "var(--color-general-neutral-lighter)",
+      outlineColor: "var(--color-general-neutral-dark)",
+      color: "var(--color-content-primary)",
+    },
+    selected: {
+      background: "var(--color-action-fill-primary-enabled)",
+      color: "var(--color-general-white)",
+    },
+    selectedHover: {
+      background: "var(--color-action-fill-primary-hover)",
+    },
+    inbetween: {
+      background: "var(--color-general-informative)",
+      color: "var(--color-content-primary)",
+      borderRadius: 0,
+    },
+    inbetweenHover: {
+      background: "rgba(77, 121, 255, 0.2)",
+    },
+    "range-start": {
+      background: "var(--color-action-fill-primary-enabled)",
+      color: "var(--color-general-white)",
+      borderRadius: "var(--radius-full) 0 0 var(--radius-full)",
+    },
+    "range-end": {
+      background: "var(--color-action-fill-primary-enabled)",
+      color: "var(--color-general-white)",
+      borderRadius: "0 var(--radius-full) var(--radius-full) 0",
+    },
+  },
 
-  header: "flex items-center justify-between gap-4 h-[1.625rem]",
-  nav: "flex items-center justify-between flex-1",
+  calendar: {
+    display: "inline-flex",
+    flexDirection: "column",
+    gap: 8,
+    padding: 12,
+    background: "var(--color-general-white)",
+    borderRadius: "var(--radius-md)",
+    outline: "1px solid var(--color-action-outline-secondary-enabled)",
+    outlineOffset: -1,
+    fontFamily: "var(--font-family-primary)",
+  },
 
-  navBtn: [
-    "flex items-center justify-center size-6 p-1",
-    "bg-transparent border-none rounded-sm text-content-secondary cursor-pointer",
-    "transition-all duration-fast",
-    "hover:not-disabled:bg-background-neutral-lighter hover:not-disabled:text-content-primary",
-    "disabled:text-content-tertiary disabled:cursor-not-allowed",
-  ].join(" "),
+  header: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 16,
+    height: 26,
+  },
 
-  monthLabel: "text-body-md font-normal text-content-primary text-center",
+  nav: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    flex: 1,
+  },
 
-  year: "flex items-center gap-1",
-  yearLabel: "text-body-md font-normal text-content-primary",
+  navBtn: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: 24,
+    height: 24,
+    padding: 4,
+    background: "transparent",
+    border: "none",
+    borderRadius: "var(--radius-sm)",
+    color: "var(--color-content-secondary)",
+    cursor: "pointer",
+    transition: "all var(--transition-fast)",
+  },
 
-  weekdays: "flex justify-between",
-  weekday: [
-    "w-6 h-6 p-1 flex items-center justify-center",
-    "text-body-caption font-normal text-content-secondary",
-  ].join(" "),
+  navBtnHover: {
+    background: "var(--color-general-neutral-lighter)",
+    color: "var(--color-content-primary)",
+  },
 
-  days: "flex flex-col gap-0.5",
-  week: "flex justify-start",
+  navBtnDisabled: {
+    color: "var(--color-content-tertiary)",
+    cursor: "not-allowed",
+  },
 
-  dual: "flex gap-4",
-  divider: "w-px bg-outline-neutral self-stretch",
-  month: "flex flex-col gap-2",
+  monthLabel: {
+    fontSize: "var(--text-body-md)",
+    fontWeight: 400,
+    color: "var(--color-content-primary)",
+    textAlign: "center",
+  },
+
+  year: {
+    display: "flex",
+    alignItems: "center",
+    gap: 4,
+  },
+
+  yearLabel: {
+    fontSize: "var(--text-body-md)",
+    fontWeight: 400,
+    color: "var(--color-content-primary)",
+  },
+
+  weekdays: {
+    display: "flex",
+    justifyContent: "space-between",
+  },
+
+  weekday: {
+    width: 24,
+    height: 24,
+    padding: 4,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "var(--text-body-caption)",
+    fontWeight: 400,
+    color: "var(--color-content-secondary)",
+  },
+
+  days: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 2,
+  },
+
+  week: {
+    display: "flex",
+    justifyContent: "flex-start",
+  },
+
+  dual: {
+    display: "flex",
+    gap: 16,
+  },
+
+  divider: {
+    width: 1,
+    background: "var(--color-action-outline-secondary-enabled)",
+    alignSelf: "stretch",
+  },
+
+  month: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
+  },
 };
 
 // ─────────────────────────────────────────────
@@ -147,7 +279,7 @@ const getFirstDayOfMonth = (year, month) => {
  * @param {string} variant - default | outside | disabled | today | selected | inbetween | range-start | range-end
  * @param {boolean} isDisabled - Disables the day
  * @param {function} onClick - Click handler
- * @param {string} className - Additional CSS classes
+ * @param {object} style - Additional inline styles
  */
 export const Day = ({
   day,
@@ -155,9 +287,10 @@ export const Day = ({
   isDisabled = false,
   disabled, // Support legacy prop
   onClick,
-  className = "",
+  style,
   ...props
 }) => {
+  const [isHovered, setIsHovered] = useState(false);
   const isDayDisabled = isDisabled || disabled;
 
   const handleClick = (e) => {
@@ -165,19 +298,27 @@ export const Day = ({
     onClick?.(e);
   };
 
-  const classes = cx(
-    styles.day,
-    styles.dayVariants[variant],
-    isDayDisabled && styles.dayVariants.disabled,
-    className
-  );
+  // Get variant styles
+  const variantStyle = styles.dayVariants[variant] || styles.dayVariants.default;
+  const hoverVariantKey = `${variant}Hover`;
+  const hoverStyle = styles.dayVariants[hoverVariantKey];
+
+  const dayStyle = {
+    ...styles.day,
+    ...variantStyle,
+    ...(isHovered && !isDayDisabled && hoverStyle),
+    ...(isDayDisabled && styles.dayVariants.disabled),
+    ...style,
+  };
 
   return (
     <button
       type="button"
-      className={classes}
+      style={dayStyle}
       disabled={isDayDisabled}
       onClick={handleClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       tabIndex={isDayDisabled ? -1 : 0}
       {...props}
     >
@@ -188,6 +329,34 @@ export const Day = ({
 
 Day.displayName = "Day";
 Day.variants = DAY_VARIANTS;
+
+// ─────────────────────────────────────────────
+// NAV BUTTON COMPONENT
+// ─────────────────────────────────────────────
+
+const NavButton = ({ onClick, disabled, ariaLabel, children }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  const btnStyle = {
+    ...styles.navBtn,
+    ...(isHovered && !disabled && styles.navBtnHover),
+    ...(disabled && styles.navBtnDisabled),
+  };
+
+  return (
+    <button
+      type="button"
+      style={btnStyle}
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={ariaLabel}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {children}
+    </button>
+  );
+};
 
 // ─────────────────────────────────────────────
 // CALENDAR MONTH COMPONENT
@@ -325,50 +494,46 @@ const CalendarMonth = ({
   };
 
   return (
-    <div className={styles.month}>
+    <div style={styles.month}>
       {showNavigation && (
-        <div className={styles.header}>
-          <div className={styles.nav}>
-            <button
-              type="button"
-              className={styles.navBtn}
+        <div style={styles.header}>
+          <div style={styles.nav}>
+            <NavButton
               onClick={onPrevMonth}
               disabled={disablePrevNav}
-              aria-label="Previous month"
+              ariaLabel="Previous month"
             >
               <Icon name="ChevronLeft" size="sm" />
-            </button>
-            <span className={styles.monthLabel}>{MONTHS[month]}</span>
-            <button
-              type="button"
-              className={styles.navBtn}
+            </NavButton>
+            <span style={styles.monthLabel}>{MONTHS[month]}</span>
+            <NavButton
               onClick={onNextMonth}
               disabled={disableNextNav}
-              aria-label="Next month"
+              ariaLabel="Next month"
             >
               <Icon name="ChevronRight" size="sm" />
-            </button>
+            </NavButton>
           </div>
-          <div className={styles.year}>
-            <span className={styles.yearLabel}>{year}</span>
-            <button type="button" className={styles.navBtn} aria-label="Select year">
+          <div style={styles.year}>
+            <span style={styles.yearLabel}>{year}</span>
+            <NavButton ariaLabel="Select year">
               <Icon name="ChevronDown" size="sm" />
-            </button>
+            </NavButton>
           </div>
         </div>
       )}
 
-      <div className={styles.weekdays}>
+      <div style={styles.weekdays}>
         {WEEKDAYS.map((day) => (
-          <div key={day} className={styles.weekday}>
+          <div key={day} style={styles.weekday}>
             {day}
           </div>
         ))}
       </div>
 
-      <div className={styles.days}>
+      <div style={styles.days}>
         {weeks.map((week, weekIndex) => (
-          <div key={weekIndex} className={styles.week}>
+          <div key={weekIndex} style={styles.week}>
             {week.map((dayInfo, dayIndex) => {
               const variant = getDayVariant(dayInfo);
               return (
@@ -407,7 +572,7 @@ const CalendarMonth = ({
  * @param {Date} maxDate - Maximum selectable date
  * @param {function} onChange - Called when date is selected: (date) => void
  * @param {function} onRangeChange - Called when range changes: ({ start, end }) => void
- * @param {string} className - Additional CSS classes
+ * @param {object} style - Additional inline styles
  *
  * @example
  * // Single date selection
@@ -433,7 +598,7 @@ export const DatePicker = ({
   maxDate,
   onChange,
   onRangeChange,
-  className = "",
+  style,
   ...props
 }) => {
   const today = useMemo(() => new Date(), []);
@@ -504,12 +669,15 @@ export const DatePicker = ({
   const nextMonth = month === 11 ? 0 : month + 1;
   const nextMonthYear = month === 11 ? year + 1 : year;
 
-  const classes = cx(styles.calendar, className);
+  const calendarStyle = {
+    ...styles.calendar,
+    ...style,
+  };
 
   if (dual) {
     return (
-      <div className={classes} {...props}>
-        <div className={styles.dual}>
+      <div style={calendarStyle} {...props}>
+        <div style={styles.dual}>
           <CalendarMonth
             year={year}
             month={month}
@@ -524,7 +692,7 @@ export const DatePicker = ({
             onNextMonth={handleNextMonth}
             disableNextNav={true}
           />
-          <div className={styles.divider} />
+          <div style={styles.divider} />
           <CalendarMonth
             year={nextMonthYear}
             month={nextMonth}
@@ -545,7 +713,7 @@ export const DatePicker = ({
   }
 
   return (
-    <div className={classes} {...props}>
+    <div style={calendarStyle} {...props}>
       <CalendarMonth
         year={year}
         month={month}

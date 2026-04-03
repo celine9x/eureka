@@ -2,27 +2,26 @@
  * TextInput Component (Molecule)
  *
  * A complete text input with label, input field, and helper/error text.
- * Uses Tailwind CSS with design tokens and react-aria-components for accessibility.
+ * Uses inline styles with CSS variables from tokens.css for consistent styling.
+ *
+ * @example
+ * <TextInput label="Email" type="email" isRequired />
+ * <TextInput label="Password" type="password" error="Required field" />
+ * <TextInput label="Name" helper="Enter your full name" />
  */
 
-import React, { useId, forwardRef } from "react";
-import {
-  TextField,
-  Label as AriaLabel,
-  Input as AriaInput,
-  Text,
-} from "react-aria-components";
-import { cx } from "../utils/cx.js";
-import { INPUT_STATES } from "../utils/props.js";
+import { useState, useId, forwardRef } from "react";
 
 // ─────────────────────────────────────────────
 // CONSTANTS
 // ─────────────────────────────────────────────
 
-/** Re-export input states */
-export { INPUT_STATES };
+export const INPUT_STATES = {
+  default: "default",
+  error: "error",
+  success: "success",
+};
 
-/** Input types */
 export const INPUT_TYPES = {
   text: "text",
   email: "email",
@@ -32,7 +31,6 @@ export const INPUT_TYPES = {
   url: "url",
 };
 
-/** Helper text variants */
 export const HELPER_VARIANTS = {
   default: "default",
   error: "error",
@@ -40,47 +38,110 @@ export const HELPER_VARIANTS = {
 };
 
 // ─────────────────────────────────────────────
-// STYLES
+// STYLES (Token-mapped inline styles)
 // ─────────────────────────────────────────────
 
 const styles = {
-  field: "flex flex-col gap-1",
+  field: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 4,
+  },
 
-  label: [
-    "flex items-center gap-1",
-    "font-primary text-body-md font-normal text-content-primary cursor-pointer",
-  ].join(" "),
+  label: {
+    display: "flex",
+    alignItems: "center",
+    gap: 4,
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-md)",
+    fontWeight: 400,
+    lineHeight: "var(--line-height-body-md)",
+    color: "var(--color-content-primary)",
+    cursor: "pointer",
+  },
 
-  required: "text-content-negative",
+  required: {
+    color: "var(--color-content-negative)",
+  },
 
-  input: [
-    "w-full py-2 px-3 font-primary text-body-lg font-normal text-content-primary",
-    "bg-interaction-fill border border-interaction-outline rounded-md",
-    "outline-none transition-all duration-fast box-border",
-    "placeholder:text-content-tertiary",
-    "hover:border-interaction-outline-hover",
-    "focus:border-interaction-outline-active focus:shadow-focus",
-    "disabled:bg-interaction-fill-disabled disabled:border-interaction-outline-disabled",
-    "disabled:text-content-tertiary disabled:cursor-not-allowed",
-    "read-only:bg-background-neutral-lighter",
-  ].join(" "),
+  inputWrapper: {
+    position: "relative",
+    display: "flex",
+    alignItems: "center",
+  },
 
-  inputError: [
-    "border-interaction-outline-negative",
-    "focus:border-interaction-outline-negative focus:shadow-[0_0_0.25rem_0_rgba(255,115,115,0.4)]",
-  ].join(" "),
+  input: {
+    width: "100%",
+    padding: "8px 12px",
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-lg)",
+    fontWeight: 400,
+    lineHeight: "var(--line-height-body-lg)",
+    color: "var(--color-content-primary)",
+    background: "var(--color-interaction-fill-enabled)",
+    border: "none",
+    borderRadius: "var(--radius-md)",
+    outline: "1px solid var(--color-interaction-outline-enabled)",
+    outlineOffset: "-1px",
+    boxSizing: "border-box",
+    transition: "all var(--transition-fast)",
+  },
 
-  inputSuccess: [
-    "border-[var(--color-interaction-outline-positive)]",
-    "focus:border-[var(--color-interaction-outline-positive)] focus:shadow-[0_0_0.25rem_0_rgba(115,229,172,0.4)]",
-  ].join(" "),
+  inputHover: {
+    outlineColor: "var(--color-interaction-outline-hover)",
+  },
 
-  helper: "font-primary text-body-md font-normal",
+  inputFocus: {
+    outlineColor: "var(--color-interaction-outline-active)",
+    boxShadow: "var(--shadow-focus)",
+  },
+
+  inputError: {
+    outlineColor: "var(--color-interaction-outline-negative)",
+  },
+
+  inputErrorFocus: {
+    outlineColor: "var(--color-interaction-outline-negative)",
+    boxShadow: "0 0 0.25rem 0 rgba(255, 115, 115, 0.4)",
+  },
+
+  inputSuccess: {
+    outlineColor: "var(--color-content-positive)",
+  },
+
+  inputSuccessFocus: {
+    outlineColor: "var(--color-content-positive)",
+    boxShadow: "0 0 0.25rem 0 rgba(115, 229, 172, 0.4)",
+  },
+
+  inputDisabled: {
+    background: "var(--color-interaction-fill-disabled)",
+    outlineColor: "var(--color-interaction-outline-disabled)",
+    color: "var(--color-content-tertiary)",
+    cursor: "not-allowed",
+  },
+
+  inputReadOnly: {
+    background: "var(--color-general-neutral-lighter)",
+  },
+
+  helper: {
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-md)",
+    fontWeight: 400,
+    lineHeight: "var(--line-height-body-md)",
+  },
 
   helperVariants: {
-    default: "text-content-secondary",
-    error: "text-content-negative",
-    success: "text-content-positive",
+    default: {
+      color: "var(--color-content-secondary)",
+    },
+    error: {
+      color: "var(--color-content-negative)",
+    },
+    success: {
+      color: "var(--color-content-positive)",
+    },
   },
 };
 
@@ -94,13 +155,18 @@ const styles = {
  * @param {string} htmlFor - Input id to link
  * @param {boolean} required - Shows * indicator
  * @param {ReactNode} children - Label text
- * @param {string} className - Additional CSS classes
+ * @param {object} style - Additional inline styles
  */
-export const Label = ({ htmlFor, required = false, className, children, ...props }) => {
+export const Label = ({ htmlFor, required = false, style, children, ...props }) => {
+  const labelStyle = {
+    ...styles.label,
+    ...style,
+  };
+
   return (
-    <label htmlFor={htmlFor} className={cx(styles.label, className)} {...props}>
+    <label htmlFor={htmlFor} style={labelStyle} {...props}>
       {children}
-      {required && <span className={styles.required}>*</span>}
+      {required && <span style={styles.required}>*</span>}
     </label>
   );
 };
@@ -116,18 +182,22 @@ Label.displayName = "Label";
  *
  * @param {string} variant - default | error | success (default: default)
  * @param {ReactNode} children - Helper text
- * @param {string} className - Additional CSS classes
+ * @param {object} style - Additional inline styles
  */
 export const HelperText = ({
   variant = HELPER_VARIANTS.default,
-  className,
+  style,
   children,
   ...props
 }) => {
-  const classes = cx(styles.helper, styles.helperVariants[variant], className);
+  const helperStyle = {
+    ...styles.helper,
+    ...styles.helperVariants[variant],
+    ...style,
+  };
 
   return (
-    <span className={classes} {...props}>
+    <span style={helperStyle} {...props}>
       {children}
     </span>
   );
@@ -145,24 +215,60 @@ HelperText.variants = HELPER_VARIANTS;
  *
  * @param {string} type - text | email | password | number | tel | url (default: text)
  * @param {string} state - default | error | success (default: default)
- * @param {boolean} error - Triggers error styling (deprecated, use state)
+ * @param {boolean} isDisabled - Disables the input
+ * @param {boolean} isReadOnly - Makes input read-only
  * @param {string} value - Input value
  * @param {function} onChange - Change handler
- * @param {string} className - Additional CSS classes
+ * @param {object} style - Additional inline styles
  */
 export const Input = forwardRef(
-  ({ type = INPUT_TYPES.text, state, error = false, className, ...props }, ref) => {
-    // Support both state prop and legacy error boolean
-    const inputState = state || (error ? INPUT_STATES.error : INPUT_STATES.default);
+  (
+    {
+      type = INPUT_TYPES.text,
+      state = INPUT_STATES.default,
+      isDisabled = false,
+      disabled,
+      isReadOnly = false,
+      readOnly,
+      style,
+      ...props
+    },
+    ref
+  ) => {
+    const [isHovered, setIsHovered] = useState(false);
+    const [isFocused, setIsFocused] = useState(false);
 
-    const classes = cx(
-      styles.input,
-      inputState === INPUT_STATES.error && styles.inputError,
-      inputState === INPUT_STATES.success && styles.inputSuccess,
-      className
+    const isInputDisabled = isDisabled || disabled;
+    const isInputReadOnly = isReadOnly || readOnly;
+
+    // Compose input styles
+    const inputStyle = {
+      ...styles.input,
+      ...(isHovered && !isInputDisabled && !isFocused && styles.inputHover),
+      ...(isFocused && !isInputDisabled && state === INPUT_STATES.default && styles.inputFocus),
+      ...(state === INPUT_STATES.error && !isFocused && styles.inputError),
+      ...(state === INPUT_STATES.error && isFocused && styles.inputErrorFocus),
+      ...(state === INPUT_STATES.success && !isFocused && styles.inputSuccess),
+      ...(state === INPUT_STATES.success && isFocused && styles.inputSuccessFocus),
+      ...(isInputDisabled && styles.inputDisabled),
+      ...(isInputReadOnly && styles.inputReadOnly),
+      ...style,
+    };
+
+    return (
+      <input
+        ref={ref}
+        type={type}
+        style={inputStyle}
+        disabled={isInputDisabled}
+        readOnly={isInputReadOnly}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
+        {...props}
+      />
     );
-
-    return <input ref={ref} type={type} className={classes} {...props} />;
   }
 );
 
@@ -194,13 +300,7 @@ Input.states = INPUT_STATES;
  * @param {function} onChange - Change handler
  * @param {function} onFocus - Focus handler
  * @param {function} onBlur - Blur handler
- * @param {string} className - Additional CSS classes
- *
- * @example
- * <TextInput label="Email" type="email" isRequired />
- * <TextInput label="Password" type="password" error="Required field" />
- * <TextInput label="Name" helper="Enter your full name" />
- * <TextInput label="Username" success="Username is available" />
+ * @param {object} style - Additional inline styles
  */
 export const TextInput = forwardRef(
   (
@@ -213,17 +313,17 @@ export const TextInput = forwardRef(
       error,
       success,
       isDisabled = false,
-      disabled, // Support legacy prop
+      disabled,
       isRequired = false,
-      required, // Support legacy prop
+      required,
       isReadOnly = false,
-      readOnly, // Support legacy prop
+      readOnly,
       name,
       id,
       onChange,
       onFocus,
       onBlur,
-      className,
+      style,
       ...props
     },
     ref
@@ -253,46 +353,38 @@ export const TextInput = forwardRef(
       ? HELPER_VARIANTS.success
       : HELPER_VARIANTS.default;
 
+    const fieldStyle = {
+      ...styles.field,
+      ...style,
+    };
+
     return (
-      <TextField
-        isDisabled={fieldDisabled}
-        isRequired={fieldRequired}
-        isReadOnly={fieldReadOnly}
-        isInvalid={hasError}
-        className={cx(styles.field, className)}
-        {...props}
-      >
+      <div style={fieldStyle} {...props}>
         {label && (
-          <AriaLabel className={styles.label}>
+          <Label htmlFor={inputId} required={fieldRequired}>
             {label}
-            {fieldRequired && <span className={styles.required}>*</span>}
-          </AriaLabel>
+          </Label>
         )}
-        <AriaInput
+
+        <Input
           ref={ref}
           id={inputId}
           type={type}
           name={name}
           placeholder={placeholder}
           value={value}
+          state={inputState}
+          isDisabled={fieldDisabled}
+          isReadOnly={fieldReadOnly}
           onChange={onChange}
           onFocus={onFocus}
           onBlur={onBlur}
-          className={cx(
-            styles.input,
-            inputState === INPUT_STATES.error && styles.inputError,
-            inputState === INPUT_STATES.success && styles.inputSuccess
-          )}
         />
+
         {helperMessage && (
-          <Text
-            slot={hasError ? "errorMessage" : "description"}
-            className={cx(styles.helper, styles.helperVariants[helperVariant])}
-          >
-            {helperMessage}
-          </Text>
+          <HelperText variant={helperVariant}>{helperMessage}</HelperText>
         )}
-      </TextField>
+      </div>
     );
   }
 );
