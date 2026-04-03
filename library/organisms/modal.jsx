@@ -13,7 +13,7 @@
  * - Blue60 (#4649FF) → --color-content-brand
  */
 
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Button } from "../atoms/button.jsx";
 import { Icon } from "../atoms/icon.jsx";
 
@@ -140,16 +140,18 @@ const styles = {
       outline-offset: 2px;
     }
 
-    /* Content area - 24px padding */
+    /* Content area - 24px padding, children stretch full width */
     .modal__content {
       align-self: stretch;
       flex: 1;
       overflow-y: auto;
       padding: var(--spacing-6);
-      display: inline-flex;
-      justify-content: flex-start;
-      align-items: center;
-      gap: var(--spacing-2);
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-4);
+    }
+    .modal__content > * {
+      width: 100%;
     }
     .modal__content--no-padding {
       padding: 0;

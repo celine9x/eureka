@@ -1,8 +1,17 @@
 /**
- * Button Component
+ * Button Component (Atom)
  *
  * A flexible button with variants, sizes, and loading states.
  * Uses inline styles with CSS variables from tokens.css for consistent styling.
+ *
+ * Token Mapping:
+ * - Heights: --size-button-xs/sm/md/lg/xl
+ * - Typography: --text-button-md/lg, --line-height-button-md/lg, --font-weight-button-md/lg
+ * - Icons: --size-icon-sm/md
+ * - Spacing: --spacing-1/2/3 for padding and gaps
+ * - Radius: --radius-sm/md
+ * - Colors: --color-action-fill-*, --color-action-content-*, --color-action-outline-*
+ * - Shadows: --shadow-button-enabled/hover/focus/light
  *
  * @example
  * <Button variant="primary" size="md">Click me</Button>
@@ -37,14 +46,6 @@ export const BUTTON_SIZES = {
 // STYLES (Token-mapped inline styles)
 // ─────────────────────────────────────────────
 
-// Shadow tokens matching Figma design (uses CSS variables from tokens.css)
-const SHADOWS = {
-  enabled: "var(--shadow-button-enabled)",
-  hover: "var(--shadow-button-hover)",
-  focus: "var(--shadow-button-focus)",
-  light: "var(--shadow-button-light)",
-};
-
 const styles = {
   base: {
     display: "inline-flex",
@@ -53,7 +54,7 @@ const styles = {
     border: "none",
     cursor: "pointer",
     fontFamily: "var(--font-family-primary)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     textDecoration: "none",
     whiteSpace: "nowrap",
     transition: "all var(--transition-fast)",
@@ -75,170 +76,175 @@ const styles = {
     pointerEvents: "none",
   },
 
-  // Size configurations matching Figma (xs=24px, sm=32px, md=32px, lg=40px, xl=48px)
+  // Size configurations using tokens
+  // xs=24px, sm=32px, md=32px, lg=40px, xl=48px
+  // Radius: xs=4px, sm=8px, md=10px (from Figma)
   sizes: {
     xs: {
-      padding: "0 4px",
-      fontSize: 12,
-      lineHeight: "16px",
-      height: 24,
-      gap: 4,
-      iconSize: 16,
-      borderRadius: "var(--radius-sm)", // 4px for xs
+      padding: "0 var(--spacing-xs)",           // 0 4px
+      fontSize: "var(--text-button-md)",        // 12px
+      lineHeight: "var(--line-height-button-md)", // 16px
+      height: "var(--size-button-xs)",          // 24px
+      gap: "var(--spacing-xs)",                 // 4px
+      iconSize: "var(--size-icon-sm)",          // 16px
+      borderRadius: "var(--radius-xs)",         // 4px
     },
     sm: {
-      padding: "0 8px",
-      fontSize: 12,
-      lineHeight: "16px",
-      height: 32,
-      gap: 8,
-      iconSize: 16,
-      borderRadius: "var(--radius-md)", // 8px
+      padding: "0 var(--spacing-sm)",           // 0 8px
+      fontSize: "var(--text-button-md)",        // 12px
+      lineHeight: "var(--line-height-button-md)", // 16px
+      height: "var(--size-button-sm)",          // 32px
+      gap: "var(--spacing-sm)",                 // 8px
+      iconSize: "var(--size-icon-sm)",          // 16px
+      borderRadius: "var(--radius-sm)",         // 8px
     },
     md: {
-      padding: "0 8px",
-      fontSize: 12,
-      lineHeight: "16px",
-      height: 32,
-      gap: 8,
-      iconSize: 16,
-      borderRadius: "var(--radius-md)", // 8px
+      padding: "0 var(--spacing-sm)",           // 0 8px
+      fontSize: "var(--text-button-md)",        // 12px
+      lineHeight: "var(--line-height-button-md)", // 16px
+      height: "var(--size-button-md)",          // 32px
+      gap: "var(--spacing-sm)",                 // 8px
+      iconSize: "var(--size-icon-sm)",          // 16px
+      borderRadius: "var(--radius-sm)",         // 8px
     },
     lg: {
-      padding: "0 8px",
-      fontSize: 14,
-      lineHeight: "20px",
-      height: 40,
-      gap: 8,
-      iconSize: 20,
-      borderRadius: "var(--radius-md)", // 8px
+      padding: "0 var(--spacing-sm)",           // 0 8px
+      fontSize: "var(--text-button-lg)",        // 14px
+      lineHeight: "var(--line-height-button-lg)", // 20px
+      height: "var(--size-button-lg)",          // 40px
+      gap: "var(--spacing-sm)",                 // 8px
+      iconSize: "var(--size-icon-md)",          // 20px
+      borderRadius: "var(--radius-sm)",         // 8px
     },
     xl: {
-      padding: "0 12px",
-      fontSize: 14,
-      lineHeight: "20px",
-      height: 48,
-      gap: 8,
-      iconSize: 20,
-      borderRadius: "var(--radius-md)", // 8px
+      padding: "0 var(--spacing-3)",            // 0 12px
+      fontSize: "var(--text-button-lg)",        // 14px
+      lineHeight: "var(--line-height-button-lg)", // 20px
+      height: "var(--size-button-xl)",          // 48px
+      gap: "var(--spacing-sm)",                 // 8px
+      iconSize: "var(--size-icon-md)",          // 20px
+      borderRadius: "var(--radius-sm)",         // 8px
     },
   },
 
   variants: {
     primary: {
       enabled: {
-        background: "var(--color-action-fill-primary-enabled)", // #4649FF
-        color: "var(--color-action-content-primary-enabled)", // white
-        boxShadow: SHADOWS.enabled,
+        background: "var(--color-action-fill-primary-enabled)",
+        color: "var(--color-action-content-primary-enabled)",
+        boxShadow: "var(--shadow-button-enabled)",
       },
       hover: {
-        background: "var(--color-action-fill-primary-hover)", // #383ACC
-        color: "var(--color-action-content-primary-enabled)", // white - maintain text color
-        boxShadow: SHADOWS.hover,
+        background: "var(--color-action-fill-primary-hover)",
+        color: "var(--color-action-content-primary-enabled)",
+        boxShadow: "var(--shadow-button-hover)",
       },
       active: {
-        background: "var(--color-action-fill-primary-active)", // #4649FF
-        color: "var(--color-action-content-primary-enabled)", // white - maintain text color
-        boxShadow: SHADOWS.focus,
+        background: "var(--color-action-fill-primary-active)",
+        color: "var(--color-action-content-primary-enabled)",
+        boxShadow: "var(--shadow-button-focus)",
       },
       disabled: {
-        background: "var(--color-action-fill-primary-disabled)", // #ECEDFF
-        color: "var(--color-action-content-primary-disabled)", // #4649FF
+        background: "var(--color-action-fill-primary-disabled)",
+        color: "var(--color-action-content-primary-disabled)",
         boxShadow: "none",
       },
     },
     secondary: {
       enabled: {
-        background: "var(--color-action-fill-secondary-enabled)", // white
-        color: "var(--color-action-content-secondary-enabled)", // #5371AC
-        outline: "1px solid var(--color-action-outline-secondary-enabled)", // #D9E0ED
+        background: "var(--color-action-fill-secondary-enabled)",
+        color: "var(--color-action-content-secondary-enabled)",
+        outline: "1px solid var(--color-action-outline-secondary-enabled)",
         outlineOffset: "-1px",
-        boxShadow: SHADOWS.light,
+        boxShadow: "var(--shadow-button-light)",
       },
       hover: {
-        background: "var(--color-action-fill-secondary-hover)", // #F8F9FC
-        color: "var(--color-action-content-secondary-hover)", // #324467
-        outline: "1px solid var(--color-action-outline-secondary-hover)", // #93A6CB
-        boxShadow: SHADOWS.enabled,
+        background: "var(--color-action-fill-secondary-hover)",
+        color: "var(--color-action-content-secondary-hover)",
+        outline: "1px solid var(--color-action-outline-secondary-hover)",
+        outlineOffset: "-1px",
+        boxShadow: "var(--shadow-button-enabled)",
       },
       active: {
-        background: "var(--color-action-fill-secondary-active)", // #ECEDFF
-        color: "var(--color-action-content-secondary-active)", // #15154C
-        outline: "1px solid var(--color-action-outline-secondary-active)", // #383ACC
-        boxShadow: SHADOWS.focus,
+        background: "var(--color-action-fill-secondary-active)",
+        color: "var(--color-action-content-secondary-active)",
+        outline: "1px solid var(--color-action-outline-secondary-active)",
+        outlineOffset: "-1px",
+        boxShadow: "var(--shadow-button-focus)",
       },
       disabled: {
-        background: "var(--color-action-fill-secondary-disabled)", // #EFF2F9
-        color: "var(--color-action-content-secondary-disabled)", // #93A6CB
-        outline: "1px solid var(--color-action-outline-secondary-disabled)", // #D9E0ED
+        background: "var(--color-action-fill-secondary-disabled)",
+        color: "var(--color-action-content-secondary-disabled)",
+        outline: "1px solid var(--color-action-outline-secondary-disabled)",
+        outlineOffset: "-1px",
         boxShadow: "none",
       },
     },
     tertiary: {
       enabled: {
-        background: "transparent",
-        color: "var(--color-action-content-tertiary-enabled)", // #5371AC
+        background: "var(--color-action-fill-tertiary-enabled)",
+        color: "var(--color-action-content-tertiary-enabled)",
         boxShadow: "none",
       },
       hover: {
-        background: "var(--color-action-fill-tertiary-hover)", // white
-        color: "var(--color-action-content-tertiary-hover)", // #324467
-        outline: "1px solid var(--color-action-outline-secondary-enabled)", // #D9E0ED
+        background: "var(--color-action-fill-tertiary-hover)",
+        color: "var(--color-action-content-tertiary-hover)",
+        outline: "1px solid var(--color-action-outline-secondary-enabled)",
         outlineOffset: "-1px",
       },
       active: {
-        background: "var(--color-action-fill-tertiary-active)", // #F8F9FC
-        color: "var(--color-action-content-tertiary-active)", // #15154C
-        outline: "1px solid var(--color-action-outline-secondary-enabled)", // #D9E0ED
+        background: "var(--color-action-fill-tertiary-active)",
+        color: "var(--color-action-content-tertiary-active)",
+        outline: "1px solid var(--color-action-outline-secondary-enabled)",
         outlineOffset: "-1px",
       },
       disabled: {
-        background: "transparent",
-        color: "var(--color-action-content-tertiary-disabled)", // #93A6CB
+        background: "var(--color-action-fill-tertiary-disabled)",
+        color: "var(--color-action-content-tertiary-disabled)",
         boxShadow: "none",
       },
     },
     negative: {
       enabled: {
-        background: "var(--color-action-fill-negative-enabled)", // #FF7373
-        color: "var(--color-action-content-negative-enabled)", // white
-        boxShadow: SHADOWS.enabled,
+        background: "var(--color-action-fill-negative-enabled)",
+        color: "var(--color-action-content-negative-enabled)",
+        boxShadow: "var(--shadow-button-enabled)",
       },
       hover: {
-        background: "var(--color-action-fill-negative-hover)", // #E45353
-        color: "var(--color-action-content-negative-enabled)", // white - maintain text color
-        boxShadow: SHADOWS.hover,
+        background: "var(--color-action-fill-negative-hover)",
+        color: "var(--color-action-content-negative-enabled)",
+        boxShadow: "var(--shadow-button-hover)",
       },
       active: {
-        background: "var(--color-action-fill-negative-active)", // #FF7373
-        color: "var(--color-action-content-negative-enabled)", // white - maintain text color
-        boxShadow: SHADOWS.focus,
+        background: "var(--color-action-fill-negative-active)",
+        color: "var(--color-action-content-negative-enabled)",
+        boxShadow: "var(--shadow-button-focus)",
       },
       disabled: {
-        background: "var(--color-action-fill-negative-disabled)", // #FFF5F5
-        color: "var(--color-action-content-negative-disabled)", // #FF7373
+        background: "var(--color-action-fill-negative-disabled)",
+        color: "var(--color-action-content-negative-disabled)",
         boxShadow: "none",
       },
     },
     positive: {
       enabled: {
-        background: "var(--color-action-fill-positive-enabled)", // #02C39A
-        color: "var(--color-action-content-positive-enabled)", // white
-        boxShadow: SHADOWS.enabled,
+        background: "var(--color-action-fill-positive-enabled)",
+        color: "var(--color-action-content-positive-enabled)",
+        boxShadow: "var(--shadow-button-enabled)",
       },
       hover: {
-        background: "var(--color-action-fill-positive-hover)", // #029778
-        color: "var(--color-action-content-positive-enabled)", // white - maintain text color
-        boxShadow: SHADOWS.hover,
+        background: "var(--color-action-fill-positive-hover)",
+        color: "var(--color-action-content-positive-enabled)",
+        boxShadow: "var(--shadow-button-hover)",
       },
       active: {
-        background: "var(--color-action-fill-positive-active)", // #02C39A
-        color: "var(--color-action-content-positive-enabled)", // white - maintain text color
-        boxShadow: SHADOWS.focus,
+        background: "var(--color-action-fill-positive-active)",
+        color: "var(--color-action-content-positive-enabled)",
+        boxShadow: "var(--shadow-button-focus)",
       },
       disabled: {
-        background: "var(--color-action-fill-positive-disabled)", // #E6FFF9
-        color: "var(--color-action-content-positive-disabled)", // #029778
+        background: "var(--color-action-fill-positive-disabled)",
+        color: "var(--color-action-content-positive-disabled)",
         boxShadow: "none",
       },
     },
@@ -278,19 +284,36 @@ const styles = {
     alignItems: "center",
     justifyContent: "center",
     lineHeight: 0,
+    flexShrink: 0,
   },
 
   spinner: {
     position: "absolute",
-    animation: "spin 1s linear infinite",
+    animation: "button-spin 1s linear infinite",
   },
 };
+
+// Inject keyframes for spinner animation
+if (typeof document !== "undefined") {
+  const styleId = "eureka-button-keyframes";
+  if (!document.getElementById(styleId)) {
+    const styleEl = document.createElement("style");
+    styleEl.id = styleId;
+    styleEl.textContent = `
+      @keyframes button-spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+    `;
+    document.head.appendChild(styleEl);
+  }
+}
 
 // ─────────────────────────────────────────────
 // SPINNER COMPONENT
 // ─────────────────────────────────────────────
 
-const Spinner = ({ size = 16 }) => (
+const Spinner = ({ size = "var(--size-icon-sm)" }) => (
   <svg
     style={{ ...styles.spinner, width: size, height: size }}
     viewBox="0 0 20 20"
