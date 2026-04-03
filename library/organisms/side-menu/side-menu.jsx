@@ -18,7 +18,6 @@
 
 import { useState } from "react";
 import { Icon } from "../../atoms/icon.jsx";
-import { Button } from "../../atoms/button.jsx";
 import { SideMenuItem } from "./side-menu-item.jsx";
 import { UserButton } from "./user-button.jsx";
 import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
@@ -42,27 +41,59 @@ const COLLAPSED_WIDTH = 80;
 const styles = {
   // Main container
   container: {
-    display: "inline-flex",
+    position: "fixed",
+    top: 0,
+    left: 0,
+    display: "flex",
     flexDirection: "column",
-    justifyContent: "space-between",
+    justifyContent: "flex-start",
     alignItems: "flex-start",
     background: "var(--color-general-white)",
     borderRight: "1px solid var(--color-action-outline-secondary-enabled)",
-    height: "100%",
+    height: "100vh",
     boxSizing: "border-box",
     overflow: "hidden",
     transition: "width var(--transition-normal)",
+    zIndex: 100,
   },
 
   // Top section (logo + search + menu sections)
   topWrapper: {
+    flex: 1,
+    alignSelf: "stretch",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
+    overflow: "hidden",
+    minHeight: 0,
+  },
+
+  // Fixed header area (logo + search)
+  headerArea: {
     alignSelf: "stretch",
     paddingTop: 24,
+    paddingBottom: 16,
     display: "flex",
     flexDirection: "column",
     justifyContent: "flex-start",
     alignItems: "flex-start",
     gap: 16,
+    flexShrink: 0,
+  },
+
+  // Scrollable sections area
+  scrollableArea: {
+    flex: 1,
+    alignSelf: "stretch",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
+    gap: 16,
+    overflowY: "auto",
+    overflowX: "hidden",
+    minHeight: 0,
   },
 
   // Logo and search area
@@ -233,6 +264,8 @@ const styles = {
     justifyContent: "flex-start",
     alignItems: "flex-start",
     gap: 16,
+    flexShrink: 0,
+    borderTop: "1px solid var(--color-action-outline-secondary-enabled)",
   },
 
   footerContent: {
@@ -538,16 +571,20 @@ export const SideMenu = ({
     >
       {/* Top Section: Logo, Search, Menu Sections */}
       <div style={styles.topWrapper}>
-        {/* Logo and Search */}
-        <div style={logoSearchAreaStyle}>
-          <div style={styles.logoContainer}>
-            {renderLogo()}
+        {/* Fixed Header: Logo and Search */}
+        <div style={styles.headerArea}>
+          <div style={logoSearchAreaStyle}>
+            <div style={styles.logoContainer}>
+              {renderLogo()}
+            </div>
+            {renderSearch()}
           </div>
-          {renderSearch()}
         </div>
 
-        {/* Menu Sections */}
-        {renderSections()}
+        {/* Scrollable Menu Sections */}
+        <div style={styles.scrollableArea}>
+          {renderSections()}
+        </div>
       </div>
 
       {/* Footer Section: Create Button + User */}
@@ -556,9 +593,6 @@ export const SideMenu = ({
         <div style={footerContentStyle}>
           {renderCreateButton()}
         </div>
-
-        {/* Divider */}
-        <div style={styles.divider} />
 
         {/* User Button */}
         <div style={userWrapperStyle}>

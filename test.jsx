@@ -2,7 +2,7 @@
  * Eureka Design System - Component Library Demo
  *
  * A comprehensive test page with side menu navigation
- * to browse all components from atoms to organisms.
+ * to browse all components from atoms to templates.
  */
 
 import React, { useState } from "react";
@@ -30,11 +30,27 @@ import { Tabs, Tab, TabPanel } from "./library/molecules/tabs.jsx";
 import { Accordion, AccordionItem, AccordionGroup } from "./library/molecules/accordion.jsx";
 import { TextInput } from "./library/molecules/text-input.jsx";
 import { DropdownMenuItem, DropdownMenuDivider, DropdownMenuLabel } from "./library/molecules/dropdown-menu-item.jsx";
+import { Stepper } from "./library/molecules/stepper.jsx";
+import { Textarea } from "./library/molecules/textarea.jsx";
+import { RadioCard, RadioCardGroup } from "./library/molecules/radio-card.jsx";
+import { Pagination, SimplePagination } from "./library/molecules/pagination.jsx";
+import { Infobox, INFOBOX_VARIANTS } from "./library/molecules/infobox.jsx";
+import { ButtonGroup, ButtonGroupItem } from "./library/molecules/button-group.jsx";
+import { AvatarGroup } from "./library/molecules/avatar-group.jsx";
+import { ChipInput } from "./library/molecules/chip-input.jsx";
+import { Dialog, ConfirmDialog, AlertDialog } from "./library/molecules/dialog.jsx";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuSection, SimpleDropdownMenu } from "./library/molecules/dropdown-menu.jsx";
+import { DropdownList, DropdownSection, DropdownListItem } from "./library/molecules/dropdown-list.jsx";
+import { Subinfo } from "./library/molecules/subinfo.jsx";
+import { Infofield, InfofieldGroup } from "./library/molecules/infofield.jsx";
+import { MiniInfobox } from "./library/molecules/miniinfobox.jsx";
 
 // ─────────────────────────────────────────────
 // ORGANISMS
 // ─────────────────────────────────────────────
 import { SideMenu } from "./library/organisms/side-menu/side-menu.jsx";
+import { Modal } from "./library/organisms/modal.jsx";
+import { Table, TableRow, TableCell, TableCellHeader } from "./library/organisms/table/table.jsx";
 
 // ─────────────────────────────────────────────
 // SHARED PROPS
@@ -82,7 +98,7 @@ const DemoBox = ({ children }) => (
 );
 
 // ─────────────────────────────────────────────
-// PAGE COMPONENTS
+// ATOM PAGES
 // ─────────────────────────────────────────────
 
 const ButtonPage = () => (
@@ -807,6 +823,618 @@ const DropdownMenuItemPage = () => (
   </Section>
 );
 
+const StepperPage = () => (
+  <Section title="Stepper" description="A progress stepper showing multiple steps with status indicators.">
+    <SubSection title="Basic Stepper">
+      <DemoBox>
+        <Stepper
+          currentStep={1}
+          steps={[
+            { title: "Draft", subtitle: "Jan 1, 2024" },
+            { title: "Review", subtitle: "Jan 15, 2024" },
+            { title: "Approved" },
+            { title: "Published" },
+          ]}
+        />
+      </DemoBox>
+    </SubSection>
+
+    <SubSection title="Vertical Stepper">
+      <DemoBox>
+        <div style={{ height: 300 }}>
+          <Stepper
+            orientation="vertical"
+            currentStep={2}
+            steps={[
+              { title: "Step 1", subtitle: "Completed" },
+              { title: "Step 2", subtitle: "Completed" },
+              { title: "Step 3", subtitle: "Current" },
+              { title: "Step 4", subtitle: "Pending" },
+            ]}
+          />
+        </div>
+      </DemoBox>
+    </SubSection>
+
+    <SubSection title="Without Background">
+      <DemoBox>
+        <Stepper
+          showBackground={false}
+          currentStep={2}
+          steps={[
+            { title: "Cart" },
+            { title: "Shipping" },
+            { title: "Payment" },
+            { title: "Confirm" },
+          ]}
+        />
+      </DemoBox>
+    </SubSection>
+  </Section>
+);
+
+const TextareaPage = () => (
+  <Section title="Textarea" description="A complete textarea with label, textarea field, and helper/error text.">
+    <SubSection title="States">
+      <div style={{ display: "flex", flexDirection: "column", gap: 24, maxWidth: 400 }}>
+        <Textarea label="Default" placeholder="Enter your message..." />
+        <Textarea label="With Helper" placeholder="Enter your message..." helper="Max 500 characters" />
+        <Textarea label="Error State" placeholder="Enter your message..." error="This field is required" />
+        <Textarea label="Success State" placeholder="Enter your message..." success="Message saved!" />
+        <Textarea label="Disabled" placeholder="Enter your message..." isDisabled />
+        <Textarea label="Read Only" value="This is read-only content" isReadOnly />
+      </div>
+    </SubSection>
+
+    <SubSection title="Required Field">
+      <div style={{ maxWidth: 400 }}>
+        <Textarea label="Description" placeholder="Enter description..." isRequired rows={4} />
+      </div>
+    </SubSection>
+  </Section>
+);
+
+const RadioCardPage = () => {
+  const [selected, setSelected] = useState("basic");
+
+  return (
+    <Section title="RadioCard" description="A selectable card with a radio button, label, and optional info items.">
+      <SubSection title="Basic Usage">
+        <DemoBox>
+          <RadioCardGroup value={selected} onChange={setSelected}>
+            <RadioCard value="basic" label="Basic Plan" info="$9/month,5 users,10GB storage" />
+            <RadioCard value="pro" label="Pro Plan" info="$29/month,25 users,100GB storage" />
+            <RadioCard value="enterprise" label="Enterprise Plan" info="Custom pricing,Unlimited users,Unlimited storage" />
+          </RadioCardGroup>
+        </DemoBox>
+      </SubSection>
+
+      <SubSection title="With Icons">
+        <DemoBox>
+          <RadioCardGroup value={selected} onChange={setSelected}>
+            <RadioCard value="basic" label="Credit Card" icon={<Icon name="CreditCard" size="md" />} info="Visa, Mastercard, Amex" />
+            <RadioCard value="pro" label="PayPal" icon={<Icon name="Wallet" size="md" />} info="Pay with your PayPal account" />
+          </RadioCardGroup>
+        </DemoBox>
+      </SubSection>
+
+      <SubSection title="Disabled State">
+        <DemoBox>
+          <RadioCardGroup value="basic">
+            <RadioCard value="basic" label="Available Option" info="This option is available" />
+            <RadioCard value="pro" label="Unavailable Option" info="This option is not available" isDisabled />
+          </RadioCardGroup>
+        </DemoBox>
+      </SubSection>
+    </Section>
+  );
+};
+
+const PaginationPage = () => {
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
+
+  return (
+    <Section title="Pagination" description="A pagination control with page numbers, navigation buttons, and per-page selector.">
+      <SubSection title="Full Pagination">
+        <DemoBox>
+          <Pagination
+            currentPage={page}
+            totalPages={10}
+            perPage={perPage}
+            onPageChange={setPage}
+            onPerPageChange={setPerPage}
+            showPerPage
+            showInfo
+            totalItems={100}
+          />
+          <p style={{ marginTop: 16, color: "var(--color-content-secondary)", fontSize: 14 }}>
+            Current page: {page}, Per page: {perPage}
+          </p>
+        </DemoBox>
+      </SubSection>
+
+      <SubSection title="Simple Pagination">
+        <DemoBox>
+          <SimplePagination
+            currentPage={page}
+            totalPages={10}
+            onPageChange={setPage}
+          />
+        </DemoBox>
+      </SubSection>
+
+      <SubSection title="With First/Last Buttons">
+        <DemoBox>
+          <Pagination
+            currentPage={page}
+            totalPages={20}
+            onPageChange={setPage}
+            showFirstLast
+            showPerPage={false}
+          />
+        </DemoBox>
+      </SubSection>
+    </Section>
+  );
+};
+
+const InfoboxPage = () => (
+  <Section title="Infobox" description="A contextual message box with variants for success, warning, error, info, and neutral states.">
+    <SubSection title="Variants">
+      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <Infobox variant="info" title="Information" description="This is an informational message." />
+        <Infobox variant="success" title="Success" description="Your changes have been saved successfully." />
+        <Infobox variant="warning" title="Warning" description="Please review your changes before proceeding." />
+        <Infobox variant="error" title="Error" description="An error occurred while processing your request." />
+        <Infobox variant="neutral" title="Note" description="This is a neutral informational message." />
+      </div>
+    </SubSection>
+
+    <SubSection title="With Action">
+      <DemoBox>
+        <Infobox
+          variant="warning"
+          title="Unsaved Changes"
+          description="You have unsaved changes that will be lost."
+          actionLabel="Save Now"
+          onAction={() => alert("Save clicked")}
+        />
+      </DemoBox>
+    </SubSection>
+  </Section>
+);
+
+const ButtonGroupPage = () => {
+  const [view, setView] = useState("list");
+
+  return (
+    <Section title="ButtonGroup" description="A horizontal group of connected buttons using ButtonBadge atoms.">
+      <SubSection title="Basic Usage">
+        <DemoBox>
+          <ButtonGroup value={view} onChange={setView}>
+            <ButtonGroupItem value="list" iconName="QueueList">List</ButtonGroupItem>
+            <ButtonGroupItem value="grid" iconName="Squares2X2">Grid</ButtonGroupItem>
+            <ButtonGroupItem value="kanban" iconName="ViewColumns">Kanban</ButtonGroupItem>
+          </ButtonGroup>
+          <p style={{ marginTop: 16, color: "var(--color-content-secondary)", fontSize: 14 }}>
+            Selected: {view}
+          </p>
+        </DemoBox>
+      </SubSection>
+
+      <SubSection title="Icon Only">
+        <DemoBox>
+          <ButtonGroup value="left">
+            <ButtonGroupItem value="left" iconName="Bars3BottomLeft" />
+            <ButtonGroupItem value="center" iconName="Bars3" />
+            <ButtonGroupItem value="right" iconName="Bars3BottomRight" />
+          </ButtonGroup>
+        </DemoBox>
+      </SubSection>
+
+      <SubSection title="Sizes">
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <Row label="Medium">
+            <ButtonGroup size="md" value="a">
+              <ButtonGroupItem value="a">Option A</ButtonGroupItem>
+              <ButtonGroupItem value="b">Option B</ButtonGroupItem>
+            </ButtonGroup>
+          </Row>
+          <Row label="Large">
+            <ButtonGroup size="lg" value="a">
+              <ButtonGroupItem value="a">Option A</ButtonGroupItem>
+              <ButtonGroupItem value="b">Option B</ButtonGroupItem>
+            </ButtonGroup>
+          </Row>
+        </div>
+      </SubSection>
+    </Section>
+  );
+};
+
+const AvatarGroupPage = () => (
+  <Section title="AvatarGroup" description="A stacked group of avatars with overflow indicator.">
+    <SubSection title="Basic Usage">
+      <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+        <Row label="3 Avatars">
+          <AvatarGroup
+            avatars={[
+              { name: "John Doe" },
+              { name: "Jane Smith" },
+              { name: "Bob Wilson" },
+            ]}
+          />
+        </Row>
+        <Row label="With Overflow">
+          <AvatarGroup
+            avatars={[
+              { name: "John Doe" },
+              { name: "Jane Smith" },
+              { name: "Bob Wilson" },
+              { name: "Alice Brown" },
+              { name: "Charlie Davis" },
+              { name: "Eve Johnson" },
+            ]}
+            max={4}
+          />
+        </Row>
+      </div>
+    </SubSection>
+
+    <SubSection title="Sizes">
+      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <Row label="Small">
+          <AvatarGroup size="sm" avatars={[{ name: "A" }, { name: "B" }, { name: "C" }]} />
+        </Row>
+        <Row label="Medium">
+          <AvatarGroup size="md" avatars={[{ name: "A" }, { name: "B" }, { name: "C" }]} />
+        </Row>
+        <Row label="Large">
+          <AvatarGroup size="lg" avatars={[{ name: "A" }, { name: "B" }, { name: "C" }]} />
+        </Row>
+        <Row label="XL">
+          <AvatarGroup size="xl" avatars={[{ name: "A" }, { name: "B" }, { name: "C" }]} />
+        </Row>
+      </div>
+    </SubSection>
+  </Section>
+);
+
+const ChipInputPage = () => {
+  const [chips, setChips] = useState([
+    { id: "1", label: "React", color: "#7DBEFF" },
+    { id: "2", label: "TypeScript", color: "#73E5AC" },
+  ]);
+
+  return (
+    <Section title="ChipInput" description="A tag/chip input field with label, search functionality, and chip management.">
+      <SubSection title="Basic Usage">
+        <DemoBox>
+          <div style={{ maxWidth: 400 }}>
+            <ChipInput
+              label="Tags"
+              placeholder="Add tags..."
+              chips={chips}
+              onChange={setChips}
+            />
+          </div>
+        </DemoBox>
+      </SubSection>
+
+      <SubSection title="With Required">
+        <DemoBox>
+          <div style={{ maxWidth: 400 }}>
+            <ChipInput
+              label="Skills"
+              required
+              placeholder="Add skills..."
+              chips={[{ id: "1", label: "JavaScript" }]}
+            />
+          </div>
+        </DemoBox>
+      </SubSection>
+
+      <SubSection title="Error State">
+        <DemoBox>
+          <div style={{ maxWidth: 400 }}>
+            <ChipInput
+              label="Categories"
+              placeholder="Select categories..."
+              chips={[]}
+              error
+              helperText="Please select at least one category"
+            />
+          </div>
+        </DemoBox>
+      </SubSection>
+
+      <SubSection title="Disabled">
+        <DemoBox>
+          <div style={{ maxWidth: 400 }}>
+            <ChipInput
+              label="Disabled Input"
+              placeholder="Cannot edit..."
+              chips={[{ id: "1", label: "Fixed Tag" }]}
+              isDisabled
+            />
+          </div>
+        </DemoBox>
+      </SubSection>
+    </Section>
+  );
+};
+
+const DialogPage = () => {
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [isErrorOpen, setIsErrorOpen] = useState(false);
+
+  return (
+    <Section title="Dialog" description="A modal dialog component for confirmations, alerts, and user interactions.">
+      <SubSection title="Variants">
+        <DemoBox>
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+            <Button onClick={() => setIsInfoOpen(true)}>Info Dialog</Button>
+            <Button variant="positive" onClick={() => setIsConfirmOpen(true)}>Confirm Dialog</Button>
+            <Button variant="secondary" onClick={() => setIsAlertOpen(true)}>Alert Dialog</Button>
+            <Button variant="negative" onClick={() => setIsErrorOpen(true)}>Error Dialog</Button>
+          </div>
+        </DemoBox>
+      </SubSection>
+
+      <Dialog
+        isOpen={isInfoOpen}
+        onOpenChange={setIsInfoOpen}
+        variant="info"
+        title="Information"
+        primaryLabel="Got it"
+        onPrimaryPress={() => setIsInfoOpen(false)}
+      >
+        This is an informational dialog with important details for the user.
+      </Dialog>
+
+      <ConfirmDialog
+        isOpen={isConfirmOpen}
+        onOpenChange={setIsConfirmOpen}
+        title="Confirm Action"
+        confirmLabel="Confirm"
+        cancelLabel="Cancel"
+        onConfirm={() => { alert("Confirmed!"); setIsConfirmOpen(false); }}
+      >
+        Are you sure you want to proceed with this action?
+      </ConfirmDialog>
+
+      <AlertDialog
+        isOpen={isAlertOpen}
+        onOpenChange={setIsAlertOpen}
+        variant="warning"
+        title="Warning"
+        buttonLabel="Acknowledge"
+      >
+        Please be aware that this action cannot be undone.
+      </AlertDialog>
+
+      <Dialog
+        isOpen={isErrorOpen}
+        onOpenChange={setIsErrorOpen}
+        variant="error"
+        title="Error Occurred"
+        primaryLabel="Retry"
+        secondaryLabel="Cancel"
+        onPrimaryPress={() => { alert("Retrying..."); setIsErrorOpen(false); }}
+        onSecondaryPress={() => setIsErrorOpen(false)}
+      >
+        An error occurred while processing your request. Please try again.
+      </Dialog>
+    </Section>
+  );
+};
+
+const DropdownMenuPage = () => (
+  <Section title="DropdownMenu" description="A dropdown menu container with sections, items, and optional footer.">
+    <SubSection title="Basic Dropdown">
+      <DemoBox>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="secondary" iconTrailing={<Icon name="ChevronDown" size="sm" />}>
+              Options
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuSection>
+              <DropdownMenuItem label="Edit" iconName="PencilSquare" />
+              <DropdownMenuItem label="Duplicate" iconName="DocumentDuplicate" />
+              <DropdownMenuItem label="Archive" iconName="ArchiveBox" />
+            </DropdownMenuSection>
+            <DropdownMenuSection showDivider>
+              <DropdownMenuItem label="Delete" iconName="Trash" variant="destructive" />
+            </DropdownMenuSection>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </DemoBox>
+    </SubSection>
+
+    <SubSection title="Simple Dropdown">
+      <DemoBox>
+        <SimpleDropdownMenu
+          trigger={
+            <Button variant="secondary" iconTrailing={<Icon name="ChevronDown" size="sm" />}>
+              Account
+            </Button>
+          }
+          items={[
+            { label: "Profile", icon: "User" },
+            { label: "Settings", icon: "Cog6Tooth" },
+            { type: "divider" },
+            { label: "Sign out", icon: "ArrowRightOnRectangle" },
+          ]}
+        />
+      </DemoBox>
+    </SubSection>
+  </Section>
+);
+
+const DropdownListPage = () => {
+  const [selected, setSelected] = useState(["pd"]);
+
+  const handleChange = ({ value, checked }) => {
+    if (checked) {
+      setSelected([...selected, value]);
+    } else {
+      setSelected(selected.filter(v => v !== value));
+    }
+  };
+
+  return (
+    <Section title="DropdownList" description="A searchable, sectioned list with optional 'Add' action.">
+      <SubSection title="Basic Usage">
+        <DemoBox>
+          <div style={{ maxWidth: 320 }}>
+            <DropdownList>
+              <DropdownSection title="Neurology">
+                <DropdownListItem value="ad" checked={selected.includes("ad")} onChange={handleChange}>
+                  Alzheimer's disease
+                </DropdownListItem>
+                <DropdownListItem value="pd" checked={selected.includes("pd")} onChange={handleChange}>
+                  Parkinson's disease
+                </DropdownListItem>
+              </DropdownSection>
+              <DropdownSection title="Oncology">
+                <DropdownListItem value="bc" checked={selected.includes("bc")} onChange={handleChange} subinfo="Phase 2">
+                  Breast cancer
+                </DropdownListItem>
+                <DropdownListItem value="lc" checked={selected.includes("lc")} onChange={handleChange} subinfo="Phase 1">
+                  Lung cancer
+                </DropdownListItem>
+              </DropdownSection>
+            </DropdownList>
+          </div>
+        </DemoBox>
+      </SubSection>
+
+      <SubSection title="Without Search">
+        <DemoBox>
+          <div style={{ maxWidth: 320 }}>
+            <DropdownList noSearch noAdd>
+              <DropdownSection>
+                <DropdownListItem value="a">Option A</DropdownListItem>
+                <DropdownListItem value="b">Option B</DropdownListItem>
+                <DropdownListItem value="c">Option C</DropdownListItem>
+              </DropdownSection>
+            </DropdownList>
+          </div>
+        </DemoBox>
+      </SubSection>
+    </Section>
+  );
+};
+
+const SubinfoPage = () => (
+  <Section title="Subinfo" description="A flexible info display component for showing various types of data.">
+    <SubSection title="Value Variant">
+      <DemoBox>
+        <div style={{ display: "flex", gap: 24 }}>
+          <Subinfo label="Owner">John Doe</Subinfo>
+          <Subinfo label="Status" iconName="Clock">In Progress</Subinfo>
+          <Subinfo label="Priority" href="#">High</Subinfo>
+        </div>
+      </DemoBox>
+    </SubSection>
+
+    <SubSection title="Avatar Variant">
+      <DemoBox>
+        <div style={{ display: "flex", gap: 24 }}>
+          <Subinfo variant="avatar" initials="JD" href="#">John Doe</Subinfo>
+          <Subinfo variant="avatar" initials="AS">Alice Smith</Subinfo>
+        </div>
+      </DemoBox>
+    </SubSection>
+
+    <SubSection title="List Variant">
+      <DemoBox>
+        <Subinfo
+          variant="list"
+          items={[
+            { text: "Marketing", iconName: "Folder" },
+            { text: "Design", iconName: "Folder", href: "#" },
+            { text: "Engineering", iconName: "Folder" },
+            { text: "Sales", iconName: "Folder" },
+            { text: "Support", iconName: "Folder" },
+            { text: "Operations", iconName: "Folder" },
+          ]}
+          maxItems={5}
+        />
+      </DemoBox>
+    </SubSection>
+  </Section>
+);
+
+const InfofieldPage = () => (
+  <Section title="Infofield" description="A read-only field displaying a label with various value types.">
+    <SubSection title="Text Values">
+      <DemoBox>
+        <InfofieldGroup>
+          <Infofield label="Name" value="John Doe" />
+          <Infofield label="Email" value="john@example.com" iconName="Envelope" />
+          <Infofield label="Empty Field" />
+        </InfofieldGroup>
+      </DemoBox>
+    </SubSection>
+
+    <SubSection title="Badges">
+      <DemoBox>
+        <Infofield
+          label="Status"
+          variant="badges"
+          values={["Active", "Verified", "Premium"]}
+        />
+      </DemoBox>
+    </SubSection>
+
+    <SubSection title="Chips">
+      <DemoBox>
+        <Infofield
+          label="Tags"
+          variant="chips"
+          values={[
+            { label: "React", color: "#7DBEFF" },
+            { label: "TypeScript", color: "#73E5AC" },
+            { label: "Node.js", color: "#FFAE70" },
+          ]}
+        />
+      </DemoBox>
+    </SubSection>
+
+    <SubSection title="With Overflow">
+      <DemoBox>
+        <Infofield
+          label="Categories"
+          variant="badges"
+          values={["Cat 1", "Cat 2", "Cat 3", "Cat 4", "Cat 5", "Cat 6"]}
+          maxItems={4}
+        />
+      </DemoBox>
+    </SubSection>
+  </Section>
+);
+
+const MiniInfoboxPage = () => (
+  <Section title="MiniInfobox" description="A compact inline message with an icon and text.">
+    <SubSection title="Variants">
+      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <MiniInfobox variant="info" message="This is an info message" />
+        <MiniInfobox variant="success" message="Operation completed successfully" />
+        <MiniInfobox variant="warning" message="Please review your changes" />
+        <MiniInfobox variant="error" message="An error occurred" />
+        <MiniInfobox variant="neutral" message="This is a neutral message" />
+        <MiniInfobox variant="ai" message="AI-generated content" />
+      </div>
+    </SubSection>
+  </Section>
+);
+
 // ─────────────────────────────────────────────
 // ORGANISM PAGES
 // ─────────────────────────────────────────────
@@ -844,6 +1472,7 @@ const SideMenuPage = () => (
               ]}
               user={{ name: "Jane Doe", email: "jane@example.com", avatarInitials: "JD" }}
               onCreateClick={() => alert("Create clicked")}
+              style={{ position: "relative" }}
             />
           </div>
           <div style={{ flex: 1 }}>
@@ -859,6 +1488,116 @@ const SideMenuPage = () => (
             </ul>
           </div>
         </div>
+      </DemoBox>
+    </SubSection>
+  </Section>
+);
+
+const ModalPage = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isLargeOpen, setIsLargeOpen] = useState(false);
+
+  return (
+    <Section title="Modal" description="A full-featured modal dialog with header, content area, and footer actions.">
+      <SubSection title="Basic Modal">
+        <DemoBox>
+          <div style={{ display: "flex", gap: 12 }}>
+            <Button onClick={() => setIsOpen(true)}>Open Modal</Button>
+            <Button variant="secondary" onClick={() => setIsLargeOpen(true)}>Large Modal</Button>
+          </div>
+        </DemoBox>
+      </SubSection>
+
+      <Modal
+        open={isOpen}
+        onClose={() => setIsOpen(false)}
+        title="Edit Profile"
+        primaryLabel="Save Changes"
+        secondaryLabel="Cancel"
+        onPrimaryClick={() => { alert("Saved!"); setIsOpen(false); }}
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <TextInput label="Name" placeholder="Enter your name" />
+          <TextInput label="Email" type="email" placeholder="Enter your email" />
+          <Textarea label="Bio" placeholder="Tell us about yourself..." rows={3} />
+        </div>
+      </Modal>
+
+      <Modal
+        open={isLargeOpen}
+        onClose={() => setIsLargeOpen(false)}
+        title="Large Modal"
+        size="lg"
+        primaryLabel="Confirm"
+        secondaryLabel="Cancel"
+        tertiaryLabel="Reset"
+      >
+        <p>This is a larger modal with more content space. You can use this for forms, complex interactions, or displaying detailed information.</p>
+        <div style={{ marginTop: 16, padding: 16, background: "var(--color-neutral-50)", borderRadius: 8 }}>
+          <p>Additional content area</p>
+        </div>
+      </Modal>
+    </Section>
+  );
+};
+
+const TablePage = () => (
+  <Section title="Table" description="A complete table system with header, body rows, and various cell types.">
+    <SubSection title="Basic Table">
+      <DemoBox>
+        <Table>
+          <TableRow variant="header">
+            <TableCellHeader sortable>Company</TableCellHeader>
+            <TableCellHeader sortable>Revenue</TableCellHeader>
+            <TableCellHeader>Status</TableCellHeader>
+            <TableCellHeader>Actions</TableCellHeader>
+          </TableRow>
+          <TableRow>
+            <TableCell>Acme Corp</TableCell>
+            <TableCell>$1,234,567</TableCell>
+            <TableCell><Badge color="positive">Active</Badge></TableCell>
+            <TableCell><Button variant="tertiary" size="sm">View</Button></TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>Tech Inc</TableCell>
+            <TableCell>$987,654</TableCell>
+            <TableCell><Badge color="warning">Pending</Badge></TableCell>
+            <TableCell><Button variant="tertiary" size="sm">View</Button></TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>Global Ltd</TableCell>
+            <TableCell>$2,345,678</TableCell>
+            <TableCell><Badge color="neutral">Inactive</Badge></TableCell>
+            <TableCell><Button variant="tertiary" size="sm">View</Button></TableCell>
+          </TableRow>
+        </Table>
+      </DemoBox>
+    </SubSection>
+
+    <SubSection title="With Selection">
+      <DemoBox>
+        <Table>
+          <TableRow variant="header">
+            <TableCellHeader style={{ width: 48 }}>
+              <Checkbox />
+            </TableCellHeader>
+            <TableCellHeader>Name</TableCellHeader>
+            <TableCellHeader>Email</TableCellHeader>
+            <TableCellHeader>Role</TableCellHeader>
+          </TableRow>
+          <TableRow selected>
+            <TableCell style={{ width: 48 }}><Checkbox isSelected /></TableCell>
+            <TableCell>John Doe</TableCell>
+            <TableCell>john@example.com</TableCell>
+            <TableCell>Admin</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell style={{ width: 48 }}><Checkbox /></TableCell>
+            <TableCell>Jane Smith</TableCell>
+            <TableCell>jane@example.com</TableCell>
+            <TableCell>Editor</TableCell>
+          </TableRow>
+        </Table>
       </DemoBox>
     </SubSection>
   </Section>
@@ -886,9 +1625,25 @@ const PAGES = {
   tabs: { title: "Tabs", component: TabsPage, category: "molecules" },
   accordion: { title: "Accordion", component: AccordionPage, category: "molecules" },
   textInput: { title: "TextInput", component: TextInputPage, category: "molecules" },
+  textarea: { title: "Textarea", component: TextareaPage, category: "molecules" },
   dropdownMenuItem: { title: "DropdownMenuItem", component: DropdownMenuItemPage, category: "molecules" },
+  stepper: { title: "Stepper", component: StepperPage, category: "molecules" },
+  radioCard: { title: "RadioCard", component: RadioCardPage, category: "molecules" },
+  pagination: { title: "Pagination", component: PaginationPage, category: "molecules" },
+  infobox: { title: "Infobox", component: InfoboxPage, category: "molecules" },
+  buttonGroup: { title: "ButtonGroup", component: ButtonGroupPage, category: "molecules" },
+  avatarGroup: { title: "AvatarGroup", component: AvatarGroupPage, category: "molecules" },
+  chipInput: { title: "ChipInput", component: ChipInputPage, category: "molecules" },
+  dialog: { title: "Dialog", component: DialogPage, category: "molecules" },
+  dropdownMenu: { title: "DropdownMenu", component: DropdownMenuPage, category: "molecules" },
+  dropdownList: { title: "DropdownList", component: DropdownListPage, category: "molecules" },
+  subinfo: { title: "Subinfo", component: SubinfoPage, category: "molecules" },
+  infofield: { title: "Infofield", component: InfofieldPage, category: "molecules" },
+  miniInfobox: { title: "MiniInfobox", component: MiniInfoboxPage, category: "molecules" },
   // Organisms
   sideMenu: { title: "SideMenu", component: SideMenuPage, category: "organisms" },
+  modal: { title: "Modal", component: ModalPage, category: "organisms" },
+  table: { title: "Table", component: TablePage, category: "organisms" },
 };
 
 // ─────────────────────────────────────────────
@@ -959,7 +1714,7 @@ export const ComponentLibraryDemo = () => {
       />
 
       {/* Main Content */}
-      <main style={{ flex: 1, padding: 48, overflow: "auto" }}>
+      <main style={{ flex: 1, padding: 48, marginLeft: 80, overflow: "auto" }}>
         <div style={{ maxWidth: 1000, margin: "0 auto" }}>
           {/* Header */}
           <header style={{ marginBottom: 48 }}>
@@ -997,8 +1752,24 @@ function getIconForPage(pageKey) {
     tabs: "Squares2X2",
     accordion: "Bars3BottomLeft",
     textInput: "PencilSquare",
+    textarea: "DocumentText",
     dropdownMenuItem: "QueueList",
+    stepper: "ArrowTrendingUp",
+    radioCard: "CreditCard",
+    pagination: "ChevronDoubleRight",
+    infobox: "InformationCircle",
+    buttonGroup: "ViewColumns",
+    avatarGroup: "UserGroup",
+    chipInput: "Tag",
+    dialog: "ChatBubbleLeftRight",
+    dropdownMenu: "EllipsisVertical",
+    dropdownList: "ListBullet",
+    subinfo: "InformationCircle",
+    infofield: "DocumentText",
+    miniInfobox: "ExclamationCircle",
     sideMenu: "Bars3",
+    modal: "Square2Stack",
+    table: "TableCells",
   };
   return iconMap[pageKey] || "DocumentText";
 }
