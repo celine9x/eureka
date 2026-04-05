@@ -19,7 +19,7 @@
  * <Button variant="negative" loading>Deleting...</Button>
  */
 
-import { useState, forwardRef } from "react";
+import { useState, forwardRef, cloneElement, isValidElement, createElement } from "react";
 
 // ─────────────────────────────────────────────
 // CONSTANTS
@@ -32,6 +32,18 @@ export const BUTTON_VARIANTS = {
   negative: "negative",
   positive: "positive",
   link: "link",
+};
+
+export const BUTTON_COLORS = {
+  primary: "primary",
+  secondary: "secondary",
+  tertiary: "tertiary",
+  "link-color": "link-color",
+  "link-gray": "link-gray",
+  "primary-destructive": "primary-destructive",
+  "secondary-destructive": "secondary-destructive",
+  "tertiary-destructive": "tertiary-destructive",
+  "link-destructive": "link-destructive",
 };
 
 export const BUTTON_SIZES = {
@@ -74,6 +86,11 @@ const styles = {
   disabled: {
     cursor: "not-allowed",
     pointerEvents: "none",
+  },
+
+  textPadding: {
+    paddingLeft: "var(--spacing-xs)",
+    paddingRight: "var(--spacing-xs)",
   },
 
   // Size configurations using tokens
@@ -291,6 +308,20 @@ const styles = {
     position: "absolute",
     animation: "button-spin 1s linear infinite",
   },
+
+  destructiveSecondary: {
+    color: "var(--color-action-content-negative-enabled)",
+    outline: "1px solid var(--color-interaction-outline-negative)",
+    outlineOffset: "-1px",
+  },
+
+  destructiveTertiary: {
+    color: "var(--color-action-content-negative-enabled)",
+  },
+
+  destructiveLink: {
+    color: "var(--color-action-content-negative-enabled)",
+  },
 };
 
 // Inject keyframes for spinner animation
@@ -343,32 +374,24 @@ const Spinner = ({ size = "var(--size-icon-sm)" }) => (
 // COMPONENT
 // ─────────────────────────────────────────────
 
-/**
- * Button
- *
- * @param {string} variant - primary | secondary | tertiary | negative | positive | link
- * @param {string} size - xs | sm | md | lg | xl (ignored for link variant)
- * @param {boolean} isDisabled - Disables the button
- * @param {boolean} loading - Shows loading spinner and disables button
- * @param {boolean} block - Full width button
- * @param {string} type - button | submit | reset
- * @param {ReactNode} iconLeading - Icon before text
- * @param {ReactNode} iconTrailing - Icon after text
- * @param {function} onClick - Click handler
- * @param {object} style - Additional inline styles
- */
+/** Button */
 export const Button = forwardRef(
   (
     {
       variant = BUTTON_VARIANTS.primary,
+      color,
       size = BUTTON_SIZES.md,
       isDisabled = false,
       disabled,
+      isLoading,
       loading = false,
       block = false,
       type = "button",
+      href,
       iconLeading,
       iconTrailing,
+      noTextPadding = false,
+      showTextWhileLoading = false,
       onClick,
       style,
       children,
@@ -379,14 +402,30 @@ export const Button = forwardRef(
     const [isHovered, setIsHovered] = useState(false);
     const [isActive, setIsActive] = useState(false);
 
-    const isButtonDisabled = isDisabled || disabled || loading;
-    const isLink = variant === BUTTON_VARIANTS.link;
+    const effectiveLoading = Boolean(isLoading ?? loading);
+    const colorToVariant = {
+      primary: BUTTON_VARIANTS.primary,
+      secondary: BUTTON_VARIANTS.secondary,
+      tertiary: BUTTON_VARIANTS.tertiary,
+      "link-color": BUTTON_VARIANTS.link,
+      "link-gray": BUTTON_VARIANTS.link,
+      "primary-destructive": BUTTON_VARIANTS.negative,
+      "secondary-destructive": BUTTON_VARIANTS.secondary,
+      "tertiary-destructive": BUTTON_VARIANTS.tertiary,
+      "link-destructive": BUTTON_VARIANTS.link,
+    };
+
+    const effectiveColor = color || variant;
+    const effectiveVariant = colorToVariant[effectiveColor] || variant;
+    const isLink = effectiveVariant === BUTTON_VARIANTS.link;
+    const isLinkTypeColor = ["link-color", "link-gray", "link-destructive"].includes(effectiveColor);
+    const isButtonDisabled = isDisabled || disabled || effectiveLoading;
 
     // Get size styles
     const sizeStyles = styles.sizes[size];
 
     // Get variant styles based on state
-    const variantStyles = styles.variants[variant];
+    const variantStyles = styles.variants[effectiveVariant];
     const getStateStyles = () => {
       if (isButtonDisabled) return variantStyles.disabled;
       if (isActive) return variantStyles.active;
@@ -408,8 +447,11 @@ export const Button = forwardRef(
         borderRadius: sizeStyles.borderRadius,
       }),
       ...stateStyles,
+      ...(effectiveColor === "secondary-destructive" && styles.destructiveSecondary),
+      ...(effectiveColor === "tertiary-destructive" && styles.destructiveTertiary),
+      ...(effectiveColor === "link-destructive" && styles.destructiveLink),
       ...(block && styles.block),
-      ...(loading && styles.loading),
+      ...(effectiveLoading && styles.loading),
       ...(isButtonDisabled && styles.disabled),
       ...style,
     };
@@ -418,7 +460,7 @@ export const Button = forwardRef(
     const contentStyle = {
       ...styles.content,
       gap: sizeStyles.gap,
-      ...(loading && styles.contentHidden),
+      ...(effectiveLoading && !showTextWhileLoading && styles.contentHidden),
     };
 
     // Icon styles
@@ -428,28 +470,70 @@ export const Button = forwardRef(
       height: sizeStyles.iconSize,
     };
 
+    const renderIcon = (icon, slot) => {
+      if (!icon) return null;
+      if (isValidElement(icon)) {
+        const existingStyle = icon.props?.style || {};
+        const hasDataIcon = icon.props?.["data-icon"];
+        return cloneElement(icon, {
+          style: { ...iconStyle, ...existingStyle },
+          "data-icon": hasDataIcon || slot,
+        });
+      }
+      if (typeof icon === "function") {
+        return createElement(icon, { style: iconStyle, "data-icon": slot });
+      }
+      return <span style={iconStyle}>{icon}</span>;
+    };
+
+    const textStyle = {
+      ...(isLinkTypeColor || noTextPadding ? {} : styles.textPadding),
+    };
+
+    const commonProps = {
+      ref,
+      style: buttonStyle,
+      onClick,
+      onMouseEnter: () => setIsHovered(true),
+      onMouseLeave: () => {
+        setIsHovered(false);
+        setIsActive(false);
+      },
+      onMouseDown: () => setIsActive(true),
+      onMouseUp: () => setIsActive(false),
+      ...props,
+    };
+
+    const content = (
+      <>
+        {effectiveLoading && <Spinner size={sizeStyles.iconSize} />}
+        <span style={contentStyle}>
+          {renderIcon(iconLeading, "leading")}
+          {children && <span style={textStyle}>{children}</span>}
+          {renderIcon(iconTrailing, "trailing")}
+        </span>
+      </>
+    );
+
+    if (href) {
+      return (
+        <a
+          href={isButtonDisabled ? undefined : href}
+          aria-disabled={isButtonDisabled ? true : undefined}
+          {...commonProps}
+        >
+          {content}
+        </a>
+      );
+    }
+
     return (
       <button
-        ref={ref}
         type={type}
         disabled={isButtonDisabled}
-        style={buttonStyle}
-        onClick={onClick}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => {
-          setIsHovered(false);
-          setIsActive(false);
-        }}
-        onMouseDown={() => setIsActive(true)}
-        onMouseUp={() => setIsActive(false)}
-        {...props}
+        {...commonProps}
       >
-        {loading && <Spinner size={sizeStyles.iconSize} />}
-        <span style={contentStyle}>
-          {iconLeading && <span style={iconStyle}>{iconLeading}</span>}
-          {children}
-          {iconTrailing && <span style={iconStyle}>{iconTrailing}</span>}
-        </span>
+        {content}
       </button>
     );
   }
@@ -458,5 +542,6 @@ export const Button = forwardRef(
 Button.displayName = "Button";
 Button.sizes = BUTTON_SIZES;
 Button.variants = BUTTON_VARIANTS;
+Button.colors = BUTTON_COLORS;
 
 export default Button;

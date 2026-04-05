@@ -18,10 +18,6 @@ import { createPortal } from "react-dom";
  * Renders children into a portal container at the end of document.body.
  * SSR-safe - returns null on server.
  *
- * @param {ReactNode} children - Content to render in portal
- * @param {string} containerId - Optional custom container ID (default: "eureka-portal")
- * @param {HTMLElement} container - Optional custom container element
- *
  * @example
  * <Portal>
  *   <div className="modal">Modal content</div>
@@ -92,9 +88,6 @@ Portal.displayName = "Portal";
  * Traps focus within a container element.
  * Returns a ref to attach to the container.
  *
- * @param {boolean} active - Whether the trap is active
- * @returns {React.RefObject} - Ref to attach to container
- *
  * @example
  * const trapRef = useFocusTrap(isOpen);
  * <div ref={trapRef}>...</div>
@@ -153,8 +146,6 @@ export const useFocusTrap = (active) => {
  * useScrollLock
  *
  * Prevents body scroll when active.
- *
- * @param {boolean} active - Whether scroll lock is active
  *
  * @example
  * useScrollLock(isModalOpen);

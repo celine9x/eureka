@@ -1,6 +1,6 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { ComponentLibraryDemo } from "./test.jsx";
+import { ComponentLibraryDemo } from "./eureka.jsx";
 import "./library/tokens/tokens.css";
 import "./src/index.css";
 

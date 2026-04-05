@@ -31,8 +31,8 @@ const styles = {
     display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",
-    gap: 4,
-    padding: "0 4px",
+    gap: "var(--spacing-xs)",
+    padding: "0 var(--spacing-xs)",
     borderRadius: "var(--radius-sm)",
     textDecoration: "none",
     cursor: "pointer",
@@ -75,7 +75,7 @@ const styles = {
         height: 20,
         fontSize: "var(--text-body-caption)",
         lineHeight: "var(--line-height-body-caption)",
-        fontWeight: 400,
+        fontWeight: "var(--font-weight-regular)",
       },
       icon: { width: 12, height: 12 },
     },
@@ -84,7 +84,7 @@ const styles = {
         height: 24,
         fontSize: "var(--text-body-md)",
         lineHeight: "var(--line-height-body-md)",
-        fontWeight: 400,
+        fontWeight: "var(--font-weight-regular)",
       },
       icon: { width: 14, height: 14 },
     },
@@ -93,7 +93,7 @@ const styles = {
         height: 28,
         fontSize: "var(--text-body-lg)",
         lineHeight: "var(--line-height-body-lg)",
-        fontWeight: 400,
+        fontWeight: "var(--font-weight-regular)",
       },
       icon: { width: 16, height: 16 },
     },
@@ -104,19 +104,7 @@ const styles = {
 // COMPONENT
 // ─────────────────────────────────────────────
 
-/**
- * Link
- *
- * @param {string} href - URL to navigate to
- * @param {string} target - Anchor target (e.g., "_blank")
- * @param {string} size - lg | md | sm (default: lg)
- * @param {boolean} isDisabled - Disables the link
- * @param {ReactNode} iconLeading - Icon before the text
- * @param {ReactNode} iconTrailing - Icon after the text
- * @param {function} onClick - Click handler
- * @param {ReactNode} children - Link text
- * @param {object} style - Additional inline styles
- */
+/** Link */
 export const Link = ({
   href,
   target,

@@ -42,12 +42,12 @@ const styles = {
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      background: var(--color-neutral-50);
+      background: var(--color-general-neutral-light);
     }
     .hub__header {
       flex-shrink: 0;
-      background: var(--color-neutral-0);
-      border-bottom: 1px solid var(--color-neutral-200);
+      background: var(--color-general-white);
+      border-bottom: 1px solid var(--color-action-outline-secondary-enabled);
     }
     .hub__body {
       flex: 1;
@@ -55,21 +55,28 @@ const styles = {
       padding: var(--spacing-6);
     }
     .hub__table-container {
-      background: var(--color-neutral-0);
+      background: var(--color-general-white);
+      border: 1px solid var(--color-action-outline-secondary-enabled);
       border-radius: var(--radius-lg);
-      border: 1px solid var(--color-neutral-200);
-      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .hub__table-wrapper {
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding-bottom: 2px;
+      border-radius: var(--radius-lg);
     }
     .hub__footer {
       flex-shrink: 0;
       padding: var(--spacing-4) var(--spacing-6);
-      background: var(--color-neutral-0);
-      border-top: 1px solid var(--color-neutral-200);
+      background: var(--color-general-white);
+      border-top: 1px solid var(--color-action-outline-secondary-enabled);
     }
     .hub__empty {
       text-align: center;
       padding: var(--spacing-8);
-      color: var(--color-neutral-500);
+      color: var(--color-content-secondary);
       font-family: var(--font-family-primary);
       font-size: var(--text-body-md);
     }
@@ -100,35 +107,6 @@ const injectStyles = () => {
  * Hub
  *
  * A complete hub/list page template with sidebar navigation, header, table, and pagination.
- *
- * @param {string} title - Page title for the header
- * @param {string} badge - Badge text for the header (e.g., item count)
- * @param {ReactNode} headerActions - Action buttons for the header
- * @param {ReactNode} headerSecondary - Secondary content below the header (e.g., filters)
- * @param {Array} menuSections - Sections for the side menu
- * @param {object} menuUser - User object for the side menu
- * @param {string} logoSrc - Logo image URL for the side menu
- * @param {function} onMenuCreate - Create button handler for the side menu
- * @param {function} onMenuSearch - Search handler for the side menu
- * @param {Array} columns - Table column definitions [{ key, label, sortable, width, render }]
- * @param {Array} data - Table row data
- * @param {function} renderRow - Custom row renderer (row, index) => ReactNode
- * @param {Array} selectedRows - Array of selected row IDs
- * @param {function} onRowSelect - Row selection handler (id) => void
- * @param {function} onSelectAll - Select all handler
- * @param {string} sortColumn - Current sort column key
- * @param {string} sortDirection - Current sort direction (asc|desc|"")
- * @param {function} onSort - Sort handler (columnKey, direction) => void
- * @param {number} currentPage - Current page number
- * @param {number} totalPages - Total number of pages
- * @param {number} pageSize - Items per page
- * @param {function} onPageChange - Page change handler
- * @param {function} onPageSizeChange - Page size change handler
- * @param {boolean} showPagination - Show pagination (default: true)
- * @param {boolean} showCheckbox - Show row checkboxes (default: false)
- * @param {ReactNode} paginationAction - Custom action button for pagination
- * @param {string} emptyMessage - Message to show when no data (default: "No data available")
- * @param {string} className - Additional CSS classes
  *
  * @example
  * <Hub
@@ -254,7 +232,7 @@ export const Hub = ({
           sections={menuSections}
           user={menuUser}
           onCreateClick={onMenuCreate}
-          onSearchSubmit={onMenuSearch}
+          onSearchChange={onMenuSearch}
         />
       </div>
 
@@ -273,43 +251,45 @@ export const Hub = ({
         {/* Body with Table */}
         <div className="hub__body">
           <div className="hub__table-container">
-            <Table>
-              {/* Table Header */}
-              <TableRow variant="header">
-                {showCheckbox && (
-                  <TableCellHeader style={{ width: 48 }}>
-                    <Checkbox
-                      checked={allSelected}
-                      indeterminate={someSelected}
-                      onChange={() => onSelectAll?.()}
-                    />
-                  </TableCellHeader>
-                )}
-                {columns.map((col) => (
-                  <TableCellHeader
-                    key={col.key}
-                    sortable={col.sortable}
-                    sort={sortColumn === col.key ? sortDirection : ""}
-                    onSort={() => handleSort(col)}
-                    style={col.width ? { width: col.width } : undefined}
-                  >
-                    {col.label}
-                  </TableCellHeader>
-                ))}
-              </TableRow>
-
-              {/* Table Body */}
-              {data.map((row, index) => rowRenderer(row, index))}
-
-              {/* Empty State */}
-              {data.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={columns.length + (showCheckbox ? 1 : 0)}>
-                    <div className="hub__empty">{emptyMessage}</div>
-                  </TableCell>
+            <div className="hub__table-wrapper">
+              <Table>
+                {/* Table Header */}
+                <TableRow variant="header">
+                  {showCheckbox && (
+                    <TableCellHeader style={{ width: 48 }}>
+                      <Checkbox
+                        checked={allSelected}
+                        indeterminate={someSelected}
+                        onChange={() => onSelectAll?.()}
+                      />
+                    </TableCellHeader>
+                  )}
+                  {columns.map((col) => (
+                    <TableCellHeader
+                      key={col.key}
+                      sortable={col.sortable}
+                      sort={sortColumn === col.key ? sortDirection : ""}
+                      onSort={() => handleSort(col)}
+                      style={col.width ? { width: col.width } : undefined}
+                    >
+                      {col.label}
+                    </TableCellHeader>
+                  ))}
                 </TableRow>
-              )}
-            </Table>
+
+                {/* Table Body */}
+                {data.map((row, index) => rowRenderer(row, index))}
+
+                {/* Empty State */}
+                {data.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={columns.length + (showCheckbox ? 1 : 0)}>
+                      <div className="hub__empty">{emptyMessage}</div>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </Table>
+            </div>
           </div>
         </div>
 

@@ -105,18 +105,6 @@ const injectStyles = () => {
  *
  * A full pagination control with page size, navigation, and optional actions.
  *
- * @param {number} currentPage - Current active page (1-indexed)
- * @param {number} totalPages - Total number of pages
- * @param {number} pageSize - Items per page
- * @param {number[]} pageSizeOptions - Available page size options (default: [10, 25, 50, 100])
- * @param {function} onPageChange - Called when page changes (page) => void
- * @param {function} onPageSizeChange - Called when page size changes (size) => void
- * @param {boolean} showPerPage - Show per page selector (default: true)
- * @param {boolean} showPageNumbers - Show page number buttons (default: true)
- * @param {boolean} showInfo - Show "X of Y" info text (default: false)
- * @param {ReactNode} actionButton - Optional action button (e.g., download)
- * @param {string} className - Additional CSS classes
- *
  * @example
  * <Pagination
  *   currentPage={4}
@@ -253,19 +241,25 @@ export const Pagination = ({
                 }}
               >
                 {pageSizeOptions.map((size) => (
-                  <div
+                  <button
                     key={size}
+                    type="button"
                     onClick={() => handlePageSizeClick(size)}
                     style={{
-                      padding: "8px 12px",
+                      width: "100%",
+                      border: "none",
+                      background: size === pageSize ? "var(--color-general-informative)" : "transparent",
+                      padding: "var(--spacing-2) var(--spacing-3)",
                       cursor: "pointer",
                       fontSize: "var(--text-body-md)",
-                      color: size === pageSize ? "var(--color-primary-600)" : "var(--color-neutral-700)",
-                      background: size === pageSize ? "var(--color-primary-50)" : "transparent",
+                      lineHeight: "var(--line-height-body-md)",
+                      fontFamily: "var(--font-family-primary)",
+                      textAlign: "left",
+                      color: size === pageSize ? "var(--color-content-primary)" : "var(--color-content-secondary)",
                     }}
                   >
                     {size}
-                  </div>
+                  </button>
                 ))}
               </div>
             )}
@@ -287,7 +281,7 @@ export const Pagination = ({
       {/* Page Numbers */}
       {showPageNumbers && (
         <div className="pagination__pages">
-          {pageNumbers.map((page, index) => {
+          {pageNumbers.map((page) => {
             if (page === "ellipsis-start" || page === "ellipsis-end") {
               return (
                 <Button

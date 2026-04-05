@@ -39,18 +39,18 @@ class EHelperText extends HTMLElement {
         }
 
         span {
-          font-family: var(--font-family-primary, 'Sora', sans-serif);
-          font-size: var(--text-body-md, 0.75rem);
-          font-weight: var(--font-weight-body-md, 400);
-          line-height: var(--line-height-body-md, 1rem);
+          font-family: var(--font-family-primary);
+          font-size: var(--text-body-md);
+          font-weight: var(--font-weight-body-md);
+          line-height: var(--line-height-body-md);
         }
 
         .default {
-          color: var(--color-content-secondary, #5371AC);
+          color: var(--color-content-secondary);
         }
 
         .error {
-          color: var(--color-content-negative, #FF7373);
+          color: var(--color-content-negative);
         }
       </style>
     `;

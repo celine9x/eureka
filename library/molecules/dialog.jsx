@@ -59,7 +59,7 @@ const styles = {
   overlay: {
     position: "fixed",
     inset: 0,
-    background: "rgba(21, 21, 76, 0.4)",
+    background: "var(--color-general-lightbox)",
     zIndex: 1000,
     display: "flex",
     alignItems: "center",
@@ -69,7 +69,7 @@ const styles = {
   modal: {
     width: 500,
     maxWidth: "calc(100vw - 32px)",
-    padding: 24,
+    padding: "var(--spacing-6)",
     position: "relative",
     background: "var(--color-general-white)",
     boxShadow: "var(--shadow-medium-down)",
@@ -78,7 +78,7 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    gap: 24,
+    gap: "var(--spacing-6)",
     outline: "none",
   },
 
@@ -114,7 +114,7 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    gap: 8,
+    gap: "var(--spacing-sm)",
     alignSelf: "stretch",
   },
 
@@ -133,15 +133,15 @@ const styles = {
       color: "var(--color-action-fill-primary-enabled)",
     },
     success: {
-      background: "rgba(115, 229, 172, 0.2)",
+      background: "var(--color-general-positive)",
       color: "var(--color-content-positive)",
     },
     warning: {
-      background: "rgba(255, 199, 0, 0.2)",
+      background: "var(--color-general-warning)",
       color: "var(--color-content-warning)",
     },
     error: {
-      background: "rgba(255, 115, 115, 0.2)",
+      background: "var(--color-general-negative)",
       color: "var(--color-content-negative)",
     },
   },
@@ -149,7 +149,7 @@ const styles = {
   title: {
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-heading-h4)",
-    fontWeight: 600,
+    fontWeight: "var(--font-weight-semibold)",
     color: "var(--color-content-primary)",
     textAlign: "center",
     margin: 0,
@@ -158,10 +158,10 @@ const styles = {
   message: {
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-body-md)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     color: "var(--color-content-primary)",
     textAlign: "center",
-    lineHeight: 1.6,
+    lineHeight: "var(--line-height-body-md)",
     margin: 0,
   },
 
@@ -169,7 +169,7 @@ const styles = {
     display: "flex",
     alignItems: "center",
     alignSelf: "stretch",
-    gap: 16,
+    gap: "var(--spacing-lg)",
   },
 
   actionsAlign: {
@@ -181,13 +181,13 @@ const styles = {
   actionsLeft: {
     display: "flex",
     alignItems: "center",
-    gap: 16,
+    gap: "var(--spacing-lg)",
   },
 
   actionsRight: {
     display: "flex",
     alignItems: "center",
-    gap: 12,
+    gap: "var(--spacing-md)",
   },
 };
 
@@ -200,27 +200,6 @@ const styles = {
  *
  * A modal dialog for confirmations, alerts, and user interactions.
  *
- * @param {boolean} isOpen - Whether the dialog is open
- * @param {function} onOpenChange - Called when dialog open state changes
- * @param {string} variant - Visual variant: info | success | warning | error (default: info)
- * @param {string} size - Dialog size: sm | md | lg (default: md)
- * @param {string} title - Optional dialog title
- * @param {ReactNode} children - Dialog message/content
- * @param {ReactNode} icon - Custom icon element (overrides variant icon)
- * @param {string} iconName - Custom icon name (overrides variant icon)
- * @param {boolean} showIcon - Whether to show the icon (default: true)
- * @param {boolean} showClose - Whether to show close button (default: true)
- * @param {ReactNode} actions - Custom actions (overrides default buttons)
- * @param {string} primaryLabel - Primary button label (default: "Confirm")
- * @param {string} secondaryLabel - Secondary button label
- * @param {string} tertiaryLabel - Tertiary button label
- * @param {function} onPrimaryPress - Primary button press handler
- * @param {function} onSecondaryPress - Secondary button press handler
- * @param {function} onTertiaryPress - Tertiary button press handler
- * @param {string} primaryVariant - Primary button variant (default: "primary", or "negative" for error)
- * @param {boolean} isDismissable - Allow closing by clicking overlay (default: true)
- * @param {string} actionsAlign - Actions alignment: spread | center | end (default: spread)
- * @param {object} style - Additional inline styles
  */
 export const Dialog = ({
   isOpen = false,

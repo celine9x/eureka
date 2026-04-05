@@ -3,14 +3,6 @@
  *
  * A full-featured modal dialog with header, content area, and footer actions.
  * Use for forms, complex content, and multi-step workflows.
- *
- * Token Mapping (from Figma):
- * - Grey100 (white) → --color-general-white
- * - Grey98 (#F8F9FC) → --color-general-neutral-lighter
- * - Grey90 (#D9E0ED) → --color-action-outline-secondary-enabled
- * - Grey50 (#5371AC) → --color-content-secondary
- * - Blue20 (#15154C) → --color-content-primary
- * - Blue60 (#4649FF) → --color-content-brand
  */
 
 import { useEffect, useRef } from "react";
@@ -27,7 +19,7 @@ const styles = {
     .modal-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(21, 21, 76, 0.4);
+      background: var(--color-general-lightbox);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -212,29 +204,6 @@ const injectStyles = () => {
  * Modal
  *
  * A full-featured modal with header, scrollable content, and footer actions.
- *
- * @param {boolean} open - Whether the modal is open
- * @param {function} onClose - Called when the modal should close
- * @param {string} title - Modal header title
- * @param {ReactNode} children - Modal content
- * @param {string} size - Modal size: sm | md | lg | xl | full (default: md)
- * @param {boolean} showFooter - Whether to show the footer (default: true)
- * @param {boolean} showClose - Whether to show close button (default: true)
- * @param {string} primaryLabel - Primary button label
- * @param {string} secondaryLabel - Secondary button label
- * @param {string} tertiaryLabel - Tertiary button label (left side)
- * @param {function} onPrimaryClick - Primary button click handler
- * @param {function} onSecondaryClick - Secondary button click handler
- * @param {function} onTertiaryClick - Tertiary button click handler
- * @param {boolean} primaryDisabled - Disable primary button
- * @param {boolean} primaryLoading - Show loading state on primary button
- * @param {string} primaryVariant - Primary button variant (default: "primary")
- * @param {ReactNode} footer - Custom footer content (overrides default buttons)
- * @param {boolean} closeOnOverlayClick - Close when clicking overlay (default: true)
- * @param {boolean} closeOnEscape - Close when pressing Escape (default: true)
- * @param {boolean} contentPadding - Add padding to content area (default: true)
- * @param {string} className - Additional CSS classes for modal
- * @param {string} contentClassName - Additional CSS classes for content area
  *
  * @example
  * // Simple modal with form
@@ -451,11 +420,6 @@ Modal.displayName = "Modal";
  * ModalHeader
  *
  * Header component for custom modal composition.
- *
- * @param {string} title - Header title
- * @param {function} onClose - Close button handler
- * @param {boolean} showClose - Show close button (default: true)
- * @param {ReactNode} children - Custom header content
  */
 export const ModalHeader = ({
   title,
@@ -500,9 +464,6 @@ ModalHeader.displayName = "ModalHeader";
  * ModalContent
  *
  * Content area component for custom modal composition.
- *
- * @param {ReactNode} children - Content
- * @param {boolean} padding - Add padding (default: true)
  */
 export const ModalContent = ({
   children,
@@ -535,10 +496,6 @@ ModalContent.displayName = "ModalContent";
  * ModalFooter
  *
  * Footer component for custom modal composition.
- *
- * @param {ReactNode} children - Footer content (buttons, etc.)
- * @param {ReactNode} left - Left side content
- * @param {ReactNode} right - Right side content
  */
 export const ModalFooter = ({
   children,

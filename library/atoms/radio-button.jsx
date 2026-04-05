@@ -107,7 +107,7 @@ const styles = {
   },
 
   label: {
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
   },
 
   labelDisabled: {
@@ -149,19 +149,7 @@ const styles = {
 // RADIO GROUP COMPONENT
 // ─────────────────────────────────────────────
 
-/**
- * RadioGroup
- *
- * Container for RadioButton components that manages selection state.
- *
- * @param {string} name - Name attribute for all radio buttons in the group
- * @param {string} value - Controlled selected value
- * @param {string} defaultValue - Uncontrolled initial selected value
- * @param {function} onChange - Called when selection changes
- * @param {boolean} isDisabled - Disables all radio buttons in the group
- * @param {ReactNode} children - RadioButton components
- * @param {object} style - Additional inline styles
- */
+/** RadioGroup */
 export const RadioGroup = ({
   name,
   value,
@@ -213,15 +201,7 @@ RadioGroup.displayName = "RadioGroup";
 // RADIO BUTTON COMPONENT
 // ─────────────────────────────────────────────
 
-/**
- * RadioButton
- *
- * @param {string} size - sm | md | lg (default: md)
- * @param {string} value - Value of this radio button
- * @param {boolean} isDisabled - Disables this radio button
- * @param {ReactNode} children - Label content
- * @param {object} style - Additional inline styles
- */
+/** RadioButton */
 export const RadioButton = ({
   size = RADIO_SIZES.md,
   value,

@@ -10,8 +10,9 @@
  * <Badge color="ai" size="md" icon>AI Generated</Badge>
  */
 
-import React from "react";
+import React, { cloneElement, createElement, isValidElement } from "react";
 import { ShieldCheckIcon, SparklesIcon } from "@heroicons/react/16/solid";
+import { XMarkIcon } from "@heroicons/react/20/solid";
 
 // ─────────────────────────────────────────────
 // CONSTANTS
@@ -41,6 +42,16 @@ export const BADGE_SHAPES = {
   pill: "pill",
 };
 
+export const BADGE_TYPES = {
+  pillColor: "pill-color",
+  badgeColor: "badge-color",
+  badgeModern: "badge-modern",
+};
+
+const BADGE_TOKEN_MAP = {
+  aiIconGradient: "linear-gradient(90deg, var(--color-accent-purple) 0%, var(--color-accent-green) 100%)",
+};
+
 // ─────────────────────────────────────────────
 // STYLES
 // ─────────────────────────────────────────────
@@ -50,9 +61,9 @@ const styles = {
     display: "inline-flex",
     justifyContent: "flex-start",
     alignItems: "center",
-    gap: 4,
+    gap: "var(--spacing-xs)",
     fontFamily: "var(--font-family-primary)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     whiteSpace: "nowrap",
     boxSizing: "border-box",
   },
@@ -64,22 +75,22 @@ const styles = {
 
   sizes: {
     lg: {
-      badge: { padding: 6 },
+      badge: { padding: "var(--spacing-sm)" },
       text: { fontSize: "var(--text-body-lg)", lineHeight: "var(--line-height-body-lg)" },
-      icon: { width: 20, height: 20 },
+      icon: { width: "var(--size-icon-md)", height: "var(--size-icon-md)" },
     },
     md: {
-      badge: { padding: 4 },
+      badge: { padding: "var(--spacing-xs)" },
       text: { fontSize: "var(--text-body-md)", lineHeight: "var(--line-height-body-md)" },
-      icon: { width: 16, height: 16 },
+      icon: { width: "var(--size-icon-sm)", height: "var(--size-icon-sm)" },
     },
     sm: {
-      badge: { paddingLeft: 4, paddingRight: 4, paddingTop: 2, paddingBottom: 2 },
+      badge: { paddingLeft: "var(--spacing-xs)", paddingRight: "var(--spacing-xs)", paddingTop: "var(--spacing-xxs)", paddingBottom: "var(--spacing-xxs)" },
       text: { fontSize: "var(--text-body-md)", lineHeight: "var(--line-height-body-md)" },
       icon: null, // No icon for sm
     },
     xs: {
-      badge: { paddingLeft: 4, paddingRight: 4, paddingTop: 0, paddingBottom: 0 },
+      badge: { paddingLeft: "var(--spacing-xs)", paddingRight: "var(--spacing-xs)", paddingTop: 0, paddingBottom: 0 },
       text: { fontSize: "var(--text-body-caption)", lineHeight: "var(--line-height-body-caption)" },
       icon: null, // No icon for xs
     },
@@ -118,7 +129,7 @@ const styles = {
         outlineOffset: "-1px",
       },
       text: { color: "var(--color-content-brand)" },
-      icon: { background: "linear-gradient(90deg, #4649FF 0%, #0EDDA5 100%)" },
+      icon: { background: BADGE_TOKEN_MAP.aiIconGradient },
     },
     positive: {
       badge: {
@@ -163,7 +174,7 @@ const styles = {
 // BADGE ICON (Using Heroicons)
 // ─────────────────────────────────────────────
 
-const BadgeIcon = ({ size, color }) => {
+const DefaultBadgeStatusIcon = ({ size, color }) => {
   const sizeStyles = styles.sizes[size];
   const colorStyles = styles.colors[color];
 
@@ -182,7 +193,7 @@ const BadgeIcon = ({ size, color }) => {
         style={{
           width,
           height,
-          background: "linear-gradient(90deg, #4649FF 0%, #0EDDA5 100%)",
+          background: BADGE_TOKEN_MAP.aiIconGradient,
           WebkitMaskImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='currentColor'%3E%3Cpath fill-rule='evenodd' d='M5 4a.75.75 0 0 1 .738.616l.252 1.388A1.25 1.25 0 0 0 6.996 7.01l1.388.252a.75.75 0 0 1 0 1.476l-1.388.252A1.25 1.25 0 0 0 5.99 9.996l-.252 1.388a.75.75 0 0 1-1.476 0L4.01 9.996A1.25 1.25 0 0 0 3.004 8.99l-1.388-.252a.75.75 0 0 1 0-1.476l1.388-.252A1.25 1.25 0 0 0 4.01 6.004l.252-1.388A.75.75 0 0 1 5 4ZM12 1a.75.75 0 0 1 .721.544l.195.682c.118.415.443.74.858.858l.682.195a.75.75 0 0 1 0 1.442l-.682.195a1.25 1.25 0 0 0-.858.858l-.195.682a.75.75 0 0 1-1.442 0l-.195-.682a1.25 1.25 0 0 0-.858-.858l-.682-.195a.75.75 0 0 1 0-1.442l.682-.195a1.25 1.25 0 0 0 .858-.858l.195-.682A.75.75 0 0 1 12 1ZM10 11a.75.75 0 0 1 .728.568l.258 1.022c.118.415.443.74.858.858l1.022.258a.75.75 0 0 1 0 1.456l-1.022.258a1.25 1.25 0 0 0-.858.858l-.258 1.022a.75.75 0 0 1-1.456 0l-.258-1.022a1.25 1.25 0 0 0-.858-.858l-1.022-.258a.75.75 0 0 1 0-1.456l1.022-.258a1.25 1.25 0 0 0 .858-.858l.258-1.022A.75.75 0 0 1 10 11Z' clip-rule='evenodd'/%3E%3C/svg%3E")`,
           WebkitMaskSize: "contain",
           WebkitMaskRepeat: "no-repeat",
@@ -214,17 +225,9 @@ const BadgeIcon = ({ size, color }) => {
 // COMPONENT
 // ─────────────────────────────────────────────
 
-/**
- * Badge
- *
- * @param {string} color - neutral | brand | disabled | ai | positive | negative | warning | informative (default: neutral)
- * @param {string} size - xs | sm | md | lg (default: md)
- * @param {string} shape - rounded | pill (default: rounded)
- * @param {boolean} icon - Show icon (only for md and lg sizes)
- * @param {React.CSSProperties} style - Additional inline styles
- * @param {ReactNode} children - Label text
- */
+/** Badge */
 export const Badge = ({
+  type = BADGE_TYPES.badgeColor,
   color = BADGE_COLORS.neutral,
   size = BADGE_SIZES.md,
   shape = BADGE_SHAPES.rounded,
@@ -240,11 +243,14 @@ export const Badge = ({
   // Only show icon for md and lg sizes
   const showIcon = icon && (size === "md" || size === "lg");
 
+  const resolvedShape = type === BADGE_TYPES.pillColor ? BADGE_SHAPES.pill : shape;
+
   const badgeStyle = {
     ...styles.base,
     ...sizeStyles.badge,
     ...colorStyles.badge,
-    ...shapeStyles,
+    ...styles.shapes[resolvedShape],
+    ...(type === BADGE_TYPES.badgeModern && { boxShadow: "var(--shadow-light-down)" }),
     ...style,
   };
 
@@ -257,8 +263,144 @@ export const Badge = ({
   return (
     <div style={badgeStyle} {...props}>
       <div style={textStyle}>{children}</div>
-      {showIcon && <BadgeIcon size={size} color={color} />}
+      {showIcon && <DefaultBadgeStatusIcon size={size} color={color} />}
     </div>
+  );
+};
+
+const getAddonIconStyle = (size, color) => {
+  const sizeStyles = styles.sizes[size] || styles.sizes.md;
+  const colorStyles = styles.colors[color] || styles.colors.neutral;
+
+  return {
+    width: sizeStyles.icon?.width || "var(--size-icon-sm)",
+    height: sizeStyles.icon?.height || "var(--size-icon-sm)",
+    color: colorStyles.text.color,
+    flexShrink: 0,
+  };
+};
+
+const renderIconNode = (icon, iconStyle) => {
+  if (!icon) return null;
+  if (isValidElement(icon)) {
+    return cloneElement(icon, {
+      style: { ...(icon.props?.style || {}), ...iconStyle },
+    });
+  }
+  if (typeof icon === "function") {
+    return createElement(icon, { style: iconStyle });
+  }
+  return null;
+};
+
+export const BadgeWithDot = ({
+  type = BADGE_TYPES.pillColor,
+  color = BADGE_COLORS.neutral,
+  size = BADGE_SIZES.md,
+  children,
+  style,
+  ...props
+}) => {
+  const colorStyles = styles.colors[color] || styles.colors.neutral;
+  const dotSize = size === "lg" ? "var(--spacing-sm)" : "var(--spacing-xs)";
+
+  return (
+    <Badge type={type} color={color} size={size} style={style} {...props}>
+      <span
+        style={{
+          width: dotSize,
+          height: dotSize,
+          borderRadius: "var(--radius-full)",
+          background: colorStyles.text.color,
+          flexShrink: 0,
+        }}
+      />
+      <span>{children}</span>
+    </Badge>
+  );
+};
+
+export const BadgeWithIcon = ({
+  type = BADGE_TYPES.pillColor,
+  color = BADGE_COLORS.neutral,
+  size = BADGE_SIZES.md,
+  iconLeading,
+  iconTrailing,
+  children,
+  style,
+  ...props
+}) => {
+  const iconStyle = getAddonIconStyle(size, color);
+
+  return (
+    <Badge type={type} color={color} size={size} style={style} {...props}>
+      {renderIconNode(iconLeading, iconStyle)}
+      <span>{children}</span>
+      {renderIconNode(iconTrailing, iconStyle)}
+    </Badge>
+  );
+};
+
+export const BadgeWithButton = ({
+  type = BADGE_TYPES.pillColor,
+  color = BADGE_COLORS.neutral,
+  size = BADGE_SIZES.md,
+  icon,
+  buttonLabel = "Remove badge",
+  onButtonClick,
+  children,
+  style,
+  ...props
+}) => {
+  const IconComponent = icon || XMarkIcon;
+  const iconStyle = getAddonIconStyle(size, color);
+
+  return (
+    <Badge type={type} color={color} size={size} style={style} {...props}>
+      <span>{children}</span>
+      <button
+        type="button"
+        aria-label={buttonLabel}
+        onClick={onButtonClick}
+        style={{
+          border: "none",
+          background: "transparent",
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "var(--spacing-xxs)",
+          cursor: "pointer",
+          borderRadius: type === BADGE_TYPES.pillColor ? "var(--radius-full)" : "var(--radius-xs)",
+          color: "inherit",
+        }}
+      >
+        <IconComponent style={iconStyle} />
+      </button>
+    </Badge>
+  );
+};
+
+export const BadgeIcon = ({
+  type = BADGE_TYPES.pillColor,
+  color = BADGE_COLORS.neutral,
+  size = BADGE_SIZES.md,
+  icon,
+  style,
+  ...props
+}) => {
+  const iconStyle = getAddonIconStyle(size, color);
+  const iconNode = renderIconNode(icon, iconStyle);
+
+  return (
+    <Badge
+      type={type}
+      color={color}
+      size={size}
+      style={{ ...style, paddingLeft: "var(--spacing-xs)", paddingRight: "var(--spacing-xs)" }}
+      {...props}
+    >
+      {iconNode}
+    </Badge>
   );
 };
 
@@ -266,5 +408,10 @@ Badge.displayName = "Badge";
 Badge.colors = BADGE_COLORS;
 Badge.sizes = BADGE_SIZES;
 Badge.shapes = BADGE_SHAPES;
+Badge.types = BADGE_TYPES;
+Badge.WithDot = BadgeWithDot;
+Badge.WithIcon = BadgeWithIcon;
+Badge.WithButton = BadgeWithButton;
+Badge.Icon = BadgeIcon;
 
 export default Badge;

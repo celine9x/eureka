@@ -10,7 +10,7 @@
  * <Infofield label="Tags" variant="badges" values={['Tag 1', 'Tag 2']} />
  */
 
-import React, { useState } from "react";
+import React from "react";
 import { Badge } from "../atoms/badge.jsx";
 import { Chip } from "../atoms/chip.jsx";
 import { Icon } from "../atoms/icon.jsx";
@@ -33,35 +33,35 @@ const styles = {
   base: {
     display: "flex",
     flexDirection: "column",
-    gap: 4,
+    gap: "var(--spacing-xs)",
     fontFamily: "var(--font-family-primary)",
   },
 
   header: {
     display: "flex",
     alignItems: "center",
-    gap: 8,
+    gap: "var(--spacing-sm)",
   },
 
   label: {
     flex: 1,
     fontSize: "var(--text-body-lg)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     color: "var(--color-content-secondary)",
   },
 
   actions: {
     display: "flex",
     alignItems: "center",
-    gap: 8,
+    gap: "var(--spacing-sm)",
   },
 
   value: {
     display: "flex",
     alignItems: "center",
-    gap: 4,
+    gap: "var(--spacing-xs)",
     fontSize: "var(--text-body-md)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     color: "var(--color-content-primary)",
   },
 
@@ -77,7 +77,7 @@ const styles = {
     display: "flex",
     flexWrap: "wrap",
     alignItems: "flex-start",
-    gap: 8,
+    gap: "var(--spacing-sm)",
   },
 
   overflow: {
@@ -90,7 +90,7 @@ const styles = {
     outline: "1px solid var(--color-action-outline-secondary-enabled)",
     outlineOffset: "-1px",
     fontSize: "var(--text-body-md)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     color: "var(--color-content-secondary)",
     cursor: "default",
   },
@@ -108,20 +108,6 @@ const styles = {
 /**
  * Infofield
  *
- * @param {string} label - The field label (required)
- * @param {string} value - Text value for text variant
- * @param {Array} values - Array of values for badges/chips variant
- * @param {string} variant - text | badges | chips (default: auto-detected)
- * @param {ReactNode} icon - Icon to display before text value
- * @param {string} iconName - Icon name for the value icon
- * @param {ReactNode} headerAction - Action element(s) to display in header row
- * @param {number} maxItems - Maximum items to show before overflow indicator
- * @param {string} emptyText - Text to show when value is empty
- * @param {function} onItemClick - Callback when a badge/chip item is clicked
- * @param {function} onOverflowClick - Callback when overflow indicator is clicked
- * @param {object} badgeProps - Props to pass to Badge components
- * @param {object} chipProps - Props to pass to Chip components
- * @param {object} style - Additional inline styles
  */
 export const Infofield = ({
   label,
@@ -295,14 +281,10 @@ Infofield.variants = INFOFIELD_VARIANTS;
  *
  * A container for multiple Infofield components with consistent spacing.
  *
- * @param {string} direction - row | column (default: column)
- * @param {number} gap - Spacing between fields (default: 16)
- * @param {object} style - Additional inline styles
- * @param {ReactNode} children - Infofield components
  */
 export const InfofieldGroup = ({
   direction = "column",
-  gap = 16,
+  gap = "var(--spacing-lg)",
   style,
   children,
   ...props

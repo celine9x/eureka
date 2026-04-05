@@ -13,8 +13,6 @@ import {
   ObjectHeaderTopBar,
   ObjectHeaderTopBarLeft,
   ObjectHeaderTopBarRight,
-  ObjectHeaderActionsGroup,
-  ObjectHeaderDivider,
   ObjectHeaderMeta,
   ObjectHeaderTitleSection,
   ObjectHeaderTitle,
@@ -48,12 +46,12 @@ const styles = {
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      background: var(--color-neutral-50);
+      background: var(--color-general-neutral-light);
     }
     .object-page__header {
       flex-shrink: 0;
-      background: var(--color-neutral-0);
-      border-bottom: 1px solid var(--color-neutral-200);
+      background: var(--color-general-white);
+      border-bottom: 1px solid var(--color-action-outline-secondary-enabled);
       padding: 0 var(--spacing-6);
     }
     .object-page__body {
@@ -75,9 +73,9 @@ const styles = {
       gap: var(--spacing-4);
     }
     .object-page__section {
-      background: var(--color-neutral-0);
+      background: var(--color-general-white);
       border-radius: var(--radius-lg);
-      border: 1px solid var(--color-neutral-200);
+      border: 1px solid var(--color-action-outline-secondary-enabled);
       overflow: hidden;
     }
     .object-page__section-content {
@@ -111,31 +109,6 @@ const injectStyles = () => {
  *
  * A complete object/detail page template with sidebar navigation, object header,
  * and two-column content area with accordions.
- *
- * @param {string} title - Page/object title
- * @param {ReactNode} titleIcon - Icon element for the title
- * @param {string} titleIconName - Icon name for the title
- * @param {string} titleIconVariant - Icon variant (default|warning)
- * @param {object} meta - Metadata object { label, date, time, author }
- * @param {Array} subinfoItems - Subinfo items [{ label, value, component }]
- * @param {Array} steps - Stepper steps [{ title, subtitle }]
- * @param {number} currentStep - Current step index
- * @param {ReactNode} tabs - Tabs component
- * @param {ReactNode} topBarLeft - Custom left content for top bar (default: back button)
- * @param {ReactNode} topBarRight - Custom right content for top bar (action buttons)
- * @param {function} onBack - Back button click handler
- * @param {Array} menuSections - Sections for the side menu
- * @param {object} menuUser - User object for the side menu
- * @param {string} logoSrc - Logo image URL for the side menu
- * @param {function} onMenuCreate - Create button handler for the side menu
- * @param {function} onMenuSearch - Search handler for the side menu
- * @param {Array} leftColumnSections - Accordion sections for left column [{ title, content, defaultExpanded, actionLabel, onActionClick }]
- * @param {Array} rightColumnSections - Accordion sections for right column
- * @param {ReactNode} leftColumnContent - Custom content for left column (overrides leftColumnSections)
- * @param {ReactNode} rightColumnContent - Custom content for right column (overrides rightColumnSections)
- * @param {boolean} singleColumn - Use single column layout (default: false)
- * @param {ReactNode} children - Custom body content (overrides columns)
- * @param {string} className - Additional CSS classes
  *
  * @example
  * <ObjectPage
@@ -238,7 +211,7 @@ export const ObjectPage = ({
           sections={menuSections}
           user={menuUser}
           onCreateClick={onMenuCreate}
-          onSearchSubmit={onMenuSearch}
+          onSearchChange={onMenuSearch}
         />
       </div>
 
@@ -285,10 +258,10 @@ export const ObjectPage = ({
                   <ObjectHeaderSubinfoItem key={item.id || index}>
                     {item.component || (
                       <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-1)" }}>
-                        <span style={{ fontSize: "var(--text-body-caption)", color: "var(--color-neutral-500)" }}>
+                        <span style={{ fontSize: "var(--text-body-caption)", color: "var(--color-content-secondary)" }}>
                           {item.label}
                         </span>
-                        <span style={{ fontSize: "var(--text-body-md)", color: "var(--color-neutral-900)" }}>
+                        <span style={{ fontSize: "var(--text-body-md)", color: "var(--color-content-primary)" }}>
                           {item.value}
                         </span>
                       </div>

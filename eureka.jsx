@@ -10,8 +10,8 @@ import React, { useState } from "react";
 // ─────────────────────────────────────────────
 // ATOMS
 // ─────────────────────────────────────────────
-import { Button, BUTTON_SIZES } from "./library/atoms/button.jsx";
-import { Badge, BADGE_COLORS, BADGE_SIZES } from "./library/atoms/badge.jsx";
+import { Button } from "./library/atoms/button.jsx";
+import { Badge } from "./library/atoms/badge.jsx";
 import { Avatar } from "./library/atoms/avatar.jsx";
 import { Checkbox } from "./library/atoms/checkbox.jsx";
 import { Toggle } from "./library/atoms/toggle.jsx";
@@ -90,6 +90,11 @@ import { ObjectPage } from "./library/templates/object-page.jsx";
 import { BUTTON_VARIANTS } from "./library/utils/props.js";
 
 // ─────────────────────────────────────────────
+// UTILITIES
+// ─────────────────────────────────────────────
+import { PreviewComponent } from "./library/utils/preview-component.jsx";
+
+// ─────────────────────────────────────────────
 // LAYOUT COMPONENTS
 // ─────────────────────────────────────────────
 
@@ -135,114 +140,391 @@ const DemoBox = ({ children }) => (
 
 const ButtonPage = () => (
   <Section title="Button" description="A flexible button with variants, sizes, and loading states.">
-    <SubSection title="Variants">
-      <Row label="Primary">
-        <Button variant="primary">Primary</Button>
-        <Button variant="primary" isDisabled>Disabled</Button>
-        <Button variant="primary" loading>Loading</Button>
-      </Row>
-      <Row label="Secondary">
-        <Button variant="secondary">Secondary</Button>
-        <Button variant="secondary" isDisabled>Disabled</Button>
-        <Button variant="secondary" loading>Loading</Button>
-      </Row>
-      <Row label="Tertiary">
-        <Button variant="tertiary">Tertiary</Button>
-        <Button variant="tertiary" isDisabled>Disabled</Button>
-      </Row>
-      <Row label="Negative">
-        <Button variant="negative">Negative</Button>
-        <Button variant="negative" isDisabled>Disabled</Button>
-      </Row>
-      <Row label="Positive">
-        <Button variant="positive">Positive</Button>
-        <Button variant="positive" isDisabled>Disabled</Button>
-      </Row>
-      <Row label="Link">
-        <Button variant="link">Link Button</Button>
-        <Button variant="link" isDisabled>Disabled</Button>
-      </Row>
-    </SubSection>
+    <PreviewComponent
+      title="All Button Variants"
+        code={`import { Button } from "@/components/base/buttons/button";
 
-    <SubSection title="Sizes">
-      <div style={{ display: "flex", alignItems: "flex-end", gap: 16, flexWrap: "wrap" }}>
-        <Button size="xs">Extra Small</Button>
-        <Button size="sm">Small</Button>
-        <Button size="md">Medium</Button>
-        <Button size="lg">Large</Button>
-        <Button size="xl">Extra Large</Button>
-      </div>
-    </SubSection>
+<Button variant="primary">Primary</Button>
+<Button variant="secondary">Secondary</Button>
+<Button variant="tertiary">Tertiary</Button>
+<Button variant="negative">Negative</Button>
+<Button variant="positive">Positive</Button>
+<Button variant="link">Link</Button>`}
+      >
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <Button variant="primary">Primary</Button>
+          <Button variant="secondary">Secondary</Button>
+          <Button variant="tertiary">Tertiary</Button>
+          <Button variant="negative">Negative</Button>
+          <Button variant="positive">Positive</Button>
+          <Button variant="link">Link</Button>
+        </div>
+      </PreviewComponent>
 
-    <SubSection title="With Icons">
-      <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
-        <Button iconLeading={<Icon name="Plus" variant="solid" size="sm" />}>Add Item</Button>
-        <Button variant="secondary" iconTrailing={<Icon name="ArrowRight" size="sm" />}>Continue</Button>
-        <Button variant="negative" iconLeading={<Icon name="Trash" size="sm" />}>Delete</Button>
-      </div>
-    </SubSection>
+    <PreviewComponent
+      title="Button Sizes"
+        code={`import { Button } from "@/components/base/buttons/button";
+
+<Button size="xs">Extra Small</Button>
+<Button size="sm">Small</Button>
+<Button size="md">Medium</Button>
+<Button size="lg">Large</Button>
+<Button size="xl">Extra Large</Button>`}
+      >
+        <div style={{ display: "flex", alignItems: "flex-end", gap: 16, flexWrap: "wrap" }}>
+          <Button size="xs">Extra Small</Button>
+          <Button size="sm">Small</Button>
+          <Button size="md">Medium</Button>
+          <Button size="lg">Large</Button>
+          <Button size="xl">Extra Large</Button>
+        </div>
+      </PreviewComponent>
+
+    <PreviewComponent
+      title="Primary Button"
+        code={`import { Button } from "@/components/base/buttons/button";
+
+<Button variant="primary">Primary</Button>
+<Button variant="primary" isDisabled>Disabled</Button>
+<Button variant="primary" loading>Loading</Button>`}
+      >
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <Button variant="primary">Primary</Button>
+          <Button variant="primary" isDisabled>Disabled</Button>
+          <Button variant="primary" loading>Loading</Button>
+        </div>
+      </PreviewComponent>
+
+    <PreviewComponent
+      title="Secondary Button"
+        code={`import { Button } from "@/components/base/buttons/button";
+
+<Button variant="secondary">Secondary</Button>
+<Button variant="secondary" isDisabled>Disabled</Button>
+<Button variant="secondary" loading>Loading</Button>`}
+      >
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <Button variant="secondary">Secondary</Button>
+          <Button variant="secondary" isDisabled>Disabled</Button>
+          <Button variant="secondary" loading>Loading</Button>
+        </div>
+      </PreviewComponent>
+
+    <PreviewComponent
+      title="Tertiary Button"
+        code={`import { Button } from "@/components/base/buttons/button";
+
+<Button variant="tertiary">Tertiary</Button>
+<Button variant="tertiary" isDisabled>Disabled</Button>`}
+      >
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <Button variant="tertiary">Tertiary</Button>
+          <Button variant="tertiary" isDisabled>Disabled</Button>
+        </div>
+      </PreviewComponent>
+
+    <PreviewComponent
+      title="Negative Button"
+        code={`import { Button } from "@/components/base/buttons/button";
+
+<Button variant="negative">Delete</Button>
+<Button variant="negative" isDisabled>Disabled</Button>`}
+      >
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <Button variant="negative">Delete</Button>
+          <Button variant="negative" isDisabled>Disabled</Button>
+        </div>
+      </PreviewComponent>
+
+    <PreviewComponent
+      title="Positive Button"
+        code={`import { Button } from "@/components/base/buttons/button";
+
+<Button variant="positive">Confirm</Button>
+<Button variant="positive" isDisabled>Disabled</Button>`}
+      >
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <Button variant="positive">Confirm</Button>
+          <Button variant="positive" isDisabled>Disabled</Button>
+        </div>
+      </PreviewComponent>
+
+    <PreviewComponent
+      title="Link Button"
+        code={`import { Button } from "@/components/base/buttons/button";
+
+<Button variant="link">Link Button</Button>
+<Button variant="link" isDisabled>Disabled</Button>`}
+      >
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <Button variant="link">Link Button</Button>
+          <Button variant="link" isDisabled>Disabled</Button>
+        </div>
+      </PreviewComponent>
+
+    <PreviewComponent
+      title="Button with Icon"
+        code={`import { Button } from "@/components/base/buttons/button";
+import { Icon } from "@/library/atoms/icon";
+
+<Button variant="primary" iconLeading={<Icon name="Check" size="sm" />}>
+  Publish now
+</Button>`}
+      >
+        <Button variant="primary" iconLeading={<Icon name="Check" size="sm" />}>
+          Publish now
+        </Button>
+      </PreviewComponent>
   </Section>
 );
 
 const BadgePage = () => (
   <Section title="Badge" description="A compact label element with colors, sizes, and shapes.">
-    <SubSection title="Colors">
-      {Object.keys(BADGE_COLORS).map((color) => (
-        <Row key={color} label={color}>
-          <Badge color={color} size="md">{color}</Badge>
-          <Badge color={color} size="md" icon>{color}</Badge>
-        </Row>
-      ))}
-    </SubSection>
+    {/* 1. All Badge Colors */}
+    <PreviewComponent
+      title="All Badge Colors"
+      code={`import { Badge } from "@/library/atoms/badge";
 
-    <SubSection title="Sizes">
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <Badge color="brand" size="xs">XS</Badge>
-        <Badge color="brand" size="sm">SM</Badge>
-        <Badge color="brand" size="md">MD</Badge>
-        <Badge color="brand" size="lg">LG</Badge>
+<Badge color="neutral">Neutral</Badge>
+<Badge color="brand">Brand</Badge>
+<Badge color="disabled">Disabled</Badge>
+<Badge color="ai">AI</Badge>
+<Badge color="positive">Positive</Badge>
+<Badge color="negative">Negative</Badge>
+<Badge color="warning">Warning</Badge>
+<Badge color="informative">Informative</Badge>`}
+    >
+      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+        <Badge color="neutral">Neutral</Badge>
+        <Badge color="brand">Brand</Badge>
+        <Badge color="disabled">Disabled</Badge>
+        <Badge color="ai">AI</Badge>
+        <Badge color="positive">Positive</Badge>
+        <Badge color="negative">Negative</Badge>
+        <Badge color="warning">Warning</Badge>
+        <Badge color="informative">Informative</Badge>
       </div>
-    </SubSection>
+    </PreviewComponent>
 
-    <SubSection title="Shapes">
-      <Row label="Rounded">
+    {/* 2. Badge Sizes */}
+    <PreviewComponent
+      title="Badge Sizes"
+      code={`import { Badge } from "@/library/atoms/badge";
+
+<Badge color="brand" size="xs">Extra Small</Badge>
+<Badge color="brand" size="sm">Small</Badge>
+<Badge color="brand" size="md">Medium</Badge>
+<Badge color="brand" size="lg">Large</Badge>`}
+    >
+      <div style={{ display: "flex", alignItems: "flex-end", gap: 16, flexWrap: "wrap" }}>
+        <Badge color="brand" size="xs">Extra Small</Badge>
+        <Badge color="brand" size="sm">Small</Badge>
+        <Badge color="brand" size="md">Medium</Badge>
+        <Badge color="brand" size="lg">Large</Badge>
+      </div>
+    </PreviewComponent>
+
+    {/* 3. Neutral Badge */}
+    <PreviewComponent
+      title="Neutral Badge"
+      code={`import { Badge } from "@/library/atoms/badge";
+
+<Badge color="neutral" size="md">Neutral</Badge>
+<Badge color="neutral" size="md" icon>With Icon</Badge>
+<Badge color="neutral" size="lg" icon>Large with Icon</Badge>`}
+    >
+      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+        <Badge color="neutral" size="md">Neutral</Badge>
+        <Badge color="neutral" size="md" icon>With Icon</Badge>
+        <Badge color="neutral" size="lg" icon>Large with Icon</Badge>
+      </div>
+    </PreviewComponent>
+
+    {/* 4. Brand Badge */}
+    <PreviewComponent
+      title="Brand Badge"
+      code={`import { Badge } from "@/library/atoms/badge";
+
+<Badge color="brand" size="md">Brand</Badge>
+<Badge color="brand" size="md" icon>With Icon</Badge>
+<Badge color="brand" size="lg" icon>Large with Icon</Badge>`}
+    >
+      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+        <Badge color="brand" size="md">Brand</Badge>
+        <Badge color="brand" size="md" icon>With Icon</Badge>
+        <Badge color="brand" size="lg" icon>Large with Icon</Badge>
+      </div>
+    </PreviewComponent>
+
+    {/* 5. Disabled Badge */}
+    <PreviewComponent
+      title="Disabled Badge"
+      code={`import { Badge } from "@/library/atoms/badge";
+
+<Badge color="disabled" size="md">Disabled</Badge>
+<Badge color="disabled" size="md" icon>With Icon</Badge>
+<Badge color="disabled" size="lg" icon>Large with Icon</Badge>`}
+    >
+      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+        <Badge color="disabled" size="md">Disabled</Badge>
+        <Badge color="disabled" size="md" icon>With Icon</Badge>
+        <Badge color="disabled" size="lg" icon>Large with Icon</Badge>
+      </div>
+    </PreviewComponent>
+
+    {/* 6. AI Badge */}
+    <PreviewComponent
+      title="AI Badge"
+      code={`import { Badge } from "@/library/atoms/badge";
+
+<Badge color="ai" size="md">AI</Badge>
+<Badge color="ai" size="md" icon>AI Generated</Badge>
+<Badge color="ai" size="lg" icon>AI with Sparkles</Badge>`}
+    >
+      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+        <Badge color="ai" size="md">AI</Badge>
+        <Badge color="ai" size="md" icon>AI Generated</Badge>
+        <Badge color="ai" size="lg" icon>AI with Sparkles</Badge>
+      </div>
+    </PreviewComponent>
+
+    {/* 7. Positive Badge */}
+    <PreviewComponent
+      title="Positive Badge"
+      code={`import { Badge } from "@/library/atoms/badge";
+
+<Badge color="positive" size="md">Positive</Badge>
+<Badge color="positive" size="md" icon>With Icon</Badge>
+<Badge color="positive" size="lg" icon>Large with Icon</Badge>`}
+    >
+      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+        <Badge color="positive" size="md">Positive</Badge>
+        <Badge color="positive" size="md" icon>With Icon</Badge>
+        <Badge color="positive" size="lg" icon>Large with Icon</Badge>
+      </div>
+    </PreviewComponent>
+
+    {/* 8. Negative Badge */}
+    <PreviewComponent
+      title="Negative Badge"
+      code={`import { Badge } from "@/library/atoms/badge";
+
+<Badge color="negative" size="md">Negative</Badge>
+<Badge color="negative" size="md" icon>With Icon</Badge>
+<Badge color="negative" size="lg" icon>Large with Icon</Badge>`}
+    >
+      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+        <Badge color="negative" size="md">Negative</Badge>
+        <Badge color="negative" size="md" icon>With Icon</Badge>
+        <Badge color="negative" size="lg" icon>Large with Icon</Badge>
+      </div>
+    </PreviewComponent>
+
+    {/* 9. Warning Badge */}
+    <PreviewComponent
+      title="Warning Badge"
+      code={`import { Badge } from "@/library/atoms/badge";
+
+<Badge color="warning" size="md">Warning</Badge>
+<Badge color="warning" size="md" icon>With Icon</Badge>
+<Badge color="warning" size="lg" icon>Large with Icon</Badge>`}
+    >
+      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+        <Badge color="warning" size="md">Warning</Badge>
+        <Badge color="warning" size="md" icon>With Icon</Badge>
+        <Badge color="warning" size="lg" icon>Large with Icon</Badge>
+      </div>
+    </PreviewComponent>
+
+    {/* 10. Informative Badge */}
+    <PreviewComponent
+      title="Informative Badge"
+      code={`import { Badge } from "@/library/atoms/badge";
+
+<Badge color="informative" size="md">Informative</Badge>
+<Badge color="informative" size="md" icon>With Icon</Badge>
+<Badge color="informative" size="lg" icon>Large with Icon</Badge>`}
+    >
+      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+        <Badge color="informative" size="md">Informative</Badge>
+        <Badge color="informative" size="md" icon>With Icon</Badge>
+        <Badge color="informative" size="lg" icon>Large with Icon</Badge>
+      </div>
+    </PreviewComponent>
+
+    {/* 11. Badge Shapes */}
+    <PreviewComponent
+      title="Badge Shapes"
+      code={`import { Badge } from "@/library/atoms/badge";
+
+<Badge color="brand" size="md" shape="rounded">Rounded</Badge>
+<Badge color="brand" size="md" shape="rounded" icon>Rounded with Icon</Badge>
+<Badge color="brand" size="md" shape="pill">Pill</Badge>
+<Badge color="brand" size="md" shape="pill" icon>Pill with Icon</Badge>`}
+    >
+      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
         <Badge color="brand" size="md" shape="rounded">Rounded</Badge>
-        <Badge color="neutral" size="lg" shape="rounded" icon>With Icon</Badge>
-      </Row>
-      <Row label="Pill">
+        <Badge color="brand" size="md" shape="rounded" icon>Rounded with Icon</Badge>
         <Badge color="brand" size="md" shape="pill">Pill</Badge>
-        <Badge color="neutral" size="lg" shape="pill" icon>With Icon</Badge>
-      </Row>
-    </SubSection>
-
-    <SubSection title="AI Variant">
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <Badge color="ai" size="lg" icon>AI Generated</Badge>
-        <Badge color="ai" size="md" shape="pill" icon>Sparkles</Badge>
+        <Badge color="brand" size="md" shape="pill" icon>Pill with Icon</Badge>
       </div>
-    </SubSection>
+    </PreviewComponent>
   </Section>
 );
 
 const AvatarPage = () => (
   <Section title="Avatar" description="A circular avatar displaying initials or an image.">
-    <SubSection title="Sizes with Initials">
-      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+    {/* 1. All Avatar Sizes */}
+    <PreviewComponent
+      title="Avatar Sizes"
+      code={`import { Avatar } from "@/library/atoms/avatar";
+
+<Avatar size="xs" name="John Doe" />
+<Avatar size="sm" name="Jane Smith" />
+<Avatar size="md" name="Bob Wilson" />
+<Avatar size="lg" name="Alice Brown" />
+<Avatar size="xl" name="Charlie Davis" />`}
+    >
+      <div style={{ display: "flex", alignItems: "flex-end", gap: 16, flexWrap: "wrap" }}>
         <Avatar size="xs" name="John Doe" />
         <Avatar size="sm" name="Jane Smith" />
         <Avatar size="md" name="Bob Wilson" />
         <Avatar size="lg" name="Alice Brown" />
         <Avatar size="xl" name="Charlie Davis" />
       </div>
-    </SubSection>
+    </PreviewComponent>
 
-    <SubSection title="Custom Initials">
-      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+    {/* 2. Avatar with Name-based Initials */}
+    <PreviewComponent
+      title="Name-based Initials"
+      code={`import { Avatar } from "@/library/atoms/avatar";
+
+<Avatar size="lg" name="Alice Brown" />
+<Avatar size="lg" name="Bob Wilson" />
+<Avatar size="lg" name="Charlie Davis" />`}
+    >
+      <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+        <Avatar size="lg" name="Alice Brown" />
+        <Avatar size="lg" name="Bob Wilson" />
+        <Avatar size="lg" name="Charlie Davis" />
+      </div>
+    </PreviewComponent>
+
+    {/* 3. Avatar with Custom Initials */}
+    <PreviewComponent
+      title="Custom Initials"
+      code={`import { Avatar } from "@/library/atoms/avatar";
+
+<Avatar size="lg" initials="AB" />
+<Avatar size="lg" initials="CD" />
+<Avatar size="lg" initials="EF" />`}
+    >
+      <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
         <Avatar size="lg" initials="AB" />
         <Avatar size="lg" initials="CD" />
         <Avatar size="lg" initials="EF" />
       </div>
-    </SubSection>
+    </PreviewComponent>
   </Section>
 );
 
@@ -252,21 +534,54 @@ const CheckboxPage = () => {
 
   return (
     <Section title="Checkbox" description="A reusable checkbox with sizes and states.">
-      <SubSection title="States">
+      {/* 1. All Checkbox States */}
+      <PreviewComponent
+        title="Checkbox States"
+        code={`import { Checkbox } from "@/library/atoms/checkbox";
+
+<Checkbox isSelected={false}>Unchecked option</Checkbox>
+<Checkbox isSelected={true}>Checked option</Checkbox>
+<Checkbox isDisabled>Disabled unchecked</Checkbox>
+<Checkbox isDisabled defaultSelected>Disabled checked</Checkbox>`}
+      >
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <Checkbox isSelected={checked1} onChange={setChecked1}>Unchecked option</Checkbox>
           <Checkbox isSelected={checked2} onChange={setChecked2}>Checked option</Checkbox>
-          <Checkbox isDisabled>Disabled option</Checkbox>
+          <Checkbox isDisabled>Disabled unchecked</Checkbox>
           <Checkbox isDisabled defaultSelected>Disabled checked</Checkbox>
         </div>
-      </SubSection>
+      </PreviewComponent>
 
-      <SubSection title="Sizes">
+      {/* 2. Checkbox Sizes */}
+      <PreviewComponent
+        title="Checkbox Sizes"
+        code={`import { Checkbox } from "@/library/atoms/checkbox";
+
+<Checkbox size="sm">Small checkbox</Checkbox>
+<Checkbox size="md">Medium checkbox</Checkbox>`}
+      >
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <Checkbox size="sm">Small checkbox</Checkbox>
           <Checkbox size="md">Medium checkbox</Checkbox>
         </div>
-      </SubSection>
+      </PreviewComponent>
+
+      {/* 3. Interactive Example */}
+      <PreviewComponent
+        title="Interactive Checkbox"
+        code={`import { Checkbox } from "@/library/atoms/checkbox";
+import { useState } from "react";
+
+const [checked, setChecked] = useState(false);
+
+<Checkbox isSelected={checked} onChange={setChecked}>
+  I agree to the terms and conditions
+</Checkbox>`}
+      >
+        <Checkbox isSelected={checked1} onChange={setChecked1}>
+          I agree to the terms and conditions
+        </Checkbox>
+      </PreviewComponent>
     </Section>
   );
 };
@@ -276,35 +591,94 @@ const TogglePage = () => {
 
   return (
     <Section title="Toggle" description="A switch/toggle control with multiple sizes and states.">
-      <SubSection title="States">
+      {/* 1. All Toggle States */}
+      <PreviewComponent
+        title="Toggle States"
+        code={`import { Toggle } from "@/library/atoms/toggle";
+
+<Toggle label="Toggle off" isSelected={false} />
+<Toggle label="Toggle on" isSelected={true} />
+<Toggle label="Disabled off" isDisabled />
+<Toggle label="Disabled on" isDisabled isSelected />`}
+      >
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <Toggle label="Toggle off" isSelected={enabled} onChange={setEnabled} />
           <Toggle label="Toggle on" isSelected={!enabled} onChange={(v) => setEnabled(!v)} />
           <Toggle label="Disabled off" isDisabled />
           <Toggle label="Disabled on" isDisabled isSelected />
         </div>
-      </SubSection>
+      </PreviewComponent>
 
-      <SubSection title="Sizes">
+      {/* 2. Toggle Sizes */}
+      <PreviewComponent
+        title="Toggle Sizes"
+        code={`import { Toggle } from "@/library/atoms/toggle";
+
+<Toggle size="sm" label="Small toggle" />
+<Toggle size="md" label="Medium toggle" />`}
+      >
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <Toggle size="sm" label="Small toggle" />
           <Toggle size="md" label="Medium toggle" />
         </div>
-      </SubSection>
+      </PreviewComponent>
 
-      <SubSection title="Label Position">
+      {/* 3. Label Position */}
+      <PreviewComponent
+        title="Label Position"
+        code={`import { Toggle } from "@/library/atoms/toggle";
+
+<Toggle label="Label on right" labelPosition="right" />
+<Toggle label="Label on left" labelPosition="left" />`}
+      >
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <Toggle label="Label on right" labelPosition="right" />
           <Toggle label="Label on left" labelPosition="left" />
         </div>
-      </SubSection>
+      </PreviewComponent>
+
+      {/* 4. Interactive Example */}
+      <PreviewComponent
+        title="Interactive Toggle"
+        code={`import { Toggle } from "@/library/atoms/toggle";
+import { useState } from "react";
+
+const [enabled, setEnabled] = useState(false);
+
+<Toggle 
+  label="Enable notifications" 
+  isSelected={enabled} 
+  onChange={setEnabled} 
+/>`}
+      >
+        <Toggle 
+          label="Enable notifications" 
+          isSelected={enabled} 
+          onChange={setEnabled} 
+        />
+      </PreviewComponent>
     </Section>
   );
 };
 
 const IconPage = () => (
   <Section title="Icon" description="A unified icon library wrapping Heroicons and Phosphor Icons.">
-    <SubSection title="Heroicons (Default)">
+    {/* 1. Common Icons */}
+    <PreviewComponent
+      title="Common Icons"
+      code={`import { Icon } from "@/library/atoms/icon";
+
+<Icon name="Home" size="lg" />
+<Icon name="User" size="lg" />
+<Icon name="Cog6Tooth" size="lg" />
+<Icon name="Bell" size="lg" />
+<Icon name="MagnifyingGlass" size="lg" />
+<Icon name="Plus" size="lg" />
+<Icon name="Check" size="lg" />
+<Icon name="XMark" size="lg" />
+<Icon name="ChevronRight" size="lg" />
+<Icon name="ArrowRight" size="lg" />`}
+    >
       <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
         <Icon name="Home" size="lg" />
         <Icon name="User" size="lg" />
@@ -317,36 +691,75 @@ const IconPage = () => (
         <Icon name="ChevronRight" size="lg" />
         <Icon name="ArrowRight" size="lg" />
       </div>
-    </SubSection>
+    </PreviewComponent>
 
-    <SubSection title="Variants">
-      <Row label="Outline">
-        <Icon name="Heart" variant="outline" size="xl" />
-        <Icon name="Star" variant="outline" size="xl" />
-        <Icon name="Folder" variant="outline" size="xl" />
-      </Row>
-      <Row label="Solid">
-        <Icon name="Heart" variant="solid" size="xl" />
-        <Icon name="Star" variant="solid" size="xl" />
-        <Icon name="Folder" variant="solid" size="xl" />
-      </Row>
-    </SubSection>
+    {/* 2. Icon Sizes */}
+    <PreviewComponent
+      title="Icon Sizes"
+      code={`import { Icon } from "@/library/atoms/icon";
 
-    <SubSection title="Sizes">
-      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+<Icon name="Home" size="xs" />
+<Icon name="Home" size="sm" />
+<Icon name="Home" size="md" />
+<Icon name="Home" size="lg" />
+<Icon name="Home" size="xl" />`}
+    >
+      <div style={{ display: "flex", alignItems: "flex-end", gap: 16, flexWrap: "wrap" }}>
         <Icon name="Home" size="xs" />
         <Icon name="Home" size="sm" />
         <Icon name="Home" size="md" />
         <Icon name="Home" size="lg" />
         <Icon name="Home" size="xl" />
       </div>
-    </SubSection>
+    </PreviewComponent>
+
+    {/* 3. Outline Variant */}
+    <PreviewComponent
+      title="Outline Icons"
+      code={`import { Icon } from "@/library/atoms/icon";
+
+<Icon name="Heart" variant="outline" size="xl" />
+<Icon name="Star" variant="outline" size="xl" />
+<Icon name="Folder" variant="outline" size="xl" />`}
+    >
+      <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+        <Icon name="Heart" variant="outline" size="xl" />
+        <Icon name="Star" variant="outline" size="xl" />
+        <Icon name="Folder" variant="outline" size="xl" />
+      </div>
+    </PreviewComponent>
+
+    {/* 4. Solid Variant */}
+    <PreviewComponent
+      title="Solid Icons"
+      code={`import { Icon } from "@/library/atoms/icon";
+
+<Icon name="Heart" variant="solid" size="xl" />
+<Icon name="Star" variant="solid" size="xl" />
+<Icon name="Folder" variant="solid" size="xl" />`}
+    >
+      <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+        <Icon name="Heart" variant="solid" size="xl" />
+        <Icon name="Star" variant="solid" size="xl" />
+        <Icon name="Folder" variant="solid" size="xl" />
+      </div>
+    </PreviewComponent>
   </Section>
 );
 
 const ChipPage = () => (
   <Section title="Chip" description="A compact label element with optional color accent, icons, and actions.">
-    <SubSection title="Variants">
+    {/* 1. All Chip Variants */}
+    <PreviewComponent
+      title="All Chip Variants"
+      code={`import { Chip } from "@/library/atoms/chip";
+
+<Chip variant="neutral">Neutral</Chip>
+<Chip variant="primary">Primary</Chip>
+<Chip variant="positive">Positive</Chip>
+<Chip variant="negative">Negative</Chip>
+<Chip variant="warning">Warning</Chip>`}
+    >
       <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
         <Chip variant="neutral">Neutral</Chip>
         <Chip variant="primary">Primary</Chip>
@@ -354,100 +767,265 @@ const ChipPage = () => (
         <Chip variant="negative">Negative</Chip>
         <Chip variant="warning">Warning</Chip>
       </div>
-    </SubSection>
+    </PreviewComponent>
 
-    <SubSection title="With Features">
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
-        <Chip icon={<Icon name="Star" size="sm" />}>With Icon</Chip>
-        <Chip chevron>With Chevron</Chip>
-        <Chip removable onRemove={() => alert("Remove clicked")}>Removable</Chip>
-        <Chip color="#4649FF">With Color</Chip>
-        <Chip color="#FF6B6B" icon={<Icon name="Heart" variant="solid" size="sm" />} removable>Full Featured</Chip>
-      </div>
-    </SubSection>
+    {/* 2. Chip Sizes */}
+    <PreviewComponent
+      title="Chip Sizes"
+      code={`import { Chip } from "@/library/atoms/chip";
 
-    <SubSection title="Sizes">
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+<Chip size="sm">Small</Chip>
+<Chip size="md">Medium</Chip>`}
+    >
+      <div style={{ display: "flex", alignItems: "flex-end", gap: 12, flexWrap: "wrap" }}>
         <Chip size="sm">Small</Chip>
         <Chip size="md">Medium</Chip>
       </div>
-    </SubSection>
+    </PreviewComponent>
+
+    {/* 3. Chip with Icon */}
+    <PreviewComponent
+      title="Chip with Icon"
+      code={`import { Chip } from "@/library/atoms/chip";
+import { Icon } from "@/library/atoms/icon";
+
+<Chip icon={<Icon name="Star" size="sm" />}>With Icon</Chip>
+<Chip variant="primary" icon={<Icon name="Check" size="sm" />}>Verified</Chip>
+<Chip variant="positive" icon={<Icon name="Heart" variant="solid" size="sm" />}>Favorite</Chip>`}
+    >
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+        <Chip icon={<Icon name="Star" size="sm" />}>With Icon</Chip>
+        <Chip variant="primary" icon={<Icon name="Check" size="sm" />}>Verified</Chip>
+        <Chip variant="positive" icon={<Icon name="Heart" variant="solid" size="sm" />}>Favorite</Chip>
+      </div>
+    </PreviewComponent>
+
+    {/* 4. Chip with Chevron */}
+    <PreviewComponent
+      title="Chip with Chevron"
+      code={`import { Chip } from "@/library/atoms/chip";
+
+<Chip chevron>With Chevron</Chip>
+<Chip variant="primary" chevron>Dropdown</Chip>`}
+    >
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+        <Chip chevron>With Chevron</Chip>
+        <Chip variant="primary" chevron>Dropdown</Chip>
+      </div>
+    </PreviewComponent>
+
+    {/* 5. Removable Chip */}
+    <PreviewComponent
+      title="Removable Chip"
+      code={`import { Chip } from "@/library/atoms/chip";
+
+<Chip removable onRemove={() => alert("Remove clicked")}>
+  Removable
+</Chip>
+<Chip variant="primary" removable onRemove={() => alert("Remove clicked")}>
+  Tag
+</Chip>`}
+    >
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+        <Chip removable onRemove={() => alert("Remove clicked")}>Removable</Chip>
+        <Chip variant="primary" removable onRemove={() => alert("Remove clicked")}>Tag</Chip>
+      </div>
+    </PreviewComponent>
+
+    {/* 6. Chip with Custom Color */}
+    <PreviewComponent
+      title="Custom Color Chip"
+      code={`import { Chip } from "@/library/atoms/chip";
+
+<Chip color="#4649FF">Custom Blue</Chip>
+<Chip color="#FF6B6B">Custom Red</Chip>
+<Chip color="#10B981">Custom Green</Chip>`}
+    >
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+        <Chip color="#4649FF">Custom Blue</Chip>
+        <Chip color="#FF6B6B">Custom Red</Chip>
+        <Chip color="#10B981">Custom Green</Chip>
+      </div>
+    </PreviewComponent>
+
+    {/* 7. Full Featured Chip */}
+    <PreviewComponent
+      title="Full Featured Chip"
+      code={`import { Chip } from "@/library/atoms/chip";
+import { Icon } from "@/library/atoms/icon";
+
+<Chip 
+  color="#FF6B6B" 
+  icon={<Icon name="Heart" variant="solid" size="sm" />} 
+  removable
+  onRemove={() => alert("Remove clicked")}
+>
+  Full Featured
+</Chip>`}
+    >
+      <Chip 
+        color="#FF6B6B" 
+        icon={<Icon name="Heart" variant="solid" size="sm" />} 
+        removable
+        onRemove={() => alert("Remove clicked")}
+      >
+        Full Featured
+      </Chip>
+    </PreviewComponent>
   </Section>
 );
 
 const LinkPage = () => (
   <Section title="Link" description="A styled anchor link with optional leading/trailing icons.">
-    <SubSection title="Sizes">
+    {/* 1. Link Sizes */}
+    <PreviewComponent
+      title="Link Sizes"
+      code={`import { Link } from "@/library/atoms/link";
+
+<Link href="#" size="sm">Small Link</Link>
+<Link href="#" size="md">Medium Link</Link>
+<Link href="#" size="lg">Large Link</Link>`}
+    >
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         <Link href="#" size="sm">Small Link</Link>
         <Link href="#" size="md">Medium Link</Link>
         <Link href="#" size="lg">Large Link</Link>
       </div>
-    </SubSection>
+    </PreviewComponent>
 
-    <SubSection title="With Icons">
-      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        <Link href="#" iconLeading={<Icon name="ArrowLeft" size="sm" />}>Back</Link>
-        <Link href="#" iconTrailing={<Icon name="ArrowRight" size="sm" />}>Continue</Link>
-        <Link href="#" iconLeading={<Icon name="ExternalLink" size="sm" />} target="_blank">Open External</Link>
-      </div>
-    </SubSection>
+    {/* 2. Link States */}
+    <PreviewComponent
+      title="Link States"
+      code={`import { Link } from "@/library/atoms/link";
 
-    <SubSection title="States">
+<Link href="#">Default Link</Link>
+<Link href="#" isDisabled>Disabled Link</Link>`}
+    >
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         <Link href="#">Default Link</Link>
         <Link href="#" isDisabled>Disabled Link</Link>
       </div>
-    </SubSection>
+    </PreviewComponent>
+
+    {/* 3. Link with Leading Icon */}
+    <PreviewComponent
+      title="Link with Leading Icon"
+      code={`import { Link } from "@/library/atoms/link";
+import { Icon } from "@/library/atoms/icon";
+
+<Link href="#" iconLeading={<Icon name="ArrowLeft" size="sm" />}>
+  Back
+</Link>
+<Link href="#" iconLeading={<Icon name="ExternalLink" size="sm" />} target="_blank">
+  Open External
+</Link>`}
+    >
+      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <Link href="#" iconLeading={<Icon name="ArrowLeft" size="sm" />}>Back</Link>
+        <Link href="#" iconLeading={<Icon name="ExternalLink" size="sm" />} target="_blank">Open External</Link>
+      </div>
+    </PreviewComponent>
+
+    {/* 4. Link with Trailing Icon */}
+    <PreviewComponent
+      title="Link with Trailing Icon"
+      code={`import { Link } from "@/library/atoms/link";
+import { Icon } from "@/library/atoms/icon";
+
+<Link href="#" iconTrailing={<Icon name="ArrowRight" size="sm" />}>
+  Continue
+</Link>
+<Link href="#" iconTrailing={<Icon name="ChevronRight" size="sm" />}>
+  Learn More
+</Link>`}
+    >
+      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <Link href="#" iconTrailing={<Icon name="ArrowRight" size="sm" />}>Continue</Link>
+        <Link href="#" iconTrailing={<Icon name="ChevronRight" size="sm" />}>Learn More</Link>
+      </div>
+    </PreviewComponent>
   </Section>
 );
 
 const StepPage = () => (
   <Section title="Step" description="A step indicator for use in steppers/progress indicators.">
-    <SubSection title="Horizontal Stepper">
-      <DemoBox>
-        <div style={{ display: "flex", gap: 0 }}>
-          <Step status="completed" title="Step 1" subtitle="Completed" />
-          <Step status="completed" title="Step 2" subtitle="Completed" />
-          <Step status="current" title="Step 3" subtitle="In Progress" />
-          <Step status="next" title="Step 4" subtitle="Pending" />
-          <Step status="next" title="Step 5" subtitle="Pending" showLine={false} />
-        </div>
-      </DemoBox>
-    </SubSection>
+    {/* 1. All Step Statuses */}
+    <PreviewComponent
+      title="All Step Statuses"
+      code={`import { Step } from "@/library/atoms/step";
 
-    <SubSection title="Status Variants">
-      <DemoBox>
-        <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-          <Row label="Completed">
-            <Step status="completed" title="Completed Step" showLine={false} />
-          </Row>
-          <Row label="Current">
-            <Step status="current" title="Current Step" showLine={false} />
-          </Row>
-          <Row label="Next">
-            <Step status="next" title="Next Step" showLine={false} />
-          </Row>
-          <Row label="Pending">
-            <Step status="pending" title="Pending Step" showLine={false} />
-          </Row>
-          <Row label="Disabled">
-            <Step status="disabled" title="Disabled Step" showLine={false} />
-          </Row>
-        </div>
-      </DemoBox>
-    </SubSection>
+<Step status="completed" title="Completed Step" showLine={false} />
+<Step status="current" title="Current Step" showLine={false} />
+<Step status="next" title="Next Step" showLine={false} />
+<Step status="pending" title="Pending Step" showLine={false} />
+<Step status="disabled" title="Disabled Step" showLine={false} />`}
+    >
+      <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+        <Step status="completed" title="Completed Step" showLine={false} />
+        <Step status="current" title="Current Step" showLine={false} />
+        <Step status="next" title="Next Step" showLine={false} />
+        <Step status="pending" title="Pending Step" showLine={false} />
+        <Step status="disabled" title="Disabled Step" showLine={false} />
+      </div>
+    </PreviewComponent>
 
-    <SubSection title="Vertical Stepper">
-      <DemoBox>
-        <div style={{ display: "flex", flexDirection: "column", height: 300 }}>
-          <Step status="completed" title="Account Created" subtitle="Jan 1, 2024" orientation="vertical" />
-          <Step status="completed" title="Profile Setup" subtitle="Jan 5, 2024" orientation="vertical" />
-          <Step status="current" title="Verification" subtitle="In Progress" orientation="vertical" />
-          <Step status="next" title="Complete" subtitle="" orientation="vertical" showLine={false} />
-        </div>
-      </DemoBox>
-    </SubSection>
+    {/* 2. Horizontal Stepper */}
+    <PreviewComponent
+      title="Horizontal Stepper"
+      code={`import { Step } from "@/library/atoms/step";
+
+<div style={{ display: "flex", gap: 0 }}>
+  <Step status="completed" title="Step 1" subtitle="Completed" />
+  <Step status="completed" title="Step 2" subtitle="Completed" />
+  <Step status="current" title="Step 3" subtitle="In Progress" />
+  <Step status="next" title="Step 4" subtitle="Pending" />
+  <Step status="next" title="Step 5" subtitle="Pending" showLine={false} />
+</div>`}
+    >
+      <div style={{ display: "flex", gap: 0 }}>
+        <Step status="completed" title="Step 1" subtitle="Completed" />
+        <Step status="completed" title="Step 2" subtitle="Completed" />
+        <Step status="current" title="Step 3" subtitle="In Progress" />
+        <Step status="next" title="Step 4" subtitle="Pending" />
+        <Step status="next" title="Step 5" subtitle="Pending" showLine={false} />
+      </div>
+    </PreviewComponent>
+
+    {/* 3. Vertical Stepper */}
+    <PreviewComponent
+      title="Vertical Stepper"
+      code={`import { Step } from "@/library/atoms/step";
+
+<div style={{ display: "flex", flexDirection: "column", height: 300 }}>
+  <Step status="completed" title="Account Created" subtitle="Jan 1, 2024" orientation="vertical" />
+  <Step status="completed" title="Profile Setup" subtitle="Jan 5, 2024" orientation="vertical" />
+  <Step status="current" title="Verification" subtitle="In Progress" orientation="vertical" />
+  <Step status="next" title="Complete" subtitle="" orientation="vertical" showLine={false} />
+</div>`}
+    >
+      <div style={{ display: "flex", flexDirection: "column", height: 300 }}>
+        <Step status="completed" title="Account Created" subtitle="Jan 1, 2024" orientation="vertical" />
+        <Step status="completed" title="Profile Setup" subtitle="Jan 5, 2024" orientation="vertical" />
+        <Step status="current" title="Verification" subtitle="In Progress" orientation="vertical" />
+        <Step status="next" title="Complete" subtitle="" orientation="vertical" showLine={false} />
+      </div>
+    </PreviewComponent>
+
+    {/* 4. Steps with Subtitles */}
+    <PreviewComponent
+      title="Steps with Subtitles"
+      code={`import { Step } from "@/library/atoms/step";
+
+<Step status="completed" title="Order Placed" subtitle="March 15, 2024" showLine={false} />
+<Step status="current" title="Processing" subtitle="In Progress" showLine={false} />
+<Step status="next" title="Shipped" subtitle="Pending" showLine={false} />`}
+    >
+      <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+        <Step status="completed" title="Order Placed" subtitle="March 15, 2024" showLine={false} />
+        <Step status="current" title="Processing" subtitle="In Progress" showLine={false} />
+        <Step status="next" title="Shipped" subtitle="Pending" showLine={false} />
+      </div>
+    </PreviewComponent>
   </Section>
 );
 
@@ -456,47 +1034,104 @@ const ButtonBadgePage = () => {
 
   return (
     <Section title="ButtonBadge" description="A button element with an optional icon, label, and integrated Badge.">
-      <SubSection title="Basic Usage">
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-          <ButtonBadge badgeLabel="5">Notifications</ButtonBadge>
-          <ButtonBadge badgeLabel="12">Messages</ButtonBadge>
-          <ButtonBadge badgeLabel="New">Updates</ButtonBadge>
-        </div>
-      </SubSection>
+      {/* 1. All ButtonBadge States */}
+      <PreviewComponent
+        title="ButtonBadge States"
+        code={`import { ButtonBadge } from "@/library/atoms/button-badge";
 
-      <SubSection title="With Icons">
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-          <ButtonBadge iconName="Bell" badgeLabel="3">Alerts</ButtonBadge>
-          <ButtonBadge iconName="Envelope" badgeLabel="99+">Inbox</ButtonBadge>
-          <ButtonBadge iconName="ShoppingCart" badgeLabel="2">Cart</ButtonBadge>
-        </div>
-      </SubSection>
-
-      <SubSection title="States">
+<ButtonBadge state="enabled" badgeLabel="5">Enabled</ButtonBadge>
+<ButtonBadge state="active" badgeLabel="5">Active</ButtonBadge>
+<ButtonBadge state="disabled" badgeLabel="5" isDisabled>Disabled</ButtonBadge>`}
+      >
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
           <ButtonBadge state="enabled" badgeLabel="5">Enabled</ButtonBadge>
           <ButtonBadge state="active" badgeLabel="5">Active</ButtonBadge>
           <ButtonBadge state="disabled" badgeLabel="5" isDisabled>Disabled</ButtonBadge>
         </div>
-      </SubSection>
+      </PreviewComponent>
 
-      <SubSection title="Without Badge">
+      {/* 2. ButtonBadge Sizes */}
+      <PreviewComponent
+        title="ButtonBadge Sizes"
+        code={`import { ButtonBadge } from "@/library/atoms/button-badge";
+
+<ButtonBadge size="md" badgeLabel="5">Medium</ButtonBadge>
+<ButtonBadge size="lg" badgeLabel="5">Large</ButtonBadge>`}
+      >
+        <div style={{ display: "flex", alignItems: "flex-end", gap: 12, flexWrap: "wrap" }}>
+          <ButtonBadge size="md" badgeLabel="5">Medium</ButtonBadge>
+          <ButtonBadge size="lg" badgeLabel="5">Large</ButtonBadge>
+        </div>
+      </PreviewComponent>
+
+      {/* 3. Basic Usage */}
+      <PreviewComponent
+        title="Basic ButtonBadge"
+        code={`import { ButtonBadge } from "@/library/atoms/button-badge";
+
+<ButtonBadge badgeLabel="5">Notifications</ButtonBadge>
+<ButtonBadge badgeLabel="12">Messages</ButtonBadge>
+<ButtonBadge badgeLabel="New">Updates</ButtonBadge>`}
+      >
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <ButtonBadge badgeLabel="5">Notifications</ButtonBadge>
+          <ButtonBadge badgeLabel="12">Messages</ButtonBadge>
+          <ButtonBadge badgeLabel="New">Updates</ButtonBadge>
+        </div>
+      </PreviewComponent>
+
+      {/* 4. With Icons */}
+      <PreviewComponent
+        title="ButtonBadge with Icons"
+        code={`import { ButtonBadge } from "@/library/atoms/button-badge";
+
+<ButtonBadge iconName="Bell" badgeLabel="3">Alerts</ButtonBadge>
+<ButtonBadge iconName="Envelope" badgeLabel="99+">Inbox</ButtonBadge>
+<ButtonBadge iconName="ShoppingCart" badgeLabel="2">Cart</ButtonBadge>`}
+      >
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <ButtonBadge iconName="Bell" badgeLabel="3">Alerts</ButtonBadge>
+          <ButtonBadge iconName="Envelope" badgeLabel="99+">Inbox</ButtonBadge>
+          <ButtonBadge iconName="ShoppingCart" badgeLabel="2">Cart</ButtonBadge>
+        </div>
+      </PreviewComponent>
+
+      {/* 5. Without Badge Variant */}
+      <PreviewComponent
+        title="Without Badge"
+        code={`import { ButtonBadge } from "@/library/atoms/button-badge";
+
+<ButtonBadge variant="without-badge" iconName="Funnel">Filter</ButtonBadge>
+<ButtonBadge variant="without-badge" iconName="ArrowsUpDown">Sort</ButtonBadge>
+<ButtonBadge variant="without-badge" iconRightName="ChevronDown">Dropdown</ButtonBadge>`}
+      >
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
           <ButtonBadge variant="without-badge" iconName="Funnel">Filter</ButtonBadge>
           <ButtonBadge variant="without-badge" iconName="ArrowsUpDown">Sort</ButtonBadge>
           <ButtonBadge variant="without-badge" iconRightName="ChevronDown">Dropdown</ButtonBadge>
         </div>
-      </SubSection>
+      </PreviewComponent>
 
-      <SubSection title="Sizes">
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <ButtonBadge size="md" badgeLabel="5">Medium</ButtonBadge>
-          <ButtonBadge size="lg" badgeLabel="5">Large</ButtonBadge>
-        </div>
-      </SubSection>
+      {/* 6. Interactive Filter Example */}
+      <PreviewComponent
+        title="Interactive Filter Example"
+        code={`import { ButtonBadge } from "@/library/atoms/button-badge";
+import { useState } from "react";
 
-      <SubSection title="Interactive Filter Example">
-        <DemoBox>
+const [activeFilter, setActiveFilter] = useState(null);
+
+{["All", "Active", "Pending", "Completed"].map((filter) => (
+  <ButtonBadge
+    key={filter}
+    state={activeFilter === filter ? "active" : "enabled"}
+    onClick={() => setActiveFilter(activeFilter === filter ? null : filter)}
+    badgeLabel={filter === "All" ? "24" : filter === "Active" ? "8" : filter === "Pending" ? "12" : "4"}
+  >
+    {filter}
+  </ButtonBadge>
+))}`}
+      >
+        <div>
           <p style={{ marginBottom: 16, color: "var(--color-content-secondary)", fontSize: 14 }}>
             Click to toggle active state:
           </p>
@@ -512,8 +1147,8 @@ const ButtonBadgePage = () => {
               </ButtonBadge>
             ))}
           </div>
-        </DemoBox>
-      </SubSection>
+        </div>
+      </PreviewComponent>
     </Section>
   );
 };
@@ -1340,6 +1975,7 @@ const DropdownListPage = () => {
                 <DropdownListItem value="lc" checked={selected.includes("lc")} onChange={handleChange} subinfo="Phase 1">
                   Lung cancer
                 </DropdownListItem>
+                
               </DropdownSection>
             </DropdownList>
           </div>
@@ -1432,7 +2068,7 @@ const InfofieldPage = () => (
           variant="chips"
           values={[
             { label: "React", color: "#7DBEFF" },
-            { label: "TypeScript", color: "#73E5AC" },
+            { label: "TypeScript", color: "#cx   jnkj,ytèçàà))gftdefr73E5AC" },
             { label: "Node.js", color: "#FFAE70" },
           ]}
         />
@@ -1575,168 +2211,195 @@ const ModalPage = () => {
 
 const TablePage = () => (
   <Section title="Table" description="A complete table system with header, body rows, and various cell types.">
+    <SubSection title="Column API (Recommended)">
+      <p style={{ marginBottom: 16, color: "var(--color-content-secondary)", fontSize: 14 }}>
+        Define columns once with a variant, then all cells in that column stay consistent.
+      </p>
+      <DemoBox>
+        <Table
+          columns={[
+            { key: "title", header: "Title", variant: "short-text", width: "220px" },
+            { key: "company", header: "Company", variant: "linked-object", width: "240px" },
+            { key: "status", header: "Status", variant: "badge", width: "180px" },
+            { key: "action", header: "Action", variant: "button" },
+          ]}
+          rows={[
+            {
+              id: "row-1",
+              title: "SNE-101",
+              company: <Link size="lg" iconLeading={<Icon name="BuildingOffice" />}>S&E Bio</Link>,
+              status: <Badge color="positive">Active</Badge>,
+              action: { iconName: "EllipsisVertical", label: "", buttonVariant: "secondary" },
+            },
+            {
+              id: "row-2",
+              title: "test SPRT",
+              company: <Link size="lg" iconLeading={<Icon name="BuildingOffice" />}>testing SPRT</Link>,
+              status: <Badge color="warning">Pending</Badge>,
+              action: { label: "Open", buttonVariant: "secondary" },
+            },
+            {
+              id: "row-3",
+              title: "whatever",
+              company: <Link size="lg" iconLeading={<Icon name="BuildingOffice" />}>test SPRT</Link>,
+              status: <Badge color="neutral">Archived</Badge>,
+              action: { iconName: "EllipsisVertical", label: "", buttonVariant: "secondary" },
+            },
+          ]}
+        />
+      </DemoBox>
+    </SubSection>
+
     <SubSection title="All Cell Variants">
       <p style={{ marginBottom: 16, color: "var(--color-content-secondary)", fontSize: 14 }}>
         Demonstration of all table cell column types from the design system.
       </p>
       <DemoBox>
-        <Table>
-          <TableRow variant="header">
-            <TableCellHeader>short-text</TableCellHeader>
-            <TableCellHeader>long-text</TableCellHeader>
-            <TableCellHeader>two-level</TableCellHeader>
-            <TableCellHeader>two-level-objects</TableCellHeader>
-            <TableCellHeader>badge</TableCellHeader>
-            <TableCellHeader>tags (chips)</TableCellHeader>
-            <TableCellHeader>tag-1line</TableCellHeader>
-            <TableCellHeader>checkbox</TableCellHeader>
-            <TableCellHeader>linked-value</TableCellHeader>
-            <TableCellHeader>linked-object</TableCellHeader>
-            <TableCellHeader>button</TableCellHeader>
-          </TableRow>
-          <TableRow>
-            {/* short-text: Simple text content */}
-            <TableCell variant="short-text">
-              Short text
-            </TableCell>
-
-            {/* long-text: Multi-line text with ellipsis */}
-            <TableCell variant="long-text">
-              This is a longer text that might wrap to multiple lines and get truncated with ellipsis after three lines.
-            </TableCell>
-
-            {/* two-level: Title + Content stacked */}
-            <TableCell variant="two-level">
-              <div style={{ color: "var(--color-content-secondary)", fontSize: 12 }}>Title</div>
-              <div style={{ color: "var(--color-content-primary)", fontSize: 12 }}>Content value</div>
-            </TableCell>
-
-            {/* two-level-objects: Links stacked (LG + MD) */}
-            <TableCell variant="two-level-objects">
-              <TableCellLinkRow size="lg" icon={<Icon name="Beaker" size="md" />}>Primary Link</TableCellLinkRow>
-              <TableCellLinkRow size="md" icon={<Icon name="Tag" size="sm" />}>Secondary Link</TableCellLinkRow>
-            </TableCell>
-
-            {/* badge: Status badge */}
-            <TableCell variant="badge">
-              <Badge color="positive">Active</Badge>
-            </TableCell>
-
-            {/* tags: Chips with colors */}
-            <TableCell variant="tags">
-              <Chip color="var(--color-accent-blue)">Tag 1</Chip>
-              <Chip color="var(--color-accent-cyan)">Tag 2</Chip>
-              <Chip color="var(--color-accent-yellow)">Tag 3</Chip>
-            </TableCell>
-
-            {/* tag-1line: Tags with overflow count */}
-            <TableCell variant="tag-1line">
-              <Chip color="var(--color-accent-blue)">Label</Chip>
-              <Chip color="var(--color-accent-cyan)">Label</Chip>
-              <Badge>+3</Badge>
-            </TableCell>
-
-            {/* checkbox: Selection checkbox */}
-            <TableCell variant="checkbox">
-              <Checkbox size="sm" />
-            </TableCell>
-
-            {/* linked-value: Icon + name + badge */}
-            <TableCell variant="linked-value" icon={<Icon name="Beaker" />}>
-              <TableCellLinkedName>Item Name</TableCellLinkedName>
-              <Badge>+1</Badge>
-            </TableCell>
-
-            {/* linked-object: Link with icons + badge */}
-            <TableCell variant="linked-object">
-              <Link size="lg" iconLeading={<Icon name="Beaker" />} iconTrailing={<Icon name="ChevronRight" />}>View Item</Link>
-              <Badge>+1</Badge>
-            </TableCell>
-
-            {/* button: Action button */}
-            <TableCell variant="button">
-              <Button variant="secondary" size="sm" iconLeading={<Icon name="Calendar" size="sm" />}>May 7, 2025</Button>
-            </TableCell>
-          </TableRow>
-
-          <TableRow>
-            <TableCell variant="short-text" icon={<Icon name="Tag" />}>With icon</TableCell>
-            <TableCell variant="long-text" icon={<Icon name="InformationCircle" />}>
-              Long text cell with leading icon that aligns to the top of the content block.
-            </TableCell>
-            <TableCell variant="two-level">
-              <div style={{ color: "var(--color-content-secondary)", fontSize: 12 }}>Phase</div>
-              <div style={{ color: "var(--color-content-primary)", fontSize: 12 }}>Phase 2 / Completed</div>
-            </TableCell>
-            <TableCell variant="two-level-objects">
-              <TableCellLinkRow size="lg" icon={<Icon name="Building" size="md" />}>Company Name</TableCellLinkRow>
-              <TableCellLinkRow size="md" icon={<Icon name="MapPin" size="sm" />}>Location Info</TableCellLinkRow>
-            </TableCell>
-            <TableCell variant="badge">
-              <Badge color="warning">Pending</Badge>
-            </TableCell>
-            <TableCell variant="tags">
-              <Chip color="var(--color-accent-red)">Urgent</Chip>
-              <Chip color="var(--color-accent-orange)">Review</Chip>
-            </TableCell>
-            <TableCell variant="tag-1line">
-              <Chip color="var(--color-accent-purple)">AI</Chip>
-              <Chip color="var(--color-accent-green)">ML</Chip>
-              <Chip color="var(--color-accent-pink)">Data</Chip>
-              <Badge>+2</Badge>
-            </TableCell>
-            <TableCell variant="checkbox">
-              <Checkbox size="sm" isSelected />
-            </TableCell>
-            <TableCell variant="linked-value" icon={<Icon name="User" />}>
-              <TableCellLinkedName>John Doe</TableCellLinkedName>
-            </TableCell>
-            <TableCell variant="linked-object">
-              <Link size="lg" iconLeading={<Icon name="Document" />}>Document.pdf</Link>
-            </TableCell>
-            <TableCell variant="button">
-              <Button variant="tertiary" size="sm">Edit</Button>
-            </TableCell>
-          </TableRow>
-
-          <TableRow>
-            <TableCell variant="short-text">Plain text</TableCell>
-            <TableCell variant="long-text">
-              Another example of multi-line content that demonstrates how the cell handles text overflow gracefully.
-            </TableCell>
-            <TableCell variant="two-level">
-              <div style={{ color: "var(--color-content-secondary)", fontSize: 12 }}>Status</div>
-              <div style={{ color: "var(--color-content-primary)", fontSize: 12 }}>In Progress</div>
-            </TableCell>
-            <TableCell variant="two-level-objects">
-              <TableCellLinkRow size="lg" icon={<Icon name="Cube" size="md" />}>Product Name</TableCellLinkRow>
-              <TableCellLinkRow size="md" icon={<Icon name="Tag" size="sm" />}>SKU-12345</TableCellLinkRow>
-            </TableCell>
-            <TableCell variant="badge">
-              <Badge color="negative">Error</Badge>
-            </TableCell>
-            <TableCell variant="tags">
-              <Chip color="var(--color-accent-brown)">Archive</Chip>
-            </TableCell>
-            <TableCell variant="tag-1line">
-              <Chip color="var(--color-accent-blue)">Only One</Chip>
-            </TableCell>
-            <TableCell variant="checkbox">
-              <Checkbox size="sm" isDisabled />
-            </TableCell>
-            <TableCell variant="linked-value" icon={<Icon name="Building" />}>
-              <TableCellLinkedName>Acme Corp</TableCellLinkedName>
-              <Badge>+5</Badge>
-            </TableCell>
-            <TableCell variant="linked-object">
-              <Link size="lg" iconLeading={<Icon name="Link" />} iconTrailing={<Icon name="ArrowTopRightOnSquare" />}>External</Link>
-              <Badge>New</Badge>
-            </TableCell>
-            <TableCell variant="button">
-              <Button variant="negative" size="sm">Delete</Button>
-            </TableCell>
-          </TableRow>
-        </Table>
+        <Table
+          columns={[
+            { key: "shortText", header: "short-text", variant: "short-text", width: "300px" },
+            { key: "longText", header: "long-text", variant: "long-text", width: "300px" },
+            { key: "twoLevel", header: "two-level", variant: "two-level", width: "300px" },
+            { key: "twoLevelObjects", header: "two-level-objects", variant: "two-level-objects", width: "300px" },
+            { key: "badge", header: "badge", variant: "badge", width: "300px" },
+            { key: "tags", header: "tags (chips)", variant: "tags", width: "300px" },
+            { key: "tag1line", header: "tag-1line", variant: "tag-1line", width: "300px" },
+            { key: "checkbox", header: "checkbox", variant: "checkbox", width: "300px" },
+            { key: "linkedValue", header: "linked-value", variant: "linked-value", width: "300px" },
+            { key: "linkedObject", header: "linked-object", variant: "linked-object", width: "300px" },
+            { key: "actions", header: "actions", variant: "button", sticky: true, width: "56px" },
+          ]}
+          rows={[
+            {
+              id: "row-1",
+              shortText: "Short text",
+              longText: "This is a longer text that might wrap to multiple lines and get truncated with ellipsis after three lines.",
+              twoLevel: (
+                <>
+                  <div style={{ color: "var(--color-content-secondary)", fontSize: 12 }}>Title</div>
+                  <div style={{ color: "var(--color-content-primary)", fontSize: 12 }}>Content value</div>
+                </>
+              ),
+              twoLevelObjects: (
+                <>
+                  <TableCellLinkRow size="lg" icon={<Icon name="Beaker" size="md" />}>Primary Link</TableCellLinkRow>
+                  <TableCellLinkRow size="md" icon={<Icon name="Tag" size="sm" />}>Secondary Link</TableCellLinkRow>
+                </>
+              ),
+              badge: <Badge color="positive">Active</Badge>,
+              tags: (
+                <>
+                  <Chip color="var(--color-accent-blue)">Tag 1</Chip>
+                  <Chip color="var(--color-accent-cyan)">Tag 2</Chip>
+                  <Chip color="var(--color-accent-yellow)">Tag 3</Chip>
+                </>
+              ),
+              tag1line: (
+                <>
+                  <Chip color="var(--color-accent-blue)">Label</Chip>
+                  <Chip color="var(--color-accent-cyan)">Label</Chip>
+                  <Badge>+3</Badge>
+                </>
+              ),
+              checkbox: <Checkbox size="sm" />,
+              linkedValue: (
+                <>
+                  <Icon name="Beaker" />
+                  <TableCellLinkedName>Item Name</TableCellLinkedName>
+                  <Badge>+1</Badge>
+                </>
+              ),
+              linkedObject: (
+                <>
+                  <Link size="lg" iconLeading={<Icon name="Beaker" />} iconTrailing={<Icon name="ChevronRight" />}>View Item</Link>
+                  <Badge>+1</Badge>
+                </>
+              ),
+              actions: { iconName: "EllipsisVertical", label: "", buttonVariant: "secondary" },
+            },
+            {
+              id: "row-2",
+              shortText: (
+                <>
+                  <Icon name="Tag" />
+                  With icon
+                </>
+              ),
+              longText: "Long text cell with leading icon that aligns to the top of the content block.",
+              twoLevel: (
+                <>
+                  <div style={{ color: "var(--color-content-secondary)", fontSize: 12 }}>Phase</div>
+                  <div style={{ color: "var(--color-content-primary)", fontSize: 12 }}>Phase 2 / Completed</div>
+                </>
+              ),
+              twoLevelObjects: (
+                <>
+                  <TableCellLinkRow size="lg" icon={<Icon name="Building" size="md" />}>Company Name</TableCellLinkRow>
+                  <TableCellLinkRow size="md" icon={<Icon name="MapPin" size="sm" />}>Location Info</TableCellLinkRow>
+                </>
+              ),
+              badge: <Badge color="warning">Pending</Badge>,
+              tags: (
+                <>
+                  <Chip color="var(--color-accent-red)">Urgent</Chip>
+                  <Chip color="var(--color-accent-orange)">Review</Chip>
+                </>
+              ),
+              tag1line: (
+                <>
+                  <Chip color="var(--color-accent-purple)">AI</Chip>
+                  <Chip color="var(--color-accent-green)">ML</Chip>
+                  <Chip color="var(--color-accent-pink)">Data</Chip>
+                  <Badge>+2</Badge>
+                </>
+              ),
+              checkbox: <Checkbox size="sm" isSelected />,
+              linkedValue: (
+                <>
+                  <Icon name="User" />
+                  <TableCellLinkedName>John Doe</TableCellLinkedName>
+                </>
+              ),
+              linkedObject: <Link size="lg" iconLeading={<Icon name="Document" />}>Document.pdf</Link>,
+              actions: { iconName: "EllipsisVertical", label: "", buttonVariant: "secondary" },
+            },
+            {
+              id: "row-3",
+              shortText: "Plain text",
+              longText: "Another example of multi-line content that demonstrates how the cell handles text overflow gracefully.",
+              twoLevel: (
+                <>
+                  <div style={{ color: "var(--color-content-secondary)", fontSize: 12 }}>Status</div>
+                  <div style={{ color: "var(--color-content-primary)", fontSize: 12 }}>In Progress</div>
+                </>
+              ),
+              twoLevelObjects: (
+                <>
+                  <TableCellLinkRow size="lg" icon={<Icon name="Cube" size="md" />}>Product Name</TableCellLinkRow>
+                  <TableCellLinkRow size="md" icon={<Icon name="Tag" size="sm" />}>SKU-12345</TableCellLinkRow>
+                </>
+              ),
+              badge: <Badge color="negative">Error</Badge>,
+              tags: <Chip color="var(--color-accent-brown)">Archive</Chip>,
+              tag1line: <Chip color="var(--color-accent-blue)">Only One</Chip>,
+              checkbox: <Checkbox size="sm" isDisabled />,
+              linkedValue: (
+                <>
+                  <Icon name="Building" />
+                  <TableCellLinkedName>Acme Corp</TableCellLinkedName>
+                  <Badge>+5</Badge>
+                </>
+              ),
+              linkedObject: (
+                <>
+                  <Link size="lg" iconLeading={<Icon name="Link" />} iconTrailing={<Icon name="ArrowTopRightOnSquare" />}>External</Link>
+                  <Badge>New</Badge>
+                </>
+              ),
+              actions: { iconName: "EllipsisVertical", label: "", buttonVariant: "secondary" },
+            },
+          ]}
+        />
       </DemoBox>
     </SubSection>
 
@@ -1745,34 +2408,42 @@ const TablePage = () => (
         Tags that wrap to 2 lines with overflow count.
       </p>
       <DemoBox>
-        <Table>
-          <TableRow variant="header">
-            <TableCellHeader>Name</TableCellHeader>
-            <TableCellHeader>Tags (2 lines)</TableCellHeader>
-            <TableCellHeader>Status</TableCellHeader>
-          </TableRow>
-          <TableRow>
-            <TableCell>Item One</TableCell>
-            <TableCell variant="tag-2lines">
-              <Chip color="var(--color-accent-blue)">Label</Chip>
-              <Chip color="var(--color-accent-cyan)">Label</Chip>
-              <Chip color="var(--color-accent-yellow)">Label</Chip>
-              <Chip color="var(--color-accent-red)">Label</Chip>
-              <Chip color="var(--color-accent-orange)">Label</Chip>
-              <Badge>+1</Badge>
-            </TableCell>
-            <TableCell variant="badge"><Badge color="positive">Done</Badge></TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>Item Two</TableCell>
-            <TableCell variant="tag-2lines">
-              <Chip color="var(--color-accent-purple)">Category A</Chip>
-              <Chip color="var(--color-accent-green)">Category B</Chip>
-              <Chip color="var(--color-accent-pink)">Category C</Chip>
-            </TableCell>
-            <TableCell variant="badge"><Badge color="warning">Review</Badge></TableCell>
-          </TableRow>
-        </Table>
+        <Table
+          columns={[
+            { key: "name", header: "Name", variant: "short-text", width: "300px" },
+            { key: "tags", header: "Tags (2 lines)", variant: "tag-2lines", width: "300px" },
+            { key: "status", header: "Status", variant: "badge", width: "300px" },
+          ]}
+          rows={[
+            {
+              id: "row-1",
+              name: "Item One",
+              tags: (
+                <>
+                  <Chip color="var(--color-accent-blue)">Label</Chip>
+                  <Chip color="var(--color-accent-cyan)">Label</Chip>
+                  <Chip color="var(--color-accent-yellow)">Label</Chip>
+                  <Chip color="var(--color-accent-red)">Label</Chip>
+                  <Chip color="var(--color-accent-orange)">Label</Chip>
+                  <Badge>+1</Badge>
+                </>
+              ),
+              status: <Badge color="positive">Done</Badge>,
+            },
+            {
+              id: "row-2",
+              name: "Item Two",
+              tags: (
+                <>
+                  <Chip color="var(--color-accent-purple)">Category A</Chip>
+                  <Chip color="var(--color-accent-green)">Category B</Chip>
+                  <Chip color="var(--color-accent-pink)">Category C</Chip>
+                </>
+              ),
+              status: <Badge color="warning">Review</Badge>,
+            },
+          ]}
+        />
       </DemoBox>
     </SubSection>
 
@@ -1781,93 +2452,102 @@ const TablePage = () => (
         Cells containing form inputs or dropdowns.
       </p>
       <DemoBox>
-        <Table>
-          <TableRow variant="header">
-            <TableCellHeader>Field Name</TableCellHeader>
-            <TableCellHeader>Input</TableCellHeader>
-            <TableCellHeader>Icon</TableCellHeader>
-          </TableRow>
-          <TableRow>
-            <TableCell>Assignee</TableCell>
-            <TableCell variant="input">
-              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: 4 }}>
-                <Icon name="User" size="md" />
-                <span style={{ color: "var(--color-content-primary)", fontSize: 14 }}>Select user...</span>
-              </div>
-            </TableCell>
-            <TableCell variant="checkbox">
-              <Icon name="Beaker" size="md" />
-            </TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>Category</TableCell>
-            <TableCell variant="input">
-              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: 4 }}>
-                <Icon name="Tag" size="md" />
-                <span style={{ color: "var(--color-content-primary)", fontSize: 14 }}>Choose category...</span>
-              </div>
-            </TableCell>
-            <TableCell variant="checkbox">
-              <Icon name="Cube" size="md" />
-            </TableCell>
-          </TableRow>
-        </Table>
+        <Table
+          columns={[
+            { key: "field", header: "Field Name", variant: "short-text", width: "300px" },
+            { key: "input", header: "Input", variant: "input", width: "300px" },
+            { key: "icon", header: "Icon", variant: "checkbox", width: "300px" },
+          ]}
+          rows={[
+            {
+              id: "row-1",
+              field: "Assignee",
+              input: (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: 4 }}>
+                  <Icon name="User" size="md" />
+                  <span style={{ color: "var(--color-content-primary)", fontSize: 14 }}>Select user...</span>
+                </div>
+              ),
+              icon: <Icon name="Beaker" size="md" />,
+            },
+            {
+              id: "row-2",
+              field: "Category",
+              input: (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: 4 }}>
+                  <Icon name="Tag" size="md" />
+                  <span style={{ color: "var(--color-content-primary)", fontSize: 14 }}>Choose category...</span>
+                </div>
+              ),
+              icon: <Icon name="Cube" size="md" />,
+            },
+          ]}
+        />
       </DemoBox>
     </SubSection>
 
     <SubSection title="Basic Table">
       <DemoBox>
-        <Table>
-          <TableRow variant="header">
-            <TableCellHeader sortable>Company</TableCellHeader>
-            <TableCellHeader sortable>Revenue</TableCellHeader>
-            <TableCellHeader>Status</TableCellHeader>
-            <TableCellHeader>Actions</TableCellHeader>
-          </TableRow>
-          <TableRow>
-            <TableCell>Acme Corp</TableCell>
-            <TableCell>$1,234,567</TableCell>
-            <TableCell variant="badge"><Badge color="positive">Active</Badge></TableCell>
-            <TableCell variant="button"><Button variant="tertiary" size="sm">View</Button></TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>Tech Inc</TableCell>
-            <TableCell>$987,654</TableCell>
-            <TableCell variant="badge"><Badge color="warning">Pending</Badge></TableCell>
-            <TableCell variant="button"><Button variant="tertiary" size="sm">View</Button></TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>Global Ltd</TableCell>
-            <TableCell>$2,345,678</TableCell>
-            <TableCell variant="badge"><Badge color="neutral">Inactive</Badge></TableCell>
-            <TableCell variant="button"><Button variant="tertiary" size="sm">View</Button></TableCell>
-          </TableRow>
-        </Table>
+        <Table
+          columns={[
+            { key: "company", header: "Company", variant: "short-text", sortable: true, width: "300px" },
+            { key: "revenue", header: "Revenue", variant: "short-text", sortable: true, width: "300px" },
+            { key: "status", header: "Status", variant: "badge", width: "300px" },
+            { key: "actions", header: "Actions", variant: "button", width: "56px" },
+          ]}
+          rows={[
+            {
+              id: "row-1",
+              company: "Acme Corp",
+              revenue: "$1,234,567",
+              status: <Badge color="positive">Active</Badge>,
+              actions: { label: "View", buttonVariant: "tertiary" },
+            },
+            {
+              id: "row-2",
+              company: "Tech Inc",
+              revenue: "$987,654",
+              status: <Badge color="warning">Pending</Badge>,
+              actions: { label: "View", buttonVariant: "tertiary" },
+            },
+            {
+              id: "row-3",
+              company: "Global Ltd",
+              revenue: "$2,345,678",
+              status: <Badge color="neutral">Inactive</Badge>,
+              actions: { label: "View", buttonVariant: "tertiary" },
+            },
+          ]}
+        />
       </DemoBox>
     </SubSection>
 
     <SubSection title="With Selection">
       <DemoBox>
-        <Table>
-          <TableRow variant="header">
-            <TableCell variant="checkbox"><Checkbox /></TableCell>
-            <TableCellHeader>Name</TableCellHeader>
-            <TableCellHeader>Email</TableCellHeader>
-            <TableCellHeader>Role</TableCellHeader>
-          </TableRow>
-          <TableRow selected>
-            <TableCell variant="checkbox"><Checkbox isSelected /></TableCell>
-            <TableCell>John Doe</TableCell>
-            <TableCell>john@example.com</TableCell>
-            <TableCell>Admin</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell variant="checkbox"><Checkbox /></TableCell>
-            <TableCell>Jane Smith</TableCell>
-            <TableCell>jane@example.com</TableCell>
-            <TableCell>Editor</TableCell>
-          </TableRow>
-        </Table>
+        <Table
+          columns={[
+            { key: "select", header: <Checkbox />, variant: "checkbox", width: "80px" },
+            { key: "name", header: "Name", variant: "short-text", width: "300px" },
+            { key: "email", header: "Email", variant: "short-text", width: "300px" },
+            { key: "role", header: "Role", variant: "short-text", width: "300px" },
+          ]}
+          rows={[
+            {
+              id: "row-1",
+              select: <Checkbox isSelected />,
+              name: "John Doe",
+              email: "john@example.com",
+              role: "Admin",
+            },
+            {
+              id: "row-2",
+              select: <Checkbox />,
+              name: "Jane Smith",
+              email: "jane@example.com",
+              role: "Editor",
+            },
+          ]}
+        />
       </DemoBox>
     </SubSection>
   </Section>
@@ -2198,7 +2878,7 @@ const HubTemplatePage = () => {
         </p>
         <DemoBox>
           <div style={{ height: 500, border: "1px solid var(--color-neutral-200)", borderRadius: 8, overflow: "hidden" }}>
-            <div style={{ display: "flex", height: "100%", background: "var(--color-general-neutral-lighter)" }}>
+            <div style={{ display: "flex", height: "100%", background: "var(--color-general-neutral-light)" }}>
               {/* Mini Sidebar Preview */}
               <div style={{ width: 200, background: "var(--color-general-white)", borderRight: "1px solid var(--color-action-outline-secondary-enabled)", padding: 16 }}>
                 <div style={{ fontSize: 16, fontWeight: 700, color: "var(--color-content-brand)", marginBottom: 24 }}>Eureka</div>
@@ -2223,21 +2903,21 @@ const HubTemplatePage = () => {
 
                 {/* Table Area */}
                 <div style={{ flex: 1, padding: 16, overflow: "auto" }}>
-                  <Table>
-                    <TableRow variant="header">
-                      {columns.map((col) => (
-                        <TableCellHeader key={col.key} sortable={col.sortable}>{col.label}</TableCellHeader>
-                      ))}
-                    </TableRow>
-                    {sampleData.map((row) => (
-                      <TableRow key={row.id}>
-                        <TableCell>{row.name}</TableCell>
-                        <TableCell variant="badge"><Badge color={row.status === "Active" ? "positive" : "warning"}>{row.status}</Badge></TableCell>
-                        <TableCell>{row.revenue}</TableCell>
-                        <TableCell>{row.employees}</TableCell>
-                      </TableRow>
-                    ))}
-                  </Table>
+                  <Table
+                    columns={[
+                      { key: "name", header: "Company Name", variant: "short-text", sortable: true, width: "300px" },
+                      { key: "status", header: "Status", variant: "badge", sortable: false, width: "300px" },
+                      { key: "revenue", header: "Revenue", variant: "short-text", sortable: true, width: "300px" },
+                      { key: "employees", header: "Employees", variant: "short-text", sortable: true, width: "300px" },
+                    ]}
+                    rows={sampleData.map((row) => ({
+                      id: row.id,
+                      name: row.name,
+                      status: <Badge color={row.status === "Active" ? "positive" : "warning"}>{row.status}</Badge>,
+                      revenue: row.revenue,
+                      employees: row.employees,
+                    }))}
+                  />
                 </div>
 
                 {/* Footer with Pagination */}
@@ -2286,7 +2966,7 @@ const ObjectPageTemplatePage = () => {
         </p>
         <DemoBox>
           <div style={{ height: 600, border: "1px solid var(--color-neutral-200)", borderRadius: 8, overflow: "hidden" }}>
-            <div style={{ display: "flex", height: "100%", background: "var(--color-general-neutral-lighter)" }}>
+            <div style={{ display: "flex", height: "100%", background: "var(--color-general-neutral-light)" }}>
               {/* Mini Sidebar Preview */}
               <div style={{ width: 200, background: "var(--color-general-white)", borderRight: "1px solid var(--color-action-outline-secondary-enabled)", padding: 16 }}>
                 <div style={{ fontSize: 16, fontWeight: 700, color: "var(--color-content-brand)", marginBottom: 24 }}>Eureka</div>
@@ -2452,11 +3132,30 @@ const PAGES = {
 
 export const ComponentLibraryDemo = () => {
   const [activePage, setActivePage] = useState("button");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Filter pages based on search query
+  const filterPages = (pages) => {
+    if (!searchQuery.trim()) return pages;
+    const query = searchQuery.toLowerCase();
+    return Object.entries(pages)
+      .filter(([key, page]) =>
+        page.title.toLowerCase().includes(query) ||
+        page.category.toLowerCase().includes(query) ||
+        key.toLowerCase().includes(query)
+      )
+      .reduce((acc, [key, page]) => {
+        acc[key] = page;
+        return acc;
+      }, {});
+  };
+
+  const filteredPages = filterPages(PAGES);
 
   const sections = [
     {
       title: "Atoms",
-      items: Object.entries(PAGES)
+      items: Object.entries(filteredPages)
         .filter(([, page]) => page.category === "atoms")
         .map(([key, page]) => ({
           label: page.title,
@@ -2468,7 +3167,7 @@ export const ComponentLibraryDemo = () => {
     {
       title: "Molecules",
       dividerBefore: true,
-      items: Object.entries(PAGES)
+      items: Object.entries(filteredPages)
         .filter(([, page]) => page.category === "molecules")
         .map(([key, page]) => ({
           label: page.title,
@@ -2480,7 +3179,7 @@ export const ComponentLibraryDemo = () => {
     {
       title: "Organisms",
       dividerBefore: true,
-      items: Object.entries(PAGES)
+      items: Object.entries(filteredPages)
         .filter(([, page]) => page.category === "organisms")
         .map(([key, page]) => ({
           label: page.title,
@@ -2492,7 +3191,7 @@ export const ComponentLibraryDemo = () => {
     {
       title: "Templates",
       dividerBefore: true,
-      items: Object.entries(PAGES)
+      items: Object.entries(filteredPages)
         .filter(([, page]) => page.category === "templates")
         .map(([key, page]) => ({
           label: page.title,
@@ -2501,12 +3200,12 @@ export const ComponentLibraryDemo = () => {
           onClick: () => setActivePage(key),
         })),
     },
-  ];
+  ].filter(section => section.items.length > 0);
 
   const CurrentPage = PAGES[activePage]?.component || ButtonPage;
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "var(--color-background-neutral-lighter)" }}>
+    <div style={{ display: "flex", minHeight: "100vh", background: "var(--color-general-neutral-light)" }}>
       {/* Side Menu */}
       <SideMenu
         variant="collapsed"
@@ -2516,7 +3215,10 @@ export const ComponentLibraryDemo = () => {
             Eureka
           </div>
         }
-        showSearch={false}
+        showSearch={true}
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
+        searchPlaceholder="Search components..."
         sections={sections}
         user={{
           name: "Developer",
@@ -2528,16 +3230,6 @@ export const ComponentLibraryDemo = () => {
       {/* Main Content */}
       <main style={{ flex: 1, padding: 48, marginLeft: 80, overflow: "auto" }}>
         <div style={{ maxWidth: 1000, margin: "0 auto" }}>
-          {/* Header */}
-          <header style={{ marginBottom: 48 }}>
-            <h1 style={{ fontSize: 32, fontWeight: 700, color: "var(--color-content-primary)", marginBottom: 8 }}>
-              Eureka Design System
-            </h1>
-            <p style={{ color: "var(--color-content-secondary)", fontSize: 16 }}>
-              Component Library - {PAGES[activePage]?.category?.toUpperCase()} / {PAGES[activePage]?.title}
-            </p>
-          </header>
-
           {/* Page Content */}
           <CurrentPage />
         </div>

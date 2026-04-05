@@ -49,7 +49,7 @@ const styles = {
     border: "none",
     borderRadius: "var(--radius-md)",
     fontFamily: "var(--font-family-primary)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     whiteSpace: "nowrap",
     cursor: "pointer",
     userSelect: "none",
@@ -120,25 +120,7 @@ const styles = {
 // COMPONENT
 // ─────────────────────────────────────────────
 
-/**
- * ButtonBadge
- *
- * @param {string} variant - with-badge | without-badge (default: with-badge)
- * @param {string} size - md | lg (default: md)
- * @param {string} state - enabled | active | disabled (default: enabled)
- * @param {boolean} isDisabled - Disables the button (overrides state)
- * @param {ReactNode} icon - Icon element to display on the left
- * @param {string} iconName - Icon name to use with default Icon component
- * @param {ReactNode} iconRight - Icon element to display on the right
- * @param {string} iconRightName - Icon name for right icon
- * @param {string} badgeLabel - Label text for the badge (only shown when variant="with-badge")
- * @param {ReactNode} badgeIcon - Icon element for the badge
- * @param {string} badgeIconName - Icon name for the badge
- * @param {string} badgeColor - Override badge color (default: auto-mapped from state)
- * @param {function} onClick - Click handler
- * @param {ReactNode} children - Button label text
- * @param {object} style - Additional inline styles
- */
+/** ButtonBadge */
 export const ButtonBadge = ({
   variant = "with-badge",
   size = BUTTON_BADGE_SIZES.md,

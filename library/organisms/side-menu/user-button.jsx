@@ -32,16 +32,16 @@ export const USER_BUTTON_STATES = {
 const styles = {
   base: {
     alignSelf: "stretch",
-    padding: 8,
+    padding: "var(--spacing-2)",
     background: "var(--color-general-white)",
-    boxShadow: "0px 0px 1px rgba(83, 113, 172, 0.08), 0px 1px 2px rgba(83, 113, 172, 0.08)",
-    borderRadius: 8,
+    boxShadow: "var(--shadow-light-down)",
+    borderRadius: "var(--radius-sm)",
     outline: "1px solid var(--color-action-outline-secondary-enabled)",
     outlineOffset: "-1px",
     display: "inline-flex",
     justifyContent: "flex-start",
     alignItems: "center",
-    gap: 8,
+    gap: "var(--spacing-2)",
     border: "none",
     cursor: "pointer",
     fontFamily: "var(--font-family-primary)",
@@ -51,7 +51,7 @@ const styles = {
 
   hover: {
     outlineColor: "var(--color-action-outline-secondary-hover)",
-    boxShadow: "0px 0px 2px rgba(83, 113, 172, 0.12), 0px 2px 4px rgba(83, 113, 172, 0.12)",
+    boxShadow: "var(--shadow-dark-down)",
   },
 
   focus: {
@@ -61,7 +61,7 @@ const styles = {
 
   collapsed: {
     justifyContent: "center",
-    padding: 8,
+    padding: "var(--spacing-2)",
   },
 
   // Content wrapper
@@ -70,7 +70,7 @@ const styles = {
     display: "flex",
     justifyContent: "flex-start",
     alignItems: "center",
-    gap: 8,
+    gap: "var(--spacing-2)",
   },
 
   contentCollapsed: {
@@ -89,7 +89,7 @@ const styles = {
   avatar: {
     alignSelf: "stretch",
     flex: 1,
-    borderRadius: 100,
+    borderRadius: "var(--radius-full)",
     border: "1px solid var(--color-general-white)",
   },
 
@@ -108,10 +108,10 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     color: "var(--color-content-secondary)",
-    fontSize: 12,
+    fontSize: "var(--text-body-md)",
     fontFamily: "var(--font-family-primary)",
-    fontWeight: 400,
-    lineHeight: "16px",
+    fontWeight: "var(--font-weight-regular)",
+    lineHeight: "var(--line-height-body-md)",
     wordWrap: "break-word",
   },
 
@@ -121,10 +121,10 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     color: "var(--color-content-tertiary)",
-    fontSize: 9,
+    fontSize: "var(--text-body-caption)",
     fontFamily: "var(--font-family-primary)",
-    fontWeight: 400,
-    lineHeight: "12px",
+    fontWeight: "var(--font-weight-regular)",
+    lineHeight: "var(--line-height-body-caption)",
     wordWrap: "break-word",
   },
 
@@ -149,16 +149,6 @@ const styles = {
 /**
  * UserButton
  *
- * @param {string} state - default | hover | focus | active (default: default)
- * @param {string} name - User's display name
- * @param {string} email - User's email address
- * @param {string} avatarSrc - Avatar image URL
- * @param {string} avatarInitials - Avatar initials (fallback if no src)
- * @param {boolean} showEmail - Show email address (default: true)
- * @param {boolean} showChevron - Show chevron icon (default: true)
- * @param {boolean} collapsed - Collapsed mode showing only avatar (default: false)
- * @param {function} onClick - Click handler
- * @param {object} style - Additional inline styles
  */
 export const UserButton = ({
   state = USER_BUTTON_STATES.default,
@@ -203,7 +193,7 @@ export const UserButton = ({
   };
 
   // Avatar size based on collapsed state
-  const avatarSize = collapsed ? "lg" : "xl";
+  const avatarSize = "sm";
 
   return (
     <button
@@ -218,21 +208,20 @@ export const UserButton = ({
     >
       <span style={contentStyle}>
         {/* Avatar */}
-        <div style={{ ...styles.avatarWrapper, width: collapsed ? 32 : 32, height: collapsed ? 32 : 32 }}>
-          {avatarSrc ? (
-            <img
-              src={avatarSrc}
-              alt={name}
-              style={styles.avatar}
-            />
-          ) : (
-            <Avatar
-              size={avatarSize}
-              initials={avatarInitials}
-              name={name}
-              alt={name}
-            />
-          )}
+        <div
+          style={{
+            ...styles.avatarWrapper,
+            width: "var(--size-avatar-sm)",
+            height: "var(--size-avatar-sm)",
+          }}
+        >
+          <Avatar
+            size={avatarSize}
+            src={avatarSrc}
+            initials={avatarInitials}
+            name={name}
+            alt={name}
+          />
         </div>
 
         {/* User Info */}

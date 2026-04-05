@@ -10,7 +10,12 @@ export {
   TableCell,
   TableCellLinkRow,
   TableCellLinkedName,
+  TableCellTags,
+  TableCellTwoLevel,
 } from "./tablecell.jsx";
+import { TableCell } from "./tablecell.jsx";
+import { Button } from "../../atoms/button.jsx";
+import { Icon } from "../../atoms/icon.jsx";
 
 /* ===========================================
    STYLE CONFIGURATION
@@ -18,44 +23,100 @@ export {
 
 const styles = {
   table: `
-    .eureka-table {
-      display: flex;
-      flex-direction: column;
+    .table {
       width: 100%;
       box-sizing: border-box;
-      background: var(--color-general-white);
-      border-radius: var(--radius-md);
+      background: transparent;
+    }
+    .table.bordered {
+      box-shadow: none;
+    }
+    .table-scroll-container {
+      width: 100%;
+      overflow-x: auto;
+      overflow-y: hidden;
+      position: relative;
+      -webkit-overflow-scrolling: touch;
+    }
+    .table-inner {
+      display: table;
+      min-width: 100%;
+      width: max-content;
+      table-layout: fixed;
+      border-collapse: collapse;
+    }
+    .table-header-wrapper {
+      margin-bottom: var(--spacing-2);
+    }
+    .table-header-wrapper .table-row-header {
+      background: transparent;
+    }
+    .table-header-wrapper .table-row-header > * {
+      border: none !important;
+      border-bottom: none !important;
+    }
+    .table-header-wrapper .table-scroll-container {
+      width: 100%;
+      overflow-x: auto;
+      overflow-y: hidden;
+    }
+    .table-body-wrapper {
       border: 1px solid var(--color-action-outline-secondary-enabled);
-      box-shadow: var(--shadow-light-down);
+      border-radius: 8px;
       overflow: hidden;
+      background: var(--color-general-white);
+    }
+    .table-body-wrapper .table-scroll-container {
+      width: 100%;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 2px;
+    }
+    .table-body-wrapper .table-inner {
+      display: table;
+      min-width: 100%;
+      width: max-content;
+      table-layout: fixed;
+      border-collapse: collapse;
     }
   `,
 
   row: `
     .table-row {
-      display: flex;
-      align-items: stretch;
+      display: table-row;
       width: 100%;
       box-sizing: border-box;
     }
     .table-row-header {
-      background: var(--color-general-neutral-lighter);
-      border-bottom: 1px solid var(--color-action-outline-secondary-enabled);
+      background: transparent;
+    }
+    .table-row-header > * {
+      border: none;
+      background: transparent;
+      padding-bottom: var(--spacing-1);
+      border-bottom: none;
     }
     .table-row-body {
-      background: var(--color-general-white);
-      border-bottom: 1px solid var(--color-action-outline-secondary-enabled);
       cursor: pointer;
       transition: background var(--transition-fast);
     }
-    .table-row-body:nth-child(even) {
+    .table-row-body:nth-child(odd) {
       background: var(--color-general-neutral-lighter);
     }
-    .table-row-body:last-child {
-      border-bottom: none;
+    .table-row-body:nth-child(even) {
+      background: var(--color-general-white);
+    }
+    .table-row-body > * {
+      border-left: none;
+      border-right: none;
+      border-top: none;
+    }
+    .table-row-body:not(:last-child) > * {
+      border-bottom: 1px solid var(--color-action-outline-secondary-enabled);
     }
     .table-row-body:not(.disabled):not(.selected):hover {
-      background: var(--color-general-neutral-lighter);
+      background: var(--color-general-neutral-light);
     }
     .table-row-body.selected {
       background: var(--color-general-informative);
@@ -69,20 +130,45 @@ const styles = {
     }
   `,
 
+  stickyColumn: `
+    .table-cell-sticky {
+      position: sticky;
+      right: 0;
+      background: inherit;
+      z-index: 1;
+      box-shadow: -2px 0 4px rgba(0, 0, 0, 0.05);
+    }
+    .table-row-header .table-cell-sticky {
+      background: transparent;
+      box-shadow: none;
+    }
+    .table-row-body .table-cell-sticky {
+      background: var(--color-general-white);
+    }
+    .table-row-body:hover .table-cell-sticky {
+      background: var(--color-general-neutral-lighter);
+    }
+    .table-row-body.selected .table-cell-sticky {
+      background: var(--color-general-informative);
+    }
+  `,
+
   header: `
     .table-cell-header {
-      flex: 1 1 0;
-      min-width: 0;
+      display: table-cell;
+      vertical-align: middle;
+      overflow: hidden;
+      width: auto;
     }
     .table-cell-header-inner {
-      display: inline-flex;
+      display: flex;
       align-items: center;
       justify-content: flex-start;
       gap: var(--spacing-1);
       padding-left: var(--spacing-4);
       padding-right: var(--spacing-4);
       padding-top: var(--spacing-3);
-      padding-bottom: var(--spacing-3);
+      padding-bottom: var(--spacing-2);
       width: 100%;
       box-sizing: border-box;
       user-select: none;
@@ -123,6 +209,7 @@ const styles = {
     .table-cell-title {
       flex: 1 1 0;
       min-width: 0;
+      overflow: hidden;
     }
     .table-cell-title-inner {
       display: inline-flex;
@@ -132,7 +219,7 @@ const styles = {
       padding-left: var(--spacing-4);
       padding-right: var(--spacing-4);
       padding-top: var(--spacing-3);
-      padding-bottom: var(--spacing-3);
+      padding-bottom: var(--spacing-2);
       width: 100%;
       box-sizing: border-box;
     }
@@ -146,6 +233,13 @@ const styles = {
       overflow: hidden;
       text-overflow: ellipsis;
     }
+    .table-cell-title-text > * {
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      display: block;
+    }
   `,
 };
 
@@ -158,7 +252,9 @@ let stylesInjected = false;
 const injectStyles = () => {
   if (stylesInjected || typeof document === "undefined") return;
 
-  const css = [styles.table, styles.row, styles.header, styles.title].join("\n");
+  const css = [styles.table, styles.row, styles.stickyColumn, styles.header, styles.title].join(
+    "\n"
+  );
 
   const styleEl = document.createElement("style");
   styleEl.setAttribute("data-eureka", "table");
@@ -175,9 +271,6 @@ const injectStyles = () => {
  * TableCellTitle
  *
  * A static column header label.
- *
- * @param {string} sort - '' | 'asc' | 'desc' - Sort indicator
- * @param {ReactNode} children - Header text
  */
 export const TableCellTitle = ({ sort, className = "", children, ...props }) => {
   injectStyles();
@@ -218,16 +311,13 @@ export const TableCellTitle = ({ sort, className = "", children, ...props }) => 
  * TableCellHeader
  *
  * An interactive sortable column header.
- *
- * @param {boolean} sortable - Enables sort cycling on click
- * @param {string} sort - '' | 'asc' | 'desc' - Current sort direction
- * @param {function} onSort - Called with { direction: 'asc' | 'desc' | 'none' }
- * @param {ReactNode} children - Header text
  */
 export const TableCellHeader = ({
   sortable = false,
   sort = "",
   onSort,
+  sticky = false,
+  width,
   className = "",
   children,
   ...props
@@ -278,8 +368,14 @@ export const TableCellHeader = ({
     .filter(Boolean)
     .join(" ");
 
+  const cellClasses = ["table-cell-header", sticky && "table-cell-sticky", className]
+    .filter(Boolean)
+    .join(" ");
+
+  const style = width ? { width, minWidth: width, maxWidth: width } : undefined;
+
   return (
-    <div className={`table-cell-header ${className}`.trim()} {...props}>
+    <div className={cellClasses} style={style} {...props}>
       <div
         className={innerClasses}
         tabIndex={sortable ? 0 : undefined}
@@ -303,12 +399,6 @@ export const TableCellHeader = ({
  * TableRow
  *
  * A table row container.
- *
- * @param {string} variant - 'header' | 'body' (default: 'body')
- * @param {boolean} selected - Selected state for body rows
- * @param {boolean} disabled - Disabled state for body rows
- * @param {function} onClick - Called when body row is clicked
- * @param {ReactNode} children - TableCell components
  */
 export const TableRow = ({
   variant = "body",
@@ -351,28 +441,195 @@ export const TableRow = ({
 /**
  * Table
  *
- * A table container.
- *
- * @param {ReactNode} children - TableRow components
- *
+ * A table container with optional horizontal scrolling and sticky columns.
  * @example
- * <Table>
+ * <Table scrollable>
  *   <TableRow variant="header">
  *     <TableCellHeader sortable>Company</TableCellHeader>
  *     <TableCellHeader sortable>Revenue</TableCellHeader>
+ *     <TableCellHeader sticky>Actions</TableCellHeader>
  *   </TableRow>
  *   <TableRow>
  *     <TableCell>Acme Corp</TableCell>
  *     <TableCell>$1M</TableCell>
+ *     <TableCell sticky><Button iconOnly><Icon name="EllipsisVertical" /></Button></TableCell>
  *   </TableRow>
  * </Table>
  */
-export const Table = ({ className = "", children, ...props }) => {
+export const Table = ({
+  bordered = true,
+  scrollable = false,
+  className = "",
+  children,
+  columns,
+  rows = [],
+  rowKey = "id",
+  emptyState,
+  ...props
+}) => {
   injectStyles();
 
+  const tableClasses = ["table", bordered && "bordered", className].filter(Boolean).join(" ");
+
+  const renderDefaultButtonCell = (value) => {
+    const isObjectValue = value && typeof value === "object" && !Array.isArray(value);
+
+    const label = isObjectValue
+      ? value.label
+      : typeof value === "string" || typeof value === "number"
+      ? String(value)
+      : "";
+
+    const iconName = isObjectValue ? value.iconName : undefined;
+    const buttonVariant = isObjectValue ? value.buttonVariant || "secondary" : "secondary";
+    const buttonSize = isObjectValue ? value.buttonSize || "sm" : "sm";
+    const onClick = isObjectValue ? value.onClick : undefined;
+    const isDisabled = isObjectValue ? value.isDisabled : false;
+
+    const iconSlot = (
+      <span
+        style={{
+          width: "var(--size-icon-sm)",
+          height: "var(--size-icon-sm)",
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          visibility: iconName ? "visible" : "hidden",
+        }}
+      >
+        {iconName ? <Icon name={iconName} size="sm" /> : null}
+      </span>
+    );
+
+    return (
+      <Button
+        variant={buttonVariant}
+        size={buttonSize}
+        iconLeading={iconSlot}
+        onClick={onClick}
+        isDisabled={isDisabled}
+      >
+        {label}
+      </Button>
+    );
+  };
+
+  const hasColumnConfig = Array.isArray(columns) && columns.length > 0;
+
+  const renderColumnCellContent = (column, row, rowIndex) => {
+    const value = column.key ? row?.[column.key] : undefined;
+
+    if (typeof column.renderCell === "function") {
+      return column.renderCell(value, row, rowIndex);
+    }
+
+    if (column.variant === "button") {
+      return renderDefaultButtonCell(value);
+    }
+
+    return value;
+  };
+
+  const renderColumnMode = () => {
+    const headerRow = (
+      <div className="table-header-wrapper">
+        <div className="table-scroll-container">
+          <div className="table-inner" role="table">
+            <TableRow variant="header">
+              {columns.map((column, columnIndex) => {
+                const isActionColumn =
+                  column.variant === "button" &&
+                  (column.key === "action" ||
+                    column.key === "actions" ||
+                    column.header === "action" ||
+                    column.header === "actions" ||
+                    column.header === "Action" ||
+                    column.header === "Actions");
+
+                const sticky = column.sticky ?? isActionColumn;
+                const width = column.width ?? (isActionColumn ? "56px" : undefined);
+
+                return (
+                  <TableCellHeader
+                    key={column.key || `column-${columnIndex}`}
+                    sortable={Boolean(column.sortable)}
+                    sort={column.sort || ""}
+                    onSort={column.onSort}
+                    sticky={sticky}
+                    width={width}
+                  >
+                    {column.header || column.label || ""}
+                  </TableCellHeader>
+                );
+              })}
+            </TableRow>
+          </div>
+        </div>
+      </div>
+    );
+
+    const bodyRows = rows.map((row, rowIndex) => {
+      const keyFromFunction = typeof rowKey === "function" ? rowKey(row, rowIndex) : undefined;
+      const keyFromField = typeof rowKey === "string" ? row?.[rowKey] : undefined;
+      const rowIdentity = keyFromFunction ?? keyFromField ?? rowIndex;
+
+      return (
+        <TableRow key={rowIdentity}>
+          {columns.map((column, columnIndex) => {
+            const isActionColumn =
+              column.variant === "button" &&
+              (column.key === "action" ||
+                column.key === "actions" ||
+                column.header === "action" ||
+                column.header === "actions" ||
+                column.header === "Action" ||
+                column.header === "Actions");
+
+            const sticky = column.sticky ?? isActionColumn;
+            const width = column.width ?? (isActionColumn ? "56px" : undefined);
+
+            return (
+              <TableCell
+                key={(column.key || `column-${columnIndex}`) + `-${rowIndex}`}
+                variant={column.variant || "short-text"}
+                sticky={sticky}
+                width={width}
+              >
+                {renderColumnCellContent(column, row, rowIndex)}
+              </TableCell>
+            );
+          })}
+        </TableRow>
+      );
+    });
+
+    const emptyRow =
+      rows.length === 0 && emptyState ? (
+        <TableRow>
+          <TableCell variant="short-text" width="100%">
+            {emptyState}
+          </TableCell>
+        </TableRow>
+      ) : null;
+
+    return (
+      <>
+        {headerRow}
+        <div className="table-body-wrapper">
+          <div className="table-scroll-container">
+            <div className="table-inner" role="table">
+              {bodyRows}
+              {emptyRow}
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  };
+
   return (
-    <div className={`eureka-table ${className}`.trim()} role="table" {...props}>
-      {children}
+    <div className={tableClasses} {...props}>
+      {hasColumnConfig ? renderColumnMode() : children}
     </div>
   );
 };

@@ -62,7 +62,7 @@ const styles = {
     cursor: "pointer",
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-body-caption)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     color: "var(--color-content-secondary)",
     transition: "all var(--transition-fast)",
   },
@@ -74,7 +74,7 @@ const styles = {
   perPageLabel: {
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-body-caption)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     color: "var(--color-content-secondary)",
   },
 
@@ -136,7 +136,7 @@ const styles = {
     cursor: "pointer",
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-body-caption)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     color: "var(--color-content-secondary)",
     transition: "all var(--transition-fast)",
   },
@@ -175,7 +175,7 @@ const styles = {
   info: {
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-body-caption)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     color: "var(--color-content-secondary)",
   },
 };
@@ -385,19 +385,6 @@ const PageButton = ({ page, isActive, disabled, onClick }) => {
 /**
  * Pagination
  *
- * @param {number} currentPage - Current active page (1-indexed)
- * @param {number} totalPages - Total number of pages
- * @param {function} onPageChange - Called when page changes
- * @param {number} perPage - Items per page
- * @param {function} onPerPageChange - Called when per page changes
- * @param {array} perPageOptions - Options for per page selector
- * @param {number} totalItems - Total number of items (for info display)
- * @param {boolean} isDisabled - Disables all controls
- * @param {boolean} showPerPage - Show per page selector
- * @param {boolean} showFirstLast - Show first/last page buttons
- * @param {boolean} showInfo - Show items info text
- * @param {number} maxVisiblePages - Max page buttons to show
- * @param {object} style - Additional inline styles
  */
 export const Pagination = ({
   currentPage = 1,

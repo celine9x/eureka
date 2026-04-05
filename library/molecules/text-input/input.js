@@ -91,51 +91,51 @@ class EInput extends HTMLElement {
 
         input {
           width: 100%;
-          padding: var(--spacing-2, 0.5rem) var(--spacing-3, 0.75rem);
-          font-family: var(--font-family-primary, 'Sora', sans-serif);
-          font-size: var(--text-body-lg, 0.875rem);
-          font-weight: var(--font-weight-body-lg, 400);
-          line-height: var(--line-height-body-lg, 1.25rem);
-          color: var(--color-content-primary, #15154C);
-          background-color: var(--color-interaction-fill-enabled, #FFFFFF);
-          border: 1px solid var(--color-interaction-outline-enabled, #D9E0ED);
-          border-radius: var(--radius-md, 0.5rem);
+          padding: var(--spacing-2) var(--spacing-3);
+          font-family: var(--font-family-primary);
+          font-size: var(--text-body-lg);
+          font-weight: var(--font-weight-body-lg);
+          line-height: var(--line-height-body-lg);
+          color: var(--color-content-primary);
+          background-color: var(--color-interaction-fill-enabled);
+          border: 1px solid var(--color-interaction-outline-enabled);
+          border-radius: var(--radius-md);
           outline: none;
-          transition: all var(--transition-fast, 150ms ease);
+          transition: all var(--transition-fast);
           box-sizing: border-box;
         }
 
         input::placeholder {
-          color: var(--color-content-tertiary, #93A6CB);
+          color: var(--color-content-tertiary);
         }
 
         input:hover:not(:disabled):not(.error) {
-          border-color: var(--color-interaction-outline-hover, #5371AC);
+          border-color: var(--color-interaction-outline-hover);
         }
 
         input:focus:not(.error) {
-          border-color: var(--color-interaction-outline-active, #383ACC);
-          box-shadow: var(--shadow-focus, 0 0 0.25rem 0 rgba(56, 58, 204, 0.4));
+          border-color: var(--color-interaction-outline-active);
+          box-shadow: var(--shadow-focus);
         }
 
         input:disabled {
-          background-color: var(--color-interaction-fill-disabled, #F8F9FC);
-          border-color: var(--color-interaction-outline-disabled, #D9E0ED);
-          color: var(--color-content-tertiary, #93A6CB);
+          background-color: var(--color-interaction-fill-disabled);
+          border-color: var(--color-interaction-outline-disabled);
+          color: var(--color-content-tertiary);
           cursor: not-allowed;
         }
 
         input:read-only {
-          background-color: var(--color-general-neutral-lighter, #F8F9FC);
+          background-color: var(--color-general-neutral-lighter);
         }
 
         input.error {
-          border-color: var(--color-interaction-outline-negative, #FF7373);
+          border-color: var(--color-interaction-outline-negative);
         }
 
         input.error:focus {
-          border-color: var(--color-interaction-outline-negative, #FF7373);
-          box-shadow: 0 0 0.25rem 0 rgba(255, 115, 115, 0.4);
+          border-color: var(--color-interaction-outline-negative);
+          box-shadow: var(--shadow-focus);
         }
       </style>
     `;

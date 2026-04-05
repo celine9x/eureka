@@ -104,17 +104,6 @@ const styles = {
  * A wrapper that uses ButtonBadge internally for consistent styling.
  * Use this within ButtonGroup for items without badges.
  *
- * @param {string|number} value - Value for this item (required for selection)
- * @param {string} size - md | lg (inherited from ButtonGroup)
- * @param {boolean} active - Whether this item is active (managed by ButtonGroup)
- * @param {boolean} isDisabled - Disables the button
- * @param {ReactNode} icon - Icon element to display
- * @param {string} iconName - Icon name to use with Icon component
- * @param {ReactNode} iconRight - Icon element on the right
- * @param {string} iconRightName - Right icon name
- * @param {function} onPress - Press handler (managed by ButtonGroup)
- * @param {object} style - Additional inline styles
- * @param {ReactNode} children - Button label
  */
 export const ButtonGroupItem = ({
   value,
@@ -166,7 +155,7 @@ export const ButtonGroupItem = ({
       iconName={iconName}
       iconRight={iconRight}
       iconRightName={iconRightName}
-      onPress={onPress || onClick}
+      onClick={onPress || onClick}
       style={itemStyle}
       {...props}
     >
@@ -186,12 +175,6 @@ ButtonGroupItem.displayName = "ButtonGroupItem";
  *
  * A group of connected buttons for single selection.
  *
- * @param {string} size - md | lg (default: md)
- * @param {string} orientation - horizontal | vertical (default: horizontal)
- * @param {string|number} value - Currently active value
- * @param {function} onChange - Called with new value when selection changes
- * @param {object} style - Additional inline styles
- * @param {ReactNode} children - ButtonGroupItem or ButtonBadge components
  */
 export const ButtonGroup = ({
   size = BUTTON_GROUP_SIZES.md,

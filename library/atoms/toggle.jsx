@@ -34,7 +34,7 @@ const styles = {
   wrapper: {
     display: "inline-flex",
     alignItems: "center",
-    gap: 8,
+    gap: "var(--spacing-sm)",
     cursor: "pointer",
     userSelect: "none",
   },
@@ -82,7 +82,7 @@ const styles = {
     flexShrink: 0,
     transition: "all var(--transition-fast)",
     background: "var(--color-general-white)",
-    boxShadow: "0px 1px 2px rgba(83, 113, 172, 0.15), 0px 2px 4px rgba(83, 113, 172, 0.20)",
+    boxShadow: "var(--shadow-medium-down)",
   },
 
   knobDisabled: {
@@ -91,7 +91,7 @@ const styles = {
 
   label: {
     fontFamily: "var(--font-family-primary)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     transition: "color var(--transition-fast)",
     color: "var(--color-content-primary)",
   },
@@ -124,20 +124,7 @@ const styles = {
 // COMPONENT
 // ─────────────────────────────────────────────
 
-/**
- * Toggle
- *
- * @param {string} size - sm | md (default: md)
- * @param {boolean} isSelected - Whether the toggle is on
- * @param {boolean} defaultSelected - Initial selected state (uncontrolled)
- * @param {boolean} isDisabled - Disables the toggle
- * @param {string} label - Label text displayed next to toggle
- * @param {string} labelPosition - left | right (default: right)
- * @param {string} name - Input name for forms
- * @param {string} value - Input value for forms
- * @param {function} onChange - Called when toggle state changes
- * @param {object} style - Additional inline styles
- */
+/** Toggle */
 export const Toggle = ({
   size = TOGGLE_SIZES.md,
   isSelected,

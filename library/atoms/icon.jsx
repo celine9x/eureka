@@ -33,13 +33,13 @@ export const ICON_VARIANTS = {
   mini: "mini",
 };
 
-/** Size to pixel mapping */
+/** Size to token mapping */
 const SIZE_MAP = {
-  xs: 12,
-  sm: 14,
-  md: 16,
-  lg: 20,
-  xl: 24,
+  xs: "var(--size-icon-xs)",
+  sm: "var(--size-icon-sm)",
+  md: "var(--size-icon-md)",
+  lg: "var(--size-icon-lg)",
+  xl: "var(--size-icon-xl)",
   "2xl": 32,
 };
 
@@ -60,15 +60,7 @@ const styles = {
 // COMPONENT
 // ─────────────────────────────────────────────
 
-/**
- * Icon
- *
- * @param {string} name - Icon name (e.g., "ChevronRight", "ArrowLeft", "Check")
- * @param {string} variant - "outline" | "solid" | "mini" (default: "outline")
- * @param {string|number} size - xs | sm | md | lg | xl | 2xl | number (default: "md")
- * @param {string} color - CSS color value (default: "currentColor")
- * @param {object} style - Additional inline styles
- */
+/** Icon */
 export const Icon = ({
   name,
   variant = ICON_VARIANTS.outline,
@@ -101,12 +93,12 @@ export const Icon = ({
   }
 
   // Calculate pixel size
-  const pixelSize = typeof size === "number" ? size : SIZE_MAP[size] || 16;
+  const resolvedSize = typeof size === "number" ? size : SIZE_MAP[size] || "var(--size-icon-md)";
 
   const iconStyle = {
     ...styles.base,
-    width: pixelSize,
-    height: pixelSize,
+    width: resolvedSize,
+    height: resolvedSize,
     color: color || "currentColor",
     ...style,
   };

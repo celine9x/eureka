@@ -5,7 +5,7 @@
  * Uses design tokens from tokens.css.
  */
 
-import React from "react";
+import React, { useRef, useState, useEffect, useLayoutEffect } from "react";
 import { createStyleInjector, cx } from "../../utils/styles.js";
 
 // ─────────────────────────────────────────────
@@ -68,18 +68,22 @@ const styles = {
      BASE STYLES
      =========================================== */
   .table-cell {
-    flex: 1 1 0;
-    min-width: 0;
-    width: 100%;
-    height: 100%;
+    display: table-cell;
+    vertical-align: middle;
     box-sizing: border-box;
+    width: auto;
     padding-left: var(--spacing-4);
     padding-right: var(--spacing-4);
     background: transparent;
+    overflow: hidden;
+  }
+  .table-cell-inner {
     display: flex;
     justify-content: flex-start;
     align-items: center;
     gap: var(--spacing-2);
+    width: 100%;
+    min-width: 0;
     overflow: hidden;
   }
 
@@ -91,6 +95,9 @@ const styles = {
     align-items: center;
     justify-content: center;
     color: var(--color-content-secondary);
+  }
+  .table-cell-icon--empty {
+    visibility: hidden;
   }
   .table-cell-icon svg {
     width: 100%;
@@ -110,6 +117,13 @@ const styles = {
     overflow: hidden;
     text-overflow: ellipsis;
   }
+  .table-cell-content > * {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+  }
 
   /* ===========================================
      VARIANT: short-text
@@ -119,9 +133,9 @@ const styles = {
     padding-bottom: var(--spacing-3-5);
   }
   .table-cell-short-text .table-cell-content {
-    font-size: var(--text-body-lg);
+    font-size: var(--text-body-md);
     font-weight: var(--font-weight-regular);
-    line-height: var(--line-height-body-lg);
+    line-height: var(--line-height-body-md);
   }
 
   /* ===========================================
@@ -130,19 +144,21 @@ const styles = {
   .table-cell-long-text {
     padding-top: var(--spacing-2);
     padding-bottom: var(--spacing-2);
+  }
+  .table-cell-long-text .table-cell-inner {
     align-items: flex-start;
   }
   .table-cell-long-text .table-cell-icon {
     margin-top: 0.125rem;
   }
   .table-cell-long-text .table-cell-content {
-    white-space: normal;
+    white-space: nowrap;
     font-size: var(--text-body-md);
     font-weight: var(--font-weight-regular);
     line-height: var(--line-height-body-md);
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
   }
 
   /* ===========================================
@@ -157,11 +173,41 @@ const styles = {
      VARIANT: two-level
      =========================================== */
   .table-cell-two-level {
-    padding-top: var(--spacing-1);
-    padding-bottom: var(--spacing-1);
+    padding-top: var(--spacing-2);
+    padding-bottom: var(--spacing-2);
+  }
+  .table-cell-two-level .table-cell-inner {
     flex-direction: column;
     align-items: flex-start;
+    justify-content: center;
     gap: 0;
+  }
+  .table-cell-two-level .table-cell-content,
+  .table-cell-two-level .table-cell-two-level-wrapper {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-width: 0;
+  }
+  .table-cell-two-level .table-cell-two-level-primary {
+    font-family: var(--font-family-primary);
+    font-size: var(--text-body-md);
+    font-weight: var(--font-weight-regular);
+    line-height: var(--line-height-body-md);
+    color: var(--color-content-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .table-cell-two-level .table-cell-two-level-secondary {
+    font-family: var(--font-family-primary);
+    font-size: var(--text-body-sm);
+    font-weight: var(--font-weight-regular);
+    line-height: var(--line-height-body-sm);
+    color: var(--color-content-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   /* ===========================================
@@ -171,6 +217,8 @@ const styles = {
   .table-cell-two-level-objects {
     padding-top: var(--spacing-1);
     padding-bottom: var(--spacing-1);
+  }
+  .table-cell-two-level-objects .table-cell-inner {
     flex-direction: column;
     align-items: flex-start;
     justify-content: center;
@@ -182,6 +230,10 @@ const styles = {
     gap: var(--spacing-1);
     padding: 0 var(--spacing-1);
     border-radius: var(--radius-md);
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
   }
   .table-cell-two-level-objects .table-cell-link-row.lg {
     height: 1.75rem;
@@ -220,6 +272,13 @@ const styles = {
     font-family: var(--font-family-primary);
     font-weight: var(--font-weight-regular);
     color: var(--color-content-brand);
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
   }
 
   /* ===========================================
@@ -228,6 +287,8 @@ const styles = {
   .table-cell-tags {
     padding-top: var(--spacing-3);
     padding-bottom: var(--spacing-3);
+  }
+  .table-cell-tags .table-cell-inner {
     flex-wrap: nowrap;
   }
 
@@ -237,6 +298,8 @@ const styles = {
   .table-cell-tags-2 {
     padding-top: var(--spacing-2);
     padding-bottom: var(--spacing-2);
+  }
+  .table-cell-tags-2 .table-cell-inner {
     flex-wrap: wrap;
     align-content: flex-start;
     gap: var(--spacing-1);
@@ -249,11 +312,11 @@ const styles = {
   .table-cell-tag-1line {
     padding-top: var(--spacing-3);
     padding-bottom: var(--spacing-3);
-    flex-wrap: wrap;
+  }
+  .table-cell-tag-1line .table-cell-inner {
+    flex-wrap: nowrap;
     align-content: center;
     gap: var(--spacing-2);
-    overflow: hidden;
-    max-height: 48px;
   }
 
   /* ===========================================
@@ -263,8 +326,6 @@ const styles = {
   .table-cell-badge {
     padding-top: var(--spacing-3);
     padding-bottom: var(--spacing-3);
-    justify-content: flex-start;
-    align-items: center;
   }
 
   /* ===========================================
@@ -273,10 +334,7 @@ const styles = {
      =========================================== */
   .table-cell-checkbox {
     padding: var(--spacing-4);
-    justify-content: flex-start;
-    align-items: center;
-    flex: 0 0 auto;
-    width: auto;
+    width: 48px;
   }
 
   /* ===========================================
@@ -286,8 +344,6 @@ const styles = {
   .table-cell-input {
     padding-top: var(--spacing-3);
     padding-bottom: var(--spacing-3);
-    justify-content: flex-start;
-    align-items: center;
   }
   .table-cell-input .table-cell-input-wrapper {
     flex: 1 1 0;
@@ -301,8 +357,8 @@ const styles = {
   .table-cell-linked-value {
     padding-top: var(--spacing-3-5);
     padding-bottom: var(--spacing-3-5);
-    justify-content: flex-start;
-    align-items: center;
+  }
+  .table-cell-linked-value .table-cell-inner {
     gap: var(--spacing-2);
   }
   .table-cell-linked-value .table-cell-icon {
@@ -311,23 +367,33 @@ const styles = {
     color: var(--color-content-secondary);
   }
   .table-cell-linked-value .table-cell-linked-content {
+    flex: 1 1 0;
+    min-width: 0;
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-start;
-  }
-  .table-cell-linked-value .table-cell-linked-row {
-    display: inline-flex;
-    justify-content: flex-start;
     align-items: center;
     gap: var(--spacing-2);
+    overflow: hidden;
+  }
+  .table-cell-linked-value .table-cell-linked-content > * {
+    min-width: 0;
+    max-width: 100%;
   }
   .table-cell-linked-value .table-cell-linked-name {
     font-family: var(--font-family-primary);
-    font-size: var(--text-body-lg);
+    font-size: var(--text-body-md);
     font-weight: var(--font-weight-regular);
-    line-height: var(--line-height-body-lg);
-    color: var(--color-content-primary);
+    line-height: var(--line-height-body-md);
+    color: var(--color-content-brand);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .table-cell-linked-value .table-cell-linked-name > * {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
   }
 
   /* ===========================================
@@ -337,8 +403,8 @@ const styles = {
   .table-cell-linked-object {
     padding-top: 0.625rem;
     padding-bottom: 0.625rem;
-    justify-content: flex-start;
-    align-items: center;
+  }
+  .table-cell-linked-object .table-cell-inner {
     gap: var(--spacing-2);
   }
 
@@ -349,11 +415,81 @@ const styles = {
   .table-cell-tag-2lines {
     padding-top: 0.375rem;
     padding-bottom: 0.375rem;
+  }
+  .table-cell-tag-2lines .table-cell-inner {
     flex-wrap: wrap;
     align-content: center;
     gap: var(--spacing-2);
-    overflow: hidden;
     max-height: 60px;
+  }
+
+  /* ===========================================
+     TAGS OVERFLOW CONTAINER
+     =========================================== */
+  .table-cell-tags-container {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .table-cell-tags-visible {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .table-cell-tags-overflow {
+    position: relative;
+    flex-shrink: 0;
+  }
+  .table-cell-tags-overflow-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 var(--spacing-2);
+    height: 1.5rem;
+    font-family: var(--font-family-primary);
+    font-size: var(--text-body-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-content-secondary);
+    background: var(--color-general-neutral-light);
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .table-cell-tags-overflow-badge:hover {
+    background: var(--color-general-neutral);
+  }
+  .table-cell-tags-tooltip {
+    position: absolute;
+    bottom: calc(100% + 4px);
+    left: 50%;
+    transform: translateX(-50%);
+    padding: var(--spacing-2) var(--spacing-3);
+    background: var(--color-general-neutral-darker);
+    color: var(--color-general-white);
+    border-radius: var(--radius-md);
+    font-family: var(--font-family-primary);
+    font-size: var(--text-body-sm);
+    line-height: var(--line-height-body-sm);
+    white-space: nowrap;
+    z-index: 1000;
+    box-shadow: var(--shadow-medium);
+    max-width: 300px;
+    white-space: normal;
+  }
+  .table-cell-tags-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: var(--color-general-neutral-darker);
   }
 `,
 };
@@ -367,10 +503,6 @@ const css = Object.values(styles).join("\n");
 
 /**
  * TableCell
- *
- * @param {keyof typeof styles.variants} variant - Cell layout variant
- * @param {ReactNode} icon - Icon element for applicable variants
- * @param {ReactNode} children - Cell content
  *
  * @example
  * // Short text (default)
@@ -434,8 +566,11 @@ const css = Object.values(styles).join("\n");
 export const TableCell = ({
   variant = TABLECELL_VARIANTS["short-text"],
   icon,
+  sticky = false,
+  width,
   className,
   children,
+  style: propStyle,
   ...props
 }) => {
   injectStyles(css);
@@ -454,14 +589,28 @@ export const TableCell = ({
     "linked-object",
   ];
 
+  const cellClassName = cx(
+    styleClasses.common.root,
+    styleClasses.variants[variant],
+    sticky && "table-cell-sticky",
+    className
+  );
+
+  const style = width
+    ? { width, minWidth: width, maxWidth: width, ...propStyle }
+    : propStyle;
+
   // Two-level-objects variant - wraps children in link rows
   if (variant === "two-level-objects") {
     return (
       <div
-        className={cx(styleClasses.common.root, styleClasses.variants[variant], className)}
+        className={cellClassName}
+        style={style}
         {...props}
       >
-        {children}
+        <div className="table-cell-inner">
+          {children}
+        </div>
       </div>
     );
   }
@@ -470,12 +619,15 @@ export const TableCell = ({
   if (variant === "linked-value") {
     return (
       <div
-        className={cx(styleClasses.common.root, styleClasses.variants[variant], className)}
+        className={cellClassName}
+        style={style}
         {...props}
       >
-        {icon && <div className={cx(styleClasses.common.icon, "md")}>{icon}</div>}
-        <div className="table-cell-linked-content">
-          <div className="table-cell-linked-row">
+        <div className="table-cell-inner">
+          <div className={cx(styleClasses.common.icon, "md", !icon && "table-cell-icon--empty")}>
+            {icon}
+          </div>
+          <div className="table-cell-linked-content">
             {children}
           </div>
         </div>
@@ -487,10 +639,13 @@ export const TableCell = ({
   if (simpleVariants.includes(variant)) {
     return (
       <div
-        className={cx(styleClasses.common.root, styleClasses.variants[variant], className)}
+        className={cellClassName}
+        style={style}
         {...props}
       >
-        {children}
+        <div className="table-cell-inner">
+          {children}
+        </div>
       </div>
     );
   }
@@ -498,11 +653,16 @@ export const TableCell = ({
   // Text variants (short-text, long-text) with icon/content structure
   return (
     <div
-      className={cx(styleClasses.common.root, styleClasses.variants[variant], className)}
+      className={cellClassName}
+      style={style}
       {...props}
     >
-      {icon && <div className={styleClasses.common.icon}>{icon}</div>}
-      <div className={styleClasses.common.content}>{children}</div>
+      <div className="table-cell-inner">
+        <div className={cx(styleClasses.common.icon, !icon && "table-cell-icon--empty")}>
+          {icon}
+        </div>
+        <div className={styleClasses.common.content}>{children}</div>
+      </div>
     </div>
   );
 };
@@ -516,11 +676,6 @@ TableCell.variants = TABLECELL_VARIANTS;
 
 /**
  * TableCellLinkRow - For use within two-level-objects variant
- *
- * @param {string} size - lg | md
- * @param {ReactNode} icon - Leading icon
- * @param {string} href - Link URL
- * @param {ReactNode} children - Link text
  */
 export const TableCellLinkRow = ({
   size = "lg",
@@ -560,6 +715,142 @@ export const TableCellLinkedName = ({ className, children, ...props }) => {
     <span className={cx("table-cell-linked-name", className)} {...props}>
       {children}
     </span>
+  );
+};
+
+/**
+ * TableCellTwoLevel - For use with two-level variant
+ * Renders primary and secondary text with proper truncation
+ */
+export const TableCellTwoLevel = ({ primary, secondary, className, ...props }) => {
+  return (
+    <div className={cx("table-cell-two-level-wrapper", className)} {...props}>
+      <span className="table-cell-two-level-primary">{primary}</span>
+      {secondary && <span className="table-cell-two-level-secondary">{secondary}</span>}
+    </div>
+  );
+};
+
+/**
+ * TableCellTags - For displaying tags with overflow handling
+ *
+ * Automatically calculates visible tags based on available width.
+ * Shows "+N" badge for hidden tags with tooltip on hover.
+ *
+ * @example
+ * <TableCellTags
+ *   tags={[
+ *     { label: "Tag 1", color: "blue" },
+ *     { label: "Tag 2", color: "cyan" },
+ *     { label: "Tag 3", color: "pink" },
+ *   ]}
+ *   renderTag={(tag) => <Chip color={tag.color}>{tag.label}</Chip>}
+ * />
+ */
+export const TableCellTags = ({
+  tags = [],
+  renderTag,
+  maxVisible,
+  className,
+  ...props
+}) => {
+  const containerRef = useRef(null);
+  const visibleRef = useRef(null);
+  const [visibleCount, setVisibleCount] = useState(tags.length);
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  // Use layout effect to measure before paint
+  useLayoutEffect(() => {
+    if (maxVisible !== undefined) {
+      setVisibleCount(Math.min(maxVisible, tags.length));
+      return;
+    }
+
+    const calculateVisible = () => {
+      if (!containerRef.current || !visibleRef.current) return;
+
+      const container = containerRef.current;
+      const containerWidth = container.offsetWidth;
+      const children = visibleRef.current.children;
+
+      if (!children.length) return;
+
+      // Reserve space for the overflow badge (approximately 40px)
+      const badgeWidth = 40;
+      let totalWidth = 0;
+      let count = 0;
+
+      for (let i = 0; i < children.length; i++) {
+        const childWidth = children[i].offsetWidth + 8; // 8px gap
+        if (totalWidth + childWidth + (i < tags.length - 1 ? badgeWidth : 0) <= containerWidth) {
+          totalWidth += childWidth;
+          count++;
+        } else {
+          break;
+        }
+      }
+
+      // If all tags fit, show all
+      if (count === tags.length) {
+        setVisibleCount(tags.length);
+      } else {
+        // Otherwise show count - 1 to make room for badge
+        setVisibleCount(Math.max(1, count));
+      }
+    };
+
+    // Initial calculation
+    calculateVisible();
+
+    // Recalculate on resize
+    const resizeObserver = new ResizeObserver(calculateVisible);
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
+
+    return () => resizeObserver.disconnect();
+  }, [tags.length, maxVisible]);
+
+  const visibleTags = tags.slice(0, visibleCount);
+  const hiddenTags = tags.slice(visibleCount);
+  const hiddenCount = hiddenTags.length;
+
+  const getTagLabel = (tag) => {
+    if (typeof tag === "string") return tag;
+    return tag.label || tag.name || tag.text || String(tag);
+  };
+
+  return (
+    <div
+      ref={containerRef}
+      className={cx("table-cell-tags-container", className)}
+      {...props}
+    >
+      <div ref={visibleRef} className="table-cell-tags-visible">
+        {visibleTags.map((tag, index) =>
+          renderTag ? renderTag(tag, index) : <span key={index}>{getTagLabel(tag)}</span>
+        )}
+      </div>
+      {hiddenCount > 0 && (
+        <div
+          className="table-cell-tags-overflow"
+          onMouseEnter={() => setShowTooltip(true)}
+          onMouseLeave={() => setShowTooltip(false)}
+        >
+          <span className="table-cell-tags-overflow-badge">+{hiddenCount}</span>
+          {showTooltip && (
+            <div className="table-cell-tags-tooltip">
+              {hiddenTags.map((tag, index) => (
+                <span key={index}>
+                  {getTagLabel(tag)}
+                  {index < hiddenTags.length - 1 ? ", " : ""}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 };
 

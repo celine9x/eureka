@@ -56,7 +56,7 @@ const styles = {
     alignItems: "center",
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-body-md)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     cursor: "pointer",
     userSelect: "none",
     border: "none",
@@ -108,7 +108,7 @@ const styles = {
       borderRadius: 0,
     },
     inbetweenHover: {
-      background: "rgba(77, 121, 255, 0.2)",
+      background: "var(--color-general-neutral-light)",
     },
     "range-start": {
       background: "var(--color-action-fill-primary-enabled)",
@@ -176,7 +176,7 @@ const styles = {
 
   monthLabel: {
     fontSize: "var(--text-body-md)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     color: "var(--color-content-primary)",
     textAlign: "center",
   },
@@ -189,7 +189,7 @@ const styles = {
 
   yearLabel: {
     fontSize: "var(--text-body-md)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     color: "var(--color-content-primary)",
   },
 
@@ -206,7 +206,7 @@ const styles = {
     alignItems: "center",
     justifyContent: "center",
     fontSize: "var(--text-body-caption)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     color: "var(--color-content-secondary)",
   },
 
@@ -275,11 +275,6 @@ const getFirstDayOfMonth = (year, month) => {
  *
  * Individual day cell in the calendar.
  *
- * @param {number} day - Day number (1-31)
- * @param {string} variant - default | outside | disabled | today | selected | inbetween | range-start | range-end
- * @param {boolean} isDisabled - Disables the day
- * @param {function} onClick - Click handler
- * @param {object} style - Additional inline styles
  */
 export const Day = ({
   day,
@@ -562,17 +557,6 @@ const CalendarMonth = ({
  *
  * A calendar component for selecting single dates or date ranges.
  *
- * @param {Date} value - Selected date (single mode)
- * @param {Date} defaultValue - Default selected date (uncontrolled)
- * @param {Date} rangeStart - Start date for range selection
- * @param {Date} rangeEnd - End date for range selection
- * @param {boolean} range - Enable range selection mode
- * @param {boolean} dual - Show two months side by side
- * @param {Date} minDate - Minimum selectable date
- * @param {Date} maxDate - Maximum selectable date
- * @param {function} onChange - Called when date is selected: (date) => void
- * @param {function} onRangeChange - Called when range changes: ({ start, end }) => void
- * @param {object} style - Additional inline styles
  *
  * @example
  * // Single date selection

@@ -114,7 +114,7 @@ const styles = {
   label: {
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-body-lg)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     lineHeight: "var(--line-height-body-lg)",
     color: "var(--color-content-primary)",
   },
@@ -136,7 +136,7 @@ const styles = {
   infoText: {
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-body-md)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     lineHeight: "var(--line-height-body-md)",
     color: "var(--color-content-secondary)",
   },
@@ -163,11 +163,6 @@ const styles = {
  *
  * Manages state for a group of RadioCard components.
  *
- * @param {string} name - Group name for radio buttons
- * @param {string} value - Currently selected value
- * @param {function} onChange - Called with new value when selection changes
- * @param {ReactNode} children - RadioCard components
- * @param {object} style - Additional inline styles
  */
 export const RadioCardGroup = ({ name, value, onChange, style, children, ...props }) => {
   const groupStyle = {
@@ -195,16 +190,6 @@ RadioCardGroup.displayName = "RadioCardGroup";
  *
  * A selectable card with radio button behavior.
  *
- * @param {string} name - Radio group name (required if not in RadioCardGroup)
- * @param {string} value - Radio value
- * @param {boolean} checked - Selected state (controlled)
- * @param {boolean} isDisabled - Disables interactions
- * @param {string} label - Main label text
- * @param {string} info - Comma-separated info items (up to 3)
- * @param {ReactNode} icon - Icon element before label
- * @param {ReactNode} action - Action element on the right (e.g., button)
- * @param {function} onChange - Called when selected
- * @param {object} style - Additional inline styles
  *
  * @example
  * <RadioCard name="plan" value="pro" label="Pro Plan" info="Annual,USD,Cancel anytime" />

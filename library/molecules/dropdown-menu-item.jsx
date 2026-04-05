@@ -36,16 +36,16 @@ const styles = {
   base: {
     display: "flex",
     alignItems: "center",
-    gap: 8,
+    gap: "var(--spacing-sm)",
     width: "100%",
-    padding: 8,
+    padding: "var(--spacing-sm)",
     background: "transparent",
     border: "none",
     borderRadius: "var(--radius-md)",
     cursor: "pointer",
     textAlign: "left",
     fontFamily: "var(--font-family-primary)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     boxSizing: "border-box",
     transition: "all var(--transition-fast)",
     outline: "none",
@@ -54,12 +54,12 @@ const styles = {
 
   sizes: {
     sm: {
-      padding: 6,
-      gap: 6,
+      padding: "var(--spacing-1-5)",
+      gap: "var(--spacing-1-5)",
     },
     md: {
-      padding: 8,
-      gap: 8,
+      padding: "var(--spacing-sm)",
+      gap: "var(--spacing-sm)",
     },
   },
 
@@ -131,12 +131,12 @@ const styles = {
       },
       disabled: {
         item: {
-          color: "rgba(255, 178, 178, 1)",
+          color: "var(--color-content-tertiary)",
           cursor: "not-allowed",
           pointerEvents: "none",
         },
         icon: {
-          color: "rgba(255, 178, 178, 1)",
+          color: "var(--color-content-tertiary)",
         },
       },
     },
@@ -176,7 +176,7 @@ const styles = {
   label: {
     fontSize: "var(--text-body-md)",
     lineHeight: "var(--line-height-body-md)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     whiteSpace: "nowrap",
     overflow: "hidden",
     textOverflow: "ellipsis",
@@ -185,7 +185,7 @@ const styles = {
   description: {
     fontSize: "var(--text-body-caption)",
     lineHeight: "var(--line-height-body-caption)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     color: "var(--color-content-tertiary)",
   },
 
@@ -193,7 +193,7 @@ const styles = {
     flexShrink: 0,
     fontSize: "var(--text-body-caption)",
     lineHeight: "var(--line-height-body-caption)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     color: "var(--color-content-tertiary)",
   },
 
@@ -217,7 +217,7 @@ const styles = {
     padding: "8px 8px 4px",
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-body-caption)",
-    fontWeight: 600,
+    fontWeight: "var(--font-weight-semibold)",
     lineHeight: "var(--line-height-body-caption)",
     color: "var(--color-content-tertiary)",
     textTransform: "uppercase",
@@ -232,22 +232,6 @@ const styles = {
 /**
  * DropdownMenuItem
  *
- * @param {string} label - Item label text
- * @param {ReactNode} icon - Leading icon element
- * @param {string} iconName - Icon name for heroicons (alternative to icon prop)
- * @param {string} badge - Badge/chip text
- * @param {string} description - Description text below label
- * @param {string} shortcut - Keyboard shortcut text
- * @param {ReactNode} trailingIcon - Trailing icon (e.g., chevron for submenu)
- * @param {string} trailingIconName - Trailing icon name
- * @param {string} variant - default | destructive (default: default)
- * @param {string} size - sm | md (default: md)
- * @param {boolean} active - Active/selected state
- * @param {boolean} isDisabled - Disabled state
- * @param {function} onClick - Click handler
- * @param {string} href - If provided, renders as anchor
- * @param {object} style - Additional inline styles
- * @param {ReactNode} children - Alternative to label prop
  */
 export const DropdownMenuItem = ({
   label,
@@ -407,7 +391,6 @@ DropdownMenuItem.sizes = DROPDOWN_MENU_ITEM_SIZES;
  *
  * A horizontal divider line between menu items.
  *
- * @param {object} style - Additional inline styles
  */
 export const DropdownMenuDivider = ({ style, ...props }) => {
   const dividerStyle = {
@@ -429,8 +412,6 @@ DropdownMenuDivider.displayName = "DropdownMenuDivider";
  *
  * A section label/header for grouping menu items.
  *
- * @param {ReactNode} children - Label text
- * @param {object} style - Additional inline styles
  */
 export const DropdownMenuLabel = ({ children, style, ...props }) => {
   const labelStyle = {

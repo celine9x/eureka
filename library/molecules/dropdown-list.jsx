@@ -31,7 +31,7 @@ const styles = {
     padding: 4,
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-highlight-md)",
-    fontWeight: 600,
+    fontWeight: "var(--font-weight-semibold)",
     textTransform: "uppercase",
     letterSpacing: "0.04em",
     color: "var(--color-content-tertiary)",
@@ -112,7 +112,7 @@ const styles = {
   itemLabel: {
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-body-lg)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     color: "var(--color-content-primary)",
     whiteSpace: "nowrap",
     overflow: "hidden",
@@ -126,7 +126,7 @@ const styles = {
   itemSubinfo: {
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-body-md)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     color: "var(--color-content-secondary)",
     whiteSpace: "nowrap",
     overflow: "hidden",
@@ -189,7 +189,7 @@ const styles = {
     padding: "8px 12px",
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-body-lg)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     color: "var(--color-content-primary)",
     background: "var(--color-interaction-fill-enabled)",
     border: "1px solid var(--color-interaction-outline-enabled)",
@@ -229,7 +229,7 @@ const styles = {
   listNoResultsText: {
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-body-lg)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     color: "var(--color-content-secondary)",
   },
 
@@ -251,10 +251,6 @@ const styles = {
  *
  * A section within a dropdown list with optional title.
  *
- * @param {string} title - Optional uppercase section title
- * @param {boolean} hidden - Hides the section
- * @param {ReactNode} children - Section items
- * @param {object} style - Additional inline styles
  */
 export const DropdownSection = ({ title, hidden = false, style, children, ...props }) => {
   const sectionStyle = {
@@ -282,17 +278,6 @@ DropdownSection.displayName = "DropdownSection";
  *
  * A selectable item with checkbox in a dropdown list.
  *
- * @param {string} value - Item value
- * @param {boolean} checked - Checked state
- * @param {boolean} isDisabled - Disables the item
- * @param {string} subinfo - Secondary line beneath the label
- * @param {string} color - CSS color for left accent rectangle
- * @param {ReactNode} icon - Icon element on the left
- * @param {ReactNode} badge - Badge element on the right
- * @param {ReactNode} action - Action element on the right
- * @param {function} onChange - Called with { value, label, checked }
- * @param {ReactNode} children - Label text
- * @param {object} style - Additional inline styles
  *
  * @example
  * <DropdownListItem value="ad" checked>Alzheimer's disease</DropdownListItem>
@@ -402,14 +387,6 @@ DropdownListItem.displayName = "DropdownListItem";
  *
  * A searchable, sectioned list with optional "Add" action.
  *
- * @param {boolean} noSearch - Hides the search input
- * @param {string} searchPlaceholder - Placeholder for search field (default: "Search")
- * @param {boolean} noAdd - Hides the add button row
- * @param {string} addLabel - Label for add button (default: "Add value")
- * @param {function} onAdd - Called when add button is clicked
- * @param {function} onSearch - Called with search query when searching
- * @param {ReactNode} children - DropdownSection and item components
- * @param {object} style - Additional inline styles
  *
  * @example
  * <DropdownList>

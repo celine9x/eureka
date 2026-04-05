@@ -23,7 +23,7 @@ const styles = {
       gap: var(--spacing-4);
       width: 100%;
       padding: var(--spacing-4) var(--spacing-8);
-      border-bottom: 1px solid var(--color-outline-neutral);
+      border-bottom: 1px solid var(--color-action-outline-secondary-enabled);
       box-sizing: border-box;
     }
     .hub-header--no-border {
@@ -265,18 +265,6 @@ HubHeaderSecondary.displayName = "HubHeaderSecondary";
  * HubHeader
  *
  * A flexible page-section header supporting list and detail views.
- *
- * @param {string} variant - list | detail (default: list)
- * @param {string} title - Heading text
- * @param {string} titleSize - sm | md | lg (default: md)
- * @param {string} badge - Optional badge text next to title
- * @param {string} badgeVariant - Badge variant (default: neutral)
- * @param {boolean} showBorder - Show bottom border (default: true)
- * @param {ReactNode} leftContent - Content on the left (after title for list, includes back for detail)
- * @param {ReactNode} rightContent - Content on the right (actions, buttons)
- * @param {ReactNode} secondaryContent - Optional second row content (ButtonGroup, etc.)
- * @param {function} onBack - Back button click handler (detail variant)
- * @param {ReactNode} children - Alternative composition using sub-components
  *
  * @example
  * // Simple list header

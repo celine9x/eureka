@@ -24,14 +24,14 @@ import { XCircleIcon, ChevronDownIcon } from "@heroicons/react/16/solid";
 // ─────────────────────────────────────────────
 
 export const CHIP_COLORS = {
-  skyblue: "var(--SkyBlue70, #7DBEFF)",
-  green: "var(--Green70, #73E5AC)",
-  yellow: "var(--Yellow80, #EFEB9C)",
-  peach: "var(--Peach70, #FFAE70)",
-  red: "var(--Red70, #FF7373)",
-  blue: "var(--Blue70, #8587FF)",
-  purple: "var(--Purple70, #B794F6)",
-  pink: "var(--Pink70, #FF8DC7)",
+  skyblue: "var(--skyblue-70)",
+  green: "var(--green-70)",
+  yellow: "var(--yellow-80)",
+  peach: "var(--peach-70)",
+  red: "var(--red-70)",
+  blue: "var(--blue-70)",
+  purple: "var(--purple-70)",
+  pink: "var(--pink-70)",
 };
 
 // ─────────────────────────────────────────────
@@ -42,35 +42,35 @@ const styles = {
   wrapper: {
     display: "inline-flex",
     flexDirection: "column",
-    gap: 8,
+    gap: "var(--spacing-sm)",
     width: "100%",
   },
 
   label: {
     display: "inline-flex",
     alignItems: "center",
-    gap: 4,
+    gap: "var(--spacing-xs)",
   },
 
   labelText: {
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-body-caption)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     color: "var(--color-content-primary)",
   },
 
   labelRequired: {
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-body-caption)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     color: "var(--color-content-negative)",
   },
 
   container: {
     display: "flex",
     alignItems: "center",
-    gap: 8,
-    padding: "4px 8px",
+    gap: "var(--spacing-sm)",
+    padding: "var(--spacing-xs) var(--spacing-sm)",
     minHeight: 32,
     background: "var(--color-general-white)",
     borderRadius: "var(--radius-md)",
@@ -110,7 +110,7 @@ const styles = {
     flexWrap: "wrap",
     alignItems: "center",
     alignContent: "center",
-    gap: 8,
+    gap: "var(--spacing-sm)",
   },
 
   chips: {
@@ -118,7 +118,7 @@ const styles = {
     flexWrap: "wrap",
     alignItems: "center",
     alignContent: "center",
-    gap: 8,
+    gap: "var(--spacing-sm)",
   },
 
   input: {
@@ -129,7 +129,7 @@ const styles = {
     background: "transparent",
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-body-md)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     color: "var(--color-content-primary)",
     padding: 0,
   },
@@ -142,7 +142,7 @@ const styles = {
   actions: {
     display: "flex",
     alignItems: "center",
-    gap: 8,
+    gap: "var(--spacing-sm)",
     flexShrink: 0,
   },
 
@@ -176,7 +176,7 @@ const styles = {
   helper: {
     display: "flex",
     alignItems: "flex-start",
-    gap: 4,
+    gap: "var(--spacing-xs)",
   },
 
   helperIcon: {
@@ -249,24 +249,6 @@ const ActionButton = ({ onClick, disabled, ariaLabel, isOpen, children }) => {
 /**
  * ChipInput
  *
- * @param {string} label - Label text above the input
- * @param {boolean} required - Shows required asterisk
- * @param {string} placeholder - Placeholder text when empty
- * @param {array} chips - Array of chip objects: { id, label, color? }
- * @param {function} onChange - Called when chips array changes
- * @param {function} onInputChange - Called when search input changes
- * @param {string} inputValue - Controlled input value
- * @param {boolean} isDisabled - Disables the input
- * @param {boolean} error - Shows error state
- * @param {string} helperText - Helper text below the input
- * @param {boolean} showClear - Shows clear all button
- * @param {boolean} showDropdown - Shows dropdown chevron
- * @param {boolean} isOpen - Dropdown open state (for chevron rotation)
- * @param {function} onClear - Called when clear button clicked
- * @param {function} onDropdownClick - Called when dropdown chevron clicked
- * @param {function} onChipRemove - Called when a chip is removed (receives chip id)
- * @param {function} onKeyDown - Called on input keydown (for Enter handling)
- * @param {object} style - Additional inline styles
  */
 export const ChipInput = forwardRef(
   (

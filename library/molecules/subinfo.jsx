@@ -57,7 +57,7 @@ const styles = {
     color: "var(--color-content-tertiary)",
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-body-md)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     lineHeight: "var(--line-height-body-md)",
   },
 
@@ -73,7 +73,7 @@ const styles = {
     color: "var(--color-content-primary)",
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-body-md)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     lineHeight: "var(--line-height-body-md)",
   },
 
@@ -82,7 +82,7 @@ const styles = {
     color: "var(--color-content-brand)",
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-body-md)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     lineHeight: "var(--line-height-body-md)",
     textDecoration: "none",
     cursor: "pointer",
@@ -119,7 +119,7 @@ const styles = {
     color: "var(--color-action-fill-primary-enabled)",
     fontFamily: "var(--font-family-primary)",
     fontSize: 8,
-    fontWeight: 700,
+    fontWeight: "var(--font-weight-bold)",
     lineHeight: "12px",
     textTransform: "uppercase",
     textAlign: "center",
@@ -154,7 +154,7 @@ const styles = {
     color: "var(--color-content-primary)",
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-body-md)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     lineHeight: "var(--line-height-body-md)",
     whiteSpace: "nowrap",
     overflow: "hidden",
@@ -166,7 +166,7 @@ const styles = {
     color: "var(--color-content-brand)",
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-body-md)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     lineHeight: "var(--line-height-body-md)",
     textDecoration: "none",
     cursor: "pointer",
@@ -212,8 +212,6 @@ const styles = {
  *
  * Small avatar with initials.
  *
- * @param {string} initials - Avatar initials
- * @param {object} style - Additional inline styles
  */
 export const SubinfoAvatar = ({ initials, style }) => {
   return (
@@ -234,13 +232,6 @@ SubinfoAvatar.displayName = "SubinfoAvatar";
  *
  * A single item in a subinfo list.
  *
- * @param {ReactNode} icon - Icon element
- * @param {string} iconName - Icon name to use with Icon component
- * @param {string} href - Link URL
- * @param {function} onClick - Click handler
- * @param {boolean} truncate - Truncate text with ellipsis (default: true)
- * @param {object} style - Additional inline styles
- * @param {ReactNode} children - Item content
  */
 export const SubinfoListItem = ({
   icon,
@@ -295,19 +286,6 @@ SubinfoListItem.displayName = "SubinfoListItem";
  *
  * A flexible info display component for showing various types of data.
  *
- * @param {string} variant - label | value | avatar | list | chips (default: value)
- * @param {boolean} bordered - Show right border (default: true)
- * @param {boolean} fullWidth - Remove max-width constraint
- * @param {string} label - Label text (for label variant)
- * @param {ReactNode} icon - Icon element
- * @param {string} iconName - Icon name to use with Icon component
- * @param {string} href - Makes value a link
- * @param {function} onClick - Click handler for value
- * @param {string} initials - Avatar initials (for avatar variant)
- * @param {array} items - Array of items for list variant
- * @param {number} maxItems - Max items to show before "more" badge (default: 5)
- * @param {ReactNode} children - Content
- * @param {object} style - Additional inline styles
  */
 export const Subinfo = ({
   variant = SUBINFO_VARIANTS.value,

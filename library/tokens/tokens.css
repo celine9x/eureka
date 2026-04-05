@@ -513,9 +513,52 @@
   --shadow-button-light: var(--shadow-light-down);
 
   /* ===========================================
+     COMPATIBILITY ALIASES
+     =========================================== */
+  --color-content-danger: var(--color-content-negative);
+
+  --color-neutral-0: var(--color-general-white);
+  --color-neutral-200: var(--color-action-outline-secondary-enabled);
+  --color-neutral-500: var(--color-content-secondary);
+  --color-outline-neutral: var(--color-action-outline-secondary-enabled);
+
+  --color-general-neutral: var(--color-general-neutral-light);
+  --color-general-neutral-darker: var(--color-general-neutral-dark);
+
+  --font-weight-medium: var(--font-weight-semibold);
+  --text-body-sm: var(--text-body-md);
+  --line-height-body-sm: var(--line-height-body-md);
+
+  --spacing-xxs: 0.125rem;
+  --spacing-1-5: 0.375rem;
+  --spacing-3-5: 0.875rem;
+
+  --shadow-md: var(--shadow-medium-down);
+  --shadow-medium: var(--shadow-medium-down);
+
+  --purple-70: var(--color-accent-purple);
+  --dropdown-list-max-height: 17.5rem;
+
+  /* ===========================================
      TRANSITION
      =========================================== */
   --transition-fast: 150ms ease;
   --transition-normal: 200ms ease;
   --transition-slow: 300ms ease;
+}
+
+/* ===========================================
+   COMPONENT UTILITIES
+   =========================================== */
+
+/* Accordion header - ensure border-radius is applied */
+.accordion-header {
+  border-radius: var(--radius-sm) !important;
+}
+
+.accordion-header[aria-expanded="true"] {
+  border-top-left-radius: var(--radius-sm) !important;
+  border-top-right-radius: var(--radius-sm) !important;
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
 }

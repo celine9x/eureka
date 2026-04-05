@@ -45,16 +45,16 @@ const styles = {
   field: {
     display: "flex",
     flexDirection: "column",
-    gap: 4,
+    gap: "var(--spacing-xs)",
   },
 
   label: {
     display: "flex",
     alignItems: "center",
-    gap: 4,
+    gap: "var(--spacing-xs)",
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-body-md)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     lineHeight: "var(--line-height-body-md)",
     color: "var(--color-content-primary)",
     cursor: "pointer",
@@ -72,10 +72,10 @@ const styles = {
 
   input: {
     width: "100%",
-    padding: "8px 12px",
+    padding: "var(--spacing-sm) var(--spacing-3)",
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-body-lg)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     lineHeight: "var(--line-height-body-lg)",
     color: "var(--color-content-primary)",
     background: "var(--color-interaction-fill-enabled)",
@@ -102,7 +102,7 @@ const styles = {
 
   inputErrorFocus: {
     outlineColor: "var(--color-interaction-outline-negative)",
-    boxShadow: "0 0 0.25rem 0 rgba(255, 115, 115, 0.4)",
+    boxShadow: "var(--shadow-focus)",
   },
 
   inputSuccess: {
@@ -111,7 +111,7 @@ const styles = {
 
   inputSuccessFocus: {
     outlineColor: "var(--color-content-positive)",
-    boxShadow: "0 0 0.25rem 0 rgba(115, 229, 172, 0.4)",
+    boxShadow: "var(--shadow-focus)",
   },
 
   inputDisabled: {
@@ -128,7 +128,7 @@ const styles = {
   helper: {
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-body-md)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     lineHeight: "var(--line-height-body-md)",
   },
 
@@ -152,10 +152,6 @@ const styles = {
 /**
  * Label
  *
- * @param {string} htmlFor - Input id to link
- * @param {boolean} required - Shows * indicator
- * @param {ReactNode} children - Label text
- * @param {object} style - Additional inline styles
  */
 export const Label = ({ htmlFor, required = false, style, children, ...props }) => {
   const labelStyle = {
@@ -180,9 +176,6 @@ Label.displayName = "Label";
 /**
  * HelperText
  *
- * @param {string} variant - default | error | success (default: default)
- * @param {ReactNode} children - Helper text
- * @param {object} style - Additional inline styles
  */
 export const HelperText = ({
   variant = HELPER_VARIANTS.default,
@@ -213,13 +206,6 @@ HelperText.variants = HELPER_VARIANTS;
 /**
  * Input
  *
- * @param {string} type - text | email | password | number | tel | url (default: text)
- * @param {string} state - default | error | success (default: default)
- * @param {boolean} isDisabled - Disables the input
- * @param {boolean} isReadOnly - Makes input read-only
- * @param {string} value - Input value
- * @param {function} onChange - Change handler
- * @param {object} style - Additional inline styles
  */
 export const Input = forwardRef(
   (
@@ -285,22 +271,6 @@ Input.states = INPUT_STATES;
  *
  * A complete text input field with label and helper text.
  *
- * @param {string} type - text | email | password | number | tel | url (default: text)
- * @param {string} label - Label text above input
- * @param {string} placeholder - Placeholder text
- * @param {string} value - Input value
- * @param {string} helper - Helper text below input
- * @param {string} error - Error message (triggers error state)
- * @param {string} success - Success message (triggers success state)
- * @param {boolean} isDisabled - Disables the input
- * @param {boolean} isRequired - Shows required indicator
- * @param {boolean} isReadOnly - Makes input read-only
- * @param {string} name - Input name for forms
- * @param {string} id - Input id
- * @param {function} onChange - Change handler
- * @param {function} onFocus - Focus handler
- * @param {function} onBlur - Blur handler
- * @param {object} style - Additional inline styles
  */
 export const TextInput = forwardRef(
   (

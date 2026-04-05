@@ -33,3 +33,6 @@ export {
 
 // Portal and focus management
 export { Portal, useFocusTrap, useScrollLock } from "./portal.jsx";
+
+// Preview/Demo utilities
+export { PreviewComponent } from "./preview-component.jsx";

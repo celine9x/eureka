@@ -102,7 +102,7 @@ const styles = {
 
   sizes: {
     sm: {
-      wrapper: { gap: 8 },
+      wrapper: { gap: "var(--spacing-sm)" },
       control: { width: 16, height: 16 },
       icon: { width: 10, height: 10 },
       label: {
@@ -111,7 +111,7 @@ const styles = {
       },
     },
     md: {
-      wrapper: { gap: 12 },
+      wrapper: { gap: "var(--spacing-3)" },
       control: { width: 20, height: 20 },
       icon: { width: 12, height: 12 },
       label: {
@@ -126,19 +126,7 @@ const styles = {
 // COMPONENT
 // ─────────────────────────────────────────────
 
-/**
- * Checkbox
- *
- * @param {string} size - sm | md (default: sm)
- * @param {boolean} isSelected - Controlled selected state
- * @param {boolean} defaultSelected - Uncontrolled initial selected state
- * @param {boolean} isDisabled - Disables the checkbox
- * @param {string} value - Value of the checkbox
- * @param {string} name - Name attribute for form submission
- * @param {function} onChange - Called when selected state changes
- * @param {ReactNode} children - Label content
- * @param {object} style - Additional inline styles
- */
+/** Checkbox */
 export const Checkbox = ({
   size = CHECKBOX_SIZES.sm,
   isSelected,

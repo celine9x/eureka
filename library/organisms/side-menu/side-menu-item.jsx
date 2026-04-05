@@ -11,6 +11,7 @@
  */
 
 import { useState } from "react";
+import { Badge } from "../../atoms/badge.jsx";
 import { Icon } from "../../atoms/icon.jsx";
 
 // ─────────────────────────────────────────────
@@ -33,18 +34,18 @@ const styles = {
     alignSelf: "stretch",
     alignItems: "center",
     justifyContent: "flex-start",
-    gap: 8,
-    paddingTop: 8,
-    paddingBottom: 8,
-    paddingLeft: 32,
-    paddingRight: 8,
+    gap: "var(--spacing-2)",
+    paddingTop: "var(--spacing-2)",
+    paddingBottom: "var(--spacing-2)",
+    paddingLeft: "var(--spacing-8)",
+    paddingRight: "var(--spacing-2)",
     border: "none",
     background: "transparent",
     cursor: "pointer",
     fontFamily: "var(--font-family-primary)",
-    fontWeight: 400,
-    fontSize: 12,
-    lineHeight: "16px",
+    fontWeight: "var(--font-weight-regular)",
+    fontSize: "var(--text-body-md)",
+    lineHeight: "var(--line-height-body-md)",
     textAlign: "left",
     boxSizing: "border-box",
     transition: "all var(--transition-fast)",
@@ -54,8 +55,8 @@ const styles = {
 
   // Collapsed state (icon only)
   collapsed: {
-    paddingLeft: 32,
-    paddingRight: 8,
+    paddingLeft: "var(--spacing-8)",
+    paddingRight: "var(--spacing-2)",
   },
 
   // State-specific styles
@@ -74,8 +75,8 @@ const styles = {
     hover: {
       item: {
         background: "var(--color-general-neutral-lighter)",
-        borderTopRightRadius: 8,
-        borderBottomRightRadius: 8,
+        borderTopRightRadius: "var(--radius-sm)",
+        borderBottomRightRadius: "var(--radius-sm)",
       },
       icon: {
         color: "var(--color-content-secondary)",
@@ -87,10 +88,10 @@ const styles = {
     active: {
       item: {
         background: "var(--color-general-informative)",
-        borderTopRightRadius: 8,
-        borderBottomRightRadius: 8,
+        borderTopRightRadius: "var(--radius-sm)",
+        borderBottomRightRadius: "var(--radius-sm)",
         borderLeft: "2px solid var(--color-action-fill-primary-enabled)",
-        paddingLeft: 30, // 32 - 2 for border
+        paddingLeft: "calc(var(--spacing-8) - 2px)",
       },
       icon: {
         color: "var(--color-action-fill-primary-enabled)",
@@ -106,7 +107,7 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "flex-end",
-    gap: 8,
+    gap: "var(--spacing-2)",
   },
 
   // Icon styles
@@ -115,8 +116,8 @@ const styles = {
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
-    width: 16,
-    height: 16,
+    width: "var(--size-icon-sm)",
+    height: "var(--size-icon-sm)",
     position: "relative",
     overflow: "hidden",
   },
@@ -129,39 +130,11 @@ const styles = {
     wordWrap: "break-word",
   },
 
-  // Badge styles (inline, not using Badge atom for exact Figma match)
-  badge: {
-    base: {
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "flex-start",
-      gap: 4,
-      paddingLeft: 4,
-      paddingRight: 4,
-      borderRadius: 4,
-      fontFamily: "var(--font-family-primary)",
-      fontSize: 9,
-      fontWeight: 400,
-      lineHeight: "12px",
-      wordWrap: "break-word",
-    },
-    enabled: {
-      background: "var(--color-general-neutral-lighter)",
-      outline: "1px solid var(--color-action-outline-secondary-enabled)",
-      outlineOffset: "-1px",
-      color: "var(--color-content-secondary)",
-    },
-    active: {
-      background: "var(--color-action-fill-primary-enabled)",
-      color: "var(--color-general-white)",
-    },
-  },
-
   // Custom icon element (colored square for initiatives)
   customIcon: {
-    width: 16,
-    height: 16,
-    borderRadius: 4,
+    width: "var(--size-icon-sm)",
+    height: "var(--size-icon-sm)",
+    borderRadius: "var(--radius-xs)",
     display: "inline-flex",
     flexDirection: "column",
     justifyContent: "center",
@@ -176,11 +149,11 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     color: "var(--color-general-white)",
-    fontSize: 8,
+    fontSize: "var(--text-body-caption)",
     fontFamily: "var(--font-family-primary)",
-    fontWeight: 700,
+    fontWeight: "var(--font-weight-bold)",
     textTransform: "uppercase",
-    lineHeight: "12px",
+    lineHeight: "var(--line-height-body-caption)",
     wordWrap: "break-word",
   },
 };
@@ -192,19 +165,6 @@ const styles = {
 /**
  * SideMenuItem
  *
- * @param {string} state - enabled | hover | active (default: enabled)
- * @param {boolean} showIcon - Show icon (default: true)
- * @param {boolean} showLabel - Show label (default: true)
- * @param {boolean} showBadge - Show badge (default: false)
- * @param {ReactNode} icon - Custom icon element
- * @param {string} iconName - Icon name for heroicons
- * @param {string} iconVariant - Icon variant: "outline" | "solid" (default: based on state)
- * @param {string} iconColor - Custom icon background color (for initiative items)
- * @param {string} iconLetter - Single letter to display in custom colored icon
- * @param {string} label - Menu item label text
- * @param {string} badgeLabel - Badge label text
- * @param {function} onClick - Click handler
- * @param {object} style - Additional inline styles
  */
 export const SideMenuItem = ({
   state = SIDE_MENU_ITEM_STATES.enabled,
@@ -249,12 +209,6 @@ export const SideMenuItem = ({
   const labelStyle = {
     ...styles.label,
     color: stateStyles.label.color,
-  };
-
-  // Badge styles based on state
-  const badgeStyle = {
-    ...styles.badge.base,
-    ...(state === "active" ? styles.badge.active : styles.badge.enabled),
   };
 
   // Render custom colored icon (for initiatives)
@@ -304,9 +258,13 @@ export const SideMenuItem = ({
     if (!showBadge || !badgeLabel) return null;
 
     return (
-      <div style={badgeStyle}>
-        <div>{badgeLabel}</div>
-      </div>
+      <Badge
+        size="xs"
+        shape="rounded"
+        color={state === "active" ? "brand" : "neutral"}
+      >
+        {badgeLabel}
+      </Badge>
     );
   };
 
@@ -314,6 +272,7 @@ export const SideMenuItem = ({
     <button
       type="button"
       style={itemStyle}
+      aria-current={state === SIDE_MENU_ITEM_STATES.active ? "page" : undefined}
       onClick={onClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}

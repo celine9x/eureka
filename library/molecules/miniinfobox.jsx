@@ -40,10 +40,10 @@ const styles = {
   base: {
     display: "inline-flex",
     alignItems: "center",
-    gap: 4,
+    gap: "var(--spacing-xs)",
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-body-md)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     color: "var(--color-content-secondary)",
   },
 
@@ -97,8 +97,8 @@ const AIGradientIcon = () => (
   >
     <defs>
       <linearGradient id="miniinfobox-ai-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%" stopColor="#4649FF" />
-        <stop offset="100%" stopColor="#0EDDA5" />
+        <stop offset="0%" stopColor="var(--blue-60)" />
+        <stop offset="100%" stopColor="var(--green-50)" />
       </linearGradient>
     </defs>
     <path
@@ -123,11 +123,6 @@ const AIGradientIcon = () => (
 /**
  * MiniInfobox
  *
- * @param {string} variant - success | warning | error | info | neutral | ai (default: "info")
- * @param {string} message - The message text to display (required)
- * @param {ReactNode} icon - Custom icon to override the default variant icon
- * @param {string} iconName - Custom icon name to use instead of variant default
- * @param {object} style - Additional inline styles
  *
  * @example
  * <MiniInfobox variant="success" message="Operation completed successfully" />

@@ -43,8 +43,8 @@ const styles = {
   base: {
     display: "flex",
     alignItems: "center",
-    gap: 8,
-    padding: 16,
+    gap: "var(--spacing-sm)",
+    padding: "var(--spacing-lg)",
     borderRadius: "var(--radius-md)",
     width: "100%",
     boxSizing: "border-box",
@@ -52,13 +52,13 @@ const styles = {
 
   variants: {
     success: {
-      background: "rgba(115, 229, 172, 0.15)",
+      background: "var(--color-general-positive)",
     },
     warning: {
-      background: "rgba(255, 199, 0, 0.2)",
+      background: "var(--color-general-warning)",
     },
     error: {
-      background: "rgba(255, 115, 115, 0.2)",
+      background: "var(--color-general-negative)",
     },
     info: {
       background: "var(--color-general-informative)",
@@ -90,13 +90,13 @@ const styles = {
     flex: 1,
     display: "flex",
     flexDirection: "column",
-    gap: 4,
+    gap: "var(--spacing-xs)",
   },
 
   header: {
     display: "flex",
     alignItems: "center",
-    gap: 8,
+    gap: "var(--spacing-sm)",
   },
 
   icon: {
@@ -110,7 +110,7 @@ const styles = {
     flex: 1,
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-body-md)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     color: "var(--color-content-primary)",
   },
 
@@ -118,7 +118,7 @@ const styles = {
     paddingLeft: 28,
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-body-md)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     color: "var(--color-content-secondary)",
   },
 };
@@ -130,13 +130,6 @@ const styles = {
 /**
  * Infobox
  *
- * @param {string} variant - success | warning | error | info | neutral (default: "info")
- * @param {string} title - The title text displayed in the infobox (required)
- * @param {string} description - Optional description text below the title
- * @param {string} actionLabel - Label for the action button (optional)
- * @param {function} onAction - Callback function when action button is clicked
- * @param {ReactNode} icon - Custom icon to override the default variant icon
- * @param {object} style - Additional inline styles
  */
 export const Infobox = ({
   variant = INFOBOX_VARIANTS.info,

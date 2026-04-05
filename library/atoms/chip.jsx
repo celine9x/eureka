@@ -7,7 +7,7 @@
  * @example
  * <Chip>Label</Chip>
  * <Chip variant="negative">Error</Chip>
- * <Chip color="#4649FF" icon={<Icon name="Star" />} chevron removable>Neurology</Chip>
+ * <Chip color="var(--color-content-brand)" icon={<Icon name="Star" />} chevron removable>Neurology</Chip>
  */
 
 import { useState } from "react";
@@ -73,7 +73,7 @@ const styles = {
   },
 
   label: {
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     whiteSpace: "nowrap",
   },
 
@@ -162,7 +162,7 @@ const styles = {
 
   sizes: {
     sm: {
-      base: { padding: 2, gap: 2 },
+      base: { padding: "var(--spacing-xxs)", gap: "var(--spacing-xxs)" },
       label: {
         fontSize: "var(--text-body-caption)",
         lineHeight: "var(--line-height-body-caption)",
@@ -171,7 +171,7 @@ const styles = {
       colorRect: { height: 10 },
     },
     md: {
-      base: { padding: 4, gap: 4 },
+      base: { padding: "var(--spacing-xs)", gap: "var(--spacing-xs)" },
       label: {
         fontSize: "var(--text-body-md)",
         lineHeight: "var(--line-height-body-md)",
@@ -186,21 +186,7 @@ const styles = {
 // COMPONENT
 // ─────────────────────────────────────────────
 
-/**
- * Chip
- *
- * @param {string} variant - neutral | primary | positive | negative | warning | blue | cyan | pink | brown
- * @param {string} size - sm | md (default: md)
- * @param {string} color - CSS color string for the accent rectangle on the left
- * @param {ReactNode} icon - Icon element to display on the left
- * @param {boolean} chevron - Shows a chevron-down icon on the right
- * @param {boolean} removable - Shows a remove (x) button on the right
- * @param {boolean} isDisabled - Disables interactions
- * @param {function} onRemove - Called when remove button is clicked
- * @param {function} onChevronClick - Called when chevron is clicked
- * @param {ReactNode} children - Label text
- * @param {object} style - Additional inline styles
- */
+/** Chip */
 export const Chip = ({
   variant = CHIP_VARIANTS.neutral,
   size = CHIP_SIZES.md,

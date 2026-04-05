@@ -140,18 +140,6 @@ const styles = {
 /**
  * Search
  *
- * @param {string} size - sm | md | lg (default: md)
- * @param {string} placeholder - Placeholder text (default: "Search...")
- * @param {string} value - Controlled value
- * @param {string} defaultValue - Uncontrolled default value
- * @param {boolean} isDisabled - Disable the input
- * @param {boolean} showClear - Show clear button when value exists (default: true)
- * @param {boolean} collapsed - Show collapsed icon-only mode
- * @param {function} onChange - Change handler (receives value string)
- * @param {function} onClear - Clear button click handler
- * @param {function} onSubmit - Submit handler (Enter key)
- * @param {function} onClick - Click handler
- * @param {object} style - Additional inline styles
  */
 export const Search = forwardRef(
   (

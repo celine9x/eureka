@@ -18,9 +18,9 @@
 
 import { useState } from "react";
 import { Icon } from "../../atoms/icon.jsx";
+import { Search } from "../../molecules/search.jsx";
 import { SideMenuItem } from "./side-menu-item.jsx";
 import { UserButton } from "./user-button.jsx";
-import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
 
 // ─────────────────────────────────────────────
 // CONSTANTS
@@ -93,6 +93,8 @@ const styles = {
     gap: 16,
     overflowY: "auto",
     overflowX: "hidden",
+    scrollbarWidth: "none",
+    msOverflowStyle: "none",
     minHeight: 0,
   },
 
@@ -192,10 +194,10 @@ const styles = {
   searchPlaceholder: {
     flex: 1,
     color: "var(--color-content-secondary)",
-    fontSize: 12,
+    fontSize: "var(--text-body-md)",
     fontFamily: "var(--font-family-primary)",
-    fontWeight: 400,
-    lineHeight: "16px",
+    fontWeight: "var(--font-weight-regular)",
+    lineHeight: "var(--line-height-body-md)",
     wordWrap: "break-word",
   },
 
@@ -227,11 +229,11 @@ const styles = {
 
   sectionTitle: {
     color: "var(--color-content-secondary)",
-    fontSize: 10,
+    fontSize: "var(--text-body-overline)",
     fontFamily: "var(--font-family-primary)",
-    fontWeight: 600,
+    fontWeight: "var(--font-weight-semibold)",
     textTransform: "uppercase",
-    lineHeight: "12px",
+    lineHeight: "var(--line-height-body-overline)",
     wordWrap: "break-word",
   },
 
@@ -291,8 +293,8 @@ const styles = {
     paddingLeft: 8,
     paddingRight: 8,
     background: "var(--color-action-fill-primary-enabled)",
-    boxShadow: "0px 1px 1px rgba(83, 113, 172, 0.15), 0px 1px 3px rgba(83, 113, 172, 0.20)",
-    borderRadius: 8,
+    boxShadow: "var(--shadow-button-enabled)",
+    borderRadius: "var(--radius-sm)",
     display: "inline-flex",
     justifyContent: "flex-start",
     alignItems: "center",
@@ -317,10 +319,10 @@ const styles = {
 
   createButtonLabel: {
     color: "var(--color-general-white)",
-    fontSize: 12,
+    fontSize: "var(--text-body-md)",
     fontFamily: "var(--font-family-primary)",
-    fontWeight: 400,
-    lineHeight: "16px",
+    fontWeight: "var(--font-weight-regular)",
+    lineHeight: "var(--line-height-body-md)",
     wordWrap: "break-word",
   },
 
@@ -349,20 +351,6 @@ const styles = {
 /**
  * SideMenu
  *
- * @param {string} variant - expanded | collapsed (default: collapsed)
- * @param {boolean} expandOnHover - Expand menu on hover (default: true)
- * @param {ReactNode} logo - Logo element or image
- * @param {string} logoSrc - Logo image URL (alternative to logo prop)
- * @param {string} logoAlt - Logo alt text
- * @param {boolean} showSearch - Show search input (default: true)
- * @param {string} searchPlaceholder - Search placeholder text (default: "Quick search")
- * @param {function} onSearchClick - Search click handler
- * @param {Array} sections - Array of section objects with title and items
- * @param {string} createButtonLabel - Create button label (default: "Create")
- * @param {function} onCreateClick - Create button click handler
- * @param {object} user - User object with name, email, avatarSrc
- * @param {function} onUserClick - User button click handler
- * @param {object} style - Additional inline styles
  */
 export const SideMenu = ({
   variant = SIDE_MENU_VARIANTS.collapsed,
@@ -372,6 +360,8 @@ export const SideMenu = ({
   logoAlt = "Logo",
   showSearch = true,
   searchPlaceholder = "Quick search",
+  searchValue,
+  onSearchChange,
   onSearchClick,
   sections = [],
   createButtonLabel = "Create",
@@ -382,7 +372,6 @@ export const SideMenu = ({
   ...props
 }) => {
   const [isHovered, setIsHovered] = useState(false);
-  const [searchHovered, setSearchHovered] = useState(false);
   const [createHovered, setCreateHovered] = useState(false);
 
   // Determine if collapsed based on variant and hover state
@@ -415,12 +404,6 @@ export const SideMenu = ({
     ...(isCollapsed && styles.userWrapperCollapsed),
   };
 
-  // Search input styles
-  const searchInputStyle = {
-    ...styles.searchInput,
-    ...(searchHovered && styles.searchInputHover),
-  };
-
   // Create button styles
   const createButtonStyle = {
     ...styles.createButton,
@@ -448,25 +431,18 @@ export const SideMenu = ({
   // Render search
   const renderSearch = () => {
     if (!showSearch) return null;
-
     return (
       <div style={styles.searchWrapper}>
-        <button
-          type="button"
-          style={searchInputStyle}
-          onClick={onSearchClick}
-          onMouseEnter={() => setSearchHovered(true)}
-          onMouseLeave={() => setSearchHovered(false)}
-        >
-          <div style={styles.searchContent}>
-            <span style={styles.searchIcon}>
-              <MagnifyingGlassIcon style={{ width: 16, height: 16 }} />
-            </span>
-            {!isCollapsed && (
-              <span style={styles.searchPlaceholder}>{searchPlaceholder}</span>
-            )}
-          </div>
-        </button>
+        <Search
+          size="md"
+          collapsed={isCollapsed}
+          placeholder={searchPlaceholder}
+          value={onSearchChange ? (searchValue || "") : undefined}
+          onChange={onSearchChange}
+          onClick={!onSearchChange ? onSearchClick : undefined}
+          showClear={Boolean(onSearchChange) && !isCollapsed}
+          aria-label={searchPlaceholder}
+        />
       </div>
     );
   };
@@ -582,7 +558,7 @@ export const SideMenu = ({
         </div>
 
         {/* Scrollable Menu Sections */}
-        <div style={styles.scrollableArea}>
+        <div className="side-menu-scrollable" style={styles.scrollableArea}>
           {renderSections()}
         </div>
       </div>

@@ -4,14 +4,6 @@
  * A tab navigation component with optional badges and icons.
  * Uses inline styles with CSS variables from tokens.css for consistent styling.
  *
- * Token Mapping (from Figma):
- * - Grey50 (#5371AC) → --color-content-secondary
- * - Grey30 (#324467) → --color-action-content-secondary-hover
- * - Grey90 (#D9E0ED) → --color-action-outline-secondary-enabled
- * - Grey98 (#F8F9FC) → --color-general-neutral-lighter
- * - Grey100 (white) → --color-general-white
- * - Blue60 (#4649FF) → --color-content-brand
- *
  * @example
  * <Tabs selectedKey={tab} onSelectionChange={setTab}>
  *   <Tab id="overview">Overview</Tab>
@@ -43,7 +35,7 @@ const styles = {
     flexDirection: "column",
     justifyContent: "center",
     alignItems: "flex-start",
-    gap: 8,
+    gap: "var(--spacing-sm)",
   },
 
   // Tab list with 24px gap
@@ -51,7 +43,7 @@ const styles = {
     display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",
-    gap: 24,
+    gap: "var(--spacing-6)",
     height: 36,
     overflowX: "auto",
     scrollbarWidth: "none",
@@ -68,7 +60,7 @@ const styles = {
     position: "absolute",
     right: 0,
     top: 0,
-    background: "linear-gradient(90deg, rgba(239, 242, 249, 0) 0%, var(--color-general-neutral-light) 100%)",
+    background: "linear-gradient(90deg, transparent 0%, var(--color-general-neutral-light) 100%)",
     display: "inline-flex",
     justifyContent: "flex-end",
     alignItems: "center",
@@ -97,11 +89,17 @@ const styles = {
 
   // Tab button base styles
   tab: {
-    display: "flex",
+    display: "inline-flex",
     alignItems: "center",
     justifyContent: "flex-start",
-    gap: 8,
-    paddingBottom: 8,
+    gap: "var(--spacing-sm)",
+    paddingBottom: "var(--spacing-sm)",
+    paddingTop: 0,
+    paddingLeft: 0,
+    paddingRight: 0,
+    borderTop: "none",
+    borderLeft: "none",
+    borderRight: "none",
     borderBottom: "2px solid transparent",
     cursor: "pointer",
     userSelect: "none",
@@ -109,7 +107,6 @@ const styles = {
     transition: "border-color var(--transition-fast)",
     outline: "none",
     background: "transparent",
-    border: "none",
     borderRadius: 0,
     fontFamily: "var(--font-family-primary)",
   },
@@ -119,9 +116,9 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "flex-start",
-    gap: 8,
-    padding: 4,
-    borderRadius: 8,
+    gap: "var(--spacing-sm)",
+    padding: "var(--spacing-xs)",
+    borderRadius: "var(--radius-sm)",
     transition: "background var(--transition-fast)",
   },
 
@@ -162,9 +159,9 @@ const styles = {
     color: "var(--color-content-brand)",
   },
 
-  // Tab selected border (Blue60)
+  // Tab selected border
   tabSelected: {
-    borderBottomColor: "var(--color-content-brand)",
+    borderBottom: "2px solid var(--color-content-brand)",
   },
 
   // Tab disabled state
@@ -173,17 +170,17 @@ const styles = {
     opacity: 0.5,
   },
 
-  // Badge base styles
+  // Badge base styles (from Figma: borderRadius 4px, padding 4px horizontal, 2px vertical)
   badge: {
     display: "flex",
     alignItems: "center",
     justifyContent: "flex-start",
-    gap: 4,
-    paddingTop: 2,
-    paddingBottom: 2,
-    paddingLeft: 4,
-    paddingRight: 4,
-    borderRadius: "var(--radius-sm)",
+    gap: "var(--spacing-xs)",
+    paddingTop: "var(--spacing-xxs)",
+    paddingBottom: "var(--spacing-xxs)",
+    paddingLeft: "var(--spacing-xs)",
+    paddingRight: "var(--spacing-xs)",
+    borderRadius: "var(--radius-xs)",
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-body-md)",
     fontWeight: "var(--font-weight-regular)",
@@ -197,7 +194,7 @@ const styles = {
     background: "var(--color-general-neutral-lighter)",
     color: "var(--color-content-secondary)",
     outline: "1px solid var(--color-action-outline-secondary-enabled)",
-    outlineOffset: -1,
+    outlineOffset: "-1px",
   },
 
   // Badge active state (Blue60 background, white text, no outline)
@@ -209,7 +206,7 @@ const styles = {
 
   // Tab panel
   panel: {
-    padding: "16px 0",
+    padding: "var(--spacing-4) 0",
   },
 };
 
@@ -222,12 +219,6 @@ const styles = {
  *
  * A single tab item within a Tabs container.
  *
- * @param {string} id - Unique identifier for this tab
- * @param {boolean} isDisabled - Disables the tab
- * @param {ReactNode} icon - Icon element to display before the label
- * @param {string|number} badge - Badge content (e.g., count)
- * @param {ReactNode} children - Tab label text
- * @param {object} style - Additional inline styles
  */
 export const Tab = ({
   id,
@@ -332,12 +323,6 @@ Tab.displayName = "Tab";
  *
  * A tab navigation container that manages active state.
  *
- * @param {string} selectedKey - Currently active tab key
- * @param {string} defaultSelectedKey - Initial selected key (uncontrolled)
- * @param {function} onSelectionChange - Called with new tab key when selection changes
- * @param {boolean} showOverflow - Show overflow indicator when tabs overflow (default: true)
- * @param {ReactNode} children - Tab components
- * @param {object} style - Additional inline styles
  */
 export const Tabs = ({
   selectedKey,
@@ -440,9 +425,6 @@ Tabs.displayName = "Tabs";
  *
  * Content panel that displays when its associated tab is active.
  *
- * @param {string} id - Tab id this panel is associated with
- * @param {ReactNode} children - Panel content
- * @param {object} style - Additional inline styles
  */
 export const TabPanel = ({ id, style, children, ...props }) => {
   const context = useContext(TabsContext);

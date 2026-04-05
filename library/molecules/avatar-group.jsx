@@ -54,7 +54,7 @@ const styles = {
     outline: "1px solid var(--color-action-outline-secondary-enabled)",
     outlineOffset: "-1px",
     fontFamily: "var(--font-family-primary)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     color: "var(--color-content-secondary)",
     whiteSpace: "nowrap",
     marginLeft: -4,
@@ -93,13 +93,6 @@ const styles = {
  *
  * A stacked group of avatars with optional overflow indicator.
  *
- * @param {string} size - sm | md | lg | xl (default: md)
- * @param {array} avatars - Array of avatar objects: [{ initials?, name?, src?, alt? }]
- * @param {number} max - Maximum avatars to show before overflow (default: 4)
- * @param {boolean} showOverflow - Show overflow badge when exceeding max (default: true)
- * @param {function} onOverflowClick - Called when overflow badge is clicked
- * @param {ReactNode} children - Alternative to avatars prop (Avatar components)
- * @param {object} style - Additional inline styles
  */
 export const AvatarGroup = ({
   size = AVATAR_SIZES.md,

@@ -93,7 +93,7 @@ const styles = {
   footerText: {
     fontFamily: "var(--font-family-primary)",
     fontSize: 9,
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     lineHeight: "12px",
     color: "var(--color-content-secondary)",
   },
@@ -152,9 +152,6 @@ const DropdownMenuContext = createContext(null);
  *
  * A section within the dropdown menu, visually separated by dividers.
  *
- * @param {ReactNode} children - Section content
- * @param {boolean} showDivider - Show top border divider
- * @param {object} style - Additional inline styles
  */
 export const DropdownMenuSection = ({ children, showDivider = false, style }) => {
   const sectionStyle = {
@@ -181,8 +178,6 @@ DropdownMenuSection.displayName = "DropdownMenuSection";
  *
  * Footer section with background, typically for version info or secondary actions.
  *
- * @param {ReactNode} children - Footer content
- * @param {object} style - Additional inline styles
  */
 export const DropdownMenuFooter = ({ children, style }) => {
   const footerStyle = {
@@ -212,12 +207,6 @@ DropdownMenuFooter.displayName = "DropdownMenuFooter";
  *
  * The menu panel that appears when dropdown is open.
  *
- * @param {ReactNode} children - Menu content
- * @param {string} position - top | bottom (default: bottom)
- * @param {string} align - left | right | center (default: left)
- * @param {string|number} width - Custom width
- * @param {boolean} animated - Enable animation (default: true)
- * @param {object} style - Additional inline styles
  */
 export const DropdownMenuContent = ({
   children,
@@ -343,11 +332,6 @@ DropdownMenuTrigger.displayName = "DropdownMenuTrigger";
  *
  * Root component that manages dropdown state.
  *
- * @param {boolean} open - Controlled open state
- * @param {boolean} defaultOpen - Default open state
- * @param {function} onOpenChange - Called when open state changes
- * @param {boolean} closeOnSelect - Close menu when item is selected
- * @param {boolean} closeOnClickOutside - Close menu when clicking outside
  *
  * @example
  * <DropdownMenu>

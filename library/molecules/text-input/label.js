@@ -44,17 +44,17 @@ class ELabel extends HTMLElement {
         label {
           display: flex;
           align-items: center;
-          gap: var(--spacing-1, 0.25rem);
-          font-family: var(--font-family-primary, 'Sora', sans-serif);
-          font-size: var(--text-body-md, 0.75rem);
-          font-weight: var(--font-weight-highlight-md, 600);
-          line-height: var(--line-height-body-md, 1rem);
-          color: var(--color-content-primary, #15154C);
+          gap: var(--spacing-1);
+          font-family: var(--font-family-primary);
+          font-size: var(--text-body-md);
+          font-weight: var(--font-weight-highlight-md);
+          line-height: var(--line-height-body-md);
+          color: var(--color-content-primary);
           cursor: pointer;
         }
 
         .required {
-          color: var(--color-content-negative, #FF7373);
+          color: var(--color-content-negative);
         }
       </style>
     `;

@@ -37,17 +37,17 @@ const styles = {
   field: {
     display: "flex",
     flexDirection: "column",
-    gap: 4,
+    gap: "var(--spacing-xs)",
     width: "100%",
   },
 
   label: {
     display: "flex",
     alignItems: "center",
-    gap: 4,
+    gap: "var(--spacing-xs)",
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-body-md)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     lineHeight: "var(--line-height-body-md)",
     color: "var(--color-content-primary)",
     cursor: "pointer",
@@ -65,10 +65,10 @@ const styles = {
   textarea: {
     width: "100%",
     minHeight: 64,
-    padding: "6px 6px",
+    padding: "var(--spacing-xs) var(--spacing-xs)",
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-body-lg)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     lineHeight: "var(--line-height-body-lg)",
     color: "var(--color-content-primary)",
     background: "var(--color-interaction-fill-enabled)",
@@ -98,7 +98,7 @@ const styles = {
 
   textareaErrorFocus: {
     outlineColor: "var(--color-interaction-outline-negative)",
-    boxShadow: "0 0 0.25rem 0 rgba(255, 115, 115, 0.4)",
+    boxShadow: "var(--shadow-focus)",
   },
 
   textareaSuccess: {
@@ -107,7 +107,7 @@ const styles = {
 
   textareaSuccessFocus: {
     outlineColor: "var(--color-content-positive)",
-    boxShadow: "0 0 0.25rem 0 rgba(115, 229, 172, 0.4)",
+    boxShadow: "var(--shadow-focus)",
   },
 
   textareaDisabled: {
@@ -124,8 +124,8 @@ const styles = {
 
   resizeHandle: {
     position: "absolute",
-    right: 6,
-    bottom: 6,
+    right: "var(--spacing-xs)",
+    bottom: "var(--spacing-xs)",
     width: 6,
     height: 6,
     pointerEvents: "none",
@@ -135,10 +135,10 @@ const styles = {
   helper: {
     display: "flex",
     alignItems: "flex-start",
-    gap: 4,
+    gap: "var(--spacing-xs)",
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-body-md)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     lineHeight: "var(--line-height-body-md)",
   },
 
@@ -181,10 +181,6 @@ const styles = {
 /**
  * TextareaLabel
  *
- * @param {string} htmlFor - Textarea id to link
- * @param {boolean} required - Shows * indicator
- * @param {ReactNode} children - Label text
- * @param {object} style - Additional inline styles
  */
 export const TextareaLabel = ({ htmlFor, required = false, style, children, ...props }) => {
   const labelStyle = {
@@ -209,10 +205,6 @@ TextareaLabel.displayName = "TextareaLabel";
 /**
  * TextareaHelperText
  *
- * @param {string} variant - default | error | success (default: default)
- * @param {boolean} showIcon - Show helper icon (default: true)
- * @param {ReactNode} children - Helper text
- * @param {object} style - Additional inline styles
  */
 export const TextareaHelperText = ({
   variant = HELPER_VARIANTS.default,
@@ -256,14 +248,6 @@ TextareaHelperText.variants = HELPER_VARIANTS;
 /**
  * TextareaField
  *
- * @param {string} state - default | error | success (default: default)
- * @param {string} value - Textarea value
- * @param {number} rows - Number of visible text lines (default: 3)
- * @param {boolean} resizable - Allow resize (default: true)
- * @param {boolean} isDisabled - Disables the textarea
- * @param {boolean} isReadOnly - Makes textarea read-only
- * @param {function} onChange - Change handler
- * @param {object} style - Additional inline styles
  */
 export const TextareaField = forwardRef(
   (
@@ -339,23 +323,6 @@ TextareaField.states = TEXTAREA_STATES;
  *
  * A complete textarea field with label and helper text.
  *
- * @param {string} label - Label text above textarea
- * @param {string} placeholder - Placeholder text
- * @param {string} value - Textarea value
- * @param {string} helper - Helper text below textarea
- * @param {string} error - Error message (triggers error state)
- * @param {string} success - Success message (triggers success state)
- * @param {boolean} isDisabled - Disables the textarea
- * @param {boolean} isRequired - Shows required indicator
- * @param {boolean} isReadOnly - Makes textarea read-only
- * @param {boolean} resizable - Allow resize (default: true)
- * @param {number} rows - Number of visible text lines (default: 3)
- * @param {string} name - Textarea name for forms
- * @param {number} maxLength - Maximum character length
- * @param {function} onChange - Change handler
- * @param {function} onFocus - Focus handler
- * @param {function} onBlur - Blur handler
- * @param {object} style - Additional inline styles
  */
 export const Textarea = forwardRef(
   (

@@ -84,7 +84,7 @@ const styles = {
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-body-md)",
     lineHeight: "var(--line-height-body-md)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     color: "var(--color-content-primary)",
   },
 
@@ -92,7 +92,7 @@ const styles = {
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-body-md)",
     lineHeight: "var(--line-height-body-md)",
-    fontWeight: 400,
+    fontWeight: "var(--font-weight-regular)",
     color: "var(--color-content-secondary)",
     padding: 4,
     borderRadius: "var(--radius-sm)",
@@ -130,7 +130,7 @@ const styles = {
         padding: 1.6,
       },
       dot: { background: "var(--color-general-white)" },
-      title: { fontWeight: 600 },
+      title: { fontWeight: "var(--font-weight-semibold)" },
     },
     completed: {
       indicator: {
@@ -170,16 +170,7 @@ const styles = {
 // COMPONENT
 // ─────────────────────────────────────────────
 
-/**
- * Step
- *
- * @param {string} status - current | completed | next | pending | disabled (default: next)
- * @param {string} title - Step title text
- * @param {string} subtitle - Optional subtitle (e.g., date)
- * @param {boolean} showLine - Show connecting line to next step (default: true)
- * @param {string} orientation - horizontal | vertical (default: horizontal)
- * @param {object} style - Additional inline styles
- */
+/** Step */
 export const Step = ({
   status = STEP_STATUS.next,
   title,

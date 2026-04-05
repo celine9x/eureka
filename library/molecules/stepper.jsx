@@ -64,13 +64,6 @@ const styles = {
  *
  * A progress stepper showing multiple steps.
  *
- * @param {string} orientation - horizontal | vertical (default: horizontal)
- * @param {number} currentStep - Index of the current step (0-based)
- * @param {array} steps - Array of step objects: [{ title, subtitle? }]
- * @param {boolean} showBackground - Show container background (default: true)
- * @param {function} onStepClick - Called when a step is clicked (receives step index)
- * @param {ReactNode} children - Alternative to steps prop (Step components)
- * @param {object} style - Additional inline styles
  *
  * @example
  * // With steps prop

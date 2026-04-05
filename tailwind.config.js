@@ -5,7 +5,7 @@ export default {
     "./library/**/*.{js,jsx,ts,tsx}",
     "./src/**/*.{js,jsx,ts,tsx}",
     "./*.jsx",
-    "./test.jsx",
+    "./eureka.jsx",
   ],
   theme: {
     extend: {

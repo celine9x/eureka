@@ -103,7 +103,7 @@ const styles = {
       font-family: var(--font-family-primary);
       font-size: var(--text-heading-h2);
       font-weight: var(--font-weight-bold);
-      line-height: 32px;
+      line-height: var(--line-height-heading-h2);
       color: var(--color-content-primary);
       margin: 0;
     }
@@ -257,12 +257,6 @@ export const ObjectHeaderDivider = ({ className = "", ...props }) => {
  * ObjectHeaderMeta
  *
  * Metadata row showing "last updated" info.
- *
- * @param {string} label - Label text (e.g., "Last updated on")
- * @param {string} date - Date string
- * @param {string} time - Time string (optional)
- * @param {string} author - Author name (optional)
- * @param {boolean} showCalendarIcon - Show calendar icon (default: true)
  */
 export const ObjectHeaderMeta = ({
   label = "Last updated on",
@@ -309,11 +303,6 @@ export const ObjectHeaderTitleSection = ({
  * ObjectHeaderTitle
  *
  * Main title with optional icon.
- *
- * @param {ReactNode} icon - Icon element to display before title
- * @param {string} iconName - Icon name to use with Icon component
- * @param {string} iconVariant - Icon style variant: default | warning
- * @param {ReactNode} children - Title text
  */
 export const ObjectHeaderTitle = ({
   icon,
@@ -418,10 +407,6 @@ export const ObjectHeaderTabs = ({
  * ObjectHeader
  *
  * A comprehensive header for object detail pages.
- *
- * @param {string} className - Additional CSS classes
- * @param {ReactNode} children - ObjectHeader sub-components
- *
  * @example
  * <ObjectHeader>
  *   <ObjectHeaderTopBar>

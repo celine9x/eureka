@@ -280,19 +280,6 @@ const ToolbarDivider = () => <div style={styles.divider} />;
 /**
  * RichTextInput
  *
- * @param {string} placeholder - Placeholder text for empty editor
- * @param {string} value - Controlled value
- * @param {function} onChange - Callback when content changes
- * @param {boolean} disabled - Disables the editor
- * @param {boolean} error - Shows error state
- * @param {string} helperText - Helper text below the editor
- * @param {string} submitLabel - Label for submit button
- * @param {function} onSubmit - Callback when submit button is clicked
- * @param {boolean} showToolbar - Show/hide toolbar
- * @param {boolean} showFooter - Show/hide footer with submit button
- * @param {object} activeFormats - Currently active formatting (bold, italic, etc.)
- * @param {function} onFormat - Callback when formatting button is clicked
- * @param {object} style - Additional inline styles
  *
  * @example
  * <RichTextInput

@@ -3,3 +3,7 @@
 @tailwind utilities;
 
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap');
+
+.side-menu-scrollable::-webkit-scrollbar {
+	display: none;
+}
