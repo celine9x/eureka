@@ -6,7 +6,16 @@
  * Uses design tokens from tokens.css.
  */
 
+import { Button } from "../atoms/button.jsx";
 import { Icon } from "../atoms/icon.jsx";
+import { Badge } from "../atoms/badge.jsx";
+import { Chip } from "../atoms/chip.jsx";
+import { Avatar } from "../atoms/avatar.jsx";
+import { Link } from "../atoms/link.jsx";
+import { AvatarGroup } from "../molecules/avatar-group.jsx";
+import { Stepper, Step } from "../molecules/stepper.jsx";
+import { Tabs, Tab } from "../molecules/tabs.jsx";
+import { Subinfo, SubinfoAvatar, SubinfoListItem } from "../molecules/subinfo.jsx";
 
 /* ===========================================
    STYLE CONFIGURATION
@@ -409,51 +418,52 @@ export const ObjectHeaderTabs = ({
  * A comprehensive header for object detail pages.
  * @example
  * <ObjectHeader>
- *   <ObjectHeaderTopBar>
- *     <ObjectHeaderTopBarLeft>
- *       <Button variant="secondary" size="md" iconName="ArrowLeft">Back</Button>
- *     </ObjectHeaderTopBarLeft>
- *     <ObjectHeaderTopBarRight>
- *       <ObjectHeaderActionsGroup>
- *         <AvatarGroup avatars={users} max={4} size="xl" />
- *         <Button variant="secondary" size="md" iconName="UserPlus">Manage access</Button>
- *       </ObjectHeaderActionsGroup>
- *       <ObjectHeaderDivider />
- *       <ObjectHeaderActionsGroup>
- *         <Button variant="secondary" size="md" iconName="Bookmark" />
- *         <Button variant="secondary" size="md" iconName="Share" />
- *       </ObjectHeaderActionsGroup>
- *     </ObjectHeaderTopBarRight>
- *   </ObjectHeaderTopBar>
+ *   <ObjectHeader.TopBar>
+ *     <ObjectHeader.TopBarLeft>
+ *       <ObjectHeader.Button variant="secondary" size="md" iconLeading={<ObjectHeader.Icon name="ArrowLeft" size="sm" />}>
+ *         Back
+ *       </ObjectHeader.Button>
+ *     </ObjectHeader.TopBarLeft>
+ *     <ObjectHeader.TopBarRight>
+ *       <ObjectHeader.ActionsGroup>
+ *         <ObjectHeader.AvatarGroup avatars={users} max={4} size="sm" />
+ *         <ObjectHeader.Button variant="secondary" size="md" iconLeading={<ObjectHeader.Icon name="UserPlus" size="sm" />}>
+ *           Manage access
+ *         </ObjectHeader.Button>
+ *       </ObjectHeader.ActionsGroup>
+ *       <ObjectHeader.Divider />
+ *       <ObjectHeader.ActionsGroup>
+ *         <ObjectHeader.Button variant="secondary" size="md" iconLeading={<ObjectHeader.Icon name="Bookmark" size="sm" />} />
+ *         <ObjectHeader.Button variant="secondary" size="md" iconLeading={<ObjectHeader.Icon name="Share" size="sm" />} />
+ *       </ObjectHeader.ActionsGroup>
+ *     </ObjectHeader.TopBarRight>
+ *   </ObjectHeader.TopBar>
  *
- *   <ObjectHeaderTitleSection>
- *     <ObjectHeaderMeta
+ *   <ObjectHeader.TitleSection>
+ *     <ObjectHeader.Meta
  *       date="Tue, Oct 21, 2022"
  *       time="9:21 PM"
  *       author="John Doe"
  *     />
- *     <ObjectHeaderTitle iconName="LockClosed" iconVariant="warning">
+ *     <ObjectHeader.Title iconName="LockClosed" iconVariant="warning">
  *       Deal Title
- *     </ObjectHeaderTitle>
- *   </ObjectHeaderTitleSection>
+ *     </ObjectHeader.Title>
+ *   </ObjectHeader.TitleSection>
  *
- *   <ObjectHeaderSubinfoRow>
- *     <ObjectHeaderSubinfoItem>
- *       <Chip variant="neutral" iconRightName="ChevronDown">Active</Chip>
- *     </ObjectHeaderSubinfoItem>
- *     <ObjectHeaderSubinfoItem>
- *       <SubinfoAvatar name="John Doe" initials="JD" />
- *     </ObjectHeaderSubinfoItem>
- *     <ObjectHeaderSubinfoItem>
- *       <Subinfo variant="value" iconName="Building" value="Abbvie Limited" link />
- *     </ObjectHeaderSubinfoItem>
- *     <ObjectHeaderSubinfoItem>
- *       <Subinfo variant="chips" chips={[{ label: "Tag 1" }, { label: "Tag 2" }]} />
- *     </ObjectHeaderSubinfoItem>
- *   </ObjectHeaderSubinfoRow>
+ *   <ObjectHeader.SubinfoRow>
+ *     <ObjectHeader.SubinfoItem>
+ *       <ObjectHeader.Chip variant="positive">Active</ObjectHeader.Chip>
+ *     </ObjectHeader.SubinfoItem>
+ *     <ObjectHeader.SubinfoItem>
+ *       <ObjectHeader.SubinfoAvatar name="John Doe" initials="JD" />
+ *     </ObjectHeader.SubinfoItem>
+ *     <ObjectHeader.SubinfoItem>
+ *       <ObjectHeader.Subinfo variant="value" iconName="Building" value="Abbvie Limited" link />
+ *     </ObjectHeader.SubinfoItem>
+ *   </ObjectHeader.SubinfoRow>
  *
- *   <ObjectHeaderStepper>
- *     <Stepper
+ *   <ObjectHeader.StepperSection>
+ *     <ObjectHeader.Stepper
  *       currentStep={3}
  *       steps={[
  *         { title: "Identification", subtitle: "Jul 15, 2024" },
@@ -465,47 +475,276 @@ export const ObjectHeaderTabs = ({
  *         { title: "Signed" },
  *       ]}
  *     />
- *   </ObjectHeaderStepper>
+ *   </ObjectHeader.StepperSection>
  *
- *   <ObjectHeaderTabs>
- *     <Tabs value={activeTab} onChange={setActiveTab}>
- *       <Tab value="overview">Overview</Tab>
- *       <Tab value="details">Details</Tab>
- *       <Tab value="meetings" badge="5">Meetings</Tab>
- *       <Tab value="contacts" badge="12">Contacts</Tab>
- *       <Tab value="attachments" badge="3">Attachments</Tab>
- *       <Tab value="related">Related information</Tab>
- *     </Tabs>
- *   </ObjectHeaderTabs>
+ *   <ObjectHeader.TabsSection>
+ *     <ObjectHeader.Tabs selectedKey={activeTab} onSelectionChange={setActiveTab}>
+ *       <ObjectHeader.Tab id="overview">Overview</ObjectHeader.Tab>
+ *       <ObjectHeader.Tab id="details">Details</ObjectHeader.Tab>
+ *       <ObjectHeader.Tab id="meetings" badge={5}>Meetings</ObjectHeader.Tab>
+ *       <ObjectHeader.Tab id="contacts" badge={12}>Contacts</ObjectHeader.Tab>
+ *       <ObjectHeader.Tab id="attachments" badge={3}>Attachments</ObjectHeader.Tab>
+ *     </ObjectHeader.Tabs>
+ *   </ObjectHeader.TabsSection>
  * </ObjectHeader>
+ *
+ * // Slot-based API (no deep nesting)
+ * <ObjectHeader
+ *   topBarLeft={<Button variant="secondary">Back</Button>}
+ *   topBarRight={
+ *     <>
+ *       <Button variant="secondary">Share</Button>
+ *       <Button variant="primary">Save</Button>
+ *     </>
+ *   }
+ *   meta={<ObjectHeaderMeta date="Tue, Oct 21, 2022" author="John Doe" />}
+ *   title={<ObjectHeaderTitle iconName="LockClosed">Deal Title</ObjectHeaderTitle>}
+ *   tabs={
+ *     <Tabs>
+ *       <Tab id="overview">Overview</Tab>
+ *       <Tab id="details">Details</Tab>
+ *     </Tabs>
+ *   }
+ * />
+ *
+ * // Prop-based composition for common internal atoms/molecules
+ * <ObjectHeader
+ *   backButtonProps={{ children: "Back to deals", onClick: handleBack }}
+ *   actionButtons={[
+ *     { label: "Manage access", iconName: "UserPlus", onClick: handleAccess },
+ *     { iconName: "Bookmark", iconOnly: true, ariaLabel: "Bookmark" },
+ *   ]}
+ *   tabsItems={[
+ *     { id: "overview", label: "Overview" },
+ *     { id: "details", label: "Details" },
+ *     { id: "contacts", label: "Contacts", badge: 12 },
+ *   ]}
+ *   defaultSelectedTab="overview"
+ * />
  */
 export const ObjectHeader = ({
   className = "",
+  topBar,
+  topBarLeft,
+  topBarRight,
+  backButtonProps,
+  actionButtons,
+  actionButtonsGroupProps,
+  topBarProps,
+  topBarLeftProps,
+  topBarRightProps,
+  titleSection,
+  meta,
+  title,
+  titleSectionProps,
+  subinfo,
+  subinfoRowProps,
+  stepper,
+  stepperProps,
+  tabs,
+  tabsItems,
+  tabsListProps,
+  selectedTab,
+  defaultSelectedTab,
+  onTabChange,
+  tabsProps,
   children,
   ...props
 }) => {
   injectStyles();
 
+  const hasActionButtons = Array.isArray(actionButtons) && actionButtons.length > 0;
+  const hasTabsItems = Array.isArray(tabsItems) && tabsItems.length > 0;
+
+  const { children: backButtonLabel, iconLeading: backButtonIconLeading, ...resolvedBackButtonProps } =
+    backButtonProps || {};
+
+  const generatedTopBarLeft = backButtonProps ? (
+    <Button
+      variant="secondary"
+      size="md"
+      iconLeading={backButtonIconLeading || <Icon name="ArrowLeft" size="sm" />}
+      {...resolvedBackButtonProps}
+    >
+      {backButtonLabel || "Back"}
+    </Button>
+  ) : null;
+
+  const generatedTopBarRight = hasActionButtons ? (
+    <ObjectHeaderActionsGroup {...actionButtonsGroupProps}>
+      {actionButtons.map((actionConfig, index) => {
+        const resolvedConfig =
+          typeof actionConfig === "string"
+            ? { label: actionConfig }
+            : actionConfig && typeof actionConfig === "object"
+              ? actionConfig
+              : {};
+
+        const {
+          id,
+          label,
+          iconName,
+          iconSize = "sm",
+          iconLeading,
+          children: actionChildren,
+          ...buttonProps
+        } = resolvedConfig;
+
+        const resolvedIconLeading =
+          iconLeading !== undefined
+            ? iconLeading
+            : iconName
+              ? <Icon name={iconName} size={iconSize} />
+              : undefined;
+
+        return (
+          <Button
+            key={id || `object-header-action-${index + 1}`}
+            variant="secondary"
+            size="md"
+            iconLeading={resolvedIconLeading}
+            {...buttonProps}
+          >
+            {actionChildren || label}
+          </Button>
+        );
+      })}
+    </ObjectHeaderActionsGroup>
+  ) : null;
+
+  const normalizedTabItems = hasTabsItems
+    ? tabsItems
+      .filter((item) => item !== undefined && item !== null)
+      .map((item) => {
+        if (typeof item === "string") {
+          return {
+            id: item.toLowerCase().trim().replace(/\s+/g, "-"),
+            label: item,
+          };
+        }
+        return item;
+      })
+    : [];
+
+  const generatedTabs = normalizedTabItems.length > 0 ? (
+    <Tabs
+      selectedKey={selectedTab}
+      defaultSelectedKey={defaultSelectedTab || normalizedTabItems[0]?.id}
+      onSelectionChange={onTabChange}
+      {...tabsListProps}
+    >
+      {normalizedTabItems.map((tabConfig, index) => {
+        const { id, label, children: tabChildren, ...tabProps } = tabConfig;
+        const resolvedId = id || `tab-${index + 1}`;
+
+        return (
+          <Tab id={resolvedId} key={resolvedId} {...tabProps}>
+            {tabChildren || label || resolvedId}
+          </Tab>
+        );
+      })}
+    </Tabs>
+  ) : null;
+
+  const resolvedTopBarLeft = topBarLeft ?? generatedTopBarLeft;
+  const resolvedTopBarRight = topBarRight ?? generatedTopBarRight;
+  const resolvedTabs = tabs ?? generatedTabs;
+
   const classes = ["object-header", className].filter(Boolean).join(" ");
+  const hasChildren = children !== undefined && children !== null;
+  const hasSlotContent = [
+    topBar,
+    resolvedTopBarLeft,
+    resolvedTopBarRight,
+    titleSection,
+    meta,
+    title,
+    subinfo,
+    stepper,
+    resolvedTabs,
+  ].some((slot) => slot !== undefined && slot !== null);
+
+  const renderedContent = hasChildren ? children : (
+    <>
+      {(topBar || resolvedTopBarLeft || resolvedTopBarRight) && (
+        <ObjectHeaderTopBar {...topBarProps}>
+          {topBar || (
+            <>
+              {resolvedTopBarLeft !== undefined && resolvedTopBarLeft !== null && (
+                <ObjectHeaderTopBarLeft {...topBarLeftProps}>{resolvedTopBarLeft}</ObjectHeaderTopBarLeft>
+              )}
+              {resolvedTopBarRight !== undefined && resolvedTopBarRight !== null && (
+                <ObjectHeaderTopBarRight {...topBarRightProps}>{resolvedTopBarRight}</ObjectHeaderTopBarRight>
+              )}
+            </>
+          )}
+        </ObjectHeaderTopBar>
+      )}
+
+      {(titleSection || meta || title) && (
+        <ObjectHeaderTitleSection {...titleSectionProps}>
+          {titleSection || (
+            <>
+              {meta}
+              {title}
+            </>
+          )}
+        </ObjectHeaderTitleSection>
+      )}
+
+      {subinfo !== undefined && subinfo !== null && (
+        <ObjectHeaderSubinfoRow {...subinfoRowProps}>
+          {subinfo}
+        </ObjectHeaderSubinfoRow>
+      )}
+
+      {stepper !== undefined && stepper !== null && (
+        <ObjectHeaderStepper {...stepperProps}>{stepper}</ObjectHeaderStepper>
+      )}
+
+      {resolvedTabs !== undefined && resolvedTabs !== null && (
+        <ObjectHeaderTabs {...tabsProps}>{resolvedTabs}</ObjectHeaderTabs>
+      )}
+    </>
+  );
 
   return (
     <div className={classes} {...props}>
-      {children}
+      {hasChildren || hasSlotContent ? renderedContent : null}
     </div>
   );
 };
 
 ObjectHeader.displayName = "ObjectHeader";
 
+ObjectHeader.TopBar = ObjectHeaderTopBar;
+ObjectHeader.TopBarLeft = ObjectHeaderTopBarLeft;
+ObjectHeader.TopBarRight = ObjectHeaderTopBarRight;
+ObjectHeader.ActionsGroup = ObjectHeaderActionsGroup;
+ObjectHeader.Divider = ObjectHeaderDivider;
+ObjectHeader.Meta = ObjectHeaderMeta;
+ObjectHeader.TitleSection = ObjectHeaderTitleSection;
+ObjectHeader.Title = ObjectHeaderTitle;
+ObjectHeader.SubinfoRow = ObjectHeaderSubinfoRow;
+ObjectHeader.SubinfoItem = ObjectHeaderSubinfoItem;
+ObjectHeader.StepperSection = ObjectHeaderStepper;
+ObjectHeader.TabsSection = ObjectHeaderTabs;
+ObjectHeader.Button = Button;
+ObjectHeader.Icon = Icon;
+ObjectHeader.Badge = Badge;
+ObjectHeader.Chip = Chip;
+ObjectHeader.Avatar = Avatar;
+ObjectHeader.Link = Link;
+ObjectHeader.AvatarGroup = AvatarGroup;
+ObjectHeader.Stepper = Stepper;
+ObjectHeader.Step = Step;
+ObjectHeader.Tabs = Tabs;
+ObjectHeader.Tab = Tab;
+ObjectHeader.Subinfo = Subinfo;
+ObjectHeader.SubinfoAvatar = SubinfoAvatar;
+ObjectHeader.SubinfoListItem = SubinfoListItem;
+
 // Re-export commonly used components for convenience
-export { Button } from "../atoms/button.jsx";
-export { Icon } from "../atoms/icon.jsx";
-export { Badge } from "../atoms/badge.jsx";
-export { Chip } from "../atoms/chip.jsx";
-export { Avatar } from "../atoms/avatar.jsx";
-export { AvatarGroup } from "../molecules/avatar-group.jsx";
-export { Stepper, Step } from "../molecules/stepper.jsx";
-export { Tabs, Tab } from "../molecules/tabs.jsx";
-export { Subinfo, SubinfoAvatar, SubinfoListItem } from "../molecules/subinfo.jsx";
+export { Button, Icon, Badge, Chip, Avatar, Link, AvatarGroup, Stepper, Step, Tabs, Tab, Subinfo, SubinfoAvatar, SubinfoListItem };
 
 export default ObjectHeader;

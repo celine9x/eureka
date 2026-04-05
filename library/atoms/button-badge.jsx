@@ -3,9 +3,18 @@
  *
  * A button element with an optional icon, label, and integrated Badge component.
  * Uses inline styles with CSS variables from tokens.css for consistent styling.
+ * 
+ * By default, clicking the button toggles between enabled and active states.
+ * You can control the state explicitly by passing the `state` prop.
  *
  * @example
+ * // Uncontrolled - toggles on click
  * <ButtonBadge badgeLabel="5">Notifications</ButtonBadge>
+ * 
+ * // Controlled - manage state externally
+ * <ButtonBadge state="active" badgeLabel="5">Active</ButtonBadge>
+ * 
+ * @example
  * <ButtonBadge variant="without-badge">No Badge</ButtonBadge>
  * <ButtonBadge size="lg" iconName="Bell" badgeLabel="New">Updates</ButtonBadge>
  */
@@ -124,7 +133,7 @@ const styles = {
 export const ButtonBadge = ({
   variant = "with-badge",
   size = BUTTON_BADGE_SIZES.md,
-  state = BUTTON_BADGE_STATES.enabled,
+  state,
   isDisabled = false,
   disabled,
   icon,
@@ -141,9 +150,19 @@ export const ButtonBadge = ({
   ...props
 }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [internalActive, setInternalActive] = useState(false);
 
   const isButtonDisabled = isDisabled || disabled;
-  const effectiveState = isButtonDisabled ? BUTTON_BADGE_STATES.disabled : state;
+  
+  // If state is explicitly provided, use it (controlled mode)
+  // Otherwise, use internal state (uncontrolled mode with auto-toggle)
+  const isControlled = state !== undefined;
+  const effectiveState = isButtonDisabled 
+    ? BUTTON_BADGE_STATES.disabled 
+    : isControlled 
+      ? state 
+      : (internalActive ? BUTTON_BADGE_STATES.active : BUTTON_BADGE_STATES.enabled);
+  
   const effectiveBadgeColor = badgeColor || STATE_TO_BADGE_COLOR[effectiveState];
   const badgeSize = size === "lg" ? "md" : "sm";
 
@@ -205,12 +224,24 @@ export const ButtonBadge = ({
     );
   };
 
+  const handleClick = (e) => {
+    // Toggle internal state when in uncontrolled mode
+    if (!isControlled && !isButtonDisabled) {
+      setInternalActive(!internalActive);
+    }
+    
+    // Call user's onClick handler if provided
+    if (onClick) {
+      onClick(e);
+    }
+  };
+
   return (
     <button
       type="button"
       style={buttonStyle}
       disabled={isButtonDisabled}
-      onClick={onClick}
+      onClick={handleClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       {...props}

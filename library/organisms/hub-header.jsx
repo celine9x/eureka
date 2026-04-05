@@ -10,6 +10,9 @@ import React from "react";
 import { Button } from "../atoms/button.jsx";
 import { Badge } from "../atoms/badge.jsx";
 import { Icon } from "../atoms/icon.jsx";
+import { TextInput } from "../molecules/text-input.jsx";
+import { Search } from "../molecules/search.jsx";
+import { Tabs, Tab, TabPanel } from "../molecules/tabs.jsx";
 
 /* ===========================================
    STYLE CONFIGURATION
@@ -168,6 +171,9 @@ export const HubHeaderTitle = ({
 };
 
 HubHeaderTitle.displayName = "HubHeaderTitle";
+
+export const HubHeaderLabel = HubHeaderTitle;
+HubHeaderLabel.displayName = "HubHeaderLabel";
 
 /* ===========================================
    HUB HEADER ACTIONS COMPONENT
@@ -337,6 +343,9 @@ export const HubHeader = ({
   rightContent,
   secondaryContent,
   onBack,
+  backButtonProps,
+  titleProps,
+  secondaryProps,
   className = "",
   children,
   ...props
@@ -372,14 +381,15 @@ export const HubHeader = ({
               size="md"
               iconLeading={<Icon name="ArrowLeft" />}
               onClick={onBack}
+              {...backButtonProps}
             >
-              Back
+              {backButtonProps?.children || "Back"}
             </Button>
           )}
 
           {/* Title group */}
           {title && (
-            <HubHeaderTitle size={titleSize} badge={badge} badgeVariant={badgeVariant}>
+            <HubHeaderTitle size={titleSize} badge={badge} badgeVariant={badgeVariant} {...titleProps}>
               {title}
             </HubHeaderTitle>
           )}
@@ -395,7 +405,7 @@ export const HubHeader = ({
 
       {/* Secondary row */}
       {secondaryContent && (
-        <div className="hub-header__secondary">{secondaryContent}</div>
+        <div className="hub-header__secondary" {...secondaryProps}>{secondaryContent}</div>
       )}
     </div>
   );
@@ -405,11 +415,30 @@ HubHeader.displayName = "HubHeader";
 
 // Sub-components
 HubHeader.Title = HubHeaderTitle;
+HubHeader.Label = HubHeaderLabel;
 HubHeader.Actions = HubHeaderActions;
 HubHeader.Controls = HubHeaderControls;
 HubHeader.Row = HubHeaderRow;
 HubHeader.Left = HubHeaderLeft;
 HubHeader.Right = HubHeaderRight;
 HubHeader.Secondary = HubHeaderSecondary;
+HubHeader.Button = Button;
+HubHeader.Icon = Icon;
+HubHeader.Badge = Badge;
+HubHeader.TextInput = TextInput;
+HubHeader.Search = Search;
+HubHeader.Tabs = Tabs;
+HubHeader.Tab = Tab;
+HubHeader.TabPanel = TabPanel;
+HubHeader.Badge = Badge;
+HubHeader.Tabs = Tabs;
+HubHeader.Tab = Tab;
+HubHeader.TabPanel = TabPanel;
+
+// Re-export commonly used child components for convenience
+export { Button } from "../atoms/button.jsx";
+export { Icon } from "../atoms/icon.jsx";
+export { Badge } from "../atoms/badge.jsx";
+export { Tabs, Tab, TabPanel } from "../molecules/tabs.jsx";
 
 export default HubHeader;

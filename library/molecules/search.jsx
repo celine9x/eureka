@@ -23,6 +23,15 @@ export const SEARCH_SIZES = {
   lg: "lg",
 };
 
+export const SEARCH_VISUAL_STATES = {
+  auto: "auto",
+  enabled: "enabled",
+  hover: "hover",
+  active: "active",
+  filled: "filled",
+  disabled: "disabled",
+};
+
 // ─────────────────────────────────────────────
 // STYLES (Token-mapped inline styles)
 // ─────────────────────────────────────────────
@@ -31,37 +40,20 @@ const styles = {
   wrapper: {
     display: "flex",
     alignItems: "center",
-    gap: 8,
-    padding: 8,
+    gap: "var(--spacing-sm)",
+    padding: "var(--spacing-sm)",
     width: "100%",
     boxSizing: "border-box",
     cursor: "text",
-    background: "var(--color-general-neutral-lighter)",
     borderRadius: "var(--radius-full)",
-    outline: "1px solid var(--color-interaction-outline-enabled)",
+    outline: "1px solid transparent",
     outlineOffset: "-1px",
     transition: "all var(--transition-fast)",
   },
 
-  wrapperHover: {
-    outlineColor: "var(--color-interaction-outline-hover)",
-  },
-
-  wrapperFocus: {
-    outlineColor: "var(--color-interaction-outline-active)",
-    boxShadow: "var(--shadow-focus)",
-    background: "var(--color-interaction-fill-enabled)",
-  },
-
-  wrapperDisabled: {
-    background: "var(--color-interaction-fill-disabled)",
-    cursor: "not-allowed",
-    opacity: 0.6,
-  },
-
   wrapperCollapsed: {
-    width: 32,
-    padding: 8,
+    width: "var(--size-input-sm)",
+    padding: "var(--spacing-sm)",
     justifyContent: "center",
   },
 
@@ -69,7 +61,6 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    color: "var(--color-content-secondary)",
     flexShrink: 0,
   },
 
@@ -78,20 +69,14 @@ const styles = {
     border: "none",
     background: "transparent",
     fontFamily: "var(--font-family-primary)",
-    color: "var(--color-content-primary)",
     outline: "none",
     minWidth: 0,
-  },
-
-  inputPlaceholder: {
-    color: "var(--color-content-tertiary)",
   },
 
   clear: {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    color: "var(--color-content-tertiary)",
     cursor: "pointer",
     padding: 2,
     borderRadius: "var(--radius-full)",
@@ -101,13 +86,56 @@ const styles = {
   },
 
   clearHover: {
-    color: "var(--color-content-secondary)",
+    color: "var(--color-content-primary)",
     background: "var(--color-general-neutral-light)",
+  },
+
+  stateTokens: {
+    enabled: {
+      background: "var(--color-general-neutral-lighter)",
+      outlineColor: "var(--color-interaction-outline-enabled)",
+      boxShadow: "none",
+      textColor: "var(--color-content-secondary)",
+      placeholderColor: "var(--color-content-secondary)",
+      iconColor: "var(--color-content-secondary)",
+    },
+    hover: {
+      background: "var(--color-general-white)",
+      outlineColor: "var(--color-interaction-outline-hover)",
+      boxShadow: "var(--shadow-medium-down)",
+      textColor: "var(--color-content-secondary)",
+      placeholderColor: "var(--color-content-secondary)",
+      iconColor: "var(--color-content-secondary)",
+    },
+    active: {
+      background: "var(--color-general-white)",
+      outlineColor: "var(--color-interaction-outline-active)",
+      boxShadow: "var(--shadow-focus)",
+      textColor: "var(--color-content-primary)",
+      placeholderColor: "var(--color-content-primary)",
+      iconColor: "var(--color-content-secondary)",
+    },
+    filled: {
+      background: "var(--color-general-white)",
+      outlineColor: "var(--color-interaction-outline-enabled)",
+      boxShadow: "var(--shadow-light-down)",
+      textColor: "var(--color-content-primary)",
+      placeholderColor: "var(--color-content-primary)",
+      iconColor: "var(--color-content-secondary)",
+    },
+    disabled: {
+      background: "var(--color-general-neutral-lighter)",
+      outlineColor: "var(--color-interaction-outline-enabled)",
+      boxShadow: "none",
+      textColor: "var(--color-general-neutral-dark)",
+      placeholderColor: "var(--color-general-neutral-dark)",
+      iconColor: "var(--color-general-neutral-dark)",
+    },
   },
 
   sizes: {
     sm: {
-      wrapper: { height: 28, padding: "4px 8px" },
+      wrapper: { height: 28, padding: "var(--spacing-xs) var(--spacing-sm)" },
       icon: { width: 12, height: 12 },
       input: {
         fontSize: "var(--text-body-caption)",
@@ -115,16 +143,16 @@ const styles = {
       },
     },
     md: {
-      wrapper: { height: 32 },
-      icon: { width: 14, height: 14 },
+      wrapper: { height: "var(--size-input-sm)" },
+      icon: { width: "var(--size-icon-sm)", height: "var(--size-icon-sm)" },
       input: {
         fontSize: "var(--text-body-md)",
         lineHeight: "var(--line-height-body-md)",
       },
     },
     lg: {
-      wrapper: { height: 40, padding: "8px 12px" },
-      icon: { width: 16, height: 16 },
+      wrapper: { height: "var(--size-input-md)", padding: "var(--spacing-sm) var(--spacing-3)" },
+      icon: { width: "var(--size-icon-sm)", height: "var(--size-icon-sm)" },
       input: {
         fontSize: "var(--text-body-lg)",
         lineHeight: "var(--line-height-body-lg)",
@@ -150,6 +178,8 @@ export const Search = forwardRef(
       defaultValue,
       isDisabled = false,
       disabled,
+      visualState = SEARCH_VISUAL_STATES.auto,
+      iconLeading,
       showClear = true,
       collapsed = false,
       onChange,
@@ -173,8 +203,27 @@ export const Search = forwardRef(
     const isControlled = value !== undefined;
     const currentValue = isControlled ? value : internalValue;
     const isSearchDisabled = isDisabled || disabled;
+    const hasValue = Boolean(currentValue && String(currentValue).length > 0);
 
     const sizeStyles = styles.sizes[size];
+
+    const resolveVisualState = () => {
+      if (isSearchDisabled || visualState === SEARCH_VISUAL_STATES.disabled) {
+        return SEARCH_VISUAL_STATES.disabled;
+      }
+
+      if (visualState && visualState !== SEARCH_VISUAL_STATES.auto) {
+        return visualState;
+      }
+
+      if (isFocused) return SEARCH_VISUAL_STATES.active;
+      if (isHovered) return SEARCH_VISUAL_STATES.hover;
+      if (hasValue) return SEARCH_VISUAL_STATES.filled;
+      return SEARCH_VISUAL_STATES.enabled;
+    };
+
+    const currentState = resolveVisualState();
+    const tone = styles.stateTokens[currentState] || styles.stateTokens.enabled;
 
     const handleChange = (e) => {
       const newValue = e.target.value;
@@ -206,13 +255,24 @@ export const Search = forwardRef(
       }
     };
 
+    const setRefs = (node) => {
+      inputRef.current = node;
+
+      if (typeof ref === "function") {
+        ref(node);
+      } else if (ref) {
+        ref.current = node;
+      }
+    };
+
     // Compose wrapper styles
     const wrapperStyle = {
       ...styles.wrapper,
       ...sizeStyles.wrapper,
-      ...(isHovered && !isSearchDisabled && styles.wrapperHover),
-      ...(isFocused && !isSearchDisabled && styles.wrapperFocus),
-      ...(isSearchDisabled && styles.wrapperDisabled),
+      background: tone.background,
+      outlineColor: tone.outlineColor,
+      boxShadow: tone.boxShadow,
+      ...(isSearchDisabled && { cursor: "not-allowed" }),
       ...(collapsed && styles.wrapperCollapsed),
       ...style,
     };
@@ -221,17 +281,20 @@ export const Search = forwardRef(
     const iconStyle = {
       ...styles.icon,
       ...sizeStyles.icon,
+      color: tone.iconColor,
     };
 
     // Input styles
     const inputStyle = {
       ...styles.input,
       ...sizeStyles.input,
+      color: tone.textColor,
     };
 
     // Clear button styles
     const clearStyle = {
       ...styles.clear,
+      color: tone.iconColor,
       ...(clearHovered && styles.clearHover),
     };
 
@@ -244,13 +307,15 @@ export const Search = forwardRef(
         {...props}
       >
         <span style={iconStyle}>
-          <MagnifyingGlassIcon style={{ width: sizeStyles.icon.width, height: sizeStyles.icon.height }} />
+          {iconLeading || (
+            <MagnifyingGlassIcon style={{ width: sizeStyles.icon.width, height: sizeStyles.icon.height }} />
+          )}
         </span>
 
         {!collapsed && (
           <>
             <input
-              ref={ref || inputRef}
+              ref={setRefs}
               type="text"
               placeholder={placeholder}
               value={currentValue}
@@ -286,5 +351,6 @@ export const Search = forwardRef(
 
 Search.displayName = "Search";
 Search.sizes = SEARCH_SIZES;
+Search.states = SEARCH_VISUAL_STATES;
 
 export default Search;

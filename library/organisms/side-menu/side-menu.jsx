@@ -357,6 +357,7 @@ export const SideMenu = ({
   expandOnHover = true,
   logo,
   logoSrc,
+  collapsedLogoSrc,
   logoAlt = "Logo",
   showSearch = true,
   searchPlaceholder = "Quick search",
@@ -414,9 +415,10 @@ export const SideMenu = ({
   const renderLogo = () => {
     if (logo) return logo;
     if (logoSrc) {
+      const resolvedLogoSrc = isCollapsed && collapsedLogoSrc ? collapsedLogoSrc : logoSrc;
       return (
         <img
-          src={logoSrc}
+          src={resolvedLogoSrc}
           alt={logoAlt}
           style={isCollapsed ? styles.logoCollapsed : styles.logo}
         />

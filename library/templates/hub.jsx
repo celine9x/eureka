@@ -13,9 +13,6 @@ import {
 } from "../organisms/hub-header.jsx";
 import {
   Table,
-  TableRow,
-  TableCell,
-  TableCellHeader,
 } from "../organisms/table/table.jsx";
 import { Pagination } from "../organisms/pagination.jsx";
 import { Button } from "../atoms/button.jsx";
@@ -187,31 +184,36 @@ export const Hub = ({
 
   // Check if all rows are selected
   const allSelected = data.length > 0 && selectedRows.length === data.length;
-  const someSelected = selectedRows.length > 0 && selectedRows.length < data.length;
 
-  // Default row renderer
-  const defaultRenderRow = (row, index) => (
-    <TableRow
-      key={row.id || index}
-      selected={selectedRows.includes(row.id)}
-    >
-      {showCheckbox && (
-        <TableCell style={{ width: 48 }}>
-          <Checkbox
-            checked={selectedRows.includes(row.id)}
-            onChange={() => onRowSelect?.(row.id)}
-          />
-        </TableCell>
-      )}
-      {columns.map((col) => (
-        <TableCell key={col.key} style={col.width ? { width: col.width } : undefined}>
-          {col.render ? col.render(row[col.key], row) : row[col.key]}
-        </TableCell>
-      ))}
-    </TableRow>
-  );
-
-  const rowRenderer = renderRow || defaultRenderRow;
+  const resolvedColumns = [
+    ...(showCheckbox
+      ? [
+          {
+            key: "__select",
+            header: <Checkbox isSelected={allSelected} onChange={() => onSelectAll?.()} />,
+            type: "checkbox",
+            width: "48px",
+            renderCell: (_value, row) => (
+              <Checkbox
+                isSelected={selectedRows.includes(row.id)}
+                onChange={() => onRowSelect?.(row.id)}
+              />
+            ),
+          },
+        ]
+      : []),
+    ...columns.map((column) => ({
+      ...column,
+      header: column.header ?? column.label,
+      type: column.type ?? column.variant,
+      sort: sortColumn === column.key ? sortDirection : "",
+      onSort: () => handleSort(column),
+      renderCell:
+        typeof column.render === "function"
+          ? (value, row, rowIndex) => column.render(value, row, rowIndex)
+          : column.renderCell,
+    })),
+  ];
 
   // Default pagination action
   const defaultPaginationAction = (
@@ -252,43 +254,12 @@ export const Hub = ({
         <div className="hub__body">
           <div className="hub__table-container">
             <div className="hub__table-wrapper">
-              <Table>
-                {/* Table Header */}
-                <TableRow variant="header">
-                  {showCheckbox && (
-                    <TableCellHeader style={{ width: 48 }}>
-                      <Checkbox
-                        checked={allSelected}
-                        indeterminate={someSelected}
-                        onChange={() => onSelectAll?.()}
-                      />
-                    </TableCellHeader>
-                  )}
-                  {columns.map((col) => (
-                    <TableCellHeader
-                      key={col.key}
-                      sortable={col.sortable}
-                      sort={sortColumn === col.key ? sortDirection : ""}
-                      onSort={() => handleSort(col)}
-                      style={col.width ? { width: col.width } : undefined}
-                    >
-                      {col.label}
-                    </TableCellHeader>
-                  ))}
-                </TableRow>
-
-                {/* Table Body */}
-                {data.map((row, index) => rowRenderer(row, index))}
-
-                {/* Empty State */}
-                {data.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={columns.length + (showCheckbox ? 1 : 0)}>
-                      <div className="hub__empty">{emptyMessage}</div>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </Table>
+              <Table
+                columns={resolvedColumns}
+                rows={data}
+                rowKey="id"
+                emptyState={<div className="hub__empty">{emptyMessage}</div>}
+              />
             </div>
           </div>
         </div>

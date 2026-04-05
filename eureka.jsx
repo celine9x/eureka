@@ -15,10 +15,11 @@ import { Badge } from "./library/atoms/badge.jsx";
 import { Avatar } from "./library/atoms/avatar.jsx";
 import { Checkbox } from "./library/atoms/checkbox.jsx";
 import { Toggle } from "./library/atoms/toggle.jsx";
-import { Icon } from "./library/atoms/icon.jsx";
+import { Icon, ICON_EXAMPLE_NAMES, OBJECT_TYPE_NAMES } from "./library/atoms/icon.jsx";
 import { Chip } from "./library/atoms/chip.jsx";
 import { RadioButton, RadioGroup } from "./library/atoms/radio-button.jsx";
 import { Link } from "./library/atoms/link.jsx";
+import { Tooltip } from "./library/atoms/tooltip.jsx";
 import { Step, STEP_STATUS } from "./library/atoms/step.jsx";
 import { ButtonBadge } from "./library/atoms/button-badge.jsx";
 
@@ -50,7 +51,7 @@ import { MiniInfobox } from "./library/molecules/miniinfobox.jsx";
 // ─────────────────────────────────────────────
 import { SideMenu } from "./library/organisms/side-menu/side-menu.jsx";
 import { Modal } from "./library/organisms/modal.jsx";
-import { Table, TableRow, TableCell, TableCellHeader, TableCellLinkRow, TableCellLinkedName } from "./library/organisms/table/table.jsx";
+import { Table, TableColumns, TableColumn } from "./library/organisms/table/table.jsx";
 import {
   ObjectHeader,
   ObjectHeaderTopBar,
@@ -129,6 +130,9 @@ const DemoBox = ({ children }) => (
     borderRadius: 8,
     border: "1px solid var(--color-neutral-200)",
     marginBottom: 16,
+    overflowX: "auto",
+    overflowY: "visible",
+    WebkitOverflowScrolling: "touch",
   }}>
     {children}
   </div>
@@ -661,91 +665,71 @@ const [enabled, setEnabled] = useState(false);
   );
 };
 
-const IconPage = () => (
-  <Section title="Icon" description="A unified icon library wrapping Heroicons and Phosphor Icons.">
-    {/* 1. Common Icons */}
-    <PreviewComponent
-      title="Common Icons"
-      code={`import { Icon } from "@/library/atoms/icon";
+const IconPage = () => {
+  const secondaryColor = "var(--color-content-secondary)";
 
-<Icon name="Home" size="lg" />
-<Icon name="User" size="lg" />
-<Icon name="Cog6Tooth" size="lg" />
-<Icon name="Bell" size="lg" />
-<Icon name="MagnifyingGlass" size="lg" />
-<Icon name="Plus" size="lg" />
-<Icon name="Check" size="lg" />
-<Icon name="XMark" size="lg" />
-<Icon name="ChevronRight" size="lg" />
-<Icon name="ArrowRight" size="lg" />`}
-    >
-      <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
-        <Icon name="Home" size="lg" />
-        <Icon name="User" size="lg" />
-        <Icon name="Cog6Tooth" size="lg" />
-        <Icon name="Bell" size="lg" />
-        <Icon name="MagnifyingGlass" size="lg" />
-        <Icon name="Plus" size="lg" />
-        <Icon name="Check" size="lg" />
-        <Icon name="XMark" size="lg" />
-        <Icon name="ChevronRight" size="lg" />
-        <Icon name="ArrowRight" size="lg" />
-      </div>
-    </PreviewComponent>
+  return (
+    <Section title="Icon" description="A unified icon library wrapping Heroicons and custom object-type icons.">
+      <PreviewComponent
+        title="All Example Icons"
+        code={`import { Icon, ICON_EXAMPLE_NAMES } from "@/library/atoms/icon";
 
-    {/* 2. Icon Sizes */}
-    <PreviewComponent
-      title="Icon Sizes"
-      code={`import { Icon } from "@/library/atoms/icon";
+<div>
+  {ICON_EXAMPLE_NAMES.map((name) => (
+    <div key={name}>
+      <Icon name={name} variant="outline" size="lg" color="var(--color-content-secondary)" />
+      <Icon name={name} variant="fill" size="lg" color="var(--color-content-secondary)" />
+    </div>
+  ))}
+</div>`}
+      >
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))", gap: 16 }}>
+          {ICON_EXAMPLE_NAMES.map((name) => (
+            <div
+              key={name}
+              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, color: secondaryColor }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <Icon name={name} variant="outline" size="lg" color={secondaryColor} />
+                <Icon name={name} variant="fill" size="lg" color={secondaryColor} />
+              </div>
+              <span style={{ fontSize: 12, color: secondaryColor, textAlign: "center" }}>{name}</span>
+            </div>
+          ))}
+        </div>
+      </PreviewComponent>
 
-<Icon name="Home" size="xs" />
-<Icon name="Home" size="sm" />
-<Icon name="Home" size="md" />
-<Icon name="Home" size="lg" />
-<Icon name="Home" size="xl" />`}
-    >
-      <div style={{ display: "flex", alignItems: "flex-end", gap: 16, flexWrap: "wrap" }}>
-        <Icon name="Home" size="xs" />
-        <Icon name="Home" size="sm" />
-        <Icon name="Home" size="md" />
-        <Icon name="Home" size="lg" />
-        <Icon name="Home" size="xl" />
-      </div>
-    </PreviewComponent>
+      <PreviewComponent
+        title="All Object Type Icons"
+        code={`import { Icon, OBJECT_TYPE_NAMES } from "@/library/atoms/icon";
 
-    {/* 3. Outline Variant */}
-    <PreviewComponent
-      title="Outline Icons"
-      code={`import { Icon } from "@/library/atoms/icon";
-
-<Icon name="Heart" variant="outline" size="xl" />
-<Icon name="Star" variant="outline" size="xl" />
-<Icon name="Folder" variant="outline" size="xl" />`}
-    >
-      <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-        <Icon name="Heart" variant="outline" size="xl" />
-        <Icon name="Star" variant="outline" size="xl" />
-        <Icon name="Folder" variant="outline" size="xl" />
-      </div>
-    </PreviewComponent>
-
-    {/* 4. Solid Variant */}
-    <PreviewComponent
-      title="Solid Icons"
-      code={`import { Icon } from "@/library/atoms/icon";
-
-<Icon name="Heart" variant="solid" size="xl" />
-<Icon name="Star" variant="solid" size="xl" />
-<Icon name="Folder" variant="solid" size="xl" />`}
-    >
-      <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-        <Icon name="Heart" variant="solid" size="xl" />
-        <Icon name="Star" variant="solid" size="xl" />
-        <Icon name="Folder" variant="solid" size="xl" />
-      </div>
-    </PreviewComponent>
-  </Section>
-);
+<div>
+  {OBJECT_TYPE_NAMES.map((name) => (
+    <div key={name}>
+      <Icon type={name} variant="outline" size="lg" color="var(--color-content-secondary)" />
+      <Icon type={name} variant="fill" size="lg" color="var(--color-content-secondary)" />
+    </div>
+  ))}
+</div>`}
+      >
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))", gap: 16 }}>
+          {OBJECT_TYPE_NAMES.map((name) => (
+            <div
+              key={name}
+              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, color: secondaryColor }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <Icon type={name} variant="outline" size="lg" color={secondaryColor} />
+                <Icon type={name} variant="fill" size="lg" color={secondaryColor} />
+              </div>
+              <span style={{ fontSize: 12, color: secondaryColor, textAlign: "center" }}>{name}</span>
+            </div>
+          ))}
+        </div>
+      </PreviewComponent>
+    </Section>
+  );
+};
 
 const ChipPage = () => (
   <Section title="Chip" description="A compact label element with optional color accent, icons, and actions.">
@@ -947,6 +931,114 @@ import { Icon } from "@/library/atoms/icon";
   </Section>
 );
 
+const TooltipPage = () => (
+  <Section title="Tooltip" description="A contextual helper that appears on hover or focus and can wrap any trigger component.">
+    <PreviewComponent
+      title="Tooltip Placements"
+      code={`import { Tooltip } from "@/library/atoms/tooltip";
+import { Button } from "@/library/atoms/button";
+
+<Tooltip placement="top-left" content="Top left tooltip">
+  <Button variant="secondary">Top Left</Button>
+</Tooltip>
+<Tooltip placement="top-right" content="Top right tooltip">
+  <Button variant="secondary">Top Right</Button>
+</Tooltip>
+<Tooltip placement="bottom-left" content="Bottom left tooltip">
+  <Button variant="secondary">Bottom Left</Button>
+</Tooltip>
+<Tooltip placement="bottom-right" content="Bottom right tooltip">
+  <Button variant="secondary">Bottom Right</Button>
+</Tooltip>
+<Tooltip placement="left" content="Left tooltip">
+  <Button variant="secondary">Left</Button>
+</Tooltip>
+<Tooltip placement="right" content="Right tooltip">
+  <Button variant="secondary">Right</Button>
+</Tooltip>`}
+    >
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+        <Tooltip placement="top-left" content="Top left tooltip">
+          <Button variant="secondary">Top Left</Button>
+        </Tooltip>
+        <Tooltip placement="top-right" content="Top right tooltip">
+          <Button variant="secondary">Top Right</Button>
+        </Tooltip>
+        <Tooltip placement="bottom-left" content="Bottom left tooltip">
+          <Button variant="secondary">Bottom Left</Button>
+        </Tooltip>
+        <Tooltip placement="bottom-right" content="Bottom right tooltip">
+          <Button variant="secondary">Bottom Right</Button>
+        </Tooltip>
+        <Tooltip placement="left" content="Left tooltip">
+          <Button variant="secondary">Left</Button>
+        </Tooltip>
+        <Tooltip placement="right" content="Right tooltip">
+          <Button variant="secondary">Right</Button>
+        </Tooltip>
+      </div>
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="Works With Any Trigger"
+      code={`import { Tooltip } from "@/library/atoms/tooltip";
+import { Link } from "@/library/atoms/link";
+import { Icon } from "@/library/atoms/icon";
+
+<Tooltip content="Tooltip on link">
+  <Link href="#">Hover link</Link>
+</Tooltip>
+
+<Tooltip content="Tooltip on icon button" placement="left">
+  <button type="button" style={{ border: "none", background: "transparent", cursor: "pointer" }}>
+    <Icon name="InformationCircle" size="md" />
+  </button>
+</Tooltip>`}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+        <Tooltip content="Tooltip on link">
+          <Link href="#">Hover link</Link>
+        </Tooltip>
+
+        <Tooltip content="Tooltip on icon button" placement="left">
+          <button
+            type="button"
+            style={{
+              border: "none",
+              background: "transparent",
+              cursor: "pointer",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Icon name="InformationCircle" size="md" />
+          </button>
+        </Tooltip>
+      </div>
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="Long Content"
+      code={`<Tooltip
+  placement="top-right"
+  maxWidth={360}
+  content="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras efficitur, odio id laoreet dignissim, orci dolor feugiat lacus, non sagittis nisi nisi id felis. Cras elementum egestas ex, eu dapibus felis pulvinar et."
+>
+  <Button variant="primary">Hover for Long Tooltip</Button>
+</Tooltip>`}
+    >
+      <Tooltip
+        placement="top-right"
+        maxWidth={360}
+        content="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras efficitur, odio id laoreet dignissim, orci dolor feugiat lacus, non sagittis nisi nisi id felis. Cras elementum egestas ex, eu dapibus felis pulvinar et."
+      >
+        <Button variant="primary">Hover for Long Tooltip</Button>
+      </Tooltip>
+    </PreviewComponent>
+  </Section>
+);
+
 const StepPage = () => (
   <Section title="Step" description="A step indicator for use in steppers/progress indicators.">
     {/* 1. All Step Statuses */}
@@ -1050,7 +1142,24 @@ const ButtonBadgePage = () => {
         </div>
       </PreviewComponent>
 
-      {/* 2. ButtonBadge Sizes */}
+      {/* 2. Auto-Toggle Interaction (Default) */}
+      <PreviewComponent
+        title="Auto-Toggle on Click (Default Behavior)"
+        code={`import { ButtonBadge } from "@/library/atoms/button-badge";
+
+{/* Click to toggle between enabled and active */}
+<ButtonBadge badgeLabel="5">Click Me</ButtonBadge>
+<ButtonBadge iconName="Bell" badgeLabel="3">Notifications</ButtonBadge>
+<ButtonBadge variant="without-badge" iconName="Funnel">Filter</ButtonBadge>`}
+      >
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <ButtonBadge badgeLabel="5">Click Me</ButtonBadge>
+          <ButtonBadge iconName="Bell" badgeLabel="3">Notifications</ButtonBadge>
+          <ButtonBadge variant="without-badge" iconName="Funnel">Filter</ButtonBadge>
+        </div>
+      </PreviewComponent>
+
+      {/* 3. ButtonBadge Sizes */}
       <PreviewComponent
         title="ButtonBadge Sizes"
         code={`import { ButtonBadge } from "@/library/atoms/button-badge";
@@ -1064,7 +1173,7 @@ const ButtonBadgePage = () => {
         </div>
       </PreviewComponent>
 
-      {/* 3. Basic Usage */}
+      {/* 4. Basic Usage */}
       <PreviewComponent
         title="Basic ButtonBadge"
         code={`import { ButtonBadge } from "@/library/atoms/button-badge";
@@ -1080,7 +1189,7 @@ const ButtonBadgePage = () => {
         </div>
       </PreviewComponent>
 
-      {/* 4. With Icons */}
+      {/* 5. With Icons */}
       <PreviewComponent
         title="ButtonBadge with Icons"
         code={`import { ButtonBadge } from "@/library/atoms/button-badge";
@@ -1096,7 +1205,7 @@ const ButtonBadgePage = () => {
         </div>
       </PreviewComponent>
 
-      {/* 5. Without Badge Variant */}
+      {/* 6. Without Badge Variant */}
       <PreviewComponent
         title="Without Badge"
         code={`import { ButtonBadge } from "@/library/atoms/button-badge";
@@ -1112,9 +1221,9 @@ const ButtonBadgePage = () => {
         </div>
       </PreviewComponent>
 
-      {/* 6. Interactive Filter Example */}
+      {/* 7. Interactive Filter Example (Controlled State) */}
       <PreviewComponent
-        title="Interactive Filter Example"
+        title="Interactive Filter Example (Controlled State)"
         code={`import { ButtonBadge } from "@/library/atoms/button-badge";
 import { useState } from "react";
 
@@ -1212,53 +1321,89 @@ const SearchPage = () => {
 
   return (
     <Section title="Search" description="A pill-shaped search input with icon.">
-      <SubSection title="Sizes">
+      <PreviewComponent
+        title="All Search Sizes"
+        code={`import { Search } from "@/library/molecules/search";
+
+<Search size="sm" placeholder="Small search..." />
+<Search size="md" placeholder="Medium search..." />
+<Search size="lg" placeholder="Large search..." />`}
+      >
         <div style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 400 }}>
           <Search size="sm" placeholder="Small search..." />
           <Search size="md" placeholder="Medium search..." />
           <Search size="lg" placeholder="Large search..." />
         </div>
-      </SubSection>
+      </PreviewComponent>
 
-      <SubSection title="Controlled Input">
-        <DemoBox>
-          <div style={{ maxWidth: 400 }}>
-            <Search
-              placeholder="Type to search..."
-              value={searchValue}
-              onChange={setSearchValue}
-              onSubmit={(value) => alert(`Searching for: ${value}`)}
-            />
-            <p style={{ marginTop: 12, color: "var(--color-content-secondary)", fontSize: 14 }}>
-              Current value: "{searchValue}"
-            </p>
-          </div>
-        </DemoBox>
-      </SubSection>
+      <PreviewComponent
+        title="Search States"
+        code={`import { Search } from "@/library/molecules/search";
 
-      <SubSection title="States">
+<Search placeholder="Enabled" visualState="enabled" />
+<Search placeholder="Hover" visualState="hover" />
+<Search placeholder="Active" visualState="active" />
+<Search placeholder="Filled" defaultValue="React components" visualState="filled" />
+<Search placeholder="Disabled" visualState="disabled" />`}
+      >
         <div style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 400 }}>
-          <Search placeholder="Default search..." />
-          <Search placeholder="With value" defaultValue="React components" />
-          <Search placeholder="Disabled search..." isDisabled />
+          <Search placeholder="Enabled" visualState="enabled" />
+          <Search placeholder="Hover" visualState="hover" />
+          <Search placeholder="Active" visualState="active" />
+          <Search placeholder="Filled" defaultValue="React components" visualState="filled" />
+          <Search placeholder="Disabled" visualState="disabled" />
         </div>
-      </SubSection>
+      </PreviewComponent>
 
-      <SubSection title="Collapsed Mode">
-        <p style={{ marginBottom: 16, color: "var(--color-content-secondary)", fontSize: 14 }}>
-          Used in collapsed side menus:
-        </p>
+      <PreviewComponent
+        title="Controlled Input"
+        code={`import { Search } from "@/library/molecules/search";
+
+const [searchValue, setSearchValue] = useState("");
+
+<Search
+  placeholder="Type to search..."
+  value={searchValue}
+  onChange={setSearchValue}
+  onSubmit={(value) => alert(\`Searching for: \${value}\`)}
+/>`}
+      >
+        <div style={{ maxWidth: 400 }}>
+          <Search
+            placeholder="Type to search..."
+            value={searchValue}
+            onChange={setSearchValue}
+            onSubmit={(value) => alert(`Searching for: ${value}`)}
+          />
+          <p style={{ marginTop: 12, color: "var(--color-content-secondary)", fontSize: 14 }}>
+            Current value: "{searchValue}"
+          </p>
+        </div>
+      </PreviewComponent>
+
+      <PreviewComponent
+        title="Collapsed Mode"
+        code={`import { Search } from "@/library/molecules/search";
+
+<Search collapsed />
+<Search collapsed size="lg" />`}
+      >
         <div style={{ display: "flex", gap: 16 }}>
           <Search collapsed />
           <Search collapsed size="lg" />
         </div>
-      </SubSection>
+      </PreviewComponent>
 
-      <SubSection title="Without Clear Button">
+      <PreviewComponent
+        title="Without Clear Button"
+        code={`import { Search } from "@/library/molecules/search";
+
+<Search placeholder="No clear button" defaultValue="Some text" showClear={false} />`}
+      >
         <div style={{ maxWidth: 400 }}>
           <Search placeholder="No clear button" defaultValue="Some text" showClear={false} />
         </div>
-      </SubSection>
+      </PreviewComponent>
     </Section>
   );
 };
@@ -1268,8 +1413,19 @@ const TabsPage = () => {
 
   return (
     <Section title="Tabs" description="A tab navigation component with optional badges and icons.">
-      <SubSection title="Basic Tabs">
-        <DemoBox>
+      <PreviewComponent
+        title="Basic Tabs"
+        code={`import { Tabs, Tab } from "@/library/molecules/tabs";
+
+const [activeTab, setActiveTab] = useState("tab1");
+
+<Tabs selectedKey={activeTab} onSelectionChange={setActiveTab}>
+  <Tab id="tab1">Overview</Tab>
+  <Tab id="tab2">Details</Tab>
+  <Tab id="tab3">Settings</Tab>
+</Tabs>`}
+      >
+        <div>
           <Tabs selectedKey={activeTab} onSelectionChange={setActiveTab}>
             <Tab id="tab1">Overview</Tab>
             <Tab id="tab2">Details</Tab>
@@ -1280,72 +1436,63 @@ const TabsPage = () => {
             {activeTab === "tab2" && <p>Details content goes here.</p>}
             {activeTab === "tab3" && <p>Settings content goes here.</p>}
           </div>
-        </DemoBox>
-      </SubSection>
+        </div>
+      </PreviewComponent>
 
-      <SubSection title="With Badges">
-        <DemoBox>
-          <Tabs defaultSelectedKey="messages">
-            <Tab id="messages" badge={12}>Messages</Tab>
-            <Tab id="notifications" badge={3}>Notifications</Tab>
-            <Tab id="updates">Updates</Tab>
-          </Tabs>
-        </DemoBox>
-      </SubSection>
+      <PreviewComponent
+        title="Tabs With Badges"
+        code={`import { Tabs, Tab } from "@/library/molecules/tabs";
 
-      <SubSection title="With Icons">
-        <DemoBox>
-          <Tabs defaultSelectedKey="home">
-            <Tab id="home" icon={<Icon name="Home" size="sm" />}>Home</Tab>
-            <Tab id="profile" icon={<Icon name="User" size="sm" />}>Profile</Tab>
-            <Tab id="settings" icon={<Icon name="Cog6Tooth" size="sm" />}>Settings</Tab>
-          </Tabs>
-        </DemoBox>
-      </SubSection>
+<Tabs defaultSelectedKey="messages">
+  <Tab id="messages" badge={12}>Messages</Tab>
+  <Tab id="notifications" badge={3}>Notifications</Tab>
+  <Tab id="updates">Updates</Tab>
+</Tabs>`}
+      >
+        <Tabs defaultSelectedKey="messages">
+          <Tab id="messages" badge={12}>Messages</Tab>
+          <Tab id="notifications" badge={3}>Notifications</Tab>
+          <Tab id="updates">Updates</Tab>
+        </Tabs>
+      </PreviewComponent>
+
+      <PreviewComponent
+        title="Tabs With Icons"
+        code={`import { Tabs, Tab } from "@/library/molecules/tabs";
+import { Icon } from "@/library/atoms/icon";
+
+<Tabs defaultSelectedKey="home">
+  <Tab id="home" icon={<Icon name="Home" size="sm" />}>Home</Tab>
+  <Tab id="profile" icon={<Icon name="User" size="sm" />}>Profile</Tab>
+  <Tab id="settings" icon={<Icon name="Cog6Tooth" size="sm" />}>Settings</Tab>
+</Tabs>`}
+      >
+        <Tabs defaultSelectedKey="home">
+          <Tab id="home" icon={<Icon name="Home" size="sm" />}>Home</Tab>
+          <Tab id="profile" icon={<Icon name="User" size="sm" />}>Profile</Tab>
+          <Tab id="settings" icon={<Icon name="Cog6Tooth" size="sm" />}>Settings</Tab>
+        </Tabs>
+      </PreviewComponent>
     </Section>
   );
 };
 
 const AccordionPage = () => (
   <Section title="Accordion" description="An expandable/collapsible content container.">
-    <SubSection title="Single Accordion">
-      <DemoBox>
-        <Accordion title="Click to expand" defaultExpanded>
-          <p>This is the accordion content. It can contain any React elements.</p>
-        </Accordion>
-      </DemoBox>
-    </SubSection>
+    <PreviewComponent
+      title="All Accordion Sizes"
+      code={`import { Accordion } from "@/library/molecules/accordion";
 
-    <SubSection title="Accordion Group">
-      <DemoBox>
-        <AccordionGroup defaultExpanded="item1">
-          <AccordionItem id="item1" title="Section 1">
-            <p>Content for section 1</p>
-          </AccordionItem>
-          <AccordionItem id="item2" title="Section 2">
-            <p>Content for section 2</p>
-          </AccordionItem>
-          <AccordionItem id="item3" title="Section 3">
-            <p>Content for section 3</p>
-          </AccordionItem>
-        </AccordionGroup>
-      </DemoBox>
-    </SubSection>
-
-    <SubSection title="With Icon and Action">
-      <DemoBox>
-        <Accordion
-          title="Settings"
-          iconName="Cog6Tooth"
-          actionLabel="Edit"
-          onActionClick={() => alert("Edit clicked")}
-        >
-          <p>Accordion with icon and action button.</p>
-        </Accordion>
-      </DemoBox>
-    </SubSection>
-
-    <SubSection title="Sizes">
+<Accordion title="Small Size" size="sm">
+  <p>Small accordion content</p>
+</Accordion>
+<Accordion title="Medium Size" size="md">
+  <p>Medium accordion content</p>
+</Accordion>
+<Accordion title="Large Size" size="lg">
+  <p>Large accordion content</p>
+</Accordion>`}
+    >
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         <Accordion title="Small Size" size="sm">
           <p>Small accordion content</p>
@@ -1357,13 +1504,88 @@ const AccordionPage = () => (
           <p>Large accordion content</p>
         </Accordion>
       </div>
-    </SubSection>
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="Single Accordion"
+      code={`import { Accordion } from "@/library/molecules/accordion";
+
+<Accordion title="Click to expand" defaultExpanded>
+  <p>This is the accordion content. It can contain any React elements.</p>
+</Accordion>`}
+    >
+      <Accordion title="Click to expand" defaultExpanded>
+        <p>This is the accordion content. It can contain any React elements.</p>
+      </Accordion>
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="Accordion Group"
+      code={`import { AccordionGroup, AccordionItem } from "@/library/molecules/accordion";
+
+<AccordionGroup defaultExpanded="item1">
+  <AccordionItem id="item1" title="Section 1">
+    <p>Content for section 1</p>
+  </AccordionItem>
+  <AccordionItem id="item2" title="Section 2">
+    <p>Content for section 2</p>
+  </AccordionItem>
+  <AccordionItem id="item3" title="Section 3">
+    <p>Content for section 3</p>
+  </AccordionItem>
+</AccordionGroup>`}
+    >
+      <AccordionGroup defaultExpanded="item1">
+        <AccordionItem id="item1" title="Section 1">
+          <p>Content for section 1</p>
+        </AccordionItem>
+        <AccordionItem id="item2" title="Section 2">
+          <p>Content for section 2</p>
+        </AccordionItem>
+        <AccordionItem id="item3" title="Section 3">
+          <p>Content for section 3</p>
+        </AccordionItem>
+      </AccordionGroup>
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="With Icon and Action"
+      code={`import { Accordion } from "@/library/molecules/accordion";
+
+<Accordion
+  title="Settings"
+  iconName="Cog6Tooth"
+  actionLabel="Edit"
+  onActionClick={() => alert("Edit clicked")}
+>
+  <p>Accordion with icon and action button.</p>
+</Accordion>`}
+    >
+      <Accordion
+        title="Settings"
+        iconName="Cog6Tooth"
+        actionLabel="Edit"
+        onActionClick={() => alert("Edit clicked")}
+      >
+        <p>Accordion with icon and action button.</p>
+      </Accordion>
+    </PreviewComponent>
   </Section>
 );
 
 const TextInputPage = () => (
   <Section title="TextInput" description="A complete text input with label, input field, and helper/error text.">
-    <SubSection title="States">
+    <PreviewComponent
+      title="All TextInput States"
+      code={`import { TextInput } from "@/library/molecules/text-input";
+
+<TextInput label="Default" placeholder="Enter text..." />
+<TextInput label="With Helper" placeholder="Enter text..." helper="This is helper text" />
+<TextInput label="Error State" placeholder="Enter text..." error="This field is required" />
+<TextInput label="Success State" placeholder="Enter text..." success="Looks good!" />
+<TextInput label="Disabled" placeholder="Enter text..." isDisabled />
+<TextInput label="Read Only" value="Read only value" isReadOnly />`}
+    >
       <div style={{ display: "flex", flexDirection: "column", gap: 24, maxWidth: 400 }}>
         <TextInput label="Default" placeholder="Enter text..." />
         <TextInput label="With Helper" placeholder="Enter text..." helper="This is helper text" />
@@ -1372,177 +1594,287 @@ const TextInputPage = () => (
         <TextInput label="Disabled" placeholder="Enter text..." isDisabled />
         <TextInput label="Read Only" value="Read only value" isReadOnly />
       </div>
-    </SubSection>
+    </PreviewComponent>
 
-    <SubSection title="Required Field">
-      <div style={{ maxWidth: 400 }}>
-        <TextInput label="Email" type="email" placeholder="you@example.com" isRequired />
-      </div>
-    </SubSection>
+    <PreviewComponent
+      title="Input Types"
+      code={`import { TextInput } from "@/library/molecules/text-input";
 
-    <SubSection title="Input Types">
+<TextInput label="Text" type="text" placeholder="Plain text" />
+<TextInput label="Email" type="email" placeholder="email@example.com" />
+<TextInput label="Password" type="password" placeholder="Enter password" />
+<TextInput label="Number" type="number" placeholder="0" />`}
+    >
       <div style={{ display: "flex", flexDirection: "column", gap: 24, maxWidth: 400 }}>
         <TextInput label="Text" type="text" placeholder="Plain text" />
         <TextInput label="Email" type="email" placeholder="email@example.com" />
         <TextInput label="Password" type="password" placeholder="Enter password" />
         <TextInput label="Number" type="number" placeholder="0" />
       </div>
-    </SubSection>
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="Required Field"
+      code={`import { TextInput } from "@/library/molecules/text-input";
+
+<TextInput label="Email" type="email" placeholder="you@example.com" isRequired />`}
+    >
+      <div style={{ maxWidth: 400 }}>
+        <TextInput label="Email" type="email" placeholder="you@example.com" isRequired />
+      </div>
+    </PreviewComponent>
   </Section>
 );
 
 const DropdownMenuItemPage = () => (
   <Section title="DropdownMenuItem" description="A menu item for dropdown menus with icons, badges, and various states.">
-    <SubSection title="Default Variant">
-      <DemoBox>
-        <div style={{ width: 280, display: "flex", flexDirection: "column" }}>
-          <DropdownMenuItem label="Profile" iconName="User" />
-          <DropdownMenuItem label="Settings" iconName="Cog6Tooth" />
-          <DropdownMenuItem label="Help" iconName="QuestionMarkCircle" shortcut="?" />
-          <DropdownMenuItem label="Notifications" iconName="Bell" badge="3" />
-        </div>
-      </DemoBox>
-    </SubSection>
+    <PreviewComponent
+      title="DropdownMenuItem Sizes"
+      code={`import { DropdownMenuItem } from "@/library/molecules/dropdown-menu-item";
 
-    <SubSection title="States">
-      <DemoBox>
-        <div style={{ width: 280, display: "flex", flexDirection: "column" }}>
-          <DropdownMenuItem label="Default" iconName="Home" />
-          <DropdownMenuItem label="Active" iconName="Star" active />
-          <DropdownMenuItem label="Disabled" iconName="LockClosed" isDisabled />
+<DropdownMenuItem label="Small Item" iconName="Home" size="sm" />
+<DropdownMenuItem label="Medium Item" iconName="Home" size="md" />`}
+    >
+      <div style={{ display: "flex", gap: 24 }}>
+        <div style={{ width: 200 }}>
+          <p style={{ fontSize: 12, color: "var(--color-content-secondary)", marginBottom: 8 }}>Small</p>
+          <DropdownMenuItem label="Small Item" iconName="Home" size="sm" />
+          <DropdownMenuItem label="Another Item" iconName="User" size="sm" />
         </div>
-      </DemoBox>
-    </SubSection>
+        <div style={{ width: 200 }}>
+          <p style={{ fontSize: 12, color: "var(--color-content-secondary)", marginBottom: 8 }}>Medium</p>
+          <DropdownMenuItem label="Medium Item" iconName="Home" size="md" />
+          <DropdownMenuItem label="Another Item" iconName="User" size="md" />
+        </div>
+      </div>
+    </PreviewComponent>
 
-    <SubSection title="Destructive Variant">
-      <DemoBox>
-        <div style={{ width: 280, display: "flex", flexDirection: "column" }}>
-          <DropdownMenuItem label="Delete" iconName="Trash" variant="destructive" />
-          <DropdownMenuItem label="Remove" iconName="XMark" variant="destructive" />
-          <DropdownMenuItem label="Disabled Delete" iconName="Trash" variant="destructive" isDisabled />
-        </div>
-      </DemoBox>
-    </SubSection>
+    <PreviewComponent
+      title="Default Variant"
+      code={`import { DropdownMenuItem } from "@/library/molecules/dropdown-menu-item";
 
-    <SubSection title="With Description">
-      <DemoBox>
-        <div style={{ width: 320, display: "flex", flexDirection: "column" }}>
-          <DropdownMenuItem
-            label="Edit Profile"
-            iconName="PencilSquare"
-            description="Change your name and avatar"
-          />
-          <DropdownMenuItem
-            label="Privacy Settings"
-            iconName="ShieldCheck"
-            description="Manage your privacy preferences"
-          />
-        </div>
-      </DemoBox>
-    </SubSection>
+<DropdownMenuItem label="Profile" iconName="User" />
+<DropdownMenuItem label="Settings" iconName="Cog6Tooth" />
+<DropdownMenuItem label="Help" iconName="QuestionMarkCircle" shortcut="?" />
+<DropdownMenuItem label="Notifications" iconName="Bell" badge="3" />`}
+    >
+      <div style={{ width: 280, display: "flex", flexDirection: "column" }}>
+        <DropdownMenuItem label="Profile" iconName="User" />
+        <DropdownMenuItem label="Settings" iconName="Cog6Tooth" />
+        <DropdownMenuItem label="Help" iconName="QuestionMarkCircle" shortcut="?" />
+        <DropdownMenuItem label="Notifications" iconName="Bell" badge="3" />
+      </div>
+    </PreviewComponent>
 
-    <SubSection title="With Trailing Icon (Submenu)">
-      <DemoBox>
-        <div style={{ width: 280, display: "flex", flexDirection: "column" }}>
-          <DropdownMenuItem
-            label="More Options"
-            iconName="EllipsisHorizontal"
-            trailingIconName="ChevronRight"
-          />
-          <DropdownMenuItem
-            label="Share"
-            iconName="Share"
-            trailingIconName="ChevronRight"
-          />
-        </div>
-      </DemoBox>
-    </SubSection>
+    <PreviewComponent
+      title="States"
+      code={`import { DropdownMenuItem } from "@/library/molecules/dropdown-menu-item";
 
-    <SubSection title="Dividers and Labels">
-      <DemoBox>
-        <div style={{ width: 280, display: "flex", flexDirection: "column" }}>
-          <DropdownMenuLabel>Account</DropdownMenuLabel>
-          <DropdownMenuItem label="Profile" iconName="User" />
-          <DropdownMenuItem label="Settings" iconName="Cog6Tooth" />
-          <DropdownMenuDivider />
-          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-          <DropdownMenuItem label="Sign Out" iconName="ArrowRightOnRectangle" />
-        </div>
-      </DemoBox>
-    </SubSection>
+<DropdownMenuItem label="Default" iconName="Home" />
+<DropdownMenuItem label="Active" iconName="Star" active />
+<DropdownMenuItem label="Disabled" iconName="LockClosed" isDisabled />`}
+    >
+      <div style={{ width: 280, display: "flex", flexDirection: "column" }}>
+        <DropdownMenuItem label="Default" iconName="Home" />
+        <DropdownMenuItem label="Active" iconName="Star" active />
+        <DropdownMenuItem label="Disabled" iconName="LockClosed" isDisabled />
+      </div>
+    </PreviewComponent>
 
-    <SubSection title="Sizes">
-      <DemoBox>
-        <div style={{ display: "flex", gap: 24 }}>
-          <div style={{ width: 200 }}>
-            <p style={{ fontSize: 12, color: "var(--color-content-secondary)", marginBottom: 8 }}>Small</p>
-            <DropdownMenuItem label="Small Item" iconName="Home" size="sm" />
-            <DropdownMenuItem label="Another Item" iconName="User" size="sm" />
-          </div>
-          <div style={{ width: 200 }}>
-            <p style={{ fontSize: 12, color: "var(--color-content-secondary)", marginBottom: 8 }}>Medium</p>
-            <DropdownMenuItem label="Medium Item" iconName="Home" size="md" />
-            <DropdownMenuItem label="Another Item" iconName="User" size="md" />
-          </div>
-        </div>
-      </DemoBox>
-    </SubSection>
+    <PreviewComponent
+      title="Destructive Variant"
+      code={`import { DropdownMenuItem } from "@/library/molecules/dropdown-menu-item";
+
+<DropdownMenuItem label="Delete" iconName="Trash" variant="destructive" />
+<DropdownMenuItem label="Remove" iconName="XMark" variant="destructive" />
+<DropdownMenuItem label="Disabled Delete" iconName="Trash" variant="destructive" isDisabled />`}
+    >
+      <div style={{ width: 280, display: "flex", flexDirection: "column" }}>
+        <DropdownMenuItem label="Delete" iconName="Trash" variant="destructive" />
+        <DropdownMenuItem label="Remove" iconName="XMark" variant="destructive" />
+        <DropdownMenuItem label="Disabled Delete" iconName="Trash" variant="destructive" isDisabled />
+      </div>
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="With Description"
+      code={`import { DropdownMenuItem } from "@/library/molecules/dropdown-menu-item";
+
+<DropdownMenuItem
+  label="Edit Profile"
+  iconName="PencilSquare"
+  description="Change your name and avatar"
+/>
+<DropdownMenuItem
+  label="Privacy Settings"
+  iconName="ShieldCheck"
+  description="Manage your privacy preferences"
+/>`}
+    >
+      <div style={{ width: 320, display: "flex", flexDirection: "column" }}>
+        <DropdownMenuItem
+          label="Edit Profile"
+          iconName="PencilSquare"
+          description="Change your name and avatar"
+        />
+        <DropdownMenuItem
+          label="Privacy Settings"
+          iconName="ShieldCheck"
+          description="Manage your privacy preferences"
+        />
+      </div>
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="With Trailing Icon (Submenu)"
+      code={`import { DropdownMenuItem } from "@/library/molecules/dropdown-menu-item";
+
+<DropdownMenuItem
+  label="More Options"
+  iconName="EllipsisHorizontal"
+  trailingIconName="ChevronRight"
+/>
+<DropdownMenuItem
+  label="Share"
+  iconName="Share"
+  trailingIconName="ChevronRight"
+/>`}
+    >
+      <div style={{ width: 280, display: "flex", flexDirection: "column" }}>
+        <DropdownMenuItem
+          label="More Options"
+          iconName="EllipsisHorizontal"
+          trailingIconName="ChevronRight"
+        />
+        <DropdownMenuItem
+          label="Share"
+          iconName="Share"
+          trailingIconName="ChevronRight"
+        />
+      </div>
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="Dividers and Labels"
+      code={`import { DropdownMenuItem, DropdownMenuLabel, DropdownMenuDivider } from "@/library/molecules/dropdown-menu-item";
+
+<DropdownMenuLabel>Account</DropdownMenuLabel>
+<DropdownMenuItem label="Profile" iconName="User" />
+<DropdownMenuItem label="Settings" iconName="Cog6Tooth" />
+<DropdownMenuDivider />
+<DropdownMenuLabel>Actions</DropdownMenuLabel>
+<DropdownMenuItem label="Sign Out" iconName="ArrowRightOnRectangle" />`}
+    >
+      <div style={{ width: 280, display: "flex", flexDirection: "column" }}>
+        <DropdownMenuLabel>Account</DropdownMenuLabel>
+        <DropdownMenuItem label="Profile" iconName="User" />
+        <DropdownMenuItem label="Settings" iconName="Cog6Tooth" />
+        <DropdownMenuDivider />
+        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+        <DropdownMenuItem label="Sign Out" iconName="ArrowRightOnRectangle" />
+      </div>
+    </PreviewComponent>
   </Section>
 );
 
 const StepperPage = () => (
   <Section title="Stepper" description="A progress stepper showing multiple steps with status indicators.">
-    <SubSection title="Basic Stepper">
-      <DemoBox>
-        <Stepper
-          currentStep={1}
-          steps={[
-            { title: "Draft", subtitle: "Jan 1, 2024" },
-            { title: "Review", subtitle: "Jan 15, 2024" },
-            { title: "Approved" },
-            { title: "Published" },
-          ]}
-        />
-      </DemoBox>
-    </SubSection>
+    <PreviewComponent
+      title="Basic Stepper"
+      code={`import { Stepper } from "@/library/molecules/stepper";
 
-    <SubSection title="Vertical Stepper">
-      <DemoBox>
-        <div style={{ height: 300 }}>
-          <Stepper
-            orientation="vertical"
-            currentStep={2}
-            steps={[
-              { title: "Step 1", subtitle: "Completed" },
-              { title: "Step 2", subtitle: "Completed" },
-              { title: "Step 3", subtitle: "Current" },
-              { title: "Step 4", subtitle: "Pending" },
-            ]}
-          />
-        </div>
-      </DemoBox>
-    </SubSection>
+<Stepper
+  currentStep={1}
+  steps={[
+    { title: "Draft", subtitle: "Jan 1, 2024" },
+    { title: "Review", subtitle: "Jan 15, 2024" },
+    { title: "Approved" },
+    { title: "Published" },
+  ]}
+/>`}
+    >
+      <Stepper
+        currentStep={1}
+        steps={[
+          { title: "Draft", subtitle: "Jan 1, 2024" },
+          { title: "Review", subtitle: "Jan 15, 2024" },
+          { title: "Approved" },
+          { title: "Published" },
+        ]}
+      />
+    </PreviewComponent>
 
-    <SubSection title="Without Background">
-      <DemoBox>
+    <PreviewComponent
+      title="Vertical Stepper"
+      code={`import { Stepper } from "@/library/molecules/stepper";
+
+<Stepper
+  orientation="vertical"
+  currentStep={2}
+  steps={[
+    { title: "Step 1", subtitle: "Completed" },
+    { title: "Step 2", subtitle: "Completed" },
+    { title: "Step 3", subtitle: "Current" },
+    { title: "Step 4", subtitle: "Pending" },
+  ]}
+/>`}
+    >
+      <div style={{ height: 300 }}>
         <Stepper
-          showBackground={false}
+          orientation="vertical"
           currentStep={2}
           steps={[
-            { title: "Cart" },
-            { title: "Shipping" },
-            { title: "Payment" },
-            { title: "Confirm" },
+            { title: "Step 1", subtitle: "Completed" },
+            { title: "Step 2", subtitle: "Completed" },
+            { title: "Step 3", subtitle: "Current" },
+            { title: "Step 4", subtitle: "Pending" },
           ]}
         />
-      </DemoBox>
-    </SubSection>
+      </div>
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="Without Background"
+      code={`import { Stepper } from "@/library/molecules/stepper";
+
+<Stepper
+  showBackground={false}
+  currentStep={2}
+  steps={[
+    { title: "Cart" },
+    { title: "Shipping" },
+    { title: "Payment" },
+    { title: "Confirm" },
+  ]}
+/>`}
+    >
+      <Stepper
+        showBackground={false}
+        currentStep={2}
+        steps={[
+          { title: "Cart" },
+          { title: "Shipping" },
+          { title: "Payment" },
+          { title: "Confirm" },
+        ]}
+      />
+    </PreviewComponent>
   </Section>
 );
 
 const TextareaPage = () => (
   <Section title="Textarea" description="A complete textarea with label, textarea field, and helper/error text.">
-    <SubSection title="States">
+    <PreviewComponent
+      title="All Textarea States"
+      code={`import { Textarea } from "@/library/molecules/textarea";
+
+<Textarea label="Default" placeholder="Enter your message..." />
+<Textarea label="With Helper" placeholder="Enter your message..." helper="Max 500 characters" />
+<Textarea label="Error State" placeholder="Enter your message..." error="This field is required" />
+<Textarea label="Success State" placeholder="Enter your message..." success="Message saved!" />
+<Textarea label="Disabled" placeholder="Enter your message..." isDisabled />
+<Textarea label="Read Only" value="This is read-only content" isReadOnly />`}
+    >
       <div style={{ display: "flex", flexDirection: "column", gap: 24, maxWidth: 400 }}>
         <Textarea label="Default" placeholder="Enter your message..." />
         <Textarea label="With Helper" placeholder="Enter your message..." helper="Max 500 characters" />
@@ -1551,13 +1883,18 @@ const TextareaPage = () => (
         <Textarea label="Disabled" placeholder="Enter your message..." isDisabled />
         <Textarea label="Read Only" value="This is read-only content" isReadOnly />
       </div>
-    </SubSection>
+    </PreviewComponent>
 
-    <SubSection title="Required Field">
+    <PreviewComponent
+      title="Required Field"
+      code={`import { Textarea } from "@/library/molecules/textarea";
+
+<Textarea label="Description" placeholder="Enter description..." isRequired rows={4} />`}
+    >
       <div style={{ maxWidth: 400 }}>
         <Textarea label="Description" placeholder="Enter description..." isRequired rows={4} />
       </div>
-    </SubSection>
+    </PreviewComponent>
   </Section>
 );
 
@@ -1566,33 +1903,55 @@ const RadioCardPage = () => {
 
   return (
     <Section title="RadioCard" description="A selectable card with a radio button, label, and optional info items.">
-      <SubSection title="Basic Usage">
-        <DemoBox>
-          <RadioCardGroup value={selected} onChange={setSelected}>
-            <RadioCard value="basic" label="Basic Plan" info="$9/month,5 users,10GB storage" />
-            <RadioCard value="pro" label="Pro Plan" info="$29/month,25 users,100GB storage" />
-            <RadioCard value="enterprise" label="Enterprise Plan" info="Custom pricing,Unlimited users,Unlimited storage" />
-          </RadioCardGroup>
-        </DemoBox>
-      </SubSection>
+      <PreviewComponent
+        title="Basic RadioCard"
+        code={`import { RadioCard, RadioCardGroup } from "@/library/molecules/radio-card";
 
-      <SubSection title="With Icons">
-        <DemoBox>
-          <RadioCardGroup value={selected} onChange={setSelected}>
-            <RadioCard value="basic" label="Credit Card" icon={<Icon name="CreditCard" size="md" />} info="Visa, Mastercard, Amex" />
-            <RadioCard value="pro" label="PayPal" icon={<Icon name="Wallet" size="md" />} info="Pay with your PayPal account" />
-          </RadioCardGroup>
-        </DemoBox>
-      </SubSection>
+const [selected, setSelected] = useState("basic");
 
-      <SubSection title="Disabled State">
-        <DemoBox>
-          <RadioCardGroup value="basic">
-            <RadioCard value="basic" label="Available Option" info="This option is available" />
-            <RadioCard value="pro" label="Unavailable Option" info="This option is not available" isDisabled />
-          </RadioCardGroup>
-        </DemoBox>
-      </SubSection>
+<RadioCardGroup value={selected} onChange={setSelected}>
+  <RadioCard value="basic" label="Basic Plan" info="$9/month,5 users,10GB storage" />
+  <RadioCard value="pro" label="Pro Plan" info="$29/month,25 users,100GB storage" />
+  <RadioCard value="enterprise" label="Enterprise Plan" info="Custom pricing,Unlimited users,Unlimited storage" />
+</RadioCardGroup>`}
+      >
+        <RadioCardGroup value={selected} onChange={setSelected}>
+          <RadioCard value="basic" label="Basic Plan" info="$9/month,5 users,10GB storage" />
+          <RadioCard value="pro" label="Pro Plan" info="$29/month,25 users,100GB storage" />
+          <RadioCard value="enterprise" label="Enterprise Plan" info="Custom pricing,Unlimited users,Unlimited storage" />
+        </RadioCardGroup>
+      </PreviewComponent>
+
+      <PreviewComponent
+        title="With Icons"
+        code={`import { RadioCard, RadioCardGroup } from "@/library/molecules/radio-card";
+import { Icon } from "@/library/atoms/icon";
+
+<RadioCardGroup value={selected} onChange={setSelected}>
+  <RadioCard value="basic" label="Credit Card" icon={<Icon name="CreditCard" size="md" />} info="Visa, Mastercard, Amex" />
+  <RadioCard value="pro" label="PayPal" icon={<Icon name="Wallet" size="md" />} info="Pay with your PayPal account" />
+</RadioCardGroup>`}
+      >
+        <RadioCardGroup value={selected} onChange={setSelected}>
+          <RadioCard value="basic" label="Credit Card" icon={<Icon name="CreditCard" size="md" />} info="Visa, Mastercard, Amex" />
+          <RadioCard value="pro" label="PayPal" icon={<Icon name="Wallet" size="md" />} info="Pay with your PayPal account" />
+        </RadioCardGroup>
+      </PreviewComponent>
+
+      <PreviewComponent
+        title="Disabled State"
+        code={`import { RadioCard, RadioCardGroup } from "@/library/molecules/radio-card";
+
+<RadioCardGroup value="basic">
+  <RadioCard value="basic" label="Available Option" info="This option is available" />
+  <RadioCard value="pro" label="Unavailable Option" info="This option is not available" isDisabled />
+</RadioCardGroup>`}
+      >
+        <RadioCardGroup value="basic">
+          <RadioCard value="basic" label="Available Option" info="This option is available" />
+          <RadioCard value="pro" label="Unavailable Option" info="This option is not available" isDisabled />
+        </RadioCardGroup>
+      </PreviewComponent>
     </Section>
   );
 };
@@ -1603,8 +1962,25 @@ const PaginationPage = () => {
 
   return (
     <Section title="Pagination" description="A pagination control with page numbers, navigation buttons, and per-page selector.">
-      <SubSection title="Full Pagination">
-        <DemoBox>
+      <PreviewComponent
+        title="Full Pagination"
+        code={`import { Pagination } from "@/library/molecules/pagination";
+
+const [page, setPage] = useState(1);
+const [perPage, setPerPage] = useState(10);
+
+<Pagination
+  currentPage={page}
+  totalPages={10}
+  perPage={perPage}
+  onPageChange={setPage}
+  onPerPageChange={setPerPage}
+  showPerPage
+  showInfo
+  totalItems={100}
+/>`}
+      >
+        <div>
           <Pagination
             currentPage={page}
             totalPages={10}
@@ -1618,37 +1994,62 @@ const PaginationPage = () => {
           <p style={{ marginTop: 16, color: "var(--color-content-secondary)", fontSize: 14 }}>
             Current page: {page}, Per page: {perPage}
           </p>
-        </DemoBox>
-      </SubSection>
+        </div>
+      </PreviewComponent>
 
-      <SubSection title="Simple Pagination">
-        <DemoBox>
-          <SimplePagination
-            currentPage={page}
-            totalPages={10}
-            onPageChange={setPage}
-          />
-        </DemoBox>
-      </SubSection>
+      <PreviewComponent
+        title="Simple Pagination"
+        code={`import { SimplePagination } from "@/library/molecules/pagination";
 
-      <SubSection title="With First/Last Buttons">
-        <DemoBox>
-          <Pagination
-            currentPage={page}
-            totalPages={20}
-            onPageChange={setPage}
-            showFirstLast
-            showPerPage={false}
-          />
-        </DemoBox>
-      </SubSection>
+<SimplePagination
+  currentPage={page}
+  totalPages={10}
+  onPageChange={setPage}
+/>`}
+      >
+        <SimplePagination
+          currentPage={page}
+          totalPages={10}
+          onPageChange={setPage}
+        />
+      </PreviewComponent>
+
+      <PreviewComponent
+        title="With First/Last Buttons"
+        code={`import { Pagination } from "@/library/molecules/pagination";
+
+<Pagination
+  currentPage={page}
+  totalPages={20}
+  onPageChange={setPage}
+  showFirstLast
+  showPerPage={false}
+/>`}
+      >
+        <Pagination
+          currentPage={page}
+          totalPages={20}
+          onPageChange={setPage}
+          showFirstLast
+          showPerPage={false}
+        />
+      </PreviewComponent>
     </Section>
   );
 };
 
 const InfoboxPage = () => (
   <Section title="Infobox" description="A contextual message box with variants for success, warning, error, info, and neutral states.">
-    <SubSection title="Variants">
+    <PreviewComponent
+      title="All Infobox Variants"
+      code={`import { Infobox } from "@/library/molecules/infobox";
+
+<Infobox variant="info" title="Information" description="This is an informational message." />
+<Infobox variant="success" title="Success" description="Your changes have been saved successfully." />
+<Infobox variant="warning" title="Warning" description="Please review your changes before proceeding." />
+<Infobox variant="error" title="Error" description="An error occurred while processing your request." />
+<Infobox variant="neutral" title="Note" description="This is a neutral informational message." />`}
+    >
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         <Infobox variant="info" title="Information" description="This is an informational message." />
         <Infobox variant="success" title="Success" description="Your changes have been saved successfully." />
@@ -1656,19 +2057,28 @@ const InfoboxPage = () => (
         <Infobox variant="error" title="Error" description="An error occurred while processing your request." />
         <Infobox variant="neutral" title="Note" description="This is a neutral informational message." />
       </div>
-    </SubSection>
+    </PreviewComponent>
 
-    <SubSection title="With Action">
-      <DemoBox>
-        <Infobox
-          variant="warning"
-          title="Unsaved Changes"
-          description="You have unsaved changes that will be lost."
-          actionLabel="Save Now"
-          onAction={() => alert("Save clicked")}
-        />
-      </DemoBox>
-    </SubSection>
+    <PreviewComponent
+      title="With Action"
+      code={`import { Infobox } from "@/library/molecules/infobox";
+
+<Infobox
+  variant="warning"
+  title="Unsaved Changes"
+  description="You have unsaved changes that will be lost."
+  actionLabel="Save Now"
+  onAction={() => alert("Save clicked")}
+/>`}
+    >
+      <Infobox
+        variant="warning"
+        title="Unsaved Changes"
+        description="You have unsaved changes that will be lost."
+        actionLabel="Save Now"
+        onAction={() => alert("Save clicked")}
+      />
+    </PreviewComponent>
   </Section>
 );
 
@@ -1677,8 +2087,51 @@ const ButtonGroupPage = () => {
 
   return (
     <Section title="ButtonGroup" description="A horizontal group of connected buttons using ButtonBadge atoms.">
-      <SubSection title="Basic Usage">
-        <DemoBox>
+      <PreviewComponent
+        title="ButtonGroup Sizes"
+        code={`import { ButtonGroup, ButtonGroupItem } from "@/library/molecules/button-group";
+
+<ButtonGroup size="md" value="a">
+  <ButtonGroupItem value="a">Option A</ButtonGroupItem>
+  <ButtonGroupItem value="b">Option B</ButtonGroupItem>
+</ButtonGroup>
+
+<ButtonGroup size="lg" value="a">
+  <ButtonGroupItem value="a">Option A</ButtonGroupItem>
+  <ButtonGroupItem value="b">Option B</ButtonGroupItem>
+</ButtonGroup>`}
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <div>
+            <p style={{ fontSize: 12, color: "var(--color-content-secondary)", marginBottom: 8 }}>Medium</p>
+            <ButtonGroup size="md" value="a">
+              <ButtonGroupItem value="a">Option A</ButtonGroupItem>
+              <ButtonGroupItem value="b">Option B</ButtonGroupItem>
+            </ButtonGroup>
+          </div>
+          <div>
+            <p style={{ fontSize: 12, color: "var(--color-content-secondary)", marginBottom: 8 }}>Large</p>
+            <ButtonGroup size="lg" value="a">
+              <ButtonGroupItem value="a">Option A</ButtonGroupItem>
+              <ButtonGroupItem value="b">Option B</ButtonGroupItem>
+            </ButtonGroup>
+          </div>
+        </div>
+      </PreviewComponent>
+
+      <PreviewComponent
+        title="Basic ButtonGroup"
+        code={`import { ButtonGroup, ButtonGroupItem } from "@/library/molecules/button-group";
+
+const [view, setView] = useState("list");
+
+<ButtonGroup value={view} onChange={setView}>
+  <ButtonGroupItem value="list" iconName="QueueList">List</ButtonGroupItem>
+  <ButtonGroupItem value="grid" iconName="Squares2X2">Grid</ButtonGroupItem>
+  <ButtonGroupItem value="kanban" iconName="ViewColumns">Kanban</ButtonGroupItem>
+</ButtonGroup>`}
+      >
+        <div>
           <ButtonGroup value={view} onChange={setView}>
             <ButtonGroupItem value="list" iconName="QueueList">List</ButtonGroupItem>
             <ButtonGroupItem value="grid" iconName="Squares2X2">Grid</ButtonGroupItem>
@@ -1687,84 +2140,109 @@ const ButtonGroupPage = () => {
           <p style={{ marginTop: 16, color: "var(--color-content-secondary)", fontSize: 14 }}>
             Selected: {view}
           </p>
-        </DemoBox>
-      </SubSection>
-
-      <SubSection title="Icon Only">
-        <DemoBox>
-          <ButtonGroup value="left">
-            <ButtonGroupItem value="left" iconName="Bars3BottomLeft" />
-            <ButtonGroupItem value="center" iconName="Bars3" />
-            <ButtonGroupItem value="right" iconName="Bars3BottomRight" />
-          </ButtonGroup>
-        </DemoBox>
-      </SubSection>
-
-      <SubSection title="Sizes">
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <Row label="Medium">
-            <ButtonGroup size="md" value="a">
-              <ButtonGroupItem value="a">Option A</ButtonGroupItem>
-              <ButtonGroupItem value="b">Option B</ButtonGroupItem>
-            </ButtonGroup>
-          </Row>
-          <Row label="Large">
-            <ButtonGroup size="lg" value="a">
-              <ButtonGroupItem value="a">Option A</ButtonGroupItem>
-              <ButtonGroupItem value="b">Option B</ButtonGroupItem>
-            </ButtonGroup>
-          </Row>
         </div>
-      </SubSection>
+      </PreviewComponent>
+
+      <PreviewComponent
+        title="Icon Only"
+        code={`import { ButtonGroup, ButtonGroupItem } from "@/library/molecules/button-group";
+
+<ButtonGroup value="left">
+  <ButtonGroupItem value="left" iconName="Bars3BottomLeft" />
+  <ButtonGroupItem value="center" iconName="Bars3" />
+  <ButtonGroupItem value="right" iconName="Bars3BottomRight" />
+</ButtonGroup>`}
+      >
+        <ButtonGroup value="left">
+          <ButtonGroupItem value="left" iconName="Bars3BottomLeft" />
+          <ButtonGroupItem value="center" iconName="Bars3" />
+          <ButtonGroupItem value="right" iconName="Bars3BottomRight" />
+        </ButtonGroup>
+      </PreviewComponent>
     </Section>
   );
 };
 
 const AvatarGroupPage = () => (
   <Section title="AvatarGroup" description="A stacked group of avatars with overflow indicator.">
-    <SubSection title="Basic Usage">
-      <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-        <Row label="3 Avatars">
-          <AvatarGroup
-            avatars={[
-              { name: "John Doe" },
-              { name: "Jane Smith" },
-              { name: "Bob Wilson" },
-            ]}
-          />
-        </Row>
-        <Row label="With Overflow">
-          <AvatarGroup
-            avatars={[
-              { name: "John Doe" },
-              { name: "Jane Smith" },
-              { name: "Bob Wilson" },
-              { name: "Alice Brown" },
-              { name: "Charlie Davis" },
-              { name: "Eve Johnson" },
-            ]}
-            max={4}
-          />
-        </Row>
-      </div>
-    </SubSection>
+    <PreviewComponent
+      title="AvatarGroup Sizes"
+      code={`import { AvatarGroup } from "@/library/molecules/avatar-group";
 
-    <SubSection title="Sizes">
+<AvatarGroup size="sm" avatars={[{ name: "A" }, { name: "B" }, { name: "C" }]} />
+<AvatarGroup size="md" avatars={[{ name: "A" }, { name: "B" }, { name: "C" }]} />
+<AvatarGroup size="lg" avatars={[{ name: "A" }, { name: "B" }, { name: "C" }]} />
+<AvatarGroup size="xl" avatars={[{ name: "A" }, { name: "B" }, { name: "C" }]} />`}
+    >
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        <Row label="Small">
+        <div>
+          <p style={{ fontSize: 12, color: "var(--color-content-secondary)", marginBottom: 8 }}>Small</p>
           <AvatarGroup size="sm" avatars={[{ name: "A" }, { name: "B" }, { name: "C" }]} />
-        </Row>
-        <Row label="Medium">
+        </div>
+        <div>
+          <p style={{ fontSize: 12, color: "var(--color-content-secondary)", marginBottom: 8 }}>Medium</p>
           <AvatarGroup size="md" avatars={[{ name: "A" }, { name: "B" }, { name: "C" }]} />
-        </Row>
-        <Row label="Large">
+        </div>
+        <div>
+          <p style={{ fontSize: 12, color: "var(--color-content-secondary)", marginBottom: 8 }}>Large</p>
           <AvatarGroup size="lg" avatars={[{ name: "A" }, { name: "B" }, { name: "C" }]} />
-        </Row>
-        <Row label="XL">
+        </div>
+        <div>
+          <p style={{ fontSize: 12, color: "var(--color-content-secondary)", marginBottom: 8 }}>XL</p>
           <AvatarGroup size="xl" avatars={[{ name: "A" }, { name: "B" }, { name: "C" }]} />
-        </Row>
+        </div>
       </div>
-    </SubSection>
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="Basic AvatarGroup"
+      code={`import { AvatarGroup } from "@/library/molecules/avatar-group";
+
+<AvatarGroup
+  avatars={[
+    { name: "John Doe" },
+    { name: "Jane Smith" },
+    { name: "Bob Wilson" },
+  ]}
+/>`}
+    >
+      <AvatarGroup
+        avatars={[
+          { name: "John Doe" },
+          { name: "Jane Smith" },
+          { name: "Bob Wilson" },
+        ]}
+      />
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="With Overflow"
+      code={`import { AvatarGroup } from "@/library/molecules/avatar-group";
+
+<AvatarGroup
+  avatars={[
+    { name: "John Doe" },
+    { name: "Jane Smith" },
+    { name: "Bob Wilson" },
+    { name: "Alice Brown" },
+    { name: "Charlie Davis" },
+    { name: "Eve Johnson" },
+  ]}
+  max={4}
+/>`}
+    >
+      <AvatarGroup
+        avatars={[
+          { name: "John Doe" },
+          { name: "Jane Smith" },
+          { name: "Bob Wilson" },
+          { name: "Alice Brown" },
+          { name: "Charlie Davis" },
+          { name: "Eve Johnson" },
+        ]}
+        max={4}
+      />
+    </PreviewComponent>
   </Section>
 );
 
@@ -1776,58 +2254,67 @@ const ChipInputPage = () => {
 
   return (
     <Section title="ChipInput" description="A tag/chip input field with label, search functionality, and chip management.">
-      <SubSection title="Basic Usage">
-        <DemoBox>
-          <div style={{ maxWidth: 400 }}>
-            <ChipInput
-              label="Tags"
-              placeholder="Add tags..."
-              chips={chips}
-              onChange={setChips}
-            />
-          </div>
-        </DemoBox>
-      </SubSection>
+      <PreviewComponent
+        title="All ChipInput States"
+        code={`import { ChipInput } from "@/library/molecules/chip-input";
 
-      <SubSection title="With Required">
-        <DemoBox>
-          <div style={{ maxWidth: 400 }}>
-            <ChipInput
-              label="Skills"
-              required
-              placeholder="Add skills..."
-              chips={[{ id: "1", label: "JavaScript" }]}
-            />
-          </div>
-        </DemoBox>
-      </SubSection>
+<ChipInput
+  label="Tags"
+  placeholder="Add tags..."
+  chips={chips}
+  onChange={setChips}
+/>
 
-      <SubSection title="Error State">
-        <DemoBox>
-          <div style={{ maxWidth: 400 }}>
-            <ChipInput
-              label="Categories"
-              placeholder="Select categories..."
-              chips={[]}
-              error
-              helperText="Please select at least one category"
-            />
-          </div>
-        </DemoBox>
-      </SubSection>
+<ChipInput
+  label="Skills"
+  required
+  placeholder="Add skills..."
+  chips={[{ id: "1", label: "JavaScript" }]}
+/>
 
-      <SubSection title="Disabled">
-        <DemoBox>
-          <div style={{ maxWidth: 400 }}>
-            <ChipInput
-              label="Disabled Input"
-              placeholder="Cannot edit..."
-              chips={[{ id: "1", label: "Fixed Tag" }]}
-              isDisabled
-            />
-          </div>
-        </DemoBox>
-      </SubSection>
+<ChipInput
+  label="Categories"
+  placeholder="Select categories..."
+  chips={[]}
+  error
+  helperText="Please select at least one category"
+/>
+
+<ChipInput
+  label="Disabled Input"
+  placeholder="Cannot edit..."
+  chips={[{ id: "1", label: "Fixed Tag" }]}
+  isDisabled
+/>`}
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: 24, maxWidth: 400 }}>
+          <ChipInput
+            label="Tags"
+            placeholder="Add tags..."
+            chips={chips}
+            onChange={setChips}
+          />
+          <ChipInput
+            label="Skills"
+            required
+            placeholder="Add skills..."
+            chips={[{ id: "1", label: "JavaScript" }]}
+          />
+          <ChipInput
+            label="Categories"
+            placeholder="Select categories..."
+            chips={[]}
+            error
+            helperText="Please select at least one category"
+          />
+          <ChipInput
+            label="Disabled Input"
+            placeholder="Cannot edit..."
+            chips={[{ id: "1", label: "Fixed Tag" }]}
+            isDisabled
+          />
+        </div>
+      </PreviewComponent>
     </Section>
   );
 };
@@ -1840,106 +2327,231 @@ const DialogPage = () => {
 
   return (
     <Section title="Dialog" description="A modal dialog component for confirmations, alerts, and user interactions.">
-      <SubSection title="Variants">
-        <DemoBox>
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-            <Button onClick={() => setIsInfoOpen(true)}>Info Dialog</Button>
-            <Button variant="positive" onClick={() => setIsConfirmOpen(true)}>Confirm Dialog</Button>
-            <Button variant="secondary" onClick={() => setIsAlertOpen(true)}>Alert Dialog</Button>
-            <Button variant="negative" onClick={() => setIsErrorOpen(true)}>Error Dialog</Button>
-          </div>
-        </DemoBox>
-      </SubSection>
+      <PreviewComponent
+        title="Info Dialog"
+        code={`import { Dialog } from "@/library/molecules/dialog";
+import { Button } from "@/library/atoms/button";
 
-      <Dialog
-        isOpen={isInfoOpen}
-        onOpenChange={setIsInfoOpen}
-        variant="info"
-        title="Information"
-        primaryLabel="Got it"
-        onPrimaryPress={() => setIsInfoOpen(false)}
-      >
-        This is an informational dialog with important details for the user.
-      </Dialog>
+const [isOpen, setIsOpen] = useState(false);
 
-      <ConfirmDialog
-        isOpen={isConfirmOpen}
-        onOpenChange={setIsConfirmOpen}
-        title="Confirm Action"
-        confirmLabel="Confirm"
-        cancelLabel="Cancel"
-        onConfirm={() => { alert("Confirmed!"); setIsConfirmOpen(false); }}
-      >
-        Are you sure you want to proceed with this action?
-      </ConfirmDialog>
+<Button onClick={() => setIsOpen(true)}>Open Info Dialog</Button>
 
-      <AlertDialog
-        isOpen={isAlertOpen}
-        onOpenChange={setIsAlertOpen}
-        variant="warning"
-        title="Warning"
-        buttonLabel="Acknowledge"
+<Dialog
+  isOpen={isOpen}
+  onOpenChange={setIsOpen}
+  variant="info"
+  title="Information"
+  primaryLabel="Got it"
+  onPrimaryPress={() => setIsOpen(false)}
+>
+  This is an informational dialog with important details for the user.
+</Dialog>`}
       >
-        Please be aware that this action cannot be undone.
-      </AlertDialog>
+        <div>
+          <Button onClick={() => setIsInfoOpen(true)}>Open Info Dialog</Button>
+          <Dialog
+            isOpen={isInfoOpen}
+            onOpenChange={setIsInfoOpen}
+            variant="info"
+            title="Information"
+            primaryLabel="Got it"
+            onPrimaryPress={() => setIsInfoOpen(false)}
+          >
+            This is an informational dialog with important details for the user.
+          </Dialog>
+        </div>
+      </PreviewComponent>
 
-      <Dialog
-        isOpen={isErrorOpen}
-        onOpenChange={setIsErrorOpen}
-        variant="error"
-        title="Error Occurred"
-        primaryLabel="Retry"
-        secondaryLabel="Cancel"
-        onPrimaryPress={() => { alert("Retrying..."); setIsErrorOpen(false); }}
-        onSecondaryPress={() => setIsErrorOpen(false)}
+      <PreviewComponent
+        title="Confirm Dialog"
+        code={`import { ConfirmDialog } from "@/library/molecules/dialog";
+import { Button } from "@/library/atoms/button";
+
+const [isOpen, setIsOpen] = useState(false);
+
+<Button variant="positive" onClick={() => setIsOpen(true)}>Open Confirm Dialog</Button>
+
+<ConfirmDialog
+  isOpen={isOpen}
+  onOpenChange={setIsOpen}
+  title="Confirm Action"
+  confirmLabel="Confirm"
+  cancelLabel="Cancel"
+  onConfirm={() => { alert("Confirmed!"); setIsOpen(false); }}
+>
+  Are you sure you want to proceed with this action?
+</ConfirmDialog>`}
       >
-        An error occurred while processing your request. Please try again.
-      </Dialog>
+        <div>
+          <Button variant="positive" onClick={() => setIsConfirmOpen(true)}>Open Confirm Dialog</Button>
+          <ConfirmDialog
+            isOpen={isConfirmOpen}
+            onOpenChange={setIsConfirmOpen}
+            title="Confirm Action"
+            confirmLabel="Confirm"
+            cancelLabel="Cancel"
+            onConfirm={() => { alert("Confirmed!"); setIsConfirmOpen(false); }}
+          >
+            Are you sure you want to proceed with this action?
+          </ConfirmDialog>
+        </div>
+      </PreviewComponent>
+
+      <PreviewComponent
+        title="Alert Dialog"
+        code={`import { AlertDialog } from "@/library/molecules/dialog";
+import { Button } from "@/library/atoms/button";
+
+const [isOpen, setIsOpen] = useState(false);
+
+<Button variant="secondary" onClick={() => setIsOpen(true)}>Open Alert Dialog</Button>
+
+<AlertDialog
+  isOpen={isOpen}
+  onOpenChange={setIsOpen}
+  variant="warning"
+  title="Warning"
+  buttonLabel="Acknowledge"
+>
+  Please be aware that this action cannot be undone.
+</AlertDialog>`}
+      >
+        <div>
+          <Button variant="secondary" onClick={() => setIsAlertOpen(true)}>Open Alert Dialog</Button>
+          <AlertDialog
+            isOpen={isAlertOpen}
+            onOpenChange={setIsAlertOpen}
+            variant="warning"
+            title="Warning"
+            buttonLabel="Acknowledge"
+          >
+            Please be aware that this action cannot be undone.
+          </AlertDialog>
+        </div>
+      </PreviewComponent>
+
+      <PreviewComponent
+        title="Error Dialog"
+        code={`import { Dialog } from "@/library/molecules/dialog";
+import { Button } from "@/library/atoms/button";
+
+const [isOpen, setIsOpen] = useState(false);
+
+<Button variant="negative" onClick={() => setIsOpen(true)}>Open Error Dialog</Button>
+
+<Dialog
+  isOpen={isOpen}
+  onOpenChange={setIsOpen}
+  variant="error"
+  title="Error Occurred"
+  primaryLabel="Retry"
+  secondaryLabel="Cancel"
+  onPrimaryPress={() => { alert("Retrying..."); setIsOpen(false); }}
+  onSecondaryPress={() => setIsOpen(false)}
+>
+  An error occurred while processing your request. Please try again.
+</Dialog>`}
+      >
+        <div>
+          <Button variant="negative" onClick={() => setIsErrorOpen(true)}>Open Error Dialog</Button>
+          <Dialog
+            isOpen={isErrorOpen}
+            onOpenChange={setIsErrorOpen}
+            variant="error"
+            title="Error Occurred"
+            primaryLabel="Retry"
+            secondaryLabel="Cancel"
+            onPrimaryPress={() => { alert("Retrying..."); setIsErrorOpen(false); }}
+            onSecondaryPress={() => setIsErrorOpen(false)}
+          >
+            An error occurred while processing your request. Please try again.
+          </Dialog>
+        </div>
+      </PreviewComponent>
     </Section>
   );
 };
 
 const DropdownMenuPage = () => (
   <Section title="DropdownMenu" description="A dropdown menu container with sections, items, and optional footer.">
-    <SubSection title="Basic Dropdown">
-      <DemoBox>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="secondary" iconTrailing={<Icon name="ChevronDown" size="sm" />}>
-              Options
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuSection>
-              <DropdownMenuItem label="Edit" iconName="PencilSquare" />
-              <DropdownMenuItem label="Duplicate" iconName="DocumentDuplicate" />
-              <DropdownMenuItem label="Archive" iconName="ArchiveBox" />
-            </DropdownMenuSection>
-            <DropdownMenuSection showDivider>
-              <DropdownMenuItem label="Delete" iconName="Trash" variant="destructive" />
-            </DropdownMenuSection>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </DemoBox>
-    </SubSection>
+    <PreviewComponent
+      title="Basic DropdownMenu"
+      code={`import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuSection } from "@/library/molecules/dropdown-menu";
+import { DropdownMenuItem } from "@/library/molecules/dropdown-menu-item";
+import { Button } from "@/library/atoms/button";
+import { Icon } from "@/library/atoms/icon";
 
-    <SubSection title="Simple Dropdown">
-      <DemoBox>
-        <SimpleDropdownMenu
-          trigger={
-            <Button variant="secondary" iconTrailing={<Icon name="ChevronDown" size="sm" />}>
-              Account
-            </Button>
-          }
-          items={[
-            { label: "Profile", icon: "User" },
-            { label: "Settings", icon: "Cog6Tooth" },
-            { type: "divider" },
-            { label: "Sign out", icon: "ArrowRightOnRectangle" },
-          ]}
-        />
-      </DemoBox>
-    </SubSection>
+<DropdownMenu>
+  <DropdownMenuTrigger asChild>
+    <Button variant="secondary" iconTrailing={<Icon name="ChevronDown" size="sm" />}>
+      Options
+    </Button>
+  </DropdownMenuTrigger>
+  <DropdownMenuContent>
+    <DropdownMenuSection>
+      <DropdownMenuItem label="Edit" iconName="PencilSquare" />
+      <DropdownMenuItem label="Duplicate" iconName="DocumentDuplicate" />
+      <DropdownMenuItem label="Archive" iconName="ArchiveBox" />
+    </DropdownMenuSection>
+    <DropdownMenuSection showDivider>
+      <DropdownMenuItem label="Delete" iconName="Trash" variant="destructive" />
+    </DropdownMenuSection>
+  </DropdownMenuContent>
+</DropdownMenu>`}
+    >
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="secondary" iconTrailing={<Icon name="ChevronDown" size="sm" />}>
+            Options
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuSection>
+            <DropdownMenuItem label="Edit" iconName="PencilSquare" />
+            <DropdownMenuItem label="Duplicate" iconName="DocumentDuplicate" />
+            <DropdownMenuItem label="Archive" iconName="ArchiveBox" />
+          </DropdownMenuSection>
+          <DropdownMenuSection showDivider>
+            <DropdownMenuItem label="Delete" iconName="Trash" variant="destructive" />
+          </DropdownMenuSection>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="Simple DropdownMenu"
+      code={`import { SimpleDropdownMenu } from "@/library/molecules/dropdown-menu";
+import { Button } from "@/library/atoms/button";
+import { Icon } from "@/library/atoms/icon";
+
+<SimpleDropdownMenu
+  trigger={
+    <Button variant="secondary" iconTrailing={<Icon name="ChevronDown" size="sm" />}>
+      Account
+    </Button>
+  }
+  items={[
+    { label: "Profile", icon: "User" },
+    { label: "Settings", icon: "Cog6Tooth" },
+    { type: "divider" },
+    { label: "Sign out", icon: "ArrowRightOnRectangle" },
+  ]}
+/>`}
+    >
+      <SimpleDropdownMenu
+        trigger={
+          <Button variant="secondary" iconTrailing={<Icon name="ChevronDown" size="sm" />}>
+            Account
+          </Button>
+        }
+        items={[
+          { label: "Profile", icon: "User" },
+          { label: "Settings", icon: "Cog6Tooth" },
+          { type: "divider" },
+          { label: "Sign out", icon: "ArrowRightOnRectangle" },
+        ]}
+      />
+    </PreviewComponent>
   </Section>
 );
 
@@ -1956,141 +2568,245 @@ const DropdownListPage = () => {
 
   return (
     <Section title="DropdownList" description="A searchable, sectioned list with optional 'Add' action.">
-      <SubSection title="Basic Usage">
-        <DemoBox>
-          <div style={{ maxWidth: 320 }}>
-            <DropdownList>
-              <DropdownSection title="Neurology">
-                <DropdownListItem value="ad" checked={selected.includes("ad")} onChange={handleChange}>
-                  Alzheimer's disease
-                </DropdownListItem>
-                <DropdownListItem value="pd" checked={selected.includes("pd")} onChange={handleChange}>
-                  Parkinson's disease
-                </DropdownListItem>
-              </DropdownSection>
-              <DropdownSection title="Oncology">
-                <DropdownListItem value="bc" checked={selected.includes("bc")} onChange={handleChange} subinfo="Phase 2">
-                  Breast cancer
-                </DropdownListItem>
-                <DropdownListItem value="lc" checked={selected.includes("lc")} onChange={handleChange} subinfo="Phase 1">
-                  Lung cancer
-                </DropdownListItem>
-                
-              </DropdownSection>
-            </DropdownList>
-          </div>
-        </DemoBox>
-      </SubSection>
+      <PreviewComponent
+        title="Basic DropdownList"
+        code={`import { DropdownList, DropdownSection, DropdownListItem } from "@/library/molecules/dropdown-list";
 
-      <SubSection title="Without Search">
-        <DemoBox>
-          <div style={{ maxWidth: 320 }}>
-            <DropdownList noSearch noAdd>
-              <DropdownSection>
-                <DropdownListItem value="a">Option A</DropdownListItem>
-                <DropdownListItem value="b">Option B</DropdownListItem>
-                <DropdownListItem value="c">Option C</DropdownListItem>
-              </DropdownSection>
-            </DropdownList>
-          </div>
-        </DemoBox>
-      </SubSection>
+const [selected, setSelected] = useState(["pd"]);
+
+const handleChange = ({ value, checked }) => {
+  if (checked) {
+    setSelected([...selected, value]);
+  } else {
+    setSelected(selected.filter(v => v !== value));
+  }
+};
+
+<DropdownList>
+  <DropdownSection title="Neurology">
+    <DropdownListItem value="ad" checked={selected.includes("ad")} onChange={handleChange}>
+      Alzheimer's disease
+    </DropdownListItem>
+    <DropdownListItem value="pd" checked={selected.includes("pd")} onChange={handleChange}>
+      Parkinson's disease
+    </DropdownListItem>
+  </DropdownSection>
+  <DropdownSection title="Oncology">
+    <DropdownListItem value="bc" checked={selected.includes("bc")} onChange={handleChange} subinfo="Phase 2">
+      Breast cancer
+    </DropdownListItem>
+    <DropdownListItem value="lc" checked={selected.includes("lc")} onChange={handleChange} subinfo="Phase 1">
+      Lung cancer
+    </DropdownListItem>
+  </DropdownSection>
+</DropdownList>`}
+      >
+        <div style={{ maxWidth: 320 }}>
+          <DropdownList>
+            <DropdownSection title="Neurology">
+              <DropdownListItem value="ad" checked={selected.includes("ad")} onChange={handleChange}>
+                Alzheimer's disease
+              </DropdownListItem>
+              <DropdownListItem value="pd" checked={selected.includes("pd")} onChange={handleChange}>
+                Parkinson's disease
+              </DropdownListItem>
+            </DropdownSection>
+            <DropdownSection title="Oncology">
+              <DropdownListItem value="bc" checked={selected.includes("bc")} onChange={handleChange} subinfo="Phase 2">
+                Breast cancer
+              </DropdownListItem>
+              <DropdownListItem value="lc" checked={selected.includes("lc")} onChange={handleChange} subinfo="Phase 1">
+                Lung cancer
+              </DropdownListItem>
+            </DropdownSection>
+          </DropdownList>
+        </div>
+      </PreviewComponent>
+
+      <PreviewComponent
+        title="Without Search"
+        code={`import { DropdownList, DropdownSection, DropdownListItem } from "@/library/molecules/dropdown-list";
+
+<DropdownList noSearch noAdd>
+  <DropdownSection>
+    <DropdownListItem value="a">Option A</DropdownListItem>
+    <DropdownListItem value="b">Option B</DropdownListItem>
+    <DropdownListItem value="c">Option C</DropdownListItem>
+  </DropdownSection>
+</DropdownList>`}
+      >
+        <div style={{ maxWidth: 320 }}>
+          <DropdownList noSearch noAdd>
+            <DropdownSection>
+              <DropdownListItem value="a">Option A</DropdownListItem>
+              <DropdownListItem value="b">Option B</DropdownListItem>
+              <DropdownListItem value="c">Option C</DropdownListItem>
+            </DropdownSection>
+          </DropdownList>
+        </div>
+      </PreviewComponent>
     </Section>
   );
 };
 
 const SubinfoPage = () => (
   <Section title="Subinfo" description="A flexible info display component for showing various types of data.">
-    <SubSection title="Value Variant">
-      <DemoBox>
-        <div style={{ display: "flex", gap: 24 }}>
-          <Subinfo label="Owner">John Doe</Subinfo>
-          <Subinfo label="Status" iconName="Clock">In Progress</Subinfo>
-          <Subinfo label="Priority" href="#">High</Subinfo>
-        </div>
-      </DemoBox>
-    </SubSection>
+    <PreviewComponent
+      title="All Subinfo Variants"
+      code={`import { Subinfo } from "@/library/molecules/subinfo";
 
-    <SubSection title="Avatar Variant">
-      <DemoBox>
-        <div style={{ display: "flex", gap: 24 }}>
-          <Subinfo variant="avatar" initials="JD" href="#">John Doe</Subinfo>
-          <Subinfo variant="avatar" initials="AS">Alice Smith</Subinfo>
-        </div>
-      </DemoBox>
-    </SubSection>
+<Subinfo label="Owner">John Doe</Subinfo>
+<Subinfo label="Status" iconName="Clock">In Progress</Subinfo>
+<Subinfo label="Priority" href="#">High</Subinfo>`}
+    >
+      <div style={{ display: "flex", gap: 24 }}>
+        <Subinfo label="Owner">John Doe</Subinfo>
+        <Subinfo label="Status" iconName="Clock">In Progress</Subinfo>
+        <Subinfo label="Priority" href="#">High</Subinfo>
+      </div>
+    </PreviewComponent>
 
-    <SubSection title="List Variant">
-      <DemoBox>
-        <Subinfo
-          variant="list"
-          items={[
-            { text: "Marketing", iconName: "Folder" },
-            { text: "Design", iconName: "Folder", href: "#" },
-            { text: "Engineering", iconName: "Folder" },
-            { text: "Sales", iconName: "Folder" },
-            { text: "Support", iconName: "Folder" },
-            { text: "Operations", iconName: "Folder" },
-          ]}
-          maxItems={5}
-        />
-      </DemoBox>
-    </SubSection>
+    <PreviewComponent
+      title="Avatar Variant"
+      code={`import { Subinfo } from "@/library/molecules/subinfo";
+
+<Subinfo variant="avatar" initials="JD" href="#">John Doe</Subinfo>
+<Subinfo variant="avatar" initials="AS">Alice Smith</Subinfo>`}
+    >
+      <div style={{ display: "flex", gap: 24 }}>
+        <Subinfo variant="avatar" initials="JD" href="#">John Doe</Subinfo>
+        <Subinfo variant="avatar" initials="AS">Alice Smith</Subinfo>
+      </div>
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="List Variant"
+      code={`import { Subinfo } from "@/library/molecules/subinfo";
+
+<Subinfo
+  variant="list"
+  items={[
+    { text: "Marketing", iconName: "Folder" },
+    { text: "Design", iconName: "Folder", href: "#" },
+    { text: "Engineering", iconName: "Folder" },
+    { text: "Sales", iconName: "Folder" },
+    { text: "Support", iconName: "Folder" },
+    { text: "Operations", iconName: "Folder" },
+  ]}
+  maxItems={5}
+/>`}
+    >
+      <Subinfo
+        variant="list"
+        items={[
+          { text: "Marketing", iconName: "Folder" },
+          { text: "Design", iconName: "Folder", href: "#" },
+          { text: "Engineering", iconName: "Folder" },
+          { text: "Sales", iconName: "Folder" },
+          { text: "Support", iconName: "Folder" },
+          { text: "Operations", iconName: "Folder" },
+        ]}
+        maxItems={5}
+      />
+    </PreviewComponent>
   </Section>
 );
 
 const InfofieldPage = () => (
   <Section title="Infofield" description="A read-only field displaying a label with various value types.">
-    <SubSection title="Text Values">
-      <DemoBox>
-        <InfofieldGroup>
-          <Infofield label="Name" value="John Doe" />
-          <Infofield label="Email" value="john@example.com" iconName="Envelope" />
-          <Infofield label="Empty Field" />
-        </InfofieldGroup>
-      </DemoBox>
-    </SubSection>
+    <PreviewComponent
+      title="Text Values"
+      code={`import { Infofield, InfofieldGroup } from "@/library/molecules/infofield";
 
-    <SubSection title="Badges">
-      <DemoBox>
-        <Infofield
-          label="Status"
-          variant="badges"
-          values={["Active", "Verified", "Premium"]}
-        />
-      </DemoBox>
-    </SubSection>
+<InfofieldGroup>
+  <Infofield label="Name" value="John Doe" />
+  <Infofield label="Email" value="john@example.com" iconName="Envelope" />
+  <Infofield label="Empty Field" />
+</InfofieldGroup>`}
+    >
+      <InfofieldGroup>
+        <Infofield label="Name" value="John Doe" />
+        <Infofield label="Email" value="john@example.com" iconName="Envelope" />
+        <Infofield label="Empty Field" />
+      </InfofieldGroup>
+    </PreviewComponent>
 
-    <SubSection title="Chips">
-      <DemoBox>
-        <Infofield
-          label="Tags"
-          variant="chips"
-          values={[
-            { label: "React", color: "#7DBEFF" },
-            { label: "TypeScript", color: "#cx   jnkj,ytèçàà))gftdefr73E5AC" },
-            { label: "Node.js", color: "#FFAE70" },
-          ]}
-        />
-      </DemoBox>
-    </SubSection>
+    <PreviewComponent
+      title="Badges"
+      code={`import { Infofield } from "@/library/molecules/infofield";
 
-    <SubSection title="With Overflow">
-      <DemoBox>
-        <Infofield
-          label="Categories"
-          variant="badges"
-          values={["Cat 1", "Cat 2", "Cat 3", "Cat 4", "Cat 5", "Cat 6"]}
-          maxItems={4}
-        />
-      </DemoBox>
-    </SubSection>
+<Infofield
+  label="Status"
+  variant="badges"
+  values={["Active", "Verified", "Premium"]}
+/>`}
+    >
+      <Infofield
+        label="Status"
+        variant="badges"
+        values={["Active", "Verified", "Premium"]}
+      />
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="Chips"
+      code={`import { Infofield } from "@/library/molecules/infofield";
+
+<Infofield
+  label="Tags"
+  variant="chips"
+  values={[
+    { label: "React", color: "#7DBEFF" },
+    { label: "TypeScript", color: "#73E5AC" },
+    { label: "Node.js", color: "#FFAE70" },
+  ]}
+/>`}
+    >
+      <Infofield
+        label="Tags"
+        variant="chips"
+        values={[
+          { label: "React", color: "#7DBEFF" },
+          { label: "TypeScript", color: "#73E5AC" },
+          { label: "Node.js", color: "#FFAE70" },
+        ]}
+      />
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="With Overflow"
+      code={`import { Infofield } from "@/library/molecules/infofield";
+
+<Infofield
+  label="Categories"
+  variant="badges"
+  values={["Cat 1", "Cat 2", "Cat 3", "Cat 4", "Cat 5", "Cat 6"]}
+  maxItems={4}
+/>`}
+    >
+      <Infofield
+        label="Categories"
+        variant="badges"
+        values={["Cat 1", "Cat 2", "Cat 3", "Cat 4", "Cat 5", "Cat 6"]}
+        maxItems={4}
+      />
+    </PreviewComponent>
   </Section>
 );
 
 const MiniInfoboxPage = () => (
   <Section title="MiniInfobox" description="A compact inline message with an icon and text.">
-    <SubSection title="Variants">
+    <PreviewComponent
+      title="All MiniInfobox Variants"
+      code={`import { MiniInfobox } from "@/library/molecules/miniinfobox";
+
+<MiniInfobox variant="info" message="This is an info message" />
+<MiniInfobox variant="success" message="Operation completed successfully" />
+<MiniInfobox variant="warning" message="Please review your changes" />
+<MiniInfobox variant="error" message="An error occurred" />
+<MiniInfobox variant="neutral" message="This is a neutral message" />
+<MiniInfobox variant="ai" message="AI-generated content" />`}
+    >
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         <MiniInfobox variant="info" message="This is an info message" />
         <MiniInfobox variant="success" message="Operation completed successfully" />
@@ -2099,7 +2815,7 @@ const MiniInfoboxPage = () => (
         <MiniInfobox variant="neutral" message="This is a neutral message" />
         <MiniInfobox variant="ai" message="AI-generated content" />
       </div>
-    </SubSection>
+    </PreviewComponent>
   </Section>
 );
 
@@ -2109,55 +2825,257 @@ const MiniInfoboxPage = () => (
 
 const SideMenuPage = () => (
   <Section title="SideMenu" description="A complete sidebar navigation with logo, search, menu sections, and user profile.">
-    <SubSection title="Preview">
+    <PreviewComponent
+      title="Deal Variant"
+      code={`import { SideMenu } from "@/library/organisms/side-menu/side-menu";
+import InpartLogo from "@/Inpart.svg";
+import InpartLogoCollapsed from "@/Inpart1.svg";
+
+      const dealSections = [
+        {
+          items: [
+            { label: "Home", iconName: "Home" },
+            { label: "Dashboard", iconName: "ChartBar" },
+            { label: "Network", iconName: "Share" },
+          ],
+        },
+        {
+          title: "Workspace",
+          items: [
+            { label: "Initiatives", iconName: "initiative" },
+            { label: "Opportunities", iconName: "opportunity", state: "active" },
+            { label: "Agreements", iconName: "agreement" },
+            { label: "Alliances", iconName: "alliance" },
+            { label: "Obligations", iconName: "obligation" },
+          ],
+        },
+        {
+          title: "Directory",
+          items: [
+            { label: "Companies", iconName: "company" },
+            { label: "Contacts", iconName: "contact" },
+            { label: "Meetings", iconName: "meeting" },
+          ],
+          dividerAfter: true,
+        },
+        {
+          title: "Recent Initiatives",
+          items: [
+            { label: "ALLINPART", iconColor: "var(--color-content-brand)", iconLetter: "A" },
+          ],
+        },
+      ];
+
+<SideMenu
+  variant="expanded"
+  expandOnHover={false}
+  logoSrc={InpartLogo}
+  collapsedLogoSrc={InpartLogoCollapsed}
+  showSearch
+  searchPlaceholder="Quick search"
+        sections={dealSections}
+  createButtonLabel="Create"
+  user={{
+    name: "Linh Nguyen",
+    email: "linh.nguyen@inpart.io",
+    avatarInitials: "LN",
+  }}
+  onCreateClick={() => {}}
+/>
+
+<SideMenu
+  variant="collapsed"
+  expandOnHover={false}
+  logoSrc={InpartLogo}
+  collapsedLogoSrc={InpartLogoCollapsed}
+  showSearch
+  searchPlaceholder="Quick search"
+  sections={dealSections}
+  createButtonLabel="Create"
+  user={{
+    name: "Linh Nguyen",
+    email: "linh.nguyen@inpart.io",
+    avatarInitials: "LN",
+  }}
+  onCreateClick={() => {}}
+/>
+`}
+    >
+      <div style={{ display: "flex", gap: 24 }}>
+        <div style={{ height: 760, border: "1px solid var(--color-action-outline-secondary-enabled)", borderRadius: 8, overflow: "hidden" }}>
+          <SideMenu
+            variant="expanded"
+            expandOnHover={false}
+            logoSrc="/Inpart.svg"
+            collapsedLogoSrc="/Inpart1.svg"
+            showSearch={true}
+            searchPlaceholder="Quick search"
+            sections={[
+              {
+                items: [
+                  { label: "Home", iconName: "Home" },
+                  { label: "Dashboard", iconName: "ChartBar" },
+                  { label: "Network", iconName: "Share" },
+                ],
+              },
+              {
+                title: "Workspace",
+                items: [
+                  { label: "Initiatives", iconName: "initiative" },
+                  { label: "Opportunities", iconName: "opportunity", state: "active" },
+                  { label: "Agreements", iconName: "agreement" },
+                  { label: "Alliances", iconName: "alliance" },
+                  { label: "Obligations", iconName: "obligation" },
+                ],
+              },
+              {
+                title: "Directory",
+                items: [
+                  { label: "Companies", iconName: "company" },
+                  { label: "Contacts", iconName: "contact" },
+                  { label: "Meetings", iconName: "meeting" },
+                ],
+                dividerAfter: true,
+              },
+              {
+                title: "Recent Initiatives",
+                items: [
+                  { label: "ALLINPART", iconColor: "var(--color-content-brand)", iconLetter: "A" },
+                ],
+              },
+            ]}
+            createButtonLabel="Create"
+            user={{ name: "Linh Nguyen", email: "linh.nguyen@inpart.io", avatarInitials: "LN" }}
+            onCreateClick={() => alert("Create clicked")}
+            style={{ position: "relative" }}
+          />
+        </div>
+
+        <div style={{ height: 760, border: "1px solid var(--color-action-outline-secondary-enabled)", borderRadius: 8, overflow: "hidden" }}>
+          <SideMenu
+            variant="collapsed"
+            expandOnHover={false}
+            logoSrc="/Inpart.svg"
+            collapsedLogoSrc="/Inpart1.svg"
+            showSearch={true}
+            searchPlaceholder="Quick search"
+            sections={[
+              {
+                items: [
+                  { label: "Home", iconName: "Home" },
+                  { label: "Dashboard", iconName: "ChartBar" },
+                  { label: "Network", iconName: "Share" },
+                ],
+              },
+              {
+                title: "Workspace",
+                items: [
+                  { label: "Initiatives", iconName: "initiative" },
+                  { label: "Opportunities", iconName: "opportunity", state: "active" },
+                  { label: "Agreements", iconName: "agreement" },
+                  { label: "Alliances", iconName: "alliance" },
+                  { label: "Obligations", iconName: "obligation" },
+                ],
+              },
+              {
+                title: "Directory",
+                items: [
+                  { label: "Companies", iconName: "company" },
+                  { label: "Contacts", iconName: "contact" },
+                  { label: "Meetings", iconName: "meeting" },
+                ],
+                dividerAfter: true,
+              },
+              {
+                title: "Recent Initiatives",
+                items: [
+                  { label: "ALLINPART", iconColor: "var(--color-content-brand)", iconLetter: "A" },
+                ],
+              },
+            ]}
+            createButtonLabel="Create"
+            user={{ name: "Linh Nguyen", email: "linh.nguyen@inpart.io", avatarInitials: "LN" }}
+            onCreateClick={() => alert("Create clicked")}
+            style={{ position: "relative" }}
+          />
+        </div>
+      </div>
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="Expanded SideMenu"
+      code={`import { SideMenu } from "@/library/organisms/side-menu/side-menu";
+
+<SideMenu
+  variant="expanded"
+  expandOnHover={false}
+  logoSrc="https://via.placeholder.com/120x40?text=Logo"
+  showSearch
+  sections={[
+    {
+      items: [
+        { label: "Home", iconName: "Home", state: "active" },
+        { label: "Dashboard", iconName: "ChartBar" },
+      ],
+    },
+    {
+      title: "Workspace",
+      items: [
+        { label: "Projects", iconName: "Folder" },
+        { label: "Tasks", iconName: "ClipboardDocumentList" },
+        { label: "Calendar", iconName: "Calendar" },
+      ],
+    },
+  ]}
+  user={{ name: "Jane Doe", email: "jane@example.com", avatarInitials: "JD" }}
+/>`}
+    >
       <p style={{ color: "var(--color-content-secondary)", marginBottom: 16 }}>
         The SideMenu component is being used as the main navigation for this page.
         Hover over the left sidebar to see it expand.
       </p>
-      <DemoBox>
-        <div style={{ display: "flex", gap: 24 }}>
-          <div style={{ height: 400, border: "1px solid var(--color-neutral-200)", borderRadius: 8, overflow: "hidden" }}>
-            <SideMenu
-              variant="expanded"
-              expandOnHover={false}
-              logoSrc="https://via.placeholder.com/120x40?text=Logo"
-              showSearch={true}
-              sections={[
-                {
-                  items: [
-                    { label: "Home", iconName: "Home", state: "active" },
-                    { label: "Dashboard", iconName: "ChartBar" },
-                  ]
-                },
-                {
-                  title: "Workspace",
-                  items: [
-                    { label: "Projects", iconName: "Folder" },
-                    { label: "Tasks", iconName: "ClipboardDocumentList" },
-                    { label: "Calendar", iconName: "Calendar" },
-                  ]
-                }
-              ]}
-              user={{ name: "Jane Doe", email: "jane@example.com", avatarInitials: "JD" }}
-              onCreateClick={() => alert("Create clicked")}
-              style={{ position: "relative" }}
-            />
-          </div>
-          <div style={{ flex: 1 }}>
-            <p><strong>Props:</strong></p>
-            <ul style={{ fontSize: 14, color: "var(--color-content-secondary)", paddingLeft: 20 }}>
-              <li>variant: "expanded" | "collapsed"</li>
-              <li>expandOnHover: boolean</li>
-              <li>logoSrc: string</li>
-              <li>showSearch: boolean</li>
-              <li>sections: array of section objects</li>
-              <li>user: object with name, email, avatarSrc</li>
-              <li>onCreateClick: function</li>
-            </ul>
-          </div>
+      <div style={{ display: "flex", gap: 24 }}>
+        <div style={{ height: 400, border: "1px solid var(--color-neutral-200)", borderRadius: 8, overflow: "hidden" }}>
+          <SideMenu
+            variant="expanded"
+            expandOnHover={false}
+            logoSrc="https://via.placeholder.com/120x40?text=Logo"
+            showSearch={true}
+            sections={[
+              {
+                items: [
+                  { label: "Home", iconName: "Home", state: "active" },
+                  { label: "Dashboard", iconName: "ChartBar" },
+                ]
+              },
+              {
+                title: "Workspace",
+                items: [
+                  { label: "Projects", iconName: "Folder" },
+                  { label: "Tasks", iconName: "ClipboardDocumentList" },
+                  { label: "Calendar", iconName: "Calendar" },
+                ]
+              }
+            ]}
+            user={{ name: "Jane Doe", email: "jane@example.com", avatarInitials: "JD" }}
+            onCreateClick={() => alert("Create clicked")}
+            style={{ position: "relative" }}
+          />
         </div>
-      </DemoBox>
-    </SubSection>
+        <div style={{ flex: 1 }}>
+          <p><strong>Props:</strong></p>
+          <ul style={{ fontSize: 14, color: "var(--color-content-secondary)", paddingLeft: 20 }}>
+            <li>variant: "expanded" | "collapsed"</li>
+            <li>expandOnHover: boolean</li>
+            <li>logoSrc: string</li>
+            <li>showSearch: boolean</li>
+            <li>sections: array of section objects</li>
+            <li>user: object with name, email, avatarSrc</li>
+            <li>onCreateClick: function</li>
+          </ul>
+        </div>
+      </div>
+    </PreviewComponent>
   </Section>
 );
 
@@ -2167,14 +3085,19 @@ const ModalPage = () => {
 
   return (
     <Section title="Modal" description="A full-featured modal dialog with header, content area, and footer actions.">
-      <SubSection title="Basic Modal">
-        <DemoBox>
-          <div style={{ display: "flex", gap: 12 }}>
-            <Button onClick={() => setIsOpen(true)}>Open Modal</Button>
-            <Button variant="secondary" onClick={() => setIsLargeOpen(true)}>Large Modal</Button>
-          </div>
-        </DemoBox>
-      </SubSection>
+      <PreviewComponent
+        title="Modal Variants"
+        code={`import { Modal } from "@/library/organisms/modal";
+import { Button } from "@/library/atoms/button";
+
+<Button onClick={() => setIsOpen(true)}>Open Modal</Button>
+<Button variant="secondary" onClick={() => setIsLargeOpen(true)}>Large Modal</Button>`}
+      >
+        <div style={{ display: "flex", gap: 12 }}>
+          <Button onClick={() => setIsOpen(true)}>Open Modal</Button>
+          <Button variant="secondary" onClick={() => setIsLargeOpen(true)}>Large Modal</Button>
+        </div>
+      </PreviewComponent>
 
       <Modal
         open={isOpen}
@@ -2211,345 +3134,166 @@ const ModalPage = () => {
 
 const TablePage = () => (
   <Section title="Table" description="A complete table system with header, body rows, and various cell types.">
-    <SubSection title="Column API (Recommended)">
+    <PreviewComponent
+      title="Single Type Columns"
+      code={`import {
+  Table,
+  TableColumns,
+  TableColumn,
+  TABLE_COLUMN_TYPES,
+} from "@/library/organisms/table/table";
+
+<Table
+  rows={singleTypeRows}
+>
+  <TableColumns>
+    <TableColumn
+      label="Name"
+      type="short text"
+      width="260px"
+    />
+    <TableColumn
+      label="Email"
+      type="short text"
+      width="320px"
+    />
+    <TableColumn
+      label="Action"
+      type="button"
+      width="120px"
+      cellContainerProps={{ className: "my-action-cell" }}
+    />
+  </TableColumns>
+</Table>`}
+    >
       <p style={{ marginBottom: 16, color: "var(--color-content-secondary)", fontSize: 14 }}>
-        Define columns once with a variant, then all cells in that column stay consistent.
+        All columns use the same cell type: short-text.
       </p>
-      <DemoBox>
-        <Table
-          columns={[
-            { key: "title", header: "Title", variant: "short-text", width: "220px" },
-            { key: "company", header: "Company", variant: "linked-object", width: "240px" },
-            { key: "status", header: "Status", variant: "badge", width: "180px" },
-            { key: "action", header: "Action", variant: "button" },
-          ]}
-          rows={[
-            {
-              id: "row-1",
-              title: "SNE-101",
-              company: <Link size="lg" iconLeading={<Icon name="BuildingOffice" />}>S&E Bio</Link>,
-              status: <Badge color="positive">Active</Badge>,
-              action: { iconName: "EllipsisVertical", label: "", buttonVariant: "secondary" },
-            },
-            {
-              id: "row-2",
-              title: "test SPRT",
-              company: <Link size="lg" iconLeading={<Icon name="BuildingOffice" />}>testing SPRT</Link>,
-              status: <Badge color="warning">Pending</Badge>,
-              action: { label: "Open", buttonVariant: "secondary" },
-            },
-            {
-              id: "row-3",
-              title: "whatever",
-              company: <Link size="lg" iconLeading={<Icon name="BuildingOffice" />}>test SPRT</Link>,
-              status: <Badge color="neutral">Archived</Badge>,
-              action: { iconName: "EllipsisVertical", label: "", buttonVariant: "secondary" },
-            },
-          ]}
-        />
-      </DemoBox>
-    </SubSection>
+      <Table
+        columns={[
+          { key: "name", header: "Name", variant: "short-text", width: "260px" },
+          { key: "email", header: "Email", variant: "short-text", width: "320px" },
+          { key: "role", header: "Role", variant: "short-text", width: "220px" },
+          { key: "team", header: "Team", variant: "short-text", width: "220px" },
+        ]}
+        rows={[
+          { id: "member-1", name: "John Doe", email: "john@example.com", role: "Admin", team: "Operations" },
+          { id: "member-2", name: "Jane Smith", email: "jane@example.com", role: "Editor", team: "Research" },
+          { id: "member-3", name: "Alice Brown", email: "alice@example.com", role: "Viewer", team: "Finance" },
+        ]}
+      />
+    </PreviewComponent>
 
-    <SubSection title="All Cell Variants">
+    <PreviewComponent
+      title="All Cell Variants"
+      code={`import {
+  Table,
+  TableColumns,
+  TableColumn,
+} from "@/library/organisms/table/table";
+
+<Table
+  rows={allVariantsRows}
+>
+  <TableColumns>
+    <TableColumn label="Short Text" type="short text" />
+    <TableColumn label="Long Text" type="long text" />
+    <TableColumn label="Badges" type="badges" badgeProps={{ size: "sm" }} />
+    <TableColumn label="Chip" type="chip" chipProps={{ chevron: false, removable: false }} />
+    <TableColumn label="Checkbox" type="checkbox" />
+    <TableColumn label="Link" type="link" linkProps={{ size: "md" }} />
+    <TableColumn label="Text Icon" type="text icon" />
+    <TableColumn label="Text Input" type="text input" textInputProps={{ label: "", helper: "" }} />
+    <TableColumn label="Button" type="button" buttonProps={{ size: "sm", variant: "secondary" }} />
+  </TableColumns>
+</Table>`}
+    >
       <p style={{ marginBottom: 16, color: "var(--color-content-secondary)", fontSize: 14 }}>
-        Demonstration of all table cell column types from the design system.
+        Demonstration of clean atom-backed table column types with 10 rows.
       </p>
-      <DemoBox>
-        <Table
-          columns={[
-            { key: "shortText", header: "short-text", variant: "short-text", width: "300px" },
-            { key: "longText", header: "long-text", variant: "long-text", width: "300px" },
-            { key: "twoLevel", header: "two-level", variant: "two-level", width: "300px" },
-            { key: "twoLevelObjects", header: "two-level-objects", variant: "two-level-objects", width: "300px" },
-            { key: "badge", header: "badge", variant: "badge", width: "300px" },
-            { key: "tags", header: "tags (chips)", variant: "tags", width: "300px" },
-            { key: "tag1line", header: "tag-1line", variant: "tag-1line", width: "300px" },
-            { key: "checkbox", header: "checkbox", variant: "checkbox", width: "300px" },
-            { key: "linkedValue", header: "linked-value", variant: "linked-value", width: "300px" },
-            { key: "linkedObject", header: "linked-object", variant: "linked-object", width: "300px" },
-            { key: "actions", header: "actions", variant: "button", sticky: true, width: "56px" },
-          ]}
-          rows={[
-            {
-              id: "row-1",
-              shortText: "Short text",
-              longText: "This is a longer text that might wrap to multiple lines and get truncated with ellipsis after three lines.",
-              twoLevel: (
-                <>
-                  <div style={{ color: "var(--color-content-secondary)", fontSize: 12 }}>Title</div>
-                  <div style={{ color: "var(--color-content-primary)", fontSize: 12 }}>Content value</div>
-                </>
-              ),
-              twoLevelObjects: (
-                <>
-                  <TableCellLinkRow size="lg" icon={<Icon name="Beaker" size="md" />}>Primary Link</TableCellLinkRow>
-                  <TableCellLinkRow size="md" icon={<Icon name="Tag" size="sm" />}>Secondary Link</TableCellLinkRow>
-                </>
-              ),
-              badge: <Badge color="positive">Active</Badge>,
-              tags: (
-                <>
-                  <Chip color="var(--color-accent-blue)">Tag 1</Chip>
-                  <Chip color="var(--color-accent-cyan)">Tag 2</Chip>
-                  <Chip color="var(--color-accent-yellow)">Tag 3</Chip>
-                </>
-              ),
-              tag1line: (
-                <>
-                  <Chip color="var(--color-accent-blue)">Label</Chip>
-                  <Chip color="var(--color-accent-cyan)">Label</Chip>
-                  <Badge>+3</Badge>
-                </>
-              ),
-              checkbox: <Checkbox size="sm" />,
-              linkedValue: (
-                <>
-                  <Icon name="Beaker" />
-                  <TableCellLinkedName>Item Name</TableCellLinkedName>
-                  <Badge>+1</Badge>
-                </>
-              ),
-              linkedObject: (
-                <>
-                  <Link size="lg" iconLeading={<Icon name="Beaker" />} iconTrailing={<Icon name="ChevronRight" />}>View Item</Link>
-                  <Badge>+1</Badge>
-                </>
-              ),
-              actions: { iconName: "EllipsisVertical", label: "", buttonVariant: "secondary" },
-            },
-            {
-              id: "row-2",
-              shortText: (
-                <>
-                  <Icon name="Tag" />
-                  With icon
-                </>
-              ),
-              longText: "Long text cell with leading icon that aligns to the top of the content block.",
-              twoLevel: (
-                <>
-                  <div style={{ color: "var(--color-content-secondary)", fontSize: 12 }}>Phase</div>
-                  <div style={{ color: "var(--color-content-primary)", fontSize: 12 }}>Phase 2 / Completed</div>
-                </>
-              ),
-              twoLevelObjects: (
-                <>
-                  <TableCellLinkRow size="lg" icon={<Icon name="Building" size="md" />}>Company Name</TableCellLinkRow>
-                  <TableCellLinkRow size="md" icon={<Icon name="MapPin" size="sm" />}>Location Info</TableCellLinkRow>
-                </>
-              ),
-              badge: <Badge color="warning">Pending</Badge>,
-              tags: (
-                <>
-                  <Chip color="var(--color-accent-red)">Urgent</Chip>
-                  <Chip color="var(--color-accent-orange)">Review</Chip>
-                </>
-              ),
-              tag1line: (
-                <>
-                  <Chip color="var(--color-accent-purple)">AI</Chip>
-                  <Chip color="var(--color-accent-green)">ML</Chip>
-                  <Chip color="var(--color-accent-pink)">Data</Chip>
-                  <Badge>+2</Badge>
-                </>
-              ),
-              checkbox: <Checkbox size="sm" isSelected />,
-              linkedValue: (
-                <>
-                  <Icon name="User" />
-                  <TableCellLinkedName>John Doe</TableCellLinkedName>
-                </>
-              ),
-              linkedObject: <Link size="lg" iconLeading={<Icon name="Document" />}>Document.pdf</Link>,
-              actions: { iconName: "EllipsisVertical", label: "", buttonVariant: "secondary" },
-            },
-            {
-              id: "row-3",
-              shortText: "Plain text",
-              longText: "Another example of multi-line content that demonstrates how the cell handles text overflow gracefully.",
-              twoLevel: (
-                <>
-                  <div style={{ color: "var(--color-content-secondary)", fontSize: 12 }}>Status</div>
-                  <div style={{ color: "var(--color-content-primary)", fontSize: 12 }}>In Progress</div>
-                </>
-              ),
-              twoLevelObjects: (
-                <>
-                  <TableCellLinkRow size="lg" icon={<Icon name="Cube" size="md" />}>Product Name</TableCellLinkRow>
-                  <TableCellLinkRow size="md" icon={<Icon name="Tag" size="sm" />}>SKU-12345</TableCellLinkRow>
-                </>
-              ),
-              badge: <Badge color="negative">Error</Badge>,
-              tags: <Chip color="var(--color-accent-brown)">Archive</Chip>,
-              tag1line: <Chip color="var(--color-accent-blue)">Only One</Chip>,
-              checkbox: <Checkbox size="sm" isDisabled />,
-              linkedValue: (
-                <>
-                  <Icon name="Building" />
-                  <TableCellLinkedName>Acme Corp</TableCellLinkedName>
-                  <Badge>+5</Badge>
-                </>
-              ),
-              linkedObject: (
-                <>
-                  <Link size="lg" iconLeading={<Icon name="Link" />} iconTrailing={<Icon name="ArrowTopRightOnSquare" />}>External</Link>
-                  <Badge>New</Badge>
-                </>
-              ),
-              actions: { iconName: "EllipsisVertical", label: "", buttonVariant: "secondary" },
-            },
-          ]}
-        />
-      </DemoBox>
-    </SubSection>
+      <Table
+        rows={Array.from({ length: 10 }, (_, index) => {
+          const rowNumber = index + 1;
+          const badgeLabels = ["Active", "Pending", "Blocked", "Info", "Archived"];
+          const owners = ["John Doe", "Jane Smith", "Alex Brown", "Mina Lee", "Chris Park"];
+          const companies = ["Acme Corp", "Globex", "Initech", "Umbrella", "Wayne Labs"];
 
-    <SubSection title="tag-2lines Variant">
-      <p style={{ marginBottom: 16, color: "var(--color-content-secondary)", fontSize: 14 }}>
-        Tags that wrap to 2 lines with overflow count.
-      </p>
-      <DemoBox>
-        <Table
-          columns={[
-            { key: "name", header: "Name", variant: "short-text", width: "300px" },
-            { key: "tags", header: "Tags (2 lines)", variant: "tag-2lines", width: "300px" },
-            { key: "status", header: "Status", variant: "badge", width: "300px" },
-          ]}
-          rows={[
-            {
-              id: "row-1",
-              name: "Item One",
-              tags: (
-                <>
-                  <Chip color="var(--color-accent-blue)">Label</Chip>
-                  <Chip color="var(--color-accent-cyan)">Label</Chip>
-                  <Chip color="var(--color-accent-yellow)">Label</Chip>
-                  <Chip color="var(--color-accent-red)">Label</Chip>
-                  <Chip color="var(--color-accent-orange)">Label</Chip>
-                  <Badge>+1</Badge>
-                </>
-              ),
-              status: <Badge color="positive">Done</Badge>,
+          return {
+            id: `row-${rowNumber}`,
+            shortText: `Cell text ${rowNumber}`,
+            longText: `Long text example ${rowNumber} for the long-text cell variant to validate overflow and layout behavior.`,
+            badges: {
+              maxVisible: 4,
+              items: [
+                { label: badgeLabels[index % badgeLabels.length] },
+                { label: "Finance" },
+                { label: "Priority" },
+                { label: "Reviewed" },
+                { label: "Owner" },
+              ],
             },
-            {
-              id: "row-2",
-              name: "Item Two",
-              tags: (
-                <>
-                  <Chip color="var(--color-accent-purple)">Category A</Chip>
-                  <Chip color="var(--color-accent-green)">Category B</Chip>
-                  <Chip color="var(--color-accent-pink)">Category C</Chip>
-                </>
-              ),
-              status: <Badge color="warning">Review</Badge>,
+            chip: {
+              label: `Tag ${rowNumber}`,
+              chevron: true,
+              removable: true,
             },
-          ]}
-        />
-      </DemoBox>
-    </SubSection>
-
-    <SubSection title="Input Variant">
-      <p style={{ marginBottom: 16, color: "var(--color-content-secondary)", fontSize: 14 }}>
-        Cells containing form inputs or dropdowns.
-      </p>
-      <DemoBox>
-        <Table
-          columns={[
-            { key: "field", header: "Field Name", variant: "short-text", width: "300px" },
-            { key: "input", header: "Input", variant: "input", width: "300px" },
-            { key: "icon", header: "Icon", variant: "checkbox", width: "300px" },
-          ]}
-          rows={[
-            {
-              id: "row-1",
-              field: "Assignee",
-              input: (
-                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: 4 }}>
-                  <Icon name="User" size="md" />
-                  <span style={{ color: "var(--color-content-primary)", fontSize: 14 }}>Select user...</span>
-                </div>
-              ),
-              icon: <Icon name="Beaker" size="md" />,
+            checkbox: {
+              isSelected: index % 2 === 0,
+              size: "sm",
             },
-            {
-              id: "row-2",
-              field: "Category",
-              input: (
-                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: 4 }}>
-                  <Icon name="Tag" size="md" />
-                  <span style={{ color: "var(--color-content-primary)", fontSize: 14 }}>Choose category...</span>
-                </div>
-              ),
-              icon: <Icon name="Cube" size="md" />,
+            link: {
+              label: companies[index % companies.length],
+              href: "#",
+              size: "md",
+              iconLeadingName: "Building",
+              iconSize: "sm",
             },
-          ]}
-        />
-      </DemoBox>
-    </SubSection>
-
-    <SubSection title="Basic Table">
-      <DemoBox>
-        <Table
-          columns={[
-            { key: "company", header: "Company", variant: "short-text", sortable: true, width: "300px" },
-            { key: "revenue", header: "Revenue", variant: "short-text", sortable: true, width: "300px" },
-            { key: "status", header: "Status", variant: "badge", width: "300px" },
-            { key: "actions", header: "Actions", variant: "button", width: "56px" },
-          ]}
-          rows={[
-            {
-              id: "row-1",
-              company: "Acme Corp",
-              revenue: "$1,234,567",
-              status: <Badge color="positive">Active</Badge>,
-              actions: { label: "View", buttonVariant: "tertiary" },
+            textIcon: {
+              text: owners[index % owners.length],
+              iconName: "User",
+              iconSize: "sm",
             },
-            {
-              id: "row-2",
-              company: "Tech Inc",
-              revenue: "$987,654",
-              status: <Badge color="warning">Pending</Badge>,
-              actions: { label: "View", buttonVariant: "tertiary" },
+            textInput: {
+              placeholder: "Type here",
+              defaultValue: `Value ${rowNumber}`,
             },
-            {
-              id: "row-3",
-              company: "Global Ltd",
-              revenue: "$2,345,678",
-              status: <Badge color="neutral">Inactive</Badge>,
-              actions: { label: "View", buttonVariant: "tertiary" },
+            button: {
+              label: "",
+              iconName: "EllipsisVertical",
+              buttonVariant: "secondary",
+              buttonSize: "sm",
+              buttonProps: {
+                iconOnly: true,
+                ariaLabel: "More actions",
+              },
             },
-          ]}
-        />
-      </DemoBox>
-    </SubSection>
-
-    <SubSection title="With Selection">
-      <DemoBox>
-        <Table
-          columns={[
-            { key: "select", header: <Checkbox />, variant: "checkbox", width: "80px" },
-            { key: "name", header: "Name", variant: "short-text", width: "300px" },
-            { key: "email", header: "Email", variant: "short-text", width: "300px" },
-            { key: "role", header: "Role", variant: "short-text", width: "300px" },
-          ]}
-          rows={[
-            {
-              id: "row-1",
-              select: <Checkbox isSelected />,
-              name: "John Doe",
-              email: "john@example.com",
-              role: "Admin",
-            },
-            {
-              id: "row-2",
-              select: <Checkbox />,
-              name: "Jane Smith",
-              email: "jane@example.com",
-              role: "Editor",
-            },
-          ]}
-        />
-      </DemoBox>
-    </SubSection>
+          };
+        })}
+      >
+        <TableColumns>
+          <TableColumn label="Short Text" type="short text" width="220px" />
+          <TableColumn label="Long Text" type="long text" width="320px" />
+          <TableColumn
+            label="Badges"
+            type="badges"
+            width="280px"
+            maxVisible={4}
+            badgeProps={{ size: "sm" }}
+          />
+          <TableColumn
+            label="Chip"
+            type="chip"
+            width="180px"
+            chipProps={{ chevron: false, removable: true }}
+          />
+          <TableColumn label="Checkbox" type="checkbox" width="120px" />
+          <TableColumn label="Link" type="link" width="220px" linkProps={{ size: "md" }} />
+          <TableColumn label="Text Icon" type="text icon" width="220px" />
+          <TableColumn label="Text Input" type="text input" width="260px" textInputProps={{ label: "", helper: "" }} />
+          <TableColumn label="Button" type="button" width="56px" sticky buttonProps={{ size: "sm", iconOnly: true, ariaLabel: "More actions" }} />
+        </TableColumns>
+      </Table>
+    </PreviewComponent>
   </Section>
 );
 
@@ -2558,18 +3302,113 @@ const ObjectHeaderPage = () => {
 
   return (
     <Section title="ObjectHeader" description="A comprehensive header for object detail pages.">
-      <SubSection title="Complete Example">
-        <DemoBox>
-          <ObjectHeader>
-            <ObjectHeaderTopBar>
-              <ObjectHeaderTopBarLeft>
-                <Button variant="secondary" size="md" iconLeading={<Icon name="ArrowLeft" size="sm" />}>
+      <PreviewComponent
+        title="Complete ObjectHeader"
+        code={`import { useState } from "react";
+import { ObjectHeader } from "@/library/organisms/object-header";
+
+const Example = () => {
+  const [activeTab, setActiveTab] = useState("overview");
+
+  return (
+    <ObjectHeader>
+      <ObjectHeader.TopBar>
+        <ObjectHeader.TopBarLeft>
+          <ObjectHeader.Button variant="secondary" size="md" iconLeading={<ObjectHeader.Icon name="ArrowLeft" size="sm" />}>
+            Back
+          </ObjectHeader.Button>
+        </ObjectHeader.TopBarLeft>
+        <ObjectHeader.TopBarRight>
+          <ObjectHeader.ActionsGroup>
+            <ObjectHeader.AvatarGroup
+              avatars={[
+                { name: "John Doe" },
+                { name: "Jane Smith" },
+                { name: "Bob Wilson" },
+              ]}
+              max={3}
+              size="sm"
+            />
+            <ObjectHeader.Button variant="secondary" size="md" iconLeading={<ObjectHeader.Icon name="UserPlus" size="sm" />}>
+              Manage access
+            </ObjectHeader.Button>
+          </ObjectHeader.ActionsGroup>
+          <ObjectHeader.Divider />
+          <ObjectHeader.ActionsGroup>
+            <ObjectHeader.Button variant="secondary" size="md" iconLeading={<ObjectHeader.Icon name="Bookmark" size="sm" />} />
+            <ObjectHeader.Button variant="secondary" size="md" iconLeading={<ObjectHeader.Icon name="Share" size="sm" />} />
+          </ObjectHeader.ActionsGroup>
+        </ObjectHeader.TopBarRight>
+      </ObjectHeader.TopBar>
+
+      <ObjectHeader.TitleSection>
+        <ObjectHeader.Meta
+          label="Last updated on"
+          date="Tue, Oct 21, 2024"
+          time="9:21 PM"
+          author="John Doe"
+        />
+        <ObjectHeader.Title iconName="LockClosed" iconVariant="warning">
+          Deal Title - Example Project
+        </ObjectHeader.Title>
+      </ObjectHeader.TitleSection>
+
+      <ObjectHeader.SubinfoRow>
+        <ObjectHeader.SubinfoItem>
+          <ObjectHeader.Chip variant="positive">Active</ObjectHeader.Chip>
+        </ObjectHeader.SubinfoItem>
+        <ObjectHeader.SubinfoItem>
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <span style={{ fontSize: 12, color: "var(--color-content-secondary)" }}>Owner</span>
+            <span style={{ fontSize: 14, color: "var(--color-content-primary)" }}>Emma Dupont</span>
+          </div>
+        </ObjectHeader.SubinfoItem>
+        <ObjectHeader.SubinfoItem>
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <span style={{ fontSize: 12, color: "var(--color-content-secondary)" }}>Company</span>
+            <ObjectHeader.Link href="#">Abbvie Limited</ObjectHeader.Link>
+          </div>
+        </ObjectHeader.SubinfoItem>
+      </ObjectHeader.SubinfoRow>
+
+      <ObjectHeader.StepperSection>
+        <ObjectHeader.Stepper
+          currentStep={3}
+          steps={[
+            { title: "Identification", subtitle: "Jul 15, 2024" },
+            { title: "Review", subtitle: "Jul 20, 2024" },
+            { title: "Evaluation", subtitle: "Jul 25, 2024" },
+            { title: "Due Diligence", subtitle: "In Progress" },
+            { title: "Negotiation" },
+            { title: "Contracting" },
+            { title: "Signed" },
+          ]}
+        />
+      </ObjectHeader.StepperSection>
+
+      <ObjectHeader.TabsSection>
+        <ObjectHeader.Tabs selectedKey={activeTab} onSelectionChange={setActiveTab}>
+          <ObjectHeader.Tab id="overview">Overview</ObjectHeader.Tab>
+          <ObjectHeader.Tab id="details">Details</ObjectHeader.Tab>
+          <ObjectHeader.Tab id="meetings" badge={5}>Meetings</ObjectHeader.Tab>
+          <ObjectHeader.Tab id="contacts" badge={12}>Contacts</ObjectHeader.Tab>
+          <ObjectHeader.Tab id="attachments" badge={3}>Attachments</ObjectHeader.Tab>
+        </ObjectHeader.Tabs>
+      </ObjectHeader.TabsSection>
+    </ObjectHeader>
+  );
+};`}
+      >
+        <ObjectHeader>
+            <ObjectHeader.TopBar>
+              <ObjectHeader.TopBarLeft>
+                <ObjectHeader.Button variant="secondary" size="md" iconLeading={<ObjectHeader.Icon name="ArrowLeft" size="sm" />}>
                   Back
-                </Button>
-              </ObjectHeaderTopBarLeft>
-              <ObjectHeaderTopBarRight>
-                <ObjectHeaderActionsGroup>
-                  <AvatarGroup
+                </ObjectHeader.Button>
+              </ObjectHeader.TopBarLeft>
+              <ObjectHeader.TopBarRight>
+                <ObjectHeader.ActionsGroup>
+                  <ObjectHeader.AvatarGroup
                     avatars={[
                       { name: "John Doe" },
                       { name: "Jane Smith" },
@@ -2578,50 +3417,50 @@ const ObjectHeaderPage = () => {
                     max={3}
                     size="sm"
                   />
-                  <Button variant="secondary" size="md" iconLeading={<Icon name="UserPlus" size="sm" />}>
+                  <ObjectHeader.Button variant="secondary" size="md" iconLeading={<ObjectHeader.Icon name="UserPlus" size="sm" />}>
                     Manage access
-                  </Button>
-                </ObjectHeaderActionsGroup>
-                <ObjectHeaderDivider />
-                <ObjectHeaderActionsGroup>
-                  <Button variant="secondary" size="md" iconLeading={<Icon name="Bookmark" size="sm" />} />
-                  <Button variant="secondary" size="md" iconLeading={<Icon name="Share" size="sm" />} />
-                </ObjectHeaderActionsGroup>
-              </ObjectHeaderTopBarRight>
-            </ObjectHeaderTopBar>
+                  </ObjectHeader.Button>
+                </ObjectHeader.ActionsGroup>
+                <ObjectHeader.Divider />
+                <ObjectHeader.ActionsGroup>
+                  <ObjectHeader.Button variant="secondary" size="md" iconLeading={<ObjectHeader.Icon name="Bookmark" size="sm" />} />
+                  <ObjectHeader.Button variant="secondary" size="md" iconLeading={<ObjectHeader.Icon name="Share" size="sm" />} />
+                </ObjectHeader.ActionsGroup>
+              </ObjectHeader.TopBarRight>
+            </ObjectHeader.TopBar>
 
-            <ObjectHeaderTitleSection>
-              <ObjectHeaderMeta
+            <ObjectHeader.TitleSection>
+              <ObjectHeader.Meta
                 label="Last updated on"
                 date="Tue, Oct 21, 2024"
                 time="9:21 PM"
                 author="John Doe"
               />
-              <ObjectHeaderTitle iconName="LockClosed" iconVariant="warning">
+              <ObjectHeader.Title iconName="LockClosed" iconVariant="warning">
                 Deal Title - Example Project
-              </ObjectHeaderTitle>
-            </ObjectHeaderTitleSection>
+              </ObjectHeader.Title>
+            </ObjectHeader.TitleSection>
 
-            <ObjectHeaderSubinfoRow>
-              <ObjectHeaderSubinfoItem>
-                <Chip variant="positive">Active</Chip>
-              </ObjectHeaderSubinfoItem>
-              <ObjectHeaderSubinfoItem>
+            <ObjectHeader.SubinfoRow>
+              <ObjectHeader.SubinfoItem>
+                <ObjectHeader.Chip variant="positive">Active</ObjectHeader.Chip>
+              </ObjectHeader.SubinfoItem>
+              <ObjectHeader.SubinfoItem>
                 <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                   <span style={{ fontSize: 12, color: "var(--color-content-secondary)" }}>Owner</span>
                   <span style={{ fontSize: 14, color: "var(--color-content-primary)" }}>Emma Dupont</span>
                 </div>
-              </ObjectHeaderSubinfoItem>
-              <ObjectHeaderSubinfoItem>
+              </ObjectHeader.SubinfoItem>
+              <ObjectHeader.SubinfoItem>
                 <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                   <span style={{ fontSize: 12, color: "var(--color-content-secondary)" }}>Company</span>
-                  <Link href="#">Abbvie Limited</Link>
+                  <ObjectHeader.Link href="#">Abbvie Limited</ObjectHeader.Link>
                 </div>
-              </ObjectHeaderSubinfoItem>
-            </ObjectHeaderSubinfoRow>
+              </ObjectHeader.SubinfoItem>
+            </ObjectHeader.SubinfoRow>
 
-            <ObjectHeaderStepper>
-              <Stepper
+            <ObjectHeader.StepperSection>
+              <ObjectHeader.Stepper
                 currentStep={3}
                 steps={[
                   { title: "Identification", subtitle: "Jul 15, 2024" },
@@ -2633,151 +3472,293 @@ const ObjectHeaderPage = () => {
                   { title: "Signed" },
                 ]}
               />
-            </ObjectHeaderStepper>
+            </ObjectHeader.StepperSection>
 
-            <ObjectHeaderTabs>
-              <Tabs selectedKey={activeTab} onSelectionChange={setActiveTab}>
-                <Tab id="overview">Overview</Tab>
-                <Tab id="details">Details</Tab>
-                <Tab id="meetings" badge={5}>Meetings</Tab>
-                <Tab id="contacts" badge={12}>Contacts</Tab>
-                <Tab id="attachments" badge={3}>Attachments</Tab>
-              </Tabs>
-            </ObjectHeaderTabs>
-          </ObjectHeader>
-        </DemoBox>
-      </SubSection>
+            <ObjectHeader.TabsSection>
+              <ObjectHeader.Tabs selectedKey={activeTab} onSelectionChange={setActiveTab}>
+                <ObjectHeader.Tab id="overview">Overview</ObjectHeader.Tab>
+                <ObjectHeader.Tab id="details">Details</ObjectHeader.Tab>
+                <ObjectHeader.Tab id="meetings" badge={5}>Meetings</ObjectHeader.Tab>
+                <ObjectHeader.Tab id="contacts" badge={12}>Contacts</ObjectHeader.Tab>
+                <ObjectHeader.Tab id="attachments" badge={3}>Attachments</ObjectHeader.Tab>
+              </ObjectHeader.Tabs>
+            </ObjectHeader.TabsSection>
+        </ObjectHeader>
+      </PreviewComponent>
 
-      <SubSection title="Simple Header (No Stepper or Tabs)">
-        <DemoBox>
-          <ObjectHeader>
-            <ObjectHeaderTopBar>
-              <ObjectHeaderTopBarLeft>
-                <Button variant="secondary" size="md" iconLeading={<Icon name="ArrowLeft" size="sm" />}>
+      <PreviewComponent
+        title="Simple Header (No Stepper or Tabs)"
+        code={`import { ObjectHeader } from "@/library/organisms/object-header";
+
+<ObjectHeader>
+  <ObjectHeader.TopBar>
+    <ObjectHeader.TopBarLeft>
+      <ObjectHeader.Button variant="secondary" size="md" iconLeading={<ObjectHeader.Icon name="ArrowLeft" size="sm" />}>
+        Back to list
+      </ObjectHeader.Button>
+    </ObjectHeader.TopBarLeft>
+    <ObjectHeader.TopBarRight>
+      <ObjectHeader.ActionsGroup>
+        <ObjectHeader.Button variant="primary" size="md">Save</ObjectHeader.Button>
+        <ObjectHeader.Button variant="secondary" size="md" iconLeading={<ObjectHeader.Icon name="EllipsisVertical" size="sm" />} />
+      </ObjectHeader.ActionsGroup>
+    </ObjectHeader.TopBarRight>
+  </ObjectHeader.TopBar>
+
+  <ObjectHeader.TitleSection>
+    <ObjectHeader.Meta date="Jan 15, 2024" />
+    <ObjectHeader.Title iconName="Document">Simple Document Title</ObjectHeader.Title>
+  </ObjectHeader.TitleSection>
+</ObjectHeader>`}
+      >
+        <ObjectHeader>
+            <ObjectHeader.TopBar>
+              <ObjectHeader.TopBarLeft>
+                <ObjectHeader.Button variant="secondary" size="md" iconLeading={<ObjectHeader.Icon name="ArrowLeft" size="sm" />}>
                   Back to list
-                </Button>
-              </ObjectHeaderTopBarLeft>
-              <ObjectHeaderTopBarRight>
-                <ObjectHeaderActionsGroup>
-                  <Button variant="primary" size="md">Save</Button>
-                  <Button variant="secondary" size="md" iconLeading={<Icon name="EllipsisVertical" size="sm" />} />
-                </ObjectHeaderActionsGroup>
-              </ObjectHeaderTopBarRight>
-            </ObjectHeaderTopBar>
+                </ObjectHeader.Button>
+              </ObjectHeader.TopBarLeft>
+              <ObjectHeader.TopBarRight>
+                <ObjectHeader.ActionsGroup>
+                  <ObjectHeader.Button variant="primary" size="md">Save</ObjectHeader.Button>
+                  <ObjectHeader.Button variant="secondary" size="md" iconLeading={<ObjectHeader.Icon name="EllipsisVertical" size="sm" />} />
+                </ObjectHeader.ActionsGroup>
+              </ObjectHeader.TopBarRight>
+            </ObjectHeader.TopBar>
 
-            <ObjectHeaderTitleSection>
-              <ObjectHeaderMeta date="Jan 15, 2024" />
-              <ObjectHeaderTitle iconName="Document">
+            <ObjectHeader.TitleSection>
+              <ObjectHeader.Meta date="Jan 15, 2024" />
+              <ObjectHeader.Title iconName="Document">
                 Simple Document Title
-              </ObjectHeaderTitle>
-            </ObjectHeaderTitleSection>
-          </ObjectHeader>
-        </DemoBox>
-      </SubSection>
+              </ObjectHeader.Title>
+            </ObjectHeader.TitleSection>
+        </ObjectHeader>
+      </PreviewComponent>
     </Section>
   );
 };
 
 const HubHeaderPage = () => (
   <Section title="HubHeader" description="A flexible page-section header for list and detail views.">
-    <SubSection title="List Variant (Default)">
-      <DemoBox>
-        <HubHeader
-          title="Companies"
-          badge="124"
-          rightContent={
-            <HubHeaderActions>
-              <Button variant="secondary" size="md" iconLeading={<Icon name="ArrowDownTray" size="sm" />}>Export</Button>
-              <Button variant="primary" size="md" iconLeading={<Icon name="Plus" size="sm" />}>Add Company</Button>
-            </HubHeaderActions>
-          }
-        />
-      </DemoBox>
-    </SubSection>
+    <PreviewComponent
+      title="List Variant (Default)"
+      code={`import { HubHeader } from "@/library/organisms/hub-header";
 
-    <SubSection title="With Controls">
-      <DemoBox>
-        <HubHeader
-          title="Portfolio"
-          badge="12"
-          leftContent={
+<HubHeader>
+  <HubHeader.Row>
+    <HubHeader.Left>
+      <HubHeader.Title badge="124">Companies</HubHeader.Title>
+    </HubHeader.Left>
+    <HubHeader.Right>
+      <HubHeader.Actions>
+        <HubHeader.Button variant="secondary" size="md" iconLeading={<HubHeader.Icon name="ArrowDownTray" size="sm" />}>
+          Export
+        </HubHeader.Button>
+        <HubHeader.Button variant="primary" size="md" iconLeading={<HubHeader.Icon name="Plus" size="sm" />}>
+          Add Company
+        </HubHeader.Button>
+      </HubHeader.Actions>
+    </HubHeader.Right>
+  </HubHeader.Row>
+</HubHeader>`}
+    >
+      <HubHeader>
+        <HubHeaderRow>
+          <HubHeaderLeft>
+            <HubHeaderTitle badge="124">Companies</HubHeaderTitle>
+          </HubHeaderLeft>
+          <HubHeaderRight>
+            <HubHeaderActions>
+              <HubHeader.Button variant="secondary" size="md" iconLeading={<HubHeader.Icon name="ArrowDownTray" size="sm" />}>Export</HubHeader.Button>
+              <HubHeader.Button variant="primary" size="md" iconLeading={<HubHeader.Icon name="Plus" size="sm" />}>Add Company</HubHeader.Button>
+            </HubHeaderActions>
+          </HubHeaderRight>
+        </HubHeaderRow>
+      </HubHeader>
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="With Controls"
+      code={`import { HubHeader } from "@/library/organisms/hub-header";
+
+<HubHeader>
+  <HubHeader.Row>
+    <HubHeader.Left>
+      <HubHeader.Label badge="12">Portfolio</HubHeader.Label>
+      <HubHeader.Controls>
+        <HubHeader.Search size="md" placeholder="Search..." />
+        <HubHeader.Button variant="secondary" size="md" iconLeading={<HubHeader.Icon name="Funnel" size="sm" />}>
+          Filter
+        </HubHeader.Button>
+      </HubHeader.Controls>
+    </HubHeader.Left>
+    <HubHeader.Right>
+      <HubHeader.Actions>
+        <HubHeader.Button variant="secondary" size="md" iconLeading={<HubHeader.Icon name="ArrowDownTray" size="sm" />}>
+          Export
+        </HubHeader.Button>
+        <HubHeader.Button variant="primary" size="md" iconLeading={<HubHeader.Icon name="Plus" size="sm" />}>
+          Create
+        </HubHeader.Button>
+      </HubHeader.Actions>
+    </HubHeader.Right>
+  </HubHeader.Row>
+</HubHeader>`}
+    >
+      <HubHeader>
+        <HubHeaderRow>
+          <HubHeaderLeft>
+            <HubHeaderTitle badge="12">Portfolio</HubHeaderTitle>
             <HubHeaderControls>
-              <Search size="md" placeholder="Search..." />
-              <Button variant="secondary" size="md" iconLeading={<Icon name="Funnel" size="sm" />}>Filter</Button>
+              <HubHeader.Search size="md" placeholder="Search..." />
+              <HubHeader.Button variant="secondary" size="md" iconLeading={<HubHeader.Icon name="Funnel" size="sm" />}>Filter</HubHeader.Button>
             </HubHeaderControls>
-          }
-          rightContent={
+          </HubHeaderLeft>
+          <HubHeaderRight>
             <HubHeaderActions>
-              <Button variant="secondary" size="md" iconLeading={<Icon name="ArrowDownTray" size="sm" />}>Export</Button>
-              <Button variant="primary" size="md" iconLeading={<Icon name="Plus" size="sm" />}>Create</Button>
+              <HubHeader.Button variant="secondary" size="md" iconLeading={<HubHeader.Icon name="ArrowDownTray" size="sm" />}>Export</HubHeader.Button>
+              <HubHeader.Button variant="primary" size="md" iconLeading={<HubHeader.Icon name="Plus" size="sm" />}>Create</HubHeader.Button>
             </HubHeaderActions>
-          }
-        />
-      </DemoBox>
-    </SubSection>
+          </HubHeaderRight>
+        </HubHeaderRow>
+      </HubHeader>
+    </PreviewComponent>
 
-    <SubSection title="Detail Variant with Back Button">
-      <DemoBox>
-        <HubHeader
-          variant="detail"
-          title="Company Name"
-          titleSize="lg"
-          badge="Active"
-          onBack={() => alert("Back clicked")}
-          rightContent={
+    <PreviewComponent
+      title="Detail Variant with Back Button"
+      code={`import { HubHeader } from "@/library/organisms/hub-header";
+
+<HubHeader>
+  <HubHeader.Row>
+    <HubHeader.Left>
+      <HubHeader.Button
+        variant="secondary"
+        size="md"
+        iconLeading={<HubHeader.Icon name="ArrowLeft" />}
+        onClick={() => {}}
+      >
+        Back
+      </HubHeader.Button>
+      <HubHeader.Title size="lg" badge="Active">Company Name</HubHeader.Title>
+    </HubHeader.Left>
+    <HubHeader.Right>
+      <HubHeader.Actions>
+        <HubHeader.Button variant="primary" size="md">Save</HubHeader.Button>
+        <HubHeader.Button variant="secondary" size="md" iconLeading={<HubHeader.Icon name="EllipsisVertical" size="sm" />} />
+      </HubHeader.Actions>
+    </HubHeader.Right>
+  </HubHeader.Row>
+  <HubHeader.Secondary>
+    <ButtonGroup value="overview">
+      <ButtonGroupItem value="overview">Overview</ButtonGroupItem>
+      <ButtonGroupItem value="details">Details</ButtonGroupItem>
+      <ButtonGroupItem value="history">History</ButtonGroupItem>
+    </ButtonGroup>
+  </HubHeader.Secondary>
+</HubHeader>`}
+    >
+      <HubHeader>
+        <HubHeaderRow>
+          <HubHeaderLeft>
+            <HubHeader.Button variant="secondary" size="md" iconLeading={<HubHeader.Icon name="ArrowLeft" />} onClick={() => alert("Back clicked")}>Back</HubHeader.Button>
+            <HubHeaderTitle size="lg" badge="Active">Company Name</HubHeaderTitle>
+          </HubHeaderLeft>
+          <HubHeaderRight>
             <HubHeaderActions>
-              <Button variant="primary" size="md">Save</Button>
-              <Button variant="secondary" size="md" iconLeading={<Icon name="EllipsisVertical" size="sm" />} />
+              <HubHeader.Button variant="primary" size="md">Save</HubHeader.Button>
+              <HubHeader.Button variant="secondary" size="md" iconLeading={<HubHeader.Icon name="EllipsisVertical" size="sm" />} />
             </HubHeaderActions>
-          }
-          secondaryContent={
-            <ButtonGroup value="overview">
-              <ButtonGroupItem value="overview">Overview</ButtonGroupItem>
-              <ButtonGroupItem value="details">Details</ButtonGroupItem>
-              <ButtonGroupItem value="history">History</ButtonGroupItem>
-            </ButtonGroup>
-          }
-        />
-      </DemoBox>
-    </SubSection>
+          </HubHeaderRight>
+        </HubHeaderRow>
+        <HubHeaderSecondary>
+          <ButtonGroup value="overview">
+            <ButtonGroupItem value="overview">Overview</ButtonGroupItem>
+            <ButtonGroupItem value="details">Details</ButtonGroupItem>
+            <ButtonGroupItem value="history">History</ButtonGroupItem>
+          </ButtonGroup>
+        </HubHeaderSecondary>
+      </HubHeader>
+    </PreviewComponent>
 
-    <SubSection title="Composition Mode">
-      <DemoBox>
-        <HubHeader showBorder={false}>
+    <PreviewComponent
+      title="Composition Mode"
+      code={`import { HubHeader, HubHeaderRow, HubHeaderLeft, HubHeaderRight } from "@/library/organisms/hub-header";
+
+<HubHeader showBorder={false}>
+  <HubHeaderRow>{/* custom layout */}</HubHeaderRow>
+</HubHeader>`}
+    >
+      <HubHeader showBorder={false}>
           <HubHeaderRow>
             <HubHeaderLeft>
               <HubHeaderTitle size="md" badge="New">Dashboard</HubHeaderTitle>
             </HubHeaderLeft>
             <HubHeaderRight>
               <HubHeaderActions>
-                <Button variant="primary" size="md">Action</Button>
+                <HubHeader.Button variant="primary" size="md">Action</HubHeader.Button>
               </HubHeaderActions>
             </HubHeaderRight>
           </HubHeaderRow>
           <HubHeaderSecondary>
-            <Tabs defaultSelectedKey="all">
-              <Tab id="all">All</Tab>
-              <Tab id="active">Active</Tab>
-              <Tab id="archived">Archived</Tab>
-            </Tabs>
+            <HubHeader.Tabs defaultSelectedKey="all">
+              <HubHeader.Tab id="all">All</HubHeader.Tab>
+              <HubHeader.Tab id="active">Active</HubHeader.Tab>
+              <HubHeader.Tab id="archived">Archived</HubHeader.Tab>
+            </HubHeader.Tabs>
           </HubHeaderSecondary>
-        </HubHeader>
-      </DemoBox>
-    </SubSection>
+      </HubHeader>
+    </PreviewComponent>
 
-    <SubSection title="Title Sizes">
+    <PreviewComponent
+      title="Title Sizes"
+      code={`import { HubHeader } from "@/library/organisms/hub-header";
+
+<HubHeader showBorder={false}>
+  <HubHeader.Row>
+    <HubHeader.Left>
+      <HubHeader.Title size="sm">Small Title</HubHeader.Title>
+    </HubHeader.Left>
+  </HubHeader.Row>
+</HubHeader>
+<HubHeader showBorder={false}>
+  <HubHeader.Row>
+    <HubHeader.Left>
+      <HubHeader.Title size="md">Medium Title</HubHeader.Title>
+    </HubHeader.Left>
+  </HubHeader.Row>
+</HubHeader>
+<HubHeader showBorder={false}>
+  <HubHeader.Row>
+    <HubHeader.Left>
+      <HubHeader.Title size="lg">Large Title</HubHeader.Title>
+    </HubHeader.Left>
+  </HubHeader.Row>
+</HubHeader>`}
+    >
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        <DemoBox>
-          <HubHeader title="Small Title" titleSize="sm" showBorder={false} />
-        </DemoBox>
-        <DemoBox>
-          <HubHeader title="Medium Title" titleSize="md" showBorder={false} />
-        </DemoBox>
-        <DemoBox>
-          <HubHeader title="Large Title" titleSize="lg" showBorder={false} />
-        </DemoBox>
+        <HubHeader showBorder={false}>
+          <HubHeaderRow>
+            <HubHeaderLeft>
+              <HubHeaderTitle size="sm">Small Title</HubHeaderTitle>
+            </HubHeaderLeft>
+          </HubHeaderRow>
+        </HubHeader>
+        <HubHeader showBorder={false}>
+          <HubHeaderRow>
+            <HubHeaderLeft>
+              <HubHeaderTitle size="md">Medium Title</HubHeaderTitle>
+            </HubHeaderLeft>
+          </HubHeaderRow>
+        </HubHeader>
+        <HubHeader showBorder={false}>
+          <HubHeaderRow>
+            <HubHeaderLeft>
+              <HubHeaderTitle size="lg">Large Title</HubHeaderTitle>
+            </HubHeaderLeft>
+          </HubHeaderRow>
+        </HubHeader>
       </div>
-    </SubSection>
+    </PreviewComponent>
   </Section>
 );
 
@@ -2787,24 +3768,29 @@ const PaginationOrganismPage = () => {
 
   return (
     <Section title="Pagination (Organism)" description="A complete pagination control with page size selector, page navigation, and optional action button.">
-      <SubSection title="Full Pagination">
-        <DemoBox>
-          <PaginationOrganism
+      <PreviewComponent
+        title="Full Pagination"
+        code={`import { Pagination as PaginationOrganism } from "@/library/organisms/pagination";
+
+<PaginationOrganism currentPage={page} totalPages={8} pageSize={pageSize} />`}
+      >
+        <PaginationOrganism
             currentPage={page}
             totalPages={8}
             pageSize={pageSize}
             onPageChange={setPage}
             onPageSizeChange={setPageSize}
-          />
-          <p style={{ marginTop: 16, color: "var(--color-content-secondary)", fontSize: 14 }}>
-            Current page: {page}, Page size: {pageSize}
-          </p>
-        </DemoBox>
-      </SubSection>
+        />
+        <p style={{ marginTop: 16, color: "var(--color-content-secondary)", fontSize: 14 }}>
+          Current page: {page}, Page size: {pageSize}
+        </p>
+      </PreviewComponent>
 
-      <SubSection title="Without Page Numbers">
-        <DemoBox>
-          <PaginationOrganism
+      <PreviewComponent
+        title="Without Page Numbers"
+        code={`<PaginationOrganism showPageNumbers={false} showInfo />`}
+      >
+        <PaginationOrganism
             currentPage={page}
             totalPages={8}
             pageSize={pageSize}
@@ -2812,13 +3798,14 @@ const PaginationOrganismPage = () => {
             onPageSizeChange={setPageSize}
             showPageNumbers={false}
             showInfo
-          />
-        </DemoBox>
-      </SubSection>
+        />
+      </PreviewComponent>
 
-      <SubSection title="With Custom Action">
-        <DemoBox>
-          <PaginationOrganism
+      <PreviewComponent
+        title="With Custom Action"
+        code={`<PaginationOrganism actionButton={<Button variant="secondary">Download</Button>} />`}
+      >
+        <PaginationOrganism
             currentPage={page}
             totalPages={8}
             pageSize={pageSize}
@@ -2829,20 +3816,20 @@ const PaginationOrganismPage = () => {
                 Download
               </Button>
             }
-          />
-        </DemoBox>
-      </SubSection>
+        />
+      </PreviewComponent>
 
-      <SubSection title="Minimal (No Per Page)">
-        <DemoBox>
-          <PaginationOrganism
+      <PreviewComponent
+        title="Minimal (No Per Page)"
+        code={`<PaginationOrganism showPerPage={false} />`}
+      >
+        <PaginationOrganism
             currentPage={page}
             totalPages={8}
             onPageChange={setPage}
             showPerPage={false}
-          />
-        </DemoBox>
-      </SubSection>
+        />
+      </PreviewComponent>
     </Section>
   );
 };
@@ -2871,86 +3858,81 @@ const HubTemplatePage = () => {
 
   return (
     <Section title="Hub Template" description="A complete page layout template for list/hub pages.">
-      <SubSection title="Preview">
+      <PreviewComponent
+        title="Hub Template Preview"
+        code={`import { Hub } from "@/library/templates/hub";
+
+<Hub
+  title="Companies"
+  columns={columns}
+  data={data}
+  currentPage={1}
+  totalPages={10}
+/>`}
+      >
         <p style={{ marginBottom: 16, color: "var(--color-content-secondary)", fontSize: 14 }}>
           The Hub template combines SideMenu, HubHeader, Table, and Pagination into a complete page layout.
           Below is a scaled-down preview.
         </p>
-        <DemoBox>
-          <div style={{ height: 500, border: "1px solid var(--color-neutral-200)", borderRadius: 8, overflow: "hidden" }}>
-            <div style={{ display: "flex", height: "100%", background: "var(--color-general-neutral-light)" }}>
-              {/* Mini Sidebar Preview */}
-              <div style={{ width: 200, background: "var(--color-general-white)", borderRight: "1px solid var(--color-action-outline-secondary-enabled)", padding: 16 }}>
-                <div style={{ fontSize: 16, fontWeight: 700, color: "var(--color-content-brand)", marginBottom: 24 }}>Eureka</div>
-                <div style={{ fontSize: 12, color: "var(--color-content-secondary)" }}>Side Menu Preview</div>
+        <div style={{ height: 500, border: "1px solid var(--color-neutral-200)", borderRadius: 8, overflow: "hidden" }}>
+          <div style={{ display: "flex", height: "100%", background: "var(--color-general-neutral-light)" }}>
+            {/* Mini Sidebar Preview */}
+            <div style={{ width: 200, background: "var(--color-general-white)", borderRight: "1px solid var(--color-action-outline-secondary-enabled)", padding: 16 }}>
+              <div style={{ fontSize: 16, fontWeight: 700, color: "var(--color-content-brand)", marginBottom: 24 }}>Eureka</div>
+              <div style={{ fontSize: 12, color: "var(--color-content-secondary)" }}>Side Menu Preview</div>
+            </div>
+
+            {/* Main Content Preview */}
+            <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+              {/* Header */}
+              <div style={{ padding: 16, background: "var(--color-general-white)", borderBottom: "1px solid var(--color-action-outline-secondary-enabled)" }}>
+                <HubHeader
+                  title="Companies"
+                  badge="124"
+                  showBorder={false}
+                  rightContent={
+                    <HubHeaderActions>
+                      <Button variant="primary" size="sm">Add Company</Button>
+                    </HubHeaderActions>
+                  }
+                />
               </div>
 
-              {/* Main Content Preview */}
-              <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-                {/* Header */}
-                <div style={{ padding: 16, background: "var(--color-general-white)", borderBottom: "1px solid var(--color-action-outline-secondary-enabled)" }}>
-                  <HubHeader
-                    title="Companies"
-                    badge="124"
-                    showBorder={false}
-                    rightContent={
-                      <HubHeaderActions>
-                        <Button variant="primary" size="sm">Add Company</Button>
-                      </HubHeaderActions>
-                    }
-                  />
-                </div>
+              {/* Table Area */}
+              <div style={{ flex: 1, padding: 16, overflow: "auto" }}>
+                <Table
+                  columns={[
+                    { key: "name", header: "Company Name", variant: "short-text", sortable: true, width: "300px" },
+                    { key: "status", header: "Status", variant: "badge", sortable: false, width: "300px" },
+                    { key: "revenue", header: "Revenue", variant: "short-text", sortable: true, width: "300px" },
+                    { key: "employees", header: "Employees", variant: "short-text", sortable: true, width: "300px" },
+                  ]}
+                  rows={sampleData.map((row) => ({
+                    id: row.id,
+                    name: row.name,
+                    status: <Badge color={row.status === "Active" ? "positive" : "warning"}>{row.status}</Badge>,
+                    revenue: row.revenue,
+                    employees: row.employees,
+                  }))}
+                />
+              </div>
 
-                {/* Table Area */}
-                <div style={{ flex: 1, padding: 16, overflow: "auto" }}>
-                  <Table
-                    columns={[
-                      { key: "name", header: "Company Name", variant: "short-text", sortable: true, width: "300px" },
-                      { key: "status", header: "Status", variant: "badge", sortable: false, width: "300px" },
-                      { key: "revenue", header: "Revenue", variant: "short-text", sortable: true, width: "300px" },
-                      { key: "employees", header: "Employees", variant: "short-text", sortable: true, width: "300px" },
-                    ]}
-                    rows={sampleData.map((row) => ({
-                      id: row.id,
-                      name: row.name,
-                      status: <Badge color={row.status === "Active" ? "positive" : "warning"}>{row.status}</Badge>,
-                      revenue: row.revenue,
-                      employees: row.employees,
-                    }))}
-                  />
-                </div>
-
-                {/* Footer with Pagination */}
-                <div style={{ padding: 16, background: "var(--color-general-white)", borderTop: "1px solid var(--color-action-outline-secondary-enabled)" }}>
-                  <Pagination
-                    currentPage={currentPage}
-                    totalPages={10}
-                    perPage={pageSize}
-                    onPageChange={setCurrentPage}
-                    onPerPageChange={setPageSize}
-                    showPerPage
-                  />
-                </div>
+              {/* Footer with Pagination */}
+              <div style={{ padding: 16, background: "var(--color-general-white)", borderTop: "1px solid var(--color-action-outline-secondary-enabled)" }}>
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={10}
+                  perPage={pageSize}
+                  onPageChange={setCurrentPage}
+                  onPerPageChange={setPageSize}
+                  showPerPage
+                />
               </div>
             </div>
           </div>
-        </DemoBox>
-      </SubSection>
+        </div>
+      </PreviewComponent>
 
-      <SubSection title="Props">
-        <DemoBox>
-          <ul style={{ fontSize: 14, color: "var(--color-content-secondary)", paddingLeft: 20, lineHeight: 1.8 }}>
-            <li><strong>title:</strong> Page title for the header</li>
-            <li><strong>badge:</strong> Badge text (e.g., item count)</li>
-            <li><strong>headerActions:</strong> Action buttons for the header</li>
-            <li><strong>menuSections:</strong> Sections for the side menu</li>
-            <li><strong>columns:</strong> Table column definitions</li>
-            <li><strong>data:</strong> Table row data</li>
-            <li><strong>showCheckbox:</strong> Enable row selection</li>
-            <li><strong>currentPage, totalPages, pageSize:</strong> Pagination props</li>
-          </ul>
-        </DemoBox>
-      </SubSection>
     </Section>
   );
 };
@@ -2960,119 +3942,112 @@ const ObjectPageTemplatePage = () => {
 
   return (
     <Section title="ObjectPage Template" description="A complete detail page layout with header, stepper, and two-column content.">
-      <SubSection title="Preview">
+      <PreviewComponent
+        title="ObjectPage Template Preview"
+        code={`import { ObjectPage } from "@/library/templates/object-page";
+
+<ObjectPage
+  title="Initiative Name"
+  steps={steps}
+  tabs={tabs}
+  leftColumnSections={leftSections}
+  rightColumnSections={rightSections}
+/>`}
+      >
         <p style={{ marginBottom: 16, color: "var(--color-content-secondary)", fontSize: 14 }}>
           The ObjectPage template combines SideMenu, ObjectHeader with stepper/tabs, and a two-column accordion layout.
         </p>
-        <DemoBox>
-          <div style={{ height: 600, border: "1px solid var(--color-neutral-200)", borderRadius: 8, overflow: "hidden" }}>
-            <div style={{ display: "flex", height: "100%", background: "var(--color-general-neutral-light)" }}>
-              {/* Mini Sidebar Preview */}
-              <div style={{ width: 200, background: "var(--color-general-white)", borderRight: "1px solid var(--color-action-outline-secondary-enabled)", padding: 16 }}>
-                <div style={{ fontSize: 16, fontWeight: 700, color: "var(--color-content-brand)", marginBottom: 24 }}>Eureka</div>
-                <div style={{ fontSize: 12, color: "var(--color-content-secondary)" }}>Side Menu Preview</div>
+        <div style={{ height: 600, border: "1px solid var(--color-neutral-200)", borderRadius: 8, overflow: "hidden" }}>
+          <div style={{ display: "flex", height: "100%", background: "var(--color-general-neutral-light)" }}>
+            {/* Mini Sidebar Preview */}
+            <div style={{ width: 200, background: "var(--color-general-white)", borderRight: "1px solid var(--color-action-outline-secondary-enabled)", padding: 16 }}>
+              <div style={{ fontSize: 16, fontWeight: 700, color: "var(--color-content-brand)", marginBottom: 24 }}>Eureka</div>
+              <div style={{ fontSize: 12, color: "var(--color-content-secondary)" }}>Side Menu Preview</div>
+            </div>
+
+            {/* Main Content Preview */}
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+              {/* Header */}
+              <div style={{ padding: 16, background: "var(--color-general-white)", borderBottom: "1px solid var(--color-action-outline-secondary-enabled)" }}>
+                <ObjectHeader>
+                  <ObjectHeader.TopBar>
+                    <ObjectHeader.TopBarLeft>
+                      <ObjectHeader.Button variant="secondary" size="sm" iconLeading={<ObjectHeader.Icon name="ArrowLeft" size="sm" />}>Back</ObjectHeader.Button>
+                    </ObjectHeader.TopBarLeft>
+                    <ObjectHeader.TopBarRight>
+                      <ObjectHeader.ActionsGroup>
+                        <ObjectHeader.Button variant="primary" size="sm">Save</ObjectHeader.Button>
+                      </ObjectHeader.ActionsGroup>
+                    </ObjectHeader.TopBarRight>
+                  </ObjectHeader.TopBar>
+
+                  <ObjectHeader.TitleSection>
+                    <ObjectHeader.Meta date="Jan 15, 2024" author="John Doe" />
+                    <ObjectHeader.Title iconName="Beaker">Initiative Name</ObjectHeader.Title>
+                  </ObjectHeader.TitleSection>
+
+                  <ObjectHeader.StepperSection>
+                    <ObjectHeader.Stepper
+                      currentStep={2}
+                      steps={[
+                        { title: "Draft" },
+                        { title: "Review" },
+                        { title: "Approved" },
+                        { title: "Active" },
+                      ]}
+                    />
+                  </ObjectHeader.StepperSection>
+
+                  <ObjectHeader.TabsSection>
+                    <ObjectHeader.Tabs selectedKey={activeTab} onSelectionChange={setActiveTab}>
+                      <ObjectHeader.Tab id="overview">Overview</ObjectHeader.Tab>
+                      <ObjectHeader.Tab id="details">Details</ObjectHeader.Tab>
+                      <ObjectHeader.Tab id="history">History</ObjectHeader.Tab>
+                    </ObjectHeader.Tabs>
+                  </ObjectHeader.TabsSection>
+                </ObjectHeader>
               </div>
 
-              {/* Main Content Preview */}
-              <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-                {/* Header */}
-                <div style={{ padding: 16, background: "var(--color-general-white)", borderBottom: "1px solid var(--color-action-outline-secondary-enabled)" }}>
-                  <ObjectHeader>
-                    <ObjectHeaderTopBar>
-                      <ObjectHeaderTopBarLeft>
-                        <Button variant="secondary" size="sm" iconLeading={<Icon name="ArrowLeft" size="sm" />}>Back</Button>
-                      </ObjectHeaderTopBarLeft>
-                      <ObjectHeaderTopBarRight>
-                        <ObjectHeaderActionsGroup>
-                          <Button variant="primary" size="sm">Save</Button>
-                        </ObjectHeaderActionsGroup>
-                      </ObjectHeaderTopBarRight>
-                    </ObjectHeaderTopBar>
-
-                    <ObjectHeaderTitleSection>
-                      <ObjectHeaderMeta date="Jan 15, 2024" author="John Doe" />
-                      <ObjectHeaderTitle iconName="Beaker">Initiative Name</ObjectHeaderTitle>
-                    </ObjectHeaderTitleSection>
-
-                    <ObjectHeaderStepper>
-                      <Stepper
-                        currentStep={2}
-                        steps={[
-                          { title: "Draft" },
-                          { title: "Review" },
-                          { title: "Approved" },
-                          { title: "Active" },
-                        ]}
-                      />
-                    </ObjectHeaderStepper>
-
-                    <ObjectHeaderTabs>
-                      <Tabs selectedKey={activeTab} onSelectionChange={setActiveTab}>
-                        <Tab id="overview">Overview</Tab>
-                        <Tab id="details">Details</Tab>
-                        <Tab id="history">History</Tab>
-                      </Tabs>
-                    </ObjectHeaderTabs>
-                  </ObjectHeader>
-                </div>
-
-                {/* Two Column Content */}
-                <div style={{ flex: 1, padding: 16, overflow: "auto" }}>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-                    {/* Left Column */}
-                    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                      <Accordion title="General Information" defaultExpanded>
-                        <div style={{ padding: 16 }}>
-                          <TextInput label="Name" placeholder="Enter name..." />
-                          <div style={{ marginTop: 16 }}>
-                            <TextInput label="Description" placeholder="Enter description..." />
-                          </div>
+              {/* Two Column Content */}
+              <div style={{ flex: 1, padding: 16, overflow: "auto" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                  {/* Left Column */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    <Accordion title="General Information" defaultExpanded>
+                      <div style={{ padding: 16 }}>
+                        <TextInput label="Name" placeholder="Enter name..." />
+                        <div style={{ marginTop: 16 }}>
+                          <TextInput label="Description" placeholder="Enter description..." />
                         </div>
-                      </Accordion>
-                      <Accordion title="Settings">
-                        <div style={{ padding: 16 }}>
-                          <Toggle label="Enable notifications" />
-                        </div>
-                      </Accordion>
-                    </div>
+                      </div>
+                    </Accordion>
+                    <Accordion title="Settings">
+                      <div style={{ padding: 16 }}>
+                        <Toggle label="Enable notifications" />
+                      </div>
+                    </Accordion>
+                  </div>
 
-                    {/* Right Column */}
-                    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                      <Accordion title="Related Items" defaultExpanded>
-                        <div style={{ padding: 16 }}>
-                          <p style={{ color: "var(--color-content-secondary)", fontSize: 14 }}>No related items yet.</p>
-                        </div>
-                      </Accordion>
-                      <Accordion title="Activity Log">
-                        <div style={{ padding: 16 }}>
-                          <p style={{ color: "var(--color-content-secondary)", fontSize: 14 }}>Recent activity will appear here.</p>
-                        </div>
-                      </Accordion>
-                    </div>
+                  {/* Right Column */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    <Accordion title="Related Items" defaultExpanded>
+                      <div style={{ padding: 16 }}>
+                        <p style={{ color: "var(--color-content-secondary)", fontSize: 14 }}>No related items yet.</p>
+                      </div>
+                    </Accordion>
+                    <Accordion title="Activity Log">
+                      <div style={{ padding: 16 }}>
+                        <p style={{ color: "var(--color-content-secondary)", fontSize: 14 }}>Recent activity will appear here.</p>
+                      </div>
+                    </Accordion>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </DemoBox>
-      </SubSection>
+        </div>
+      </PreviewComponent>
 
-      <SubSection title="Props">
-        <DemoBox>
-          <ul style={{ fontSize: 14, color: "var(--color-content-secondary)", paddingLeft: 20, lineHeight: 1.8 }}>
-            <li><strong>title:</strong> Page/object title</li>
-            <li><strong>titleIconName:</strong> Icon for the title</li>
-            <li><strong>meta:</strong> Metadata object (label, date, time, author)</li>
-            <li><strong>subinfoItems:</strong> Array of subinfo items</li>
-            <li><strong>steps:</strong> Stepper steps array</li>
-            <li><strong>currentStep:</strong> Current step index</li>
-            <li><strong>tabs:</strong> Tabs component</li>
-            <li><strong>onBack:</strong> Back button handler</li>
-            <li><strong>leftColumnSections / rightColumnSections:</strong> Accordion sections</li>
-            <li><strong>singleColumn:</strong> Use single column layout</li>
-          </ul>
-        </DemoBox>
-      </SubSection>
     </Section>
   );
 };
@@ -3092,6 +4067,7 @@ const PAGES = {
   chip: { title: "Chip", component: ChipPage, category: "atoms" },
   radioButton: { title: "RadioButton", component: RadioButtonPage, category: "atoms" },
   link: { title: "Link", component: LinkPage, category: "atoms" },
+  tooltip: { title: "Tooltip", component: TooltipPage, category: "atoms" },
   step: { title: "Step", component: StepPage, category: "atoms" },
   buttonBadge: { title: "ButtonBadge", component: ButtonBadgePage, category: "atoms" },
   // Molecules
@@ -3250,6 +4226,7 @@ function getIconForPage(pageKey) {
     chip: "RectangleStack",
     radioButton: "ListBullet",
     link: "Link",
+    tooltip: "ChatBubbleLeftRight",
     step: "ArrowTrendingUp",
     buttonBadge: "RectangleGroup",
     search: "MagnifyingGlass",

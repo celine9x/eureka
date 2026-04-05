@@ -47,6 +47,9 @@ const styles = {
     }
     .preview-component__preview {
       padding: var(--spacing-6);
+      overflow-x: auto;
+      overflow-y: visible;
+      -webkit-overflow-scrolling: touch;
     }
     .preview-component__code {
       padding: 0;
