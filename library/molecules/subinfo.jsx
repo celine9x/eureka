@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * Subinfo Component (Molecule)
  *

@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * TableCell Component (Organism)
  *

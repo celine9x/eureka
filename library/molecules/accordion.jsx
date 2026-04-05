@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * Accordion Component
  *
@@ -46,6 +48,10 @@ const styles = {
     justifyContent: "flex-start",
     alignItems: "flex-start",
     width: "100%",
+    border: "1px solid var(--color-action-outline-secondary-enabled)",
+    borderRadius: 8,
+    overflow: "hidden",
+    boxSizing: "border-box",
   },
 
   header: {
@@ -57,20 +63,15 @@ const styles = {
     paddingLeft: "var(--spacing-6)",
     paddingRight: "var(--spacing-6)",
     background: "var(--color-general-white)",
-    borderRadius: 8,
-    border: "1px solid var(--color-action-outline-secondary-enabled)",
     cursor: "pointer",
     textAlign: "left",
     outline: "none",
-    transition: "all var(--transition-fast)",
+    transition: "background var(--transition-fast)",
     boxSizing: "border-box",
-    WebkitBorderRadius: 8,
-    MozBorderRadius: 8,
   },
 
   headerHover: {
     background: "var(--color-general-neutral-lighter)",
-    borderColor: "var(--color-action-outline-secondary-hover)",
   },
 
   headerFocus: {
@@ -78,11 +79,7 @@ const styles = {
   },
 
   headerExpanded: {
-    borderTopLeftRadius: 8,
-    borderTopRightRadius: 8,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
-    borderBottomColor: "transparent",
+    borderBottom: "1px solid var(--color-action-outline-secondary-enabled)",
   },
 
   headerDisabled: {
@@ -191,12 +188,8 @@ const styles = {
   contentInner: {
     display: "flex",
     flexDirection: "column",
-  },
-
-  // Legacy content inner with padding (for simple content)
-  contentInnerPadded: {
+    gap: "var(--spacing-4)",
     padding: "var(--spacing-6)",
-    minHeight: 56,
   },
 
   group: {
@@ -212,26 +205,18 @@ const styles = {
 
   section: {
     alignSelf: "stretch",
-    padding: "var(--spacing-4) var(--spacing-6)",
-    background: "var(--color-general-white)",
-    border: "1px solid var(--color-action-outline-secondary-enabled)",
-    borderTop: "none",
     display: "flex",
     flexDirection: "column",
     justifyContent: "flex-start",
     alignItems: "flex-start",
     gap: "var(--spacing-4)",
     boxSizing: "border-box",
+    width: "100%",
   },
 
-  sectionFirst: {
-    // First section connects to header - no top border
-  },
+  sectionFirst: {},
 
-  sectionLast: {
-    borderBottomLeftRadius: 8,
-    borderBottomRightRadius: 8,
-  },
+  sectionLast: {},
 
   sectionHeader: {
     alignSelf: "stretch",

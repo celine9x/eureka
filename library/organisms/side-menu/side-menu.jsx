@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * SideMenu Component
  *
@@ -16,7 +18,7 @@
  * />
  */
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Icon } from "../../atoms/icon.jsx";
 import { Search } from "../../molecules/search.jsx";
 import { SideMenuItem } from "./side-menu-item.jsx";
@@ -355,6 +357,10 @@ const styles = {
 export const SideMenu = ({
   variant = SIDE_MENU_VARIANTS.collapsed,
   expandOnHover = true,
+  interactiveItems = true,
+  activeItemId,
+  defaultActiveItemId,
+  onActiveItemChange,
   logo,
   logoSrc,
   collapsedLogoSrc,
@@ -374,6 +380,45 @@ export const SideMenu = ({
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [createHovered, setCreateHovered] = useState(false);
+
+  const fallbackActiveItemId = useMemo(() => {
+    for (let sectionIndex = 0; sectionIndex < sections.length; sectionIndex += 1) {
+      const items = sections[sectionIndex]?.items || [];
+      for (let itemIndex = 0; itemIndex < items.length; itemIndex += 1) {
+        const item = items[itemIndex];
+        if (item?.state === "active") {
+          return item.id || item.key || `${sectionIndex}-${itemIndex}`;
+        }
+      }
+    }
+    return undefined;
+  }, [sections]);
+
+  const [internalActiveItemId, setInternalActiveItemId] = useState(
+    defaultActiveItemId ?? fallbackActiveItemId
+  );
+
+  const isActiveItemControlled = activeItemId !== undefined;
+  const resolvedActiveItemId = isActiveItemControlled ? activeItemId : internalActiveItemId;
+
+  useEffect(() => {
+    if (isActiveItemControlled || !interactiveItems) return;
+
+    if (defaultActiveItemId !== undefined) {
+      setInternalActiveItemId(defaultActiveItemId);
+      return;
+    }
+
+    if (internalActiveItemId === undefined && fallbackActiveItemId !== undefined) {
+      setInternalActiveItemId(fallbackActiveItemId);
+    }
+  }, [
+    defaultActiveItemId,
+    fallbackActiveItemId,
+    internalActiveItemId,
+    interactiveItems,
+    isActiveItemControlled,
+  ]);
 
   // Determine if collapsed based on variant and hover state
   const isCollapsed = expandOnHover
@@ -472,22 +517,44 @@ export const SideMenu = ({
           )}
 
           {/* Menu items */}
-          {section.items?.map((item, itemIndex) => (
-            <SideMenuItem
-              key={itemIndex}
-              state={item.state || "enabled"}
-              showIcon={item.showIcon !== false}
-              showLabel={!isCollapsed && item.showLabel !== false}
-              showBadge={item.showBadge || false}
-              icon={item.icon}
-              iconName={item.iconName}
-              iconColor={item.iconColor}
-              iconLetter={item.iconLetter}
-              label={item.label}
-              badgeLabel={item.badgeLabel}
-              onClick={item.onClick}
-            />
-          ))}
+          {section.items?.map((item, itemIndex) => {
+            const itemId = item.id || item.key || `${sectionIndex}-${itemIndex}`;
+            const isItemActive = interactiveItems
+              ? resolvedActiveItemId !== undefined
+                ? resolvedActiveItemId === itemId
+                : item.state === "active"
+              : item.state === "active";
+
+            const itemState = isItemActive ? "active" : item.state === "active" ? "enabled" : (item.state || "enabled");
+
+            const handleItemClick = (event) => {
+              if (interactiveItems) {
+                if (!isActiveItemControlled) {
+                  setInternalActiveItemId(itemId);
+                }
+                onActiveItemChange?.(itemId, item, { sectionIndex, itemIndex, event });
+              }
+
+              item.onClick?.(event);
+            };
+
+            return (
+              <SideMenuItem
+                key={itemId}
+                state={itemState}
+                showIcon={item.showIcon !== false}
+                showLabel={!isCollapsed && item.showLabel !== false}
+                showBadge={item.showBadge || false}
+                icon={item.icon}
+                iconName={item.iconName}
+                iconColor={item.iconColor}
+                iconLetter={item.iconLetter}
+                label={item.label}
+                badgeLabel={item.badgeLabel}
+                onClick={handleItemClick}
+              />
+            );
+          })}
         </div>
 
         {/* Divider after section */}

@@ -1,15 +1,15 @@
 # Component Guide
 
-This guide defines how to build and maintain components in this design system.
+This guide describes how to build and maintain components in this design system.
 
-## 1) Architecture
+## 1. Architecture
 
 - **Atoms** live in `library/atoms/` and should be the smallest reusable UI pieces.
 - **Molecules** live in `library/molecules/` and should compose atoms into richer controls.
 - **Organisms/Templates** should compose molecules; do not duplicate atom behavior there.
 - Keep files focused: one main component per file, with optional small helpers in the same file.
 
-## 2) Import and Export Conventions
+## 2. Import And Export Conventions
 
 ### Preferred imports for app usage
 
@@ -36,7 +36,7 @@ import { Button } from "../atoms/button.jsx";
   - `Button.colors`, `Button.sizes`
   - `Badge.colors`, `Badge.sizes`, `Badge.types`
 
-## 3) Styling Rules (Token-First)
+## 3. Styling Rules (Token-First)
 
 All styles must come from design tokens in `library/tokens/tokens.css`.
 
@@ -56,7 +56,7 @@ All styles must come from design tokens in `library/tokens/tokens.css`.
 - Don’t introduce new colors, shadows, or typography primitives outside tokens.
 - Don’t mix many one-off style literals when a token exists.
 
-## 4) API Design Guidelines
+## 4. API Design Guidelines
 
 ### Keep component APIs clean
 
@@ -76,20 +76,20 @@ All styles must come from design tokens in `library/tokens/tokens.css`.
 - Style blocks: `styles.base`, `styles.variants`, `styles.sizes`.
 - Booleans: `isX` / `hasX`.
 
-## 5) Accessibility Requirements
+## 5. Accessibility Requirements
 
 - Use semantic elements (`button`, `label`, `input`, etc.) where possible.
 - Always provide keyboard support for interactive elements.
 - Use ARIA labels/roles only when semantic HTML is insufficient.
 - Ensure disabled/read-only states are reflected in both behavior and styling.
 
-## 6) Documentation Style in Components
+## 6. Documentation Style In Components
 
 - Keep top-of-file comments concise.
 - Avoid verbose JSDoc `@param` blocks unless truly necessary.
 - Include short usage examples only if they add value.
 
-## 7) Quality Checklist Before Merging
+## 7. Quality Checklist Before Merging
 
 Run this checklist for each component change:
 
@@ -116,7 +116,7 @@ npm run build
 5. **Behavior check**
    - Hover, focus, disabled, error/success states still behave correctly.
 
-## 8) Refactor Strategy for Existing Components
+## 8. Refactor Strategy For Existing Components
 
 When cleaning older components:
 
@@ -126,7 +126,7 @@ When cleaning older components:
 4. Remove dead code and unused imports.
 5. Validate with build and quick manual smoke test.
 
-## 9) Example Component Skeleton
+## 9. Example Component Skeleton
 
 ```jsx
 import { useState } from "react";

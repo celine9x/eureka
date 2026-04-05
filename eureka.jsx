@@ -77,6 +77,7 @@ import {
   HubHeaderRight,
   HubHeaderSecondary,
 } from "./library/organisms/hub-header.jsx";
+import { FilterPanel, Row as FilterPanelRow, DEFAULT_FILTER_PANEL_OPTIONS } from "./library/organisms/filter-panel.jsx";
 import { Pagination as PaginationOrganism } from "./library/organisms/pagination.jsx";
 
 // ─────────────────────────────────────────────
@@ -84,6 +85,7 @@ import { Pagination as PaginationOrganism } from "./library/organisms/pagination
 // ─────────────────────────────────────────────
 import { Hub } from "./library/templates/hub.jsx";
 import { ObjectPage } from "./library/templates/object-page.jsx";
+import { SidePanel } from "./library/templates/side-panel.jsx";
 
 // ─────────────────────────────────────────────
 // SHARED PROPS
@@ -99,11 +101,114 @@ import { PreviewComponent } from "./library/utils/preview-component.jsx";
 // LAYOUT COMPONENTS
 // ─────────────────────────────────────────────
 
+const PACKAGE_NAME = "qjsmkdfjqklsmdjfkqsdjfqksdjfkn-n-n";
+
+const toKebabCase = (value = "") =>
+  value
+    .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
+    .replace(/[^a-zA-Z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .toLowerCase();
+
+const toPascalCase = (value = "") =>
+  value
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .split(/[^a-zA-Z0-9]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join("");
+
+const InstallationBlock = ({ title }) => {
+  const [installMethod, setInstallMethod] = useState("cli");
+  const [copied, setCopied] = useState(false);
+  const componentKey = toKebabCase(title);
+  const componentName = toPascalCase(title);
+  const cliSnippet = `npx ${PACKAGE_NAME}@latest add ${componentKey}`;
+  const manualSnippet = `import "${PACKAGE_NAME}/style.css";
+import { ${componentName} } from "${PACKAGE_NAME}";
+
+export default function Example() {
+  return <${componentName} />;
+}`;
+  const activeSnippet = installMethod === "cli" ? cliSnippet : manualSnippet;
+
+  const handleCopyInstallation = async () => {
+    try {
+      await navigator.clipboard.writeText(activeSnippet);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch (err) {
+      console.error("Failed to copy installation snippet:", err);
+    }
+  };
+
+  return (
+    <div style={{ marginBottom: 32 }}>
+      <h2 style={{ fontSize: 28, fontWeight: 700, color: "var(--color-content-primary)", margin: 0 }}>Installation</h2>
+      <p style={{ color: "var(--color-content-secondary)", fontSize: 16, marginTop: 8, marginBottom: 16 }}>
+        You can add this {title.toLowerCase()} component using our CLI or manually:
+      </p>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+        <Tabs selectedKey={installMethod} onSelectionChange={setInstallMethod}>
+          <Tab id="cli">CLI</Tab>
+          <Tab id="manual">Manual</Tab>
+        </Tabs>
+        <Button
+          variant="secondary"
+          size="md"
+          iconLeading={<Icon name={copied ? "Check" : "DocumentDuplicate"} size="sm" />}
+          onClick={handleCopyInstallation}
+        >
+          {copied ? "Copied" : "Copy"}
+        </Button>
+      </div>
+      <div
+        style={{
+          marginTop: 12,
+          border: "1px solid var(--color-action-outline-secondary-enabled)",
+          borderRadius: 14,
+          background: "var(--color-general-white)",
+          padding: 8,
+        }}
+      >
+        <pre
+          style={{
+            margin: 0,
+            padding: "14px 16px",
+            borderRadius: 10,
+            background: "var(--color-general-neutral-25)",
+            overflowX: "auto",
+            fontFamily: "Monaco, Menlo, Consolas, monospace",
+            fontSize: 14,
+            lineHeight: 1.5,
+            color: "var(--color-content-primary)",
+          }}
+        >
+          <code>{activeSnippet}</code>
+        </pre>
+      </div>
+    </div>
+  );
+};
+
 const Section = ({ title, description, children }) => (
   <section style={{ marginBottom: 48 }}>
     <div style={{ marginBottom: 24, paddingBottom: 16, borderBottom: "1px solid var(--color-neutral-200)" }}>
-      <h2 style={{ fontSize: 24, fontWeight: 700, color: "var(--color-content-primary)", marginBottom: 4 }}>{title}</h2>
+      <h1 style={{ fontSize: 36, fontWeight: 700, color: "var(--color-content-primary)", marginBottom: 4 }}>{title}</h1>
       {description && <p style={{ color: "var(--color-content-secondary)", fontSize: 14 }}>{description}</p>}
+    </div>
+    <InstallationBlock title={title} />
+    <div
+      style={{
+        marginBottom: 20,
+        paddingTop: 24,
+        borderTop: "1px dashed var(--color-action-outline-secondary-enabled)",
+      }}
+    >
+      <h2 style={{ fontSize: 28, fontWeight: 700, color: "var(--color-content-primary)", margin: 0 }}>{title} Examples</h2>
+      <p style={{ color: "var(--color-content-secondary)", fontSize: 16, marginTop: 8, marginBottom: 0 }}>
+        Below are examples and variations of this {title.toLowerCase()} component:
+      </p>
     </div>
     {children}
   </section>
@@ -533,58 +638,48 @@ const AvatarPage = () => (
 );
 
 const CheckboxPage = () => {
-  const [checked1, setChecked1] = useState(false);
-  const [checked2, setChecked2] = useState(true);
-
   return (
     <Section title="Checkbox" description="A reusable checkbox with sizes and states.">
-      {/* 1. All Checkbox States */}
       <PreviewComponent
-        title="Checkbox States"
+        title="All Variants - SM"
         code={`import { Checkbox } from "@/library/atoms/checkbox";
 
-<Checkbox isSelected={false}>Unchecked option</Checkbox>
-<Checkbox isSelected={true}>Checked option</Checkbox>
-<Checkbox isDisabled>Disabled unchecked</Checkbox>
-<Checkbox isDisabled defaultSelected>Disabled checked</Checkbox>`}
+<Checkbox size="sm" type="unchecked" state="enabled">SM Unchecked Enabled</Checkbox>
+<Checkbox size="sm" type="checked" state="enabled">SM Checked Enabled</Checkbox>
+<Checkbox size="sm" type="intermediate" state="enabled">SM Intermediate Enabled</Checkbox>
+<Checkbox size="sm" type="unchecked" state="disabled">SM Unchecked Disabled</Checkbox>
+<Checkbox size="sm" type="checked" state="disabled">SM Checked Disabled</Checkbox>
+<Checkbox size="sm" type="intermediate" state="disabled">SM Intermediate Disabled</Checkbox>`}
       >
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <Checkbox isSelected={checked1} onChange={setChecked1}>Unchecked option</Checkbox>
-          <Checkbox isSelected={checked2} onChange={setChecked2}>Checked option</Checkbox>
-          <Checkbox isDisabled>Disabled unchecked</Checkbox>
-          <Checkbox isDisabled defaultSelected>Disabled checked</Checkbox>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <Checkbox size="sm" type="unchecked" state="enabled">SM Unchecked Enabled</Checkbox>
+          <Checkbox size="sm" type="checked" state="enabled">SM Checked Enabled</Checkbox>
+          <Checkbox size="sm" type="intermediate" state="enabled">SM Intermediate Enabled</Checkbox>
+          <Checkbox size="sm" type="unchecked" state="disabled">SM Unchecked Disabled</Checkbox>
+          <Checkbox size="sm" type="checked" state="disabled">SM Checked Disabled</Checkbox>
+          <Checkbox size="sm" type="intermediate" state="disabled">SM Intermediate Disabled</Checkbox>
         </div>
       </PreviewComponent>
 
-      {/* 2. Checkbox Sizes */}
       <PreviewComponent
-        title="Checkbox Sizes"
+        title="All Variants - MD"
         code={`import { Checkbox } from "@/library/atoms/checkbox";
 
-<Checkbox size="sm">Small checkbox</Checkbox>
-<Checkbox size="md">Medium checkbox</Checkbox>`}
+<Checkbox size="md" type="unchecked" state="enabled">MD Unchecked Enabled</Checkbox>
+<Checkbox size="md" type="checked" state="enabled">MD Checked Enabled</Checkbox>
+<Checkbox size="md" type="intermediate" state="enabled">MD Intermediate Enabled</Checkbox>
+<Checkbox size="md" type="unchecked" state="disabled">MD Unchecked Disabled</Checkbox>
+<Checkbox size="md" type="checked" state="disabled">MD Checked Disabled</Checkbox>
+<Checkbox size="md" type="intermediate" state="disabled">MD Intermediate Disabled</Checkbox>`}
       >
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <Checkbox size="sm">Small checkbox</Checkbox>
-          <Checkbox size="md">Medium checkbox</Checkbox>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <Checkbox size="md" type="unchecked" state="enabled">MD Unchecked Enabled</Checkbox>
+          <Checkbox size="md" type="checked" state="enabled">MD Checked Enabled</Checkbox>
+          <Checkbox size="md" type="intermediate" state="enabled">MD Intermediate Enabled</Checkbox>
+          <Checkbox size="md" type="unchecked" state="disabled">MD Unchecked Disabled</Checkbox>
+          <Checkbox size="md" type="checked" state="disabled">MD Checked Disabled</Checkbox>
+          <Checkbox size="md" type="intermediate" state="disabled">MD Intermediate Disabled</Checkbox>
         </div>
-      </PreviewComponent>
-
-      {/* 3. Interactive Example */}
-      <PreviewComponent
-        title="Interactive Checkbox"
-        code={`import { Checkbox } from "@/library/atoms/checkbox";
-import { useState } from "react";
-
-const [checked, setChecked] = useState(false);
-
-<Checkbox isSelected={checked} onChange={setChecked}>
-  I agree to the terms and conditions
-</Checkbox>`}
-      >
-        <Checkbox isSelected={checked1} onChange={setChecked1}>
-          I agree to the terms and conditions
-        </Checkbox>
       </PreviewComponent>
     </Section>
   );
@@ -2867,25 +2962,8 @@ import InpartLogoCollapsed from "@/Inpart1.svg";
       ];
 
 <SideMenu
-  variant="expanded"
-  expandOnHover={false}
-  logoSrc={InpartLogo}
-  collapsedLogoSrc={InpartLogoCollapsed}
-  showSearch
-  searchPlaceholder="Quick search"
-        sections={dealSections}
-  createButtonLabel="Create"
-  user={{
-    name: "Linh Nguyen",
-    email: "linh.nguyen@inpart.io",
-    avatarInitials: "LN",
-  }}
-  onCreateClick={() => {}}
-/>
-
-<SideMenu
   variant="collapsed"
-  expandOnHover={false}
+  expandOnHover
   logoSrc={InpartLogo}
   collapsedLogoSrc={InpartLogoCollapsed}
   showSearch
@@ -2904,57 +2982,8 @@ import InpartLogoCollapsed from "@/Inpart1.svg";
       <div style={{ display: "flex", gap: 24 }}>
         <div style={{ height: 760, border: "1px solid var(--color-action-outline-secondary-enabled)", borderRadius: 8, overflow: "hidden" }}>
           <SideMenu
-            variant="expanded"
-            expandOnHover={false}
-            logoSrc="/Inpart.svg"
-            collapsedLogoSrc="/Inpart1.svg"
-            showSearch={true}
-            searchPlaceholder="Quick search"
-            sections={[
-              {
-                items: [
-                  { label: "Home", iconName: "Home" },
-                  { label: "Dashboard", iconName: "ChartBar" },
-                  { label: "Network", iconName: "Share" },
-                ],
-              },
-              {
-                title: "Workspace",
-                items: [
-                  { label: "Initiatives", iconName: "initiative" },
-                  { label: "Opportunities", iconName: "opportunity", state: "active" },
-                  { label: "Agreements", iconName: "agreement" },
-                  { label: "Alliances", iconName: "alliance" },
-                  { label: "Obligations", iconName: "obligation" },
-                ],
-              },
-              {
-                title: "Directory",
-                items: [
-                  { label: "Companies", iconName: "company" },
-                  { label: "Contacts", iconName: "contact" },
-                  { label: "Meetings", iconName: "meeting" },
-                ],
-                dividerAfter: true,
-              },
-              {
-                title: "Recent Initiatives",
-                items: [
-                  { label: "ALLINPART", iconColor: "var(--color-content-brand)", iconLetter: "A" },
-                ],
-              },
-            ]}
-            createButtonLabel="Create"
-            user={{ name: "Linh Nguyen", email: "linh.nguyen@inpart.io", avatarInitials: "LN" }}
-            onCreateClick={() => alert("Create clicked")}
-            style={{ position: "relative" }}
-          />
-        </div>
-
-        <div style={{ height: 760, border: "1px solid var(--color-action-outline-secondary-enabled)", borderRadius: 8, overflow: "hidden" }}>
-          <SideMenu
             variant="collapsed"
-            expandOnHover={false}
+            expandOnHover={true}
             logoSrc="/Inpart.svg"
             collapsedLogoSrc="/Inpart1.svg"
             showSearch={true}
@@ -3762,6 +3791,136 @@ const HubHeaderPage = () => (
   </Section>
 );
 
+const FilterPanelPage = () => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [appliedFilters, setAppliedFilters] = useState([]);
+
+  const demoRows = [
+    { id: 1, name: "Acme Corp", status: "Active", owner: "Emma Dupont", updated: "2026-03-12" },
+    { id: 2, name: "Helix Labs", status: "On Hold", owner: "Noah Singh", updated: "2026-03-03" },
+    { id: 3, name: "Northfield", status: "Declined", owner: "Mina Lee", updated: "2026-02-25" },
+    { id: 4, name: "Orbit Bio", status: "Closed", owner: "Ava Martin", updated: "2026-02-19" },
+  ];
+
+  const demoColumns = [
+    { key: "name", label: "Company", sortable: true },
+    { key: "status", label: "Status", sortable: true },
+    { key: "owner", label: "Owner", sortable: true },
+    { key: "updated", label: "Last Updated", sortable: true },
+  ];
+
+  const demoMenuSections = [
+    {
+      title: "Main",
+      items: [
+        { label: "Hub", iconName: "Home", isActive: true },
+        { label: "Pipeline", iconName: "Squares2X2" },
+      ],
+    },
+  ];
+
+  const demoMenuUser = {
+    name: "Emma Dupont",
+    email: "emma.dupont@inpart.io",
+  };
+
+  return (
+    <Section title="FilterPanel" description="Filter panel behavior in context: Add/More opens the side panel, active chips open inline dropdown editors.">
+      <PreviewComponent
+        title="FilterPanel Row API (Simple)"
+        code={`import { Row } from "@/library/organisms/filter-panel";
+
+<Row type="Type:" label="Status" badges={["2"]} onClick={() => {}} />
+<Row type="Type:" label="Owner" />`}
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, maxWidth: 360 }}>
+          <FilterPanelRow type="Type:" label="Status" badges={["2"]} onClick={() => {}} />
+          <FilterPanelRow type="Type:" label="Owner" onClick={() => {}} />
+        </div>
+      </PreviewComponent>
+
+      <PreviewComponent
+        title="Hub + FilterPanel Interaction"
+        code={`import { useState } from "react";
+import { Hub } from "@/library/templates/hub";
+    import { Row, DEFAULT_FILTER_PANEL_OPTIONS } from "@/library/organisms/filter-panel";
+
+const [currentPage, setCurrentPage] = useState(1);
+const [pageSize, setPageSize] = useState(10);
+const [appliedFilters, setAppliedFilters] = useState([]);
+
+    <Row type="Suggestion:" label="Status" badges={["2"]} onClick={() => {}} />
+    <Row type="Suggestion:" label="Name" onClick={() => {}} />
+    <Row type="Company:" label="Country" onClick={() => {}} />
+    <Row type="Agreement:" label="Agreement type" onClick={() => {}} />
+
+<Hub
+  title="Companies"
+  badge="24"
+  menuSections={demoMenuSections}
+  menuUser={demoMenuUser}
+  columns={demoColumns}
+  data={demoRows}
+  currentPage={currentPage}
+  totalPages={4}
+  pageSize={pageSize}
+  onPageChange={setCurrentPage}
+  onPageSizeChange={setPageSize}
+  filterSuggestions={DEFAULT_FILTER_PANEL_OPTIONS.suggestions}
+  filterOptions={DEFAULT_FILTER_PANEL_OPTIONS.allFilters}
+  filterIncludedSuggestionKeys={["status", "name"]}
+  filterIncludedFilterKeys={["status", "name", "country", "agreement-type"]}
+  filterIncludedGroupKeys={["company", "agreement"]}
+  filterMaxGroupCount={2}
+  onFiltersApply={setAppliedFilters}
+/>
+
+// Behavior:
+// 1. Click Add filters / More filters -> opens side panel
+// 2. Apply filters -> chips appear above table
+// 3. Click a chip -> opens inline dropdown editor for that filter
+// 4. Chip order on right: badge, chevron, cross`}
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <p style={{ margin: 0, fontSize: 14, color: "var(--color-content-secondary)" }}>
+            This preview uses the real Hub integration so the behavior matches production: active chips open inline dropdown editors, while Add/More filters opens the side panel.
+          </p>
+
+          <div style={{ height: 620, borderRadius: 8, overflow: "hidden", border: "1px solid var(--color-action-outline-secondary-enabled)" }}>
+            <Hub
+              title="Companies"
+              badge="24"
+              menuSections={demoMenuSections}
+              menuUser={demoMenuUser}
+              columns={demoColumns}
+              data={demoRows}
+              currentPage={currentPage}
+              totalPages={4}
+              pageSize={pageSize}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={setPageSize}
+              filterSuggestions={DEFAULT_FILTER_PANEL_OPTIONS.suggestions}
+              filterOptions={DEFAULT_FILTER_PANEL_OPTIONS.allFilters}
+              filterIncludedSuggestionKeys={["status", "name"]}
+              filterIncludedFilterKeys={["status", "name", "country", "agreement-type"]}
+              filterIncludedGroupKeys={["company", "agreement"]}
+              filterMaxGroupCount={2}
+              onFiltersApply={setAppliedFilters}
+            />
+          </div>
+
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <Badge color="neutral">Applied filters: {appliedFilters.length}</Badge>
+            <Badge color="neutral">{"Flow: Add/More -> side panel"}</Badge>
+            <Badge color="neutral">{"Flow: Chip -> dropdown editor"}</Badge>
+          </div>
+        </div>
+      </PreviewComponent>
+    </Section>
+  );
+};
+
 const PaginationOrganismPage = () => {
   const [page, setPage] = useState(4);
   const [pageSize, setPageSize] = useState(10);
@@ -3837,6 +3996,271 @@ const PaginationOrganismPage = () => {
 // ─────────────────────────────────────────────
 // TEMPLATE PAGES
 // ─────────────────────────────────────────────
+
+const SIDE_PANEL_DEMO_ROWS = [
+  {
+    id: "row-1",
+    name: "Acme Partnership",
+    status: "Active",
+    owner: "Emma Dupont",
+    phase: "Negotiation",
+    updated: "Jan 15, 2024",
+  },
+  {
+    id: "row-2",
+    name: "Global Alliance",
+    status: "Pending",
+    owner: "John Carter",
+    phase: "Review",
+    updated: "Feb 3, 2024",
+  },
+  {
+    id: "row-3",
+    name: "Tech Venture",
+    status: "Draft",
+    owner: "Yuki Tanaka",
+    phase: "Drafting",
+    updated: "Mar 10, 2024",
+  },
+  {
+    id: "row-4",
+    name: "Summit Initiative",
+    status: "Approved",
+    owner: "Sara Webb",
+    phase: "Approved",
+    updated: "Apr 22, 2024",
+  },
+];
+
+const SIDE_PANEL_STEPS = [
+  { title: "Draft" },
+  { title: "Review" },
+  { title: "Approved" },
+  { title: "Published" },
+];
+
+const SidePanelPage = () => {
+  const [panelOpen, setPanelOpen] = useState(false);
+  const [fullPageOpen, setFullPageOpen] = useState(false);
+  const [selectedRow, setSelectedRow] = useState(null);
+
+  const handleRowClick = ({ row }) => {
+    setSelectedRow(row ?? null);
+    setPanelOpen(true);
+  };
+
+  const handlePanelOpen = () => {
+    setPanelOpen(false);
+    setFullPageOpen(true);
+  };
+
+  const handlePanelClose = () => {
+    setPanelOpen(false);
+  };
+
+  const handleFullPageBack = () => {
+    setFullPageOpen(false);
+  };
+
+  const stepIndex = SIDE_PANEL_STEPS.findIndex(
+    (s) => s.title === (selectedRow?.phase ?? "Draft")
+  );
+  const currentStep = stepIndex >= 0 ? stepIndex : 0;
+
+  const subinfoItems = selectedRow
+    ? [
+        { label: "Owner", value: selectedRow.owner },
+        { label: "Status", value: selectedRow.status },
+        { label: "Phase", value: selectedRow.phase },
+      ]
+    : [];
+
+  const panelSections = [
+    {
+      id: "overview",
+      title: "Overview",
+      defaultExpanded: true,
+      content: selectedRow ? (
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <Infofield label="Name" value={selectedRow.name} />
+          <Infofield label="Owner" value={selectedRow.owner} />
+          <Infofield label="Status" value={selectedRow.status} />
+          <Infofield label="Phase" value={selectedRow.phase} />
+          <Infofield label="Last Updated" value={selectedRow.updated} />
+        </div>
+      ) : null,
+    },
+    {
+      id: "notes",
+      title: "Notes",
+      defaultExpanded: false,
+      content: (
+        <p style={{ color: "var(--color-content-secondary)", fontSize: 14, margin: 0 }}>
+          No notes yet. Click Edit to add notes.
+        </p>
+      ),
+    },
+    {
+      id: "attachments",
+      title: "Attachments",
+      defaultExpanded: false,
+      content: (
+        <p style={{ color: "var(--color-content-secondary)", fontSize: 14, margin: 0 }}>
+          No attachments. Drag and drop files here.
+        </p>
+      ),
+    },
+  ];
+
+  const fullPageLeftSections = [
+    {
+      id: "details",
+      title: "Details",
+      defaultExpanded: true,
+      content: selectedRow ? (
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <Infofield label="Name" value={selectedRow.name} />
+          <Infofield label="Owner" value={selectedRow.owner} />
+          <Infofield label="Status" value={selectedRow.status} />
+          <Infofield label="Phase" value={selectedRow.phase} />
+          <Infofield label="Last Updated" value={selectedRow.updated} />
+        </div>
+      ) : null,
+    },
+    {
+      id: "notes",
+      title: "Notes",
+      defaultExpanded: false,
+      content: (
+        <p style={{ color: "var(--color-content-secondary)", fontSize: 14, margin: 0 }}>
+          No notes yet.
+        </p>
+      ),
+    },
+  ];
+
+  const fullPageRightSections = [
+    {
+      id: "team",
+      title: "Team",
+      defaultExpanded: true,
+      content: (
+        <AvatarGroup
+          avatars={[
+            { name: "Emma Dupont" },
+            { name: "John Carter" },
+            { name: "Yuki Tanaka" },
+          ]}
+        />
+      ),
+    },
+    {
+      id: "attachments",
+      title: "Attachments",
+      defaultExpanded: false,
+      content: (
+        <p style={{ color: "var(--color-content-secondary)", fontSize: 14, margin: 0 }}>
+          No attachments.
+        </p>
+      ),
+    },
+  ];
+
+  if (fullPageOpen && selectedRow) {
+    return (
+      <div style={{ position: "fixed", inset: 0, zIndex: 500, background: "var(--color-general-neutral-light)" }}>
+        <ObjectPage
+          title={selectedRow.name}
+          meta={{ label: "Last updated on", date: selectedRow.updated }}
+          subinfoItems={subinfoItems}
+          steps={SIDE_PANEL_STEPS}
+          currentStep={currentStep}
+          topBarLeft={
+            <Button
+              variant="tertiary"
+              size="sm"
+              iconLeading={<Icon name="ArrowLeft" size="sm" />}
+              onClick={handleFullPageBack}
+            >
+              Back
+            </Button>
+          }
+          topBarRight={
+            <Button variant="primary" size="sm">
+              Save
+            </Button>
+          }
+          leftColumnSections={fullPageLeftSections}
+          rightColumnSections={fullPageRightSections}
+          menuSections={[]}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <Section title="SidePanel" description="A slide-in panel triggered by a table row click, with ObjectHeader and single-column accordions. Click Open to expand to a full ObjectPage with two-column layout.">
+      <PreviewComponent
+        title="SidePanel with Table"
+        code={`import { SidePanel } from "@/library/templates/side-panel";
+
+const [panelOpen, setPanelOpen] = useState(false);
+const [selectedRow, setSelectedRow] = useState(null);
+
+<Table
+  rows={rows}
+  columns={columns}
+  onRowClick={({ selected }) => {
+    setSelectedRow(selected);
+    setPanelOpen(true);
+  }}
+/>
+
+<SidePanel
+  isOpen={panelOpen}
+  onClose={() => setPanelOpen(false)}
+  onOpen={() => { setPanelOpen(false); setFullPageOpen(true); }}
+  title={selectedRow?.name}
+  subinfoItems={[
+    { label: "Owner", value: selectedRow?.owner },
+    { label: "Status", value: selectedRow?.status },
+  ]}
+  steps={steps}
+  currentStep={currentStep}
+  sections={sections}
+/>`}
+      >
+        <div>
+          <p style={{ marginBottom: 16, fontSize: 14, color: "var(--color-content-secondary)" }}>
+            Click any table row to open the side panel.
+          </p>
+          <Table
+            columns={[
+              { key: "name", header: "Name", variant: "short-text", width: "240px" },
+              { key: "owner", header: "Owner", variant: "short-text", width: "160px" },
+              { key: "phase", header: "Phase", variant: "short-text", width: "140px" },
+              { key: "updated", header: "Last Updated", variant: "short-text", width: "160px" },
+            ]}
+            rows={SIDE_PANEL_DEMO_ROWS}
+            onRowClick={({ row }) => handleRowClick({ row })}
+          />
+        </div>
+      </PreviewComponent>
+
+      <SidePanel
+        isOpen={panelOpen}
+        onClose={handlePanelClose}
+        onOpen={handlePanelOpen}
+        title={selectedRow?.name ?? ""}
+        meta={selectedRow ? { label: "Last updated on", date: selectedRow.updated } : undefined}
+        subinfoItems={subinfoItems}
+        steps={SIDE_PANEL_STEPS}
+        currentStep={currentStep}
+        sections={panelSections}
+      />
+    </Section>
+  );
+};
 
 const HubTemplatePage = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -3945,12 +4369,64 @@ const ObjectPageTemplatePage = () => {
       <PreviewComponent
         title="ObjectPage Template Preview"
         code={`import { ObjectPage } from "@/library/templates/object-page";
+import { TextInput, Toggle } from "@/library/molecules";
+
+const [activeTab, setActiveTab] = useState("overview");
 
 <ObjectPage
   title="Initiative Name"
-  steps={steps}
-  tabs={tabs}
-  leftColumnSections={leftSections}
+  menuVariant="deal"
+  logoSrc="/Inpart.svg"
+  menuCollapsedLogoSrc="/Inpart1.svg"
+  menuUser={{ name: "Emma Dupont", email: "emma.dupont@inpart.io", avatarInitials: "ED" }}
+  topBarLeft={
+    <ObjectPage.Button
+      variant="secondary"
+      size="sm"
+      iconLeading={<ObjectPage.Icon name="ArrowLeft" size="sm" />}
+    >
+      Back
+    </ObjectPage.Button>
+  }
+  topBarRight={
+    <ObjectPage.Header.ActionsGroup>
+      <ObjectPage.Button variant="primary" size="sm">Save</ObjectPage.Button>
+    </ObjectPage.Header.ActionsGroup>
+  }
+  meta={{ date: "Jan 15, 2024", author: "John Doe" }}
+  titleIconName="Beaker"
+  steps={[
+    { title: "Draft" },
+    { title: "Review" },
+    { title: "Approved" },
+    { title: "Active" },
+  ]}
+  currentStep={2}
+  tabs={
+    <ObjectPage.Tabs selectedKey={activeTab} onSelectionChange={setActiveTab}>
+      <ObjectPage.Tab id="overview">Overview</ObjectPage.Tab>
+      <ObjectPage.Tab id="details">Details</ObjectPage.Tab>
+      <ObjectPage.Tab id="history">History</ObjectPage.Tab>
+    </ObjectPage.Tabs>
+  }
+  leftColumnSections={[
+    {
+      title: "General Information",
+      defaultExpanded: true,
+      content: (
+        <>
+          <TextInput label="Name" placeholder="Enter name..." />
+          <div style={{ marginTop: 16 }}>
+            <TextInput label="Description" placeholder="Enter description..." />
+          </div>
+        </>
+      ),
+    },
+    {
+      title: "Settings",
+      content: <Toggle label="Enable notifications" />,
+    },
+  ]}
   rightColumnSections={rightSections}
 />`}
       >
@@ -3959,10 +4435,53 @@ const ObjectPageTemplatePage = () => {
         </p>
         <div style={{ height: 600, border: "1px solid var(--color-neutral-200)", borderRadius: 8, overflow: "hidden" }}>
           <div style={{ display: "flex", height: "100%", background: "var(--color-general-neutral-light)" }}>
-            {/* Mini Sidebar Preview */}
-            <div style={{ width: 200, background: "var(--color-general-white)", borderRight: "1px solid var(--color-action-outline-secondary-enabled)", padding: 16 }}>
-              <div style={{ fontSize: 16, fontWeight: 700, color: "var(--color-content-brand)", marginBottom: 24 }}>Eureka</div>
-              <div style={{ fontSize: 12, color: "var(--color-content-secondary)" }}>Side Menu Preview</div>
+            <div style={{ width: 250, borderRight: "1px solid var(--color-action-outline-secondary-enabled)", overflow: "hidden" }}>
+              <SideMenu
+                variant="collapsed"
+                expandOnHover={true}
+                logoSrc="/Inpart.svg"
+                collapsedLogoSrc="/Inpart1.svg"
+                showSearch={true}
+                searchPlaceholder="Quick search"
+                sections={[
+                  {
+                    items: [
+                      { label: "Home", iconName: "Home" },
+                      { label: "Dashboard", iconName: "ChartBar" },
+                      { label: "Network", iconName: "Share" },
+                    ],
+                  },
+                  {
+                    title: "Workspace",
+                    items: [
+                      { label: "Initiatives", iconName: "initiative" },
+                      { label: "Opportunities", iconName: "opportunity", state: "active" },
+                      { label: "Agreements", iconName: "agreement" },
+                      { label: "Alliances", iconName: "alliance" },
+                      { label: "Obligations", iconName: "obligation" },
+                    ],
+                  },
+                  {
+                    title: "Directory",
+                    items: [
+                      { label: "Companies", iconName: "company" },
+                      { label: "Contacts", iconName: "contact" },
+                      { label: "Meetings", iconName: "meeting" },
+                    ],
+                    dividerAfter: true,
+                  },
+                  {
+                    title: "Recent Initiatives",
+                    items: [
+                      { label: "ALLINPART", iconColor: "var(--color-content-brand)", iconLetter: "A" },
+                    ],
+                  },
+                ]}
+                createButtonLabel="Create"
+                user={{ name: "Emma Dupont", email: "emma.dupont@inpart.io", avatarInitials: "ED" }}
+                onCreateClick={() => alert("Create clicked")}
+                style={{ position: "relative", height: "100%" }}
+              />
             </div>
 
             {/* Main Content Preview */}
@@ -4096,10 +4615,12 @@ const PAGES = {
   table: { title: "Table", component: TablePage, category: "organisms" },
   objectHeader: { title: "ObjectHeader", component: ObjectHeaderPage, category: "organisms" },
   hubHeader: { title: "HubHeader", component: HubHeaderPage, category: "organisms" },
+  filterPanel: { title: "FilterPanel", component: FilterPanelPage, category: "organisms" },
   paginationOrganism: { title: "Pagination (Organism)", component: PaginationOrganismPage, category: "organisms" },
   // Templates
   hubTemplate: { title: "Hub", component: HubTemplatePage, category: "templates" },
   objectPageTemplate: { title: "ObjectPage", component: ObjectPageTemplatePage, category: "templates" },
+  sidePanelTemplate: { title: "SidePanel", component: SidePanelPage, category: "templates" },
 };
 
 // ─────────────────────────────────────────────
@@ -4253,9 +4774,11 @@ function getIconForPage(pageKey) {
     table: "TableCells",
     objectHeader: "DocumentText",
     hubHeader: "RectangleGroup",
+    filterPanel: "Funnel",
     paginationOrganism: "ChevronDoubleRight",
     hubTemplate: "ViewColumns",
     objectPageTemplate: "Document",
+    sidePanelTemplate: "RectangleStack",
   };
   return iconMap[pageKey] || "DocumentText";
 }

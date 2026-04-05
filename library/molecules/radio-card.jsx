@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * RadioCard Component (Molecule)
  *

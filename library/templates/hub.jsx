@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * Hub Template
  *
@@ -5,12 +7,17 @@
  * Use this as a starting point for list/hub pages in your application.
  */
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { SideMenu } from "../organisms/side-menu/side-menu.jsx";
 import {
   HubHeader,
   HubHeaderActions,
 } from "../organisms/hub-header.jsx";
+import {
+  FilterPanel,
+  DEFAULT_FILTER_PANEL_OPTIONS,
+  FILTER_TYPES,
+} from "../organisms/filter-panel.jsx";
 import {
   Table,
 } from "../organisms/table/table.jsx";
@@ -18,6 +25,13 @@ import { Pagination } from "../organisms/pagination.jsx";
 import { Button } from "../atoms/button.jsx";
 import { Icon } from "../atoms/icon.jsx";
 import { Checkbox } from "../atoms/checkbox.jsx";
+import { RadioButton, RadioGroup } from "../atoms/radio-button.jsx";
+import { Search } from "../molecules/search.jsx";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+} from "../molecules/dropdown-menu.jsx";
 
 /* ===========================================
    STYLE CONFIGURATION
@@ -57,12 +71,226 @@ const styles = {
       border-radius: var(--radius-lg);
       display: flex;
       flex-direction: column;
+      min-width: 0;
+      flex: 1;
+    }
+    .hub__table-content {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+      border: 1px solid var(--color-action-outline-secondary-enabled);
+      border-radius: var(--radius-lg);
+      background: var(--color-general-white);
+    }
+    .hub__table-main {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .hub__table-toolbar {
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-start;
+      gap: var(--spacing-3);
+      margin-bottom: var(--spacing-3);
+    }
+    .hub__active-filters {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-2);
+      flex-wrap: wrap;
+      min-height: 40px;
+      min-width: 0;
+      flex: 1;
+    }
+    .hub__filter-pill {
+      height: 32px;
+      max-width: 320px;
+      padding: var(--spacing-sm);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--color-action-outline-secondary-enabled);
+      box-shadow: var(--shadow-light-down);
+      background: var(--color-general-white);
+      color: var(--color-content-secondary);
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      cursor: pointer;
+      box-sizing: border-box;
+      font-family: var(--font-family-primary);
+      font-size: var(--text-body-lg);
+      line-height: var(--line-height-body-lg);
+    }
+    .hub__filter-pill:focus-visible {
+      outline: 2px solid var(--color-interaction-outline-active);
+      outline-offset: 2px;
+    }
+    .hub__filter-pill-label {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 220px;
+    }
+    .hub__filter-pill-meta {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      flex-shrink: 0;
+    }
+    .hub__filter-pill-badge {
+      min-width: 20px;
+      height: 20px;
+      padding: 0 var(--spacing-xs);
+      border-radius: var(--radius-xs);
+      border: 1px solid var(--color-action-outline-secondary-enabled);
+      background: var(--color-general-neutral-lighter);
+      color: var(--color-content-secondary);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-body-md);
+      line-height: var(--line-height-body-md);
+      box-sizing: border-box;
+    }
+    .hub__filter-pill-icon-btn {
+      width: 16px;
+      height: 16px;
+      border: none;
+      background: transparent;
+      color: var(--color-content-secondary);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 0;
+    }
+    .hub__filter-editor {
+      width: 336px;
+      max-width: min(336px, calc(100vw - 64px));
+      border-radius: var(--radius-md);
+      background: var(--color-general-white);
+      outline: 1px solid var(--color-action-outline-secondary-enabled);
+      outline-offset: -1px;
+      box-shadow: var(--shadow-light-down);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .hub__filter-editor-body {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-2);
+      padding: var(--spacing-2);
+      max-height: 360px;
+      overflow-y: auto;
+    }
+    .hub__filter-editor-row {
+      display: inline-flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--spacing-2);
+      width: 100%;
+      padding: var(--spacing-sm);
+      border-radius: var(--radius-sm);
+      box-sizing: border-box;
+      border: none;
+      background: transparent;
+      font-family: var(--font-family-primary);
+      cursor: pointer;
+    }
+    .hub__filter-editor-row.is-selected {
+      background: var(--color-general-neutral-lighter);
+    }
+    .hub__filter-editor-row-left {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      min-width: 0;
+    }
+    .hub__filter-editor-row-label {
+      color: var(--color-content-primary);
+      font-size: var(--text-body-lg);
+      line-height: var(--line-height-body-lg);
+    }
+    .hub__filter-editor-fields {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-2);
+      padding: var(--spacing-2);
+    }
+    .hub__filter-editor-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--spacing-2);
+    }
+    .hub__filter-editor-label {
+      margin: 0;
+      font-family: var(--font-family-primary);
+      font-size: var(--text-body-md);
+      line-height: var(--line-height-body-md);
+      color: var(--color-content-secondary);
+    }
+    .hub__filter-editor-input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .hub__filter-editor-input {
+      width: 100%;
+      height: 40px;
+      padding: var(--spacing-sm) 32px var(--spacing-sm) var(--spacing-sm);
+      border: none;
+      border-radius: var(--radius-md);
+      outline: 1px solid var(--color-interaction-outline-enabled);
+      outline-offset: -1px;
+      font-family: var(--font-family-primary);
+      font-size: var(--text-body-lg);
+      line-height: var(--line-height-body-lg);
+      color: var(--color-content-primary);
+      box-sizing: border-box;
+      background: var(--color-interaction-fill-enabled);
+    }
+    .hub__filter-editor-input-clear {
+      position: absolute;
+      right: var(--spacing-sm);
+      width: 16px;
+      height: 16px;
+      border: none;
+      background: transparent;
+      color: var(--color-content-secondary);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      cursor: pointer;
+    }
+    .hub__filter-editor-empty {
+      margin: 0;
+      padding: var(--spacing-sm);
+      color: var(--color-content-secondary);
+      font-family: var(--font-family-primary);
+      font-size: var(--text-body-md);
+      line-height: var(--line-height-body-md);
+    }
+    .hub__filter-editor-footer {
+      display: inline-flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--spacing-2);
+      padding: var(--spacing-2) var(--spacing-4);
+      border-top: 1px solid var(--color-action-outline-secondary-enabled);
     }
     .hub__table-wrapper {
       overflow-x: auto;
       overflow-y: hidden;
       padding-bottom: 2px;
       border-radius: var(--radius-lg);
+      flex: 1;
+      min-height: 0;
     }
     .hub__footer {
       flex-shrink: 0;
@@ -94,6 +322,153 @@ const injectStyles = () => {
   styleEl.textContent = styles.base;
   document.head.appendChild(styleEl);
   stylesInjected = true;
+};
+
+const buildFilterLookup = (suggestions = [], allFilters = []) => {
+  const map = {};
+
+  suggestions.forEach((item) => {
+    if (!item?.key) return;
+    map[`suggestion::${String(item.key)}`] = {
+      type: item.type || FILTER_TYPES.text,
+      options: Array.isArray(item.options) ? item.options.map((option) => String(option)) : [],
+      label: item.label || String(item.key),
+      objectLabel: null,
+    };
+  });
+
+  allFilters.forEach((group) => {
+    const objectKey = String(group?.key || "");
+    const objectLabel = String(group?.label || "");
+    if (!objectKey) return;
+
+    const filters = Array.isArray(group?.filters) ? group.filters : [];
+    filters.forEach((item) => {
+      if (!item?.key) return;
+      map[`object:${objectKey}::${String(item.key)}`] = {
+        type: item.type || FILTER_TYPES.text,
+        options: Array.isArray(item.options) ? item.options.map((option) => String(option)) : [],
+        label: item.label || String(item.key),
+        objectLabel,
+      };
+    });
+  });
+
+  return map;
+};
+
+const createDefaultCriteria = (type) => ({
+  type,
+  includeEmpty: false,
+  text: "",
+  from: "",
+  to: "",
+  min: "",
+  max: "",
+  selectedOptions: [],
+  selectedOption: "",
+});
+
+const normalizeCriteria = (criteria, type) => {
+  const base = {
+    ...createDefaultCriteria(type),
+    ...(criteria || {}),
+    type,
+  };
+
+  return {
+    ...base,
+    text: base.text ? String(base.text) : "",
+    from: base.from ? String(base.from) : "",
+    to: base.to ? String(base.to) : "",
+    min: base.min ? String(base.min) : "",
+    max: base.max ? String(base.max) : "",
+    selectedOptions: Array.isArray(base.selectedOptions)
+      ? base.selectedOptions.map((option) => String(option))
+      : [],
+    selectedOption: base.selectedOption ? String(base.selectedOption) : "",
+    includeEmpty: Boolean(base.includeEmpty),
+  };
+};
+
+const hasActiveCriteria = (criteria) => {
+  if (!criteria) return false;
+
+  if (criteria.type === FILTER_TYPES.text) {
+    return Boolean(criteria.text.trim() || criteria.includeEmpty);
+  }
+  if (criteria.type === FILTER_TYPES.date) {
+    return Boolean(criteria.from || criteria.to || criteria.includeEmpty);
+  }
+  if (criteria.type === FILTER_TYPES.numberRange) {
+    return Boolean(criteria.min || criteria.max || criteria.includeEmpty);
+  }
+  if (criteria.type === FILTER_TYPES.multipleChoice) {
+    return Boolean(criteria.selectedOptions.length > 0 || criteria.includeEmpty);
+  }
+  if (criteria.type === FILTER_TYPES.singleChoice) {
+    return Boolean(criteria.selectedOption || criteria.includeEmpty);
+  }
+
+  return false;
+};
+
+const getAppliedOptionCount = (criteria) => {
+  if (!criteria) return 0;
+
+  if (criteria.type === FILTER_TYPES.multipleChoice) {
+    return criteria.selectedOptions.length + (criteria.includeEmpty ? 1 : 0);
+  }
+  if (criteria.type === FILTER_TYPES.singleChoice) {
+    return (criteria.selectedOption ? 1 : 0) + (criteria.includeEmpty ? 1 : 0);
+  }
+  if (criteria.type === FILTER_TYPES.text) {
+    return (criteria.text.trim() ? 1 : 0) + (criteria.includeEmpty ? 1 : 0);
+  }
+  if (criteria.type === FILTER_TYPES.date) {
+    return (criteria.from ? 1 : 0) + (criteria.to ? 1 : 0) + (criteria.includeEmpty ? 1 : 0);
+  }
+  if (criteria.type === FILTER_TYPES.numberRange) {
+    return (criteria.min ? 1 : 0) + (criteria.max ? 1 : 0) + (criteria.includeEmpty ? 1 : 0);
+  }
+
+  return 0;
+};
+
+const formatCriteriaSummary = (criteria) => {
+  if (!criteria) return "";
+
+  if (criteria.type === FILTER_TYPES.text) {
+    if (criteria.text.trim()) return criteria.text.trim();
+    return criteria.includeEmpty ? "Blank(s)" : "";
+  }
+
+  if (criteria.type === FILTER_TYPES.date) {
+    if (criteria.from && criteria.to) return `${criteria.from} - ${criteria.to}`;
+    if (criteria.from) return `From ${criteria.from}`;
+    if (criteria.to) return `To ${criteria.to}`;
+    return criteria.includeEmpty ? "No date" : "";
+  }
+
+  if (criteria.type === FILTER_TYPES.numberRange) {
+    if (criteria.min && criteria.max) return `${criteria.min} - ${criteria.max}`;
+    if (criteria.min) return `>= ${criteria.min}`;
+    if (criteria.max) return `<= ${criteria.max}`;
+    return criteria.includeEmpty ? "No number" : "";
+  }
+
+  if (criteria.type === FILTER_TYPES.multipleChoice) {
+    if (criteria.selectedOptions.length === 1) return criteria.selectedOptions[0];
+    if (criteria.selectedOptions.length > 1) return `${criteria.selectedOptions.length} selected`;
+    return criteria.includeEmpty ? "Blank(s)" : "";
+  }
+
+  if (criteria.type === FILTER_TYPES.singleChoice) {
+    if (criteria.selectedOption) return criteria.selectedOption;
+    return criteria.includeEmpty ? "No value" : "";
+  }
+
+  return "";
 };
 
 /* ===========================================
@@ -159,10 +534,25 @@ export const Hub = ({
   showPagination = true,
   paginationAction,
   // General
+  initialFilters = [],
+  filterSuggestions = DEFAULT_FILTER_PANEL_OPTIONS.suggestions,
+  filterOptions = DEFAULT_FILTER_PANEL_OPTIONS.allFilters,
+  filterIncludedSuggestionKeys,
+  filterIncludedFilterKeys,
+  filterIncludedGroupKeys,
+  filterMaxGroupCount,
+  filterPanelTitle = "Filters",
+  addFiltersLabel = "Add filters",
+  onFiltersApply,
   className = "",
   ...props
 }) => {
   injectStyles();
+
+  const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
+  const [activeFilters, setActiveFilters] = useState(initialFilters);
+  const [openChipId, setOpenChipId] = useState(null);
+  const [chipDraftCriteria, setChipDraftCriteria] = useState({});
 
   const classes = ["hub", className].filter(Boolean).join(" ");
 
@@ -225,6 +615,337 @@ export const Hub = ({
     />
   );
 
+  const handleApplyFilters = (filters) => {
+    setActiveFilters(filters);
+    setOpenChipId(null);
+    setChipDraftCriteria({});
+    setIsFilterPanelOpen(false);
+    onFiltersApply?.(filters);
+  };
+
+  const handleRemoveFilter = (filterKey) => {
+    const nextFilters = activeFilters.filter((item) => (item.id || item.key) !== filterKey);
+    setActiveFilters(nextFilters);
+    if (openChipId === filterKey) {
+      setOpenChipId(null);
+      setChipDraftCriteria({});
+    }
+    onFiltersApply?.(nextFilters);
+  };
+
+  const handleClearFilters = () => {
+    setActiveFilters([]);
+    setOpenChipId(null);
+    setChipDraftCriteria({});
+    onFiltersApply?.([]);
+  };
+
+  const filterLookup = useMemo(
+    () => buildFilterLookup(filterSuggestions, filterOptions),
+    [filterSuggestions, filterOptions]
+  );
+
+  const resolveFilterMeta = (filter) => {
+    const fallbackType = filter.type || FILTER_TYPES.text;
+    const fallbackLabel = filter.label || "Filter";
+
+    const lookupKey = filter.id || filter.key;
+    const lookupMeta = lookupKey ? filterLookup[lookupKey] : null;
+
+    return {
+      type: lookupMeta?.type || fallbackType,
+      options: lookupMeta?.options || [],
+      label: lookupMeta?.label || fallbackLabel,
+      objectLabel: filter.objectLabel || lookupMeta?.objectLabel || null,
+    };
+  };
+
+  const getDraftCriteria = (filter) => {
+    const filterId = filter.id || filter.key;
+    const meta = resolveFilterMeta(filter);
+    const raw = chipDraftCriteria[filterId] || filter.criteria;
+    return normalizeCriteria(raw, meta.type);
+  };
+
+  const updateDraftCriteria = (filter, updater) => {
+    const filterId = filter.id || filter.key;
+    const current = getDraftCriteria(filter);
+    const next = typeof updater === "function" ? updater(current) : updater;
+    setChipDraftCriteria((prev) => ({
+      ...prev,
+      [filterId]: normalizeCriteria(next, current.type),
+    }));
+  };
+
+  const openChipEditor = (filter) => {
+    const filterId = filter.id || filter.key;
+    setChipDraftCriteria((prev) => ({
+      ...prev,
+      [filterId]: getDraftCriteria(filter),
+    }));
+  };
+
+  const clearDraftForChip = (filter) => {
+    const filterId = filter.id || filter.key;
+    const meta = resolveFilterMeta(filter);
+    setChipDraftCriteria((prev) => ({
+      ...prev,
+      [filterId]: createDefaultCriteria(meta.type),
+    }));
+  };
+
+  const applyDraftForChip = (filter) => {
+    const filterId = filter.id || filter.key;
+    const draft = getDraftCriteria(filter);
+
+    const nextFilters = activeFilters
+      .map((item) => {
+        const itemId = item.id || item.key;
+        if (itemId !== filterId) return item;
+
+        if (!hasActiveCriteria(draft)) return null;
+
+        return {
+          ...item,
+          value: formatCriteriaSummary(draft),
+          badgeCount: getAppliedOptionCount(draft),
+          criteria: draft,
+        };
+      })
+      .filter(Boolean);
+
+    setActiveFilters(nextFilters);
+    setOpenChipId(null);
+    setChipDraftCriteria((prev) => {
+      const next = { ...prev };
+      delete next[filterId];
+      return next;
+    });
+    onFiltersApply?.(nextFilters);
+  };
+
+  const renderChipEditor = (filter) => {
+    const meta = resolveFilterMeta(filter);
+    const draft = getDraftCriteria(filter);
+
+    const clearableInput = ({ label, type = "text", value, onChange, onClear }) => (
+      <div>
+        <p className="hub__filter-editor-label">{label}</p>
+        <div className="hub__filter-editor-input-wrap">
+          <input
+            className="hub__filter-editor-input"
+            type={type}
+            value={value}
+            onChange={(event) => onChange(event.target.value)}
+          />
+          {value ? (
+            <button
+              type="button"
+              className="hub__filter-editor-input-clear"
+              onClick={onClear}
+              aria-label={`Clear ${label.toLowerCase()}`}
+            >
+              <Icon name="XMark" size="sm" />
+            </button>
+          ) : null}
+        </div>
+      </div>
+    );
+
+    return (
+      <div className="hub__filter-editor">
+        <div className="hub__filter-editor-body">
+          {meta.type === FILTER_TYPES.text && (
+            <div className="hub__filter-editor-fields">
+              {clearableInput({
+                label: meta.label,
+                value: draft.text,
+                onChange: (value) => updateDraftCriteria(filter, (prev) => ({ ...prev, text: value })),
+                onClear: () => updateDraftCriteria(filter, (prev) => ({ ...prev, text: "" })),
+              })}
+              <div className="hub__filter-editor-row">
+                <div className="hub__filter-editor-row-left">
+                  <Checkbox
+                    isSelected={draft.includeEmpty}
+                    onChange={(checked) => updateDraftCriteria(filter, (prev) => ({ ...prev, includeEmpty: checked }))}
+                  >
+                    No {meta.label.toLowerCase()}
+                  </Checkbox>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {meta.type === FILTER_TYPES.date && (
+            <div className="hub__filter-editor-fields">
+              <div className="hub__filter-editor-grid">
+                {clearableInput({
+                  label: "From",
+                  type: "date",
+                  value: draft.from,
+                  onChange: (value) => updateDraftCriteria(filter, (prev) => ({ ...prev, from: value })),
+                  onClear: () => updateDraftCriteria(filter, (prev) => ({ ...prev, from: "" })),
+                })}
+                {clearableInput({
+                  label: "To",
+                  type: "date",
+                  value: draft.to,
+                  onChange: (value) => updateDraftCriteria(filter, (prev) => ({ ...prev, to: value })),
+                  onClear: () => updateDraftCriteria(filter, (prev) => ({ ...prev, to: "" })),
+                })}
+              </div>
+              <div className="hub__filter-editor-row">
+                <div className="hub__filter-editor-row-left">
+                  <Checkbox
+                    isSelected={draft.includeEmpty}
+                    onChange={(checked) => updateDraftCriteria(filter, (prev) => ({ ...prev, includeEmpty: checked }))}
+                  >
+                    No {meta.label.toLowerCase()}
+                  </Checkbox>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {meta.type === FILTER_TYPES.numberRange && (
+            <div className="hub__filter-editor-fields">
+              <div className="hub__filter-editor-grid">
+                {clearableInput({
+                  label: "Min",
+                  type: "number",
+                  value: draft.min,
+                  onChange: (value) => updateDraftCriteria(filter, (prev) => ({ ...prev, min: value })),
+                  onClear: () => updateDraftCriteria(filter, (prev) => ({ ...prev, min: "" })),
+                })}
+                {clearableInput({
+                  label: "Max",
+                  type: "number",
+                  value: draft.max,
+                  onChange: (value) => updateDraftCriteria(filter, (prev) => ({ ...prev, max: value })),
+                  onClear: () => updateDraftCriteria(filter, (prev) => ({ ...prev, max: "" })),
+                })}
+              </div>
+              <div className="hub__filter-editor-row">
+                <div className="hub__filter-editor-row-left">
+                  <Checkbox
+                    isSelected={draft.includeEmpty}
+                    onChange={(checked) => updateDraftCriteria(filter, (prev) => ({ ...prev, includeEmpty: checked }))}
+                  >
+                    No {meta.label.toLowerCase()}
+                  </Checkbox>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {meta.type === FILTER_TYPES.multipleChoice && (
+            <>
+              <Search
+                size="lg"
+                placeholder={`Search in ${meta.label.toLowerCase()}`}
+                value={draft.text}
+                onChange={(value) => updateDraftCriteria(filter, (prev) => ({ ...prev, text: value }))}
+              />
+
+              {(draft.text.trim()
+                ? meta.options.filter((option) => option.toLowerCase().includes(draft.text.trim().toLowerCase()))
+                : meta.options
+              ).map((option) => {
+                const selected = new Set(draft.selectedOptions);
+                const isSelected = selected.has(option);
+                return (
+                  <button
+                    key={option}
+                    type="button"
+                    className={`hub__filter-editor-row${isSelected ? " is-selected" : ""}`}
+                    onClick={() => {
+                      updateDraftCriteria(filter, (prev) => {
+                        const next = new Set(prev.selectedOptions);
+                        if (next.has(option)) {
+                          next.delete(option);
+                        } else {
+                          next.add(option);
+                        }
+                        return {
+                          ...prev,
+                          selectedOptions: Array.from(next),
+                        };
+                      });
+                    }}
+                  >
+                    <div className="hub__filter-editor-row-left">
+                      <Checkbox isSelected={isSelected} onChange={() => {}}>{option}</Checkbox>
+                    </div>
+                  </button>
+                );
+              })}
+
+              {(draft.text.trim()
+                ? meta.options.filter((option) => option.toLowerCase().includes(draft.text.trim().toLowerCase()))
+                : meta.options
+              ).length === 0 ? <p className="hub__filter-editor-empty">No options found.</p> : null}
+
+              <div className="hub__filter-editor-row">
+                <div className="hub__filter-editor-row-left">
+                  <Checkbox
+                    isSelected={draft.includeEmpty}
+                    onChange={(checked) => updateDraftCriteria(filter, (prev) => ({ ...prev, includeEmpty: checked }))}
+                  >
+                    Blank(s)
+                  </Checkbox>
+                </div>
+              </div>
+            </>
+          )}
+
+          {meta.type === FILTER_TYPES.singleChoice && (
+            <div className="hub__filter-editor-fields">
+              <RadioGroup
+                name={`hub-chip-${filter.id || filter.key}`}
+                value={draft.selectedOption}
+                onChange={(value) => updateDraftCriteria(filter, (prev) => ({ ...prev, selectedOption: value }))}
+              >
+                {meta.options.map((option) => (
+                  <div key={option} className="hub__filter-editor-row">
+                    <div className="hub__filter-editor-row-left">
+                      <RadioButton value={option}>{option}</RadioButton>
+                    </div>
+                  </div>
+                ))}
+              </RadioGroup>
+
+              <div className="hub__filter-editor-row">
+                <div className="hub__filter-editor-row-left">
+                  <Checkbox
+                    isSelected={draft.includeEmpty}
+                    onChange={(checked) => updateDraftCriteria(filter, (prev) => ({ ...prev, includeEmpty: checked }))}
+                  >
+                    No {meta.label.toLowerCase()}
+                  </Checkbox>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="hub__filter-editor-footer">
+          <Button variant="secondary" size="md" onClick={() => clearDraftForChip(filter)}>
+            Clear
+          </Button>
+          <Button
+            variant="primary"
+            size="md"
+            iconLeading={<Icon name="Funnel" size="sm" />}
+            isDisabled={!hasActiveCriteria(draft)}
+            onClick={() => applyDraftForChip(filter)}
+          >
+            Apply filters
+          </Button>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className={classes} {...props}>
       {/* Side Menu */}
@@ -252,15 +973,111 @@ export const Hub = ({
 
         {/* Body with Table */}
         <div className="hub__body">
-          <div className="hub__table-container">
-            <div className="hub__table-wrapper">
-              <Table
-                columns={resolvedColumns}
-                rows={data}
-                rowKey="id"
-                emptyState={<div className="hub__empty">{emptyMessage}</div>}
-              />
+          <div className="hub__table-toolbar">
+            {activeFilters.length === 0 ? (
+              <Button
+                variant="secondary"
+                size="md"
+                iconLeading={<Icon name="Plus" size="sm" />}
+                onClick={() => setIsFilterPanelOpen(true)}
+              >
+                {addFiltersLabel}
+              </Button>
+            ) : (
+              <div className="hub__active-filters">
+                {activeFilters.map((filter) => {
+                  const filterId = filter.id || filter.key;
+                  const badgeLabel = typeof filter.badgeCount === "number"
+                    ? String(filter.badgeCount)
+                    : filter.value || "";
+
+                  return (
+                    <DropdownMenu
+                      key={filterId}
+                      open={openChipId === filterId}
+                      onOpenChange={(nextOpen) => {
+                        setOpenChipId(nextOpen ? filterId : null);
+                        if (nextOpen) {
+                          openChipEditor(filter);
+                        }
+                      }}
+                      closeOnSelect={false}
+                    >
+                      <DropdownMenuTrigger asChild>
+                        <div
+                          role="button"
+                          tabIndex={0}
+                          className="hub__filter-pill"
+                        >
+                          <span className="hub__filter-pill-label">{filter.label}</span>
+                          <span className="hub__filter-pill-meta">
+                            {badgeLabel ? (
+                              <span className="hub__filter-pill-badge">{badgeLabel}</span>
+                            ) : null}
+                            <span className="hub__filter-pill-icon-btn" aria-hidden="true">
+                              <Icon name="ChevronDown" size="sm" />
+                            </span>
+                            <button
+                              type="button"
+                              className="hub__filter-pill-icon-btn"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                handleRemoveFilter(filterId);
+                              }}
+                              aria-label={`Remove ${filter.label} filter`}
+                            >
+                              <Icon name="XMark" size="sm" />
+                            </button>
+                          </span>
+                        </div>
+                      </DropdownMenuTrigger>
+
+                      <DropdownMenuContent align="left" position="bottom" width={336}>
+                        {renderChipEditor(filter)}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  );
+                })}
+
+                <Button
+                  variant="secondary"
+                  size="md"
+                  iconLeading={<Icon name="Plus" size="sm" />}
+                  onClick={() => setIsFilterPanelOpen(true)}
+                >
+                  More filters
+                </Button>
+              </div>
+            )}
+          </div>
+
+          <div className="hub__table-content">
+            <div className="hub__table-main">
+              <div className="hub__table-wrapper">
+                <Table
+                  columns={resolvedColumns}
+                  rows={data}
+                  rowKey="id"
+                  emptyState={<div className="hub__empty">{emptyMessage}</div>}
+                />
+              </div>
             </div>
+
+            <FilterPanel
+              isOpen={isFilterPanelOpen}
+              title={filterPanelTitle}
+              suggestions={filterSuggestions}
+              allFilters={filterOptions}
+              includedSuggestionKeys={filterIncludedSuggestionKeys}
+              includedFilterKeys={filterIncludedFilterKeys}
+              includedGroupKeys={filterIncludedGroupKeys}
+              maxGroupCount={filterMaxGroupCount}
+              showActivePreview={false}
+              initialSelected={activeFilters}
+              onClose={() => setIsFilterPanelOpen(false)}
+              onClear={handleClearFilters}
+              onApply={handleApplyFilters}
+            />
           </div>
         </div>
 

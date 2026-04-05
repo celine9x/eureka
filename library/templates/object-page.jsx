@@ -26,6 +26,46 @@ import { Stepper } from "../molecules/stepper.jsx";
 import { Button } from "../atoms/button.jsx";
 import { Icon } from "../atoms/icon.jsx";
 
+const OBJECT_PAGE_MENU_VARIANTS = {
+  default: "default",
+  deal: "deal",
+};
+
+const DEAL_MENU_SECTIONS = [
+  {
+    items: [
+      { label: "Home", iconName: "Home" },
+      { label: "Dashboard", iconName: "ChartBar" },
+      { label: "Network", iconName: "Share" },
+    ],
+  },
+  {
+    title: "Workspace",
+    items: [
+      { label: "Initiatives", iconName: "initiative" },
+      { label: "Opportunities", iconName: "opportunity", state: "active" },
+      { label: "Agreements", iconName: "agreement" },
+      { label: "Alliances", iconName: "alliance" },
+      { label: "Obligations", iconName: "obligation" },
+    ],
+  },
+  {
+    title: "Directory",
+    items: [
+      { label: "Companies", iconName: "company" },
+      { label: "Contacts", iconName: "contact" },
+      { label: "Meetings", iconName: "meeting" },
+    ],
+    dividerAfter: true,
+  },
+  {
+    title: "Recent Initiatives",
+    items: [
+      { label: "ALLINPART", iconColor: "var(--color-content-brand)", iconLetter: "A" },
+    ],
+  },
+];
+
 /* ===========================================
    STYLE CONFIGURATION
    =========================================== */
@@ -149,6 +189,10 @@ export const ObjectPage = ({
   topBarRight,
   onBack,
   // Menu props
+  menuVariant = OBJECT_PAGE_MENU_VARIANTS.default,
+  menuCollapsedLogoSrc,
+  menuExpandOnHover,
+  menuVariantState,
   menuSections = [],
   menuUser,
   logoSrc,
@@ -173,6 +217,20 @@ export const ObjectPage = ({
     "object-page__content",
     singleColumn && "object-page__content--single",
   ].filter(Boolean).join(" ");
+
+  const hasCustomMenuSections = Array.isArray(menuSections) && menuSections.length > 0;
+  const isDealMenuVariant = menuVariant === OBJECT_PAGE_MENU_VARIANTS.deal;
+  const resolvedMenuSections =
+    hasCustomMenuSections
+      ? menuSections
+      : isDealMenuVariant
+        ? DEAL_MENU_SECTIONS
+        : [];
+  const resolvedMenuVariant = menuVariantState || (isDealMenuVariant ? "collapsed" : undefined);
+  const resolvedMenuExpandOnHover =
+    typeof menuExpandOnHover === "boolean"
+      ? menuExpandOnHover
+      : isDealMenuVariant;
 
   // Render accordion sections
   const renderSections = (sections) => {
@@ -207,8 +265,11 @@ export const ObjectPage = ({
       {/* Side Menu */}
       <div className="object-page__sidebar">
         <SideMenu
+          variant={resolvedMenuVariant}
+          expandOnHover={resolvedMenuExpandOnHover}
           logoSrc={logoSrc}
-          sections={menuSections}
+          collapsedLogoSrc={menuCollapsedLogoSrc}
+          sections={resolvedMenuSections}
           user={menuUser}
           onCreateClick={onMenuCreate}
           onSearchChange={onMenuSearch}
@@ -311,5 +372,25 @@ export const ObjectPage = ({
 };
 
 ObjectPage.displayName = "ObjectPage";
+ObjectPage.menuVariants = OBJECT_PAGE_MENU_VARIANTS;
+
+ObjectPage.SideMenu = SideMenu;
+ObjectPage.Header = ObjectHeader;
+ObjectPage.HeaderTopBar = ObjectHeaderTopBar;
+ObjectPage.HeaderTopBarLeft = ObjectHeaderTopBarLeft;
+ObjectPage.HeaderTopBarRight = ObjectHeaderTopBarRight;
+ObjectPage.HeaderTitleSection = ObjectHeaderTitleSection;
+ObjectPage.HeaderMeta = ObjectHeaderMeta;
+ObjectPage.HeaderTitle = ObjectHeaderTitle;
+ObjectPage.HeaderSubinfoRow = ObjectHeaderSubinfoRow;
+ObjectPage.HeaderSubinfoItem = ObjectHeaderSubinfoItem;
+ObjectPage.HeaderStepper = ObjectHeaderStepper;
+ObjectPage.HeaderTabs = ObjectHeaderTabs;
+ObjectPage.Tabs = ObjectHeader.Tabs;
+ObjectPage.Tab = ObjectHeader.Tab;
+ObjectPage.Stepper = Stepper;
+ObjectPage.Accordion = Accordion;
+ObjectPage.Button = Button;
+ObjectPage.Icon = Icon;
 
 export default ObjectPage;

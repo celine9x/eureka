@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * Textarea Component (Molecule)
  *

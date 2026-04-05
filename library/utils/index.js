@@ -36,3 +36,12 @@ export { Portal, useFocusTrap, useScrollLock } from "./portal.jsx";
 
 // Preview/Demo utilities
 export { PreviewComponent } from "./preview-component.jsx";
+
+// Table system filter utilities
+export {
+  TABLE_FILTER_OPERATORS,
+  buildTableQuery,
+  applyTableSystemFilters,
+  mapRecordsToTableRows,
+  tableCellMappers,
+} from "./table-system-filter.js";

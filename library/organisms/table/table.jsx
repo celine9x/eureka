@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * Table Components (Organism)
  *
@@ -870,6 +872,7 @@ export const Table = ({
   rowKey = "id",
   emptyState,
   buttonCellProps,
+  onRowClick,
   ...props
 }) => {
   injectStyles();
@@ -1313,7 +1316,10 @@ export const Table = ({
       const rowIdentity = keyFromFunction ?? keyFromField ?? rowIndex;
 
       return (
-        <TableRow key={rowIdentity}>
+        <TableRow
+          key={rowIdentity}
+          onClick={onRowClick ? () => onRowClick({ row, rowIndex }) : undefined}
+        >
           {resolvedColumns.map((column, columnIndex) => {
             const columnVariant = getColumnVariant(column);
             const isActionColumn =

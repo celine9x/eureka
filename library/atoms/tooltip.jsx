@@ -1,3 +1,5 @@
+"use client";
+
 import { cloneElement, isValidElement, useId, useState } from "react";
 
 export const TOOLTIP_PLACEMENTS = {

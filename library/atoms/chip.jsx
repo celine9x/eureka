@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * Chip Component
  *

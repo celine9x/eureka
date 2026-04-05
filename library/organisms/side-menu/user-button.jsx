@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * UserButton Component
  *
@@ -60,8 +62,14 @@ const styles = {
   },
 
   collapsed: {
+    alignSelf: "auto",
+    width: "auto",
     justifyContent: "center",
-    padding: "var(--spacing-2)",
+    padding: 0,
+    background: "transparent",
+    boxShadow: "none",
+    borderRadius: 0,
+    outline: "none",
   },
 
   // Content wrapper
@@ -180,9 +188,9 @@ export const UserButton = ({
   const buttonStyle = {
     ...styles.base,
     ...(collapsed && styles.collapsed),
-    ...(effectiveState === "hover" && styles.hover),
-    ...(effectiveState === "focus" && styles.focus),
-    ...(effectiveState === "active" && styles.focus),
+    ...(!collapsed && effectiveState === "hover" && styles.hover),
+    ...(!collapsed && effectiveState === "focus" && styles.focus),
+    ...(!collapsed && effectiveState === "active" && styles.focus),
     ...style,
   };
 
@@ -193,7 +201,7 @@ export const UserButton = ({
   };
 
   // Avatar size based on collapsed state
-  const avatarSize = "sm";
+  const avatarSize = "lg";
 
   return (
     <button
@@ -211,8 +219,8 @@ export const UserButton = ({
         <div
           style={{
             ...styles.avatarWrapper,
-            width: "var(--size-avatar-sm)",
-            height: "var(--size-avatar-sm)",
+            width: "var(--size-avatar-lg)",
+            height: "var(--size-avatar-lg)",
           }}
         >
           <Avatar
