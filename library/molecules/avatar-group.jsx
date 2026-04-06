@@ -62,22 +62,22 @@ const styles = {
 
   overflowSizes: {
     xl: {
-      padding: 6,
+      padding: "var(--spacing-1-5)",
       fontSize: "var(--text-body-lg)",
       lineHeight: "var(--line-height-body-lg)",
     },
     lg: {
-      padding: 4,
+      padding: "var(--spacing-1)",
       fontSize: "var(--text-body-md)",
       lineHeight: "var(--line-height-body-md)",
     },
     md: {
-      padding: "2px 4px",
+      padding: "var(--spacing-xxs) var(--spacing-1)",
       fontSize: "var(--text-body-md)",
       lineHeight: "var(--line-height-body-md)",
     },
     sm: {
-      padding: "0 4px",
+      padding: "0 var(--spacing-1)",
       fontSize: "var(--text-body-caption)",
       lineHeight: "var(--line-height-body-caption)",
     },

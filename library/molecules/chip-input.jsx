@@ -103,7 +103,7 @@ const styles = {
   },
 
   containerEmpty: {
-    padding: "6px 8px",
+    padding: "var(--spacing-1-5) var(--spacing-2)",
   },
 
   content: {
@@ -563,5 +563,10 @@ export const ChipInputWithSuggestions = ({
 };
 
 ChipInputWithSuggestions.displayName = "ChipInputWithSuggestions";
+
+ChipInput.Label = ChipInputLabel;
+ChipInput.WithSuggestions = ChipInputWithSuggestions;
+ChipInput.Chip = Chip;
+ChipInput.Icon = Icon;
 
 export default ChipInput;

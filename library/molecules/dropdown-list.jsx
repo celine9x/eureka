@@ -182,13 +182,13 @@ const styles = {
 
   listSearch: {
     alignSelf: "stretch",
-    padding: 8,
+    padding: "var(--spacing-2)",
     borderBottom: "1px solid var(--color-action-outline-secondary-enabled)",
   },
 
   listSearchInput: {
     width: "100%",
-    padding: "8px 12px",
+    padding: "var(--spacing-2) var(--spacing-3)",
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-body-lg)",
     fontWeight: "var(--font-weight-regular)",
@@ -214,13 +214,13 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     alignSelf: "stretch",
-    maxHeight: "var(--dropdown-list-max-height, 280px)",
+    maxHeight: "var(--dropdown-list-max-height, calc(var(--spacing-10) * 7))",
     overflowY: "auto",
   },
 
   listNoResults: {
     alignSelf: "stretch",
-    padding: 16,
+    padding: "var(--spacing-4)",
     borderBottom: "1px solid var(--color-action-outline-secondary-enabled)",
   },
 
@@ -239,7 +239,7 @@ const styles = {
     alignSelf: "stretch",
     display: "flex",
     alignItems: "center",
-    padding: "8px 16px",
+    padding: "var(--spacing-2) var(--spacing-4)",
     borderTop: "1px solid var(--color-action-outline-secondary-enabled)",
   },
 };
@@ -488,5 +488,10 @@ export const DropdownList = ({
 };
 
 DropdownList.displayName = "DropdownList";
+DropdownList.Section = DropdownSection;
+DropdownList.Item = DropdownListItem;
+DropdownList.Button = Button;
+DropdownList.Icon = Icon;
+DropdownList.Checkbox = Checkbox;
 
 export default DropdownList;

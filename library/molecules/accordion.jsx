@@ -60,8 +60,8 @@ const styles = {
     justifyContent: "flex-start",
     alignItems: "center",
     gap: "var(--spacing-4)",
-    paddingLeft: "var(--spacing-6)",
-    paddingRight: "var(--spacing-6)",
+    paddingLeft: "var(--spacing-4)",
+    paddingRight: "var(--spacing-4)",
     background: "var(--color-general-white)",
     cursor: "pointer",
     textAlign: "left",
@@ -189,7 +189,7 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     gap: "var(--spacing-4)",
-    padding: "var(--spacing-6)",
+    padding: "var(--spacing-4)",
   },
 
   group: {
@@ -731,5 +731,13 @@ export const Accordion = ({
 
 Accordion.displayName = "Accordion";
 Accordion.sizes = ACCORDION_SIZES;
+Accordion.Item = AccordionItem;
+Accordion.Section = AccordionSection;
+Accordion.Row = AccordionRow;
+Accordion.Field = AccordionField;
+Accordion.Divider = AccordionDivider;
+Accordion.Group = AccordionGroup;
+Accordion.Button = Button;
+Accordion.Icon = Icon;
 
 export default Accordion;

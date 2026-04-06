@@ -479,7 +479,7 @@ const styles = {
     font-size: var(--text-body-sm);
     line-height: var(--line-height-body-sm);
     white-space: nowrap;
-    z-index: 1000;
+    z-index: 2147483647;
     box-shadow: var(--shadow-medium);
     max-width: 300px;
     white-space: normal;
@@ -626,9 +626,7 @@ export const TableCell = ({
         {...props}
       >
         <div className="table-cell-inner">
-          <div className={cx(styleClasses.common.icon, "md", !icon && "table-cell-icon--empty")}>
-            {icon}
-          </div>
+          {icon ? <div className={cx(styleClasses.common.icon, "md")}>{icon}</div> : null}
           <div className="table-cell-linked-content">
             {children}
           </div>
@@ -660,9 +658,7 @@ export const TableCell = ({
       {...props}
     >
       <div className="table-cell-inner">
-        <div className={cx(styleClasses.common.icon, !icon && "table-cell-icon--empty")}>
-          {icon}
-        </div>
+        {icon ? <div className={styleClasses.common.icon}>{icon}</div> : null}
         <div className={styleClasses.common.content}>{children}</div>
       </div>
     </div>
@@ -855,5 +851,10 @@ export const TableCellTags = ({
     </div>
   );
 };
+
+TableCell.LinkRow = TableCellLinkRow;
+TableCell.LinkedName = TableCellLinkedName;
+TableCell.TwoLevel = TableCellTwoLevel;
+TableCell.Tags = TableCellTags;
 
 export default TableCell;

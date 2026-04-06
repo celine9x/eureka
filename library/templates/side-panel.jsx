@@ -26,17 +26,16 @@ import {
   ObjectHeaderTopBar,
   ObjectHeaderTopBarLeft,
   ObjectHeaderTopBarRight,
-  ObjectHeaderMeta,
   ObjectHeaderTitleSection,
   ObjectHeaderTitle,
+  ObjectHeaderMeta,
   ObjectHeaderSubinfoRow,
   ObjectHeaderSubinfoItem,
-  ObjectHeaderStepper,
-  ObjectHeaderTabs,
+  ObjectHeaderStepperSection,
+  ObjectHeaderTabsSection,
+  ObjectHeaderActionButton,
 } from "../organisms/object-header.jsx";
 import { Accordion } from "../molecules/accordion.jsx";
-import { Button } from "../atoms/button.jsx";
-import { Icon } from "../atoms/icon.jsx";
 
 /* ===========================================
    STYLE CONFIGURATION
@@ -46,7 +45,7 @@ const styles = `
   .side-panel-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.35);
+    background: var(--color-general-lightbox);
     z-index: 400;
     opacity: 0;
     transition: opacity 300ms ease;
@@ -65,7 +64,7 @@ const styles = `
     max-width: 100vw;
     z-index: 401;
     background: var(--color-general-white);
-    box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12);
+    box-shadow: -4px 0 24px var(--color-general-lightbox);
     display: flex;
     flex-direction: column;
     transform: translateX(100%);
@@ -243,28 +242,20 @@ export const SidePanel = ({
               <ObjectHeaderTopBarLeft>
                 {topBarLeft}
                 {onOpen && (
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    iconLeading={<Icon name="ArrowTopRightOnSquare" size="sm" />}
-                    onClick={onOpen}
-                  >
+                  <ObjectHeaderActionButton iconName="ArrowTopRightOnSquare" onClick={onOpen}>
                     {openButtonLabel}
-                  </Button>
+                  </ObjectHeaderActionButton>
                 )}
               </ObjectHeaderTopBarLeft>
 
               <ObjectHeaderTopBarRight>
                 {topBarRight}
-                <Button
-                  variant="tertiary"
-                  size="sm"
+                <ObjectHeaderActionButton
                   iconOnly
                   ariaLabel="Close panel"
                   onClick={onClose}
-                >
-                  <Icon name="XMark" size="sm" />
-                </Button>
+                  iconName="XMark"
+                />
               </ObjectHeaderTopBarRight>
             </ObjectHeaderTopBar>
 
@@ -303,11 +294,11 @@ export const SidePanel = ({
             )}
 
             {hasSteps && (
-              <ObjectHeaderStepper steps={steps} currentStep={currentStep} />
+              <ObjectHeaderStepperSection steps={steps} currentStep={currentStep} />
             )}
 
             {hasTabs && (
-              <ObjectHeaderTabs
+              <ObjectHeaderTabsSection
                 tabs={tabs}
                 activeTab={activeTab}
                 onTabChange={onTabChange}
@@ -336,5 +327,20 @@ export const SidePanel = ({
     </Portal>
   );
 };
+
+SidePanel.Portal = Portal;
+SidePanel.Header = ObjectHeader;
+SidePanel.HeaderTopBar = ObjectHeader.TopBar;
+SidePanel.HeaderTopBarLeft = ObjectHeader.TopBarLeft;
+SidePanel.HeaderTopBarRight = ObjectHeader.TopBarRight;
+SidePanel.HeaderMeta = ObjectHeader.Meta;
+SidePanel.HeaderTitleSection = ObjectHeader.TitleSection;
+SidePanel.HeaderTitle = ObjectHeader.Title;
+SidePanel.HeaderSubinfoRow = ObjectHeader.SubinfoRow;
+SidePanel.HeaderSubinfoItem = ObjectHeader.SubinfoItem;
+SidePanel.HeaderStepper = ObjectHeader.StepperSection;
+SidePanel.HeaderTabs = ObjectHeader.TabsSection;
+SidePanel.Accordion = Accordion;
+SidePanel.ActionButton = ObjectHeader.ActionButton;
 
 export default SidePanel;

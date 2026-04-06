@@ -212,11 +212,11 @@ const styles = {
   divider: {
     height: 1,
     background: "var(--color-action-outline-secondary-enabled)",
-    margin: "8px 0",
+    margin: "var(--spacing-2) 0",
   },
 
   sectionLabel: {
-    padding: "8px 8px 4px",
+    padding: "var(--spacing-2) var(--spacing-2) var(--spacing-1)",
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-body-caption)",
     fontWeight: "var(--font-weight-semibold)",

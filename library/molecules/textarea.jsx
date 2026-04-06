@@ -420,5 +420,9 @@ export const Textarea = forwardRef(
 Textarea.displayName = "Textarea";
 Textarea.states = TEXTAREA_STATES;
 Textarea.helperVariants = HELPER_VARIANTS;
+Textarea.Label = TextareaLabel;
+Textarea.Field = TextareaField;
+Textarea.HelperText = TextareaHelperText;
+Textarea.Icon = Icon;
 
 export default Textarea;

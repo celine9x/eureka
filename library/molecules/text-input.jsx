@@ -296,6 +296,8 @@ export const TextInput = forwardRef(
       onFocus,
       onBlur,
       style,
+      multiline: _multiline,
+      rows: _rows,
       ...props
     },
     ref
@@ -364,5 +366,8 @@ export const TextInput = forwardRef(
 TextInput.displayName = "TextInput";
 TextInput.types = INPUT_TYPES;
 TextInput.states = INPUT_STATES;
+TextInput.Label = Label;
+TextInput.Input = Input;
+TextInput.HelperText = HelperText;
 
 export default TextInput;

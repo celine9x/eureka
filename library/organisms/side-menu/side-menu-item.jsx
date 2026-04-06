@@ -41,7 +41,10 @@ const styles = {
     paddingBottom: "var(--spacing-2)",
     paddingLeft: "var(--spacing-8)",
     paddingRight: "var(--spacing-2)",
-    border: "none",
+    borderTop: "none",
+    borderRight: "none",
+    borderBottom: "none",
+    borderLeft: "none",
     background: "transparent",
     cursor: "pointer",
     fontFamily: "var(--font-family-primary)",
@@ -93,7 +96,7 @@ const styles = {
         borderTopRightRadius: "var(--radius-sm)",
         borderBottomRightRadius: "var(--radius-sm)",
         borderLeft: "2px solid var(--color-action-fill-primary-enabled)",
-        paddingLeft: "calc(var(--spacing-8) - 2px)",
+        paddingLeft: "calc(var(--spacing-8) - var(--spacing-xxs))",
       },
       icon: {
         color: "var(--color-action-fill-primary-enabled)",
@@ -190,8 +193,9 @@ export const SideMenuItem = ({
   const effectiveState = isHovered && state !== "active" ? "hover" : state;
   const stateStyles = styles.states[effectiveState];
 
-  // Icon variant based on state (solid for active, outline for others)
-  const effectiveIconVariant = iconVariant || (state === "active" ? "solid" : "outline");
+  // Force filled icon for active items; otherwise allow override or fallback to outline.
+  const effectiveIconVariant =
+    effectiveState === SIDE_MENU_ITEM_STATES.active ? "fill" : iconVariant || "outline";
 
   // Compose item styles
   const itemStyle = {
@@ -202,9 +206,14 @@ export const SideMenuItem = ({
   };
 
   // Icon styles with state color
+  const isInactiveFilledIcon =
+    effectiveState !== SIDE_MENU_ITEM_STATES.active && effectiveIconVariant === "fill";
+
   const iconStyle = {
     ...styles.icon,
-    color: stateStyles.icon.color,
+    color: isInactiveFilledIcon
+      ? "var(--color-action-fill-primary-enabled)"
+      : stateStyles.icon.color,
   };
 
   // Label styles with state color

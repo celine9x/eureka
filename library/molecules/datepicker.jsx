@@ -718,5 +718,7 @@ export const DatePicker = ({
 };
 
 DatePicker.displayName = "DatePicker";
+DatePicker.Day = Day;
+DatePicker.Icon = Icon;
 
 export default DatePicker;

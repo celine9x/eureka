@@ -64,8 +64,6 @@ import {
   ObjectHeaderTitle,
   ObjectHeaderSubinfoRow,
   ObjectHeaderSubinfoItem,
-  ObjectHeaderStepper,
-  ObjectHeaderTabs,
 } from "./library/organisms/object-header.jsx";
 import {
   HubHeader,
@@ -78,6 +76,7 @@ import {
   HubHeaderSecondary,
 } from "./library/organisms/hub-header.jsx";
 import { FilterPanel, Row as FilterPanelRow, DEFAULT_FILTER_PANEL_OPTIONS } from "./library/organisms/filter-panel.jsx";
+import { DocumentViewer } from "./library/organisms/document-viewer/document-viewer.jsx";
 import { Pagination as PaginationOrganism } from "./library/organisms/pagination.jsx";
 
 // ─────────────────────────────────────────────
@@ -86,6 +85,7 @@ import { Pagination as PaginationOrganism } from "./library/organisms/pagination
 import { Hub } from "./library/templates/hub.jsx";
 import { ObjectPage } from "./library/templates/object-page.jsx";
 import { SidePanel } from "./library/templates/side-panel.jsx";
+import { DocumentViewerPage } from "./library/templates/document-viewer-page.jsx";
 
 // ─────────────────────────────────────────────
 // SHARED PROPS
@@ -995,13 +995,13 @@ import { Icon } from "@/library/atoms/icon";
 <Link href="#" iconLeading={<Icon name="ArrowLeft" size="sm" />}>
   Back
 </Link>
-<Link href="#" iconLeading={<Icon name="ExternalLink" size="sm" />} target="_blank">
+<Link href="#" iconLeading={<Icon name="ArrowUpRight" size="sm" />} target="_blank">
   Open External
 </Link>`}
     >
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         <Link href="#" iconLeading={<Icon name="ArrowLeft" size="sm" />}>Back</Link>
-        <Link href="#" iconLeading={<Icon name="ExternalLink" size="sm" />} target="_blank">Open External</Link>
+        <Link href="#" iconLeading={<Icon name="ArrowUpRight" size="sm" />} target="_blank">Open External</Link>
       </div>
     </PreviewComponent>
 
@@ -3334,22 +3334,43 @@ const ObjectHeaderPage = () => {
       <PreviewComponent
         title="Complete ObjectHeader"
         code={`import { useState } from "react";
-import { ObjectHeader } from "@/library/organisms/object-header";
+import {
+  ObjectHeader,
+  ObjectHeaderTopBar,
+  ObjectHeaderTopBarLeft,
+  ObjectHeaderTopBarRight,
+  ObjectHeaderActionsGroup,
+  ObjectHeaderDivider,
+  ObjectHeaderMeta,
+  ObjectHeaderTitleSection,
+  ObjectHeaderTitle,
+  ObjectHeaderSubinfoRow,
+  ObjectHeaderSubinfoItem,
+  ObjectHeaderStepperSection as ObjectHeaderStepper,
+  ObjectHeaderTabs,
+} from "@/library/organisms/object-header";
+import { Button } from "@/library/atoms/button";
+import { Icon } from "@/library/atoms/icon";
+import { Chip } from "@/library/atoms/chip";
+import { Link } from "@/library/atoms/link";
+import { AvatarGroup } from "@/library/molecules/avatar-group";
+import { Stepper } from "@/library/molecules/stepper";
+import { Tabs, Tab } from "@/library/molecules/tabs";
 
 const Example = () => {
   const [activeTab, setActiveTab] = useState("overview");
 
   return (
     <ObjectHeader>
-      <ObjectHeader.TopBar>
-        <ObjectHeader.TopBarLeft>
-          <ObjectHeader.Button variant="secondary" size="md" iconLeading={<ObjectHeader.Icon name="ArrowLeft" size="sm" />}>
+      <ObjectHeaderTopBar>
+        <ObjectHeaderTopBarLeft>
+          <Button variant="secondary" size="md" iconLeading={<Icon name="ArrowLeft" size="sm" />} iconTrailing={<Icon name="ChevronRight" size="sm" />}>
             Back
-          </ObjectHeader.Button>
-        </ObjectHeader.TopBarLeft>
-        <ObjectHeader.TopBarRight>
-          <ObjectHeader.ActionsGroup>
-            <ObjectHeader.AvatarGroup
+          </Button>
+        </ObjectHeaderTopBarLeft>
+        <ObjectHeaderTopBarRight>
+          <ObjectHeaderActionsGroup>
+            <AvatarGroup
               avatars={[
                 { name: "John Doe" },
                 { name: "Jane Smith" },
@@ -3358,50 +3379,50 @@ const Example = () => {
               max={3}
               size="sm"
             />
-            <ObjectHeader.Button variant="secondary" size="md" iconLeading={<ObjectHeader.Icon name="UserPlus" size="sm" />}>
+            <Button variant="secondary" size="md" iconLeading={<Icon name="UserPlus" size="sm" />}>
               Manage access
-            </ObjectHeader.Button>
-          </ObjectHeader.ActionsGroup>
-          <ObjectHeader.Divider />
-          <ObjectHeader.ActionsGroup>
-            <ObjectHeader.Button variant="secondary" size="md" iconLeading={<ObjectHeader.Icon name="Bookmark" size="sm" />} />
-            <ObjectHeader.Button variant="secondary" size="md" iconLeading={<ObjectHeader.Icon name="Share" size="sm" />} />
-          </ObjectHeader.ActionsGroup>
-        </ObjectHeader.TopBarRight>
-      </ObjectHeader.TopBar>
+            </Button>
+          </ObjectHeaderActionsGroup>
+          <ObjectHeaderDivider />
+          <ObjectHeaderActionsGroup>
+            <Button variant="secondary" size="md" iconLeading={<Icon name="Bookmark" size="sm" />} />
+            <Button variant="secondary" size="md" iconLeading={<Icon name="Share" size="sm" />} />
+          </ObjectHeaderActionsGroup>
+        </ObjectHeaderTopBarRight>
+      </ObjectHeaderTopBar>
 
-      <ObjectHeader.TitleSection>
-        <ObjectHeader.Meta
+      <ObjectHeaderTitleSection>
+        <ObjectHeaderMeta
           label="Last updated on"
           date="Tue, Oct 21, 2024"
           time="9:21 PM"
           author="John Doe"
         />
-        <ObjectHeader.Title iconName="LockClosed" iconVariant="warning">
+        <ObjectHeaderTitle iconName="LockClosed" iconVariant="warning">
           Deal Title - Example Project
-        </ObjectHeader.Title>
-      </ObjectHeader.TitleSection>
+        </ObjectHeaderTitle>
+      </ObjectHeaderTitleSection>
 
-      <ObjectHeader.SubinfoRow>
-        <ObjectHeader.SubinfoItem>
-          <ObjectHeader.Chip variant="positive">Active</ObjectHeader.Chip>
-        </ObjectHeader.SubinfoItem>
-        <ObjectHeader.SubinfoItem>
+      <ObjectHeaderSubinfoRow>
+        <ObjectHeaderSubinfoItem>
+          <Chip variant="positive">Active</Chip>
+        </ObjectHeaderSubinfoItem>
+        <ObjectHeaderSubinfoItem>
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             <span style={{ fontSize: 12, color: "var(--color-content-secondary)" }}>Owner</span>
             <span style={{ fontSize: 14, color: "var(--color-content-primary)" }}>Emma Dupont</span>
           </div>
-        </ObjectHeader.SubinfoItem>
-        <ObjectHeader.SubinfoItem>
+        </ObjectHeaderSubinfoItem>
+        <ObjectHeaderSubinfoItem>
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             <span style={{ fontSize: 12, color: "var(--color-content-secondary)" }}>Company</span>
-            <ObjectHeader.Link href="#">Abbvie Limited</ObjectHeader.Link>
+            <Link href="#">Abbvie Limited</Link>
           </div>
-        </ObjectHeader.SubinfoItem>
-      </ObjectHeader.SubinfoRow>
+        </ObjectHeaderSubinfoItem>
+      </ObjectHeaderSubinfoRow>
 
-      <ObjectHeader.StepperSection>
-        <ObjectHeader.Stepper
+      <ObjectHeaderStepper>
+        <Stepper
           currentStep={3}
           steps={[
             { title: "Identification", subtitle: "Jul 15, 2024" },
@@ -3413,31 +3434,31 @@ const Example = () => {
             { title: "Signed" },
           ]}
         />
-      </ObjectHeader.StepperSection>
+      </ObjectHeaderStepper>
 
-      <ObjectHeader.TabsSection>
-        <ObjectHeader.Tabs selectedKey={activeTab} onSelectionChange={setActiveTab}>
-          <ObjectHeader.Tab id="overview">Overview</ObjectHeader.Tab>
-          <ObjectHeader.Tab id="details">Details</ObjectHeader.Tab>
-          <ObjectHeader.Tab id="meetings" badge={5}>Meetings</ObjectHeader.Tab>
-          <ObjectHeader.Tab id="contacts" badge={12}>Contacts</ObjectHeader.Tab>
-          <ObjectHeader.Tab id="attachments" badge={3}>Attachments</ObjectHeader.Tab>
-        </ObjectHeader.Tabs>
-      </ObjectHeader.TabsSection>
+      <ObjectHeaderTabs>
+        <Tabs selectedKey={activeTab} onSelectionChange={setActiveTab}>
+          <Tab id="overview">Overview</Tab>
+          <Tab id="details">Details</Tab>
+          <Tab id="meetings" badge={5}>Meetings</Tab>
+          <Tab id="contacts" badge={12}>Contacts</Tab>
+          <Tab id="attachments" badge={3}>Attachments</Tab>
+        </Tabs>
+      </ObjectHeaderTabs>
     </ObjectHeader>
   );
 };`}
       >
         <ObjectHeader>
-            <ObjectHeader.TopBar>
-              <ObjectHeader.TopBarLeft>
-                <ObjectHeader.Button variant="secondary" size="md" iconLeading={<ObjectHeader.Icon name="ArrowLeft" size="sm" />}>
+            <ObjectHeaderTopBar>
+              <ObjectHeaderTopBarLeft>
+                <Button variant="secondary" size="md" iconLeading={<Icon name="ArrowLeft" size="sm" />}>
                   Back
-                </ObjectHeader.Button>
-              </ObjectHeader.TopBarLeft>
-              <ObjectHeader.TopBarRight>
-                <ObjectHeader.ActionsGroup>
-                  <ObjectHeader.AvatarGroup
+                </Button>
+              </ObjectHeaderTopBarLeft>
+              <ObjectHeaderTopBarRight>
+                <ObjectHeaderActionsGroup>
+                  <AvatarGroup
                     avatars={[
                       { name: "John Doe" },
                       { name: "Jane Smith" },
@@ -3446,50 +3467,50 @@ const Example = () => {
                     max={3}
                     size="sm"
                   />
-                  <ObjectHeader.Button variant="secondary" size="md" iconLeading={<ObjectHeader.Icon name="UserPlus" size="sm" />}>
+                  <Button variant="secondary" size="md" iconLeading={<Icon name="UserPlus" size="sm" />}>
                     Manage access
-                  </ObjectHeader.Button>
-                </ObjectHeader.ActionsGroup>
-                <ObjectHeader.Divider />
-                <ObjectHeader.ActionsGroup>
-                  <ObjectHeader.Button variant="secondary" size="md" iconLeading={<ObjectHeader.Icon name="Bookmark" size="sm" />} />
-                  <ObjectHeader.Button variant="secondary" size="md" iconLeading={<ObjectHeader.Icon name="Share" size="sm" />} />
-                </ObjectHeader.ActionsGroup>
-              </ObjectHeader.TopBarRight>
-            </ObjectHeader.TopBar>
+                  </Button>
+                </ObjectHeaderActionsGroup>
+                <ObjectHeaderDivider />
+                <ObjectHeaderActionsGroup>
+                  <Button variant="secondary" size="md" iconLeading={<Icon name="Bookmark" size="sm" />} />
+                  <Button variant="secondary" size="md" iconLeading={<Icon name="Share" size="sm" />} />
+                </ObjectHeaderActionsGroup>
+              </ObjectHeaderTopBarRight>
+            </ObjectHeaderTopBar>
 
-            <ObjectHeader.TitleSection>
-              <ObjectHeader.Meta
+            <ObjectHeaderTitleSection>
+              <ObjectHeaderMeta
                 label="Last updated on"
                 date="Tue, Oct 21, 2024"
                 time="9:21 PM"
                 author="John Doe"
               />
-              <ObjectHeader.Title iconName="LockClosed" iconVariant="warning">
+              <ObjectHeaderTitle iconName="LockClosed" iconVariant="warning">
                 Deal Title - Example Project
-              </ObjectHeader.Title>
-            </ObjectHeader.TitleSection>
+              </ObjectHeaderTitle>
+            </ObjectHeaderTitleSection>
 
-            <ObjectHeader.SubinfoRow>
-              <ObjectHeader.SubinfoItem>
-                <ObjectHeader.Chip variant="positive">Active</ObjectHeader.Chip>
-              </ObjectHeader.SubinfoItem>
-              <ObjectHeader.SubinfoItem>
+            <ObjectHeaderSubinfoRow>
+              <ObjectHeaderSubinfoItem>
+                <Chip variant="positive">Active</Chip>
+              </ObjectHeaderSubinfoItem>
+              <ObjectHeaderSubinfoItem>
                 <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                   <span style={{ fontSize: 12, color: "var(--color-content-secondary)" }}>Owner</span>
                   <span style={{ fontSize: 14, color: "var(--color-content-primary)" }}>Emma Dupont</span>
                 </div>
-              </ObjectHeader.SubinfoItem>
-              <ObjectHeader.SubinfoItem>
+              </ObjectHeaderSubinfoItem>
+              <ObjectHeaderSubinfoItem>
                 <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                   <span style={{ fontSize: 12, color: "var(--color-content-secondary)" }}>Company</span>
-                  <ObjectHeader.Link href="#">Abbvie Limited</ObjectHeader.Link>
+                  <Link href="#">Abbvie Limited</Link>
                 </div>
-              </ObjectHeader.SubinfoItem>
-            </ObjectHeader.SubinfoRow>
+              </ObjectHeaderSubinfoItem>
+            </ObjectHeaderSubinfoRow>
 
-            <ObjectHeader.StepperSection>
-              <ObjectHeader.Stepper
+            <ObjectHeaderStepper>
+              <Stepper
                 currentStep={3}
                 steps={[
                   { title: "Identification", subtitle: "Jul 15, 2024" },
@@ -3501,66 +3522,77 @@ const Example = () => {
                   { title: "Signed" },
                 ]}
               />
-            </ObjectHeader.StepperSection>
+            </ObjectHeaderStepper>
 
-            <ObjectHeader.TabsSection>
-              <ObjectHeader.Tabs selectedKey={activeTab} onSelectionChange={setActiveTab}>
-                <ObjectHeader.Tab id="overview">Overview</ObjectHeader.Tab>
-                <ObjectHeader.Tab id="details">Details</ObjectHeader.Tab>
-                <ObjectHeader.Tab id="meetings" badge={5}>Meetings</ObjectHeader.Tab>
-                <ObjectHeader.Tab id="contacts" badge={12}>Contacts</ObjectHeader.Tab>
-                <ObjectHeader.Tab id="attachments" badge={3}>Attachments</ObjectHeader.Tab>
-              </ObjectHeader.Tabs>
-            </ObjectHeader.TabsSection>
+            <ObjectHeaderTabs>
+              <Tabs selectedKey={activeTab} onSelectionChange={setActiveTab}>
+                <Tab id="overview">Overview</Tab>
+                <Tab id="details">Details</Tab>
+                <Tab id="meetings" badge={5}>Meetings</Tab>
+                <Tab id="contacts" badge={12}>Contacts</Tab>
+                <Tab id="attachments" badge={3}>Attachments</Tab>
+              </Tabs>
+            </ObjectHeaderTabs>
         </ObjectHeader>
       </PreviewComponent>
 
       <PreviewComponent
         title="Simple Header (No Stepper or Tabs)"
-        code={`import { ObjectHeader } from "@/library/organisms/object-header";
+        code={`import {
+  ObjectHeader,
+  ObjectHeaderTopBar,
+  ObjectHeaderTopBarLeft,
+  ObjectHeaderTopBarRight,
+  ObjectHeaderActionsGroup,
+  ObjectHeaderMeta,
+  ObjectHeaderTitleSection,
+  ObjectHeaderTitle,
+} from "@/library/organisms/object-header";
+import { Button } from "@/library/atoms/button";
+import { Icon } from "@/library/atoms/icon";
 
 <ObjectHeader>
-  <ObjectHeader.TopBar>
-    <ObjectHeader.TopBarLeft>
-      <ObjectHeader.Button variant="secondary" size="md" iconLeading={<ObjectHeader.Icon name="ArrowLeft" size="sm" />}>
+  <ObjectHeaderTopBar>
+    <ObjectHeaderTopBarLeft>
+      <Button variant="secondary" size="md" iconLeading={<Icon name="ArrowLeft" size="sm" />}>
         Back to list
-      </ObjectHeader.Button>
-    </ObjectHeader.TopBarLeft>
-    <ObjectHeader.TopBarRight>
-      <ObjectHeader.ActionsGroup>
-        <ObjectHeader.Button variant="primary" size="md">Save</ObjectHeader.Button>
-        <ObjectHeader.Button variant="secondary" size="md" iconLeading={<ObjectHeader.Icon name="EllipsisVertical" size="sm" />} />
-      </ObjectHeader.ActionsGroup>
-    </ObjectHeader.TopBarRight>
-  </ObjectHeader.TopBar>
+      </Button>
+    </ObjectHeaderTopBarLeft>
+    <ObjectHeaderTopBarRight>
+      <ObjectHeaderActionsGroup>
+        <Button variant="primary" size="md">Save</Button>
+        <Button variant="secondary" size="md" iconLeading={<Icon name="EllipsisVertical" size="sm" />} />
+      </ObjectHeaderActionsGroup>
+    </ObjectHeaderTopBarRight>
+  </ObjectHeaderTopBar>
 
-  <ObjectHeader.TitleSection>
-    <ObjectHeader.Meta date="Jan 15, 2024" />
-    <ObjectHeader.Title iconName="Document">Simple Document Title</ObjectHeader.Title>
-  </ObjectHeader.TitleSection>
+  <ObjectHeaderTitleSection>
+    <ObjectHeaderMeta date="Jan 15, 2024" />
+    <ObjectHeaderTitle iconName="Document">Simple Document Title</ObjectHeaderTitle>
+  </ObjectHeaderTitleSection>
 </ObjectHeader>`}
       >
         <ObjectHeader>
-            <ObjectHeader.TopBar>
-              <ObjectHeader.TopBarLeft>
-                <ObjectHeader.Button variant="secondary" size="md" iconLeading={<ObjectHeader.Icon name="ArrowLeft" size="sm" />}>
+            <ObjectHeaderTopBar>
+              <ObjectHeaderTopBarLeft>
+                <Button variant="secondary" size="md" iconLeading={<Icon name="ArrowLeft" size="sm" />}>
                   Back to list
-                </ObjectHeader.Button>
-              </ObjectHeader.TopBarLeft>
-              <ObjectHeader.TopBarRight>
-                <ObjectHeader.ActionsGroup>
-                  <ObjectHeader.Button variant="primary" size="md">Save</ObjectHeader.Button>
-                  <ObjectHeader.Button variant="secondary" size="md" iconLeading={<ObjectHeader.Icon name="EllipsisVertical" size="sm" />} />
-                </ObjectHeader.ActionsGroup>
-              </ObjectHeader.TopBarRight>
-            </ObjectHeader.TopBar>
+                </Button>
+              </ObjectHeaderTopBarLeft>
+              <ObjectHeaderTopBarRight>
+                <ObjectHeaderActionsGroup>
+                  <Button variant="primary" size="md">Save</Button>
+                  <Button variant="secondary" size="md" iconLeading={<Icon name="EllipsisVertical" size="sm" />} />
+                </ObjectHeaderActionsGroup>
+              </ObjectHeaderTopBarRight>
+            </ObjectHeaderTopBar>
 
-            <ObjectHeader.TitleSection>
-              <ObjectHeader.Meta date="Jan 15, 2024" />
-              <ObjectHeader.Title iconName="Document">
+            <ObjectHeaderTitleSection>
+              <ObjectHeaderMeta date="Jan 15, 2024" />
+              <ObjectHeaderTitle iconName="Document">
                 Simple Document Title
-              </ObjectHeader.Title>
-            </ObjectHeader.TitleSection>
+              </ObjectHeaderTitle>
+            </ObjectHeaderTitleSection>
         </ObjectHeader>
       </PreviewComponent>
     </Section>
@@ -3858,6 +3890,7 @@ const [appliedFilters, setAppliedFilters] = useState([]);
 <Hub
   title="Companies"
   badge="24"
+  showSideMenu={false}
   menuSections={demoMenuSections}
   menuUser={demoMenuUser}
   columns={demoColumns}
@@ -3891,6 +3924,7 @@ const [appliedFilters, setAppliedFilters] = useState([]);
             <Hub
               title="Companies"
               badge="24"
+              showSideMenu={false}
               menuSections={demoMenuSections}
               menuUser={demoMenuUser}
               columns={demoColumns}
@@ -3993,6 +4027,77 @@ const PaginationOrganismPage = () => {
   );
 };
 
+const DOCUMENT_VIEWER_SAMPLE_TEXT = `1. Milestone Payment Obligation
+
+1.1 ABC agrees to make milestone payments to TO upon the achievement of the following milestones related to the licensed product, "Product X".
+
+- Milestone 1: Successful completion of Phase II clinical trials - $1,000,000
+- Milestone 2: Regulatory approval from FDA - $2,500,000
+- Milestone 3: First commercial sale in the United States - $3,500,000
+
+2. Audit Rights
+
+2.1 TO shall provide written notice to ABC within fifteen days of achieving each milestone, accompanied by supporting documentation evidencing the achievement of the milestone.
+
+2.2 ABC shall have the right to audit TO's records to verify the accuracy of the milestone achievement and payment calculations.
+
+3. Term
+
+3.1 This milestone payment obligation shall remain in effect until all milestone payments have been made or until the termination of this Agreement.
+
+4. Governing Law
+
+4.1 This Agreement shall be governed by and construed in accordance with the laws of the relevant jurisdiction, without regard to its conflict of law provisions.
+
+5. Entire Agreement
+
+5.1 This Agreement constitutes the entire agreement between the parties with respect to the subject matter and supersedes all prior discussions, negotiations, and understandings.
+
+6. Confidentiality
+
+6.1 Each party agrees to maintain the confidentiality of all proprietary and confidential information disclosed by the other party during the term of this Agreement.
+
+7. Indemnification
+
+7.1 Each party shall indemnify and hold harmless the other party from any third-party claims arising out of a material breach of this Agreement.
+
+8. Limitation of Liability
+
+8.1 Except for confidentiality breaches or willful misconduct, neither party shall be liable for consequential, incidental, or special damages.
+
+9. Notices
+
+9.1 All notices under this Agreement shall be in writing and delivered by recognized courier, certified mail, or electronic mail to the designated contacts of each party.
+
+10. Counterparts
+
+10.1 This Agreement may be executed in counterparts, each of which shall be deemed an original and all of which together shall constitute one instrument.`;
+
+const DocumentViewerOrganismPage = () => {
+  return (
+    <Section title="DocumentViewer" description="A reusable document review organism with PDF support and text pagination. Vertical scrolling with fixed height container, zoom controls, and PDF export.">
+      <PreviewComponent
+        title="PDF File Viewer"
+        code={`import { DocumentViewer } from "@/library/organisms/document-viewer";
+
+<DocumentViewer
+  pdfFile="./library/organisms/document-viewer/pharma_agreement.pdf"
+  exportFileName="pharma-agreement"
+  defaultZoom={0.8}
+/>`}
+      >
+        <div style={{ minHeight: 700 }}>
+          <DocumentViewer
+            pdfFile="./library/organisms/document-viewer/pharma_agreement.pdf"
+            exportFileName="pharma-agreement"
+            defaultZoom={0.8}
+          />
+        </div>
+      </PreviewComponent>
+    </Section>
+  );
+};
+
 // ─────────────────────────────────────────────
 // TEMPLATE PAGES
 // ─────────────────────────────────────────────
@@ -4038,6 +4143,138 @@ const SIDE_PANEL_STEPS = [
   { title: "Approved" },
   { title: "Published" },
 ];
+
+const DocumentViewerPageTemplatePage = () => {
+  // Add TextInput import at component level for usage in demo
+  const [obligations, setObligations] = useState([
+    { id: 1, title: "Clause 1.1", status: "created" },
+    { id: 2, title: "Clause 1.2", status: "created" },
+  ]);
+
+  const handleAddObligation = () => {
+    const newId = Math.max(...obligations.map(o => o.id), 0) + 1;
+    setObligations([...obligations, { id: newId, title: `Clause ${newId}`, status: "created" }]);
+  };
+
+  const handleRemoveObligation = (id) => {
+    setObligations(obligations.filter(o => o.id !== id));
+  };
+
+  return (
+    <Section title="DocumentViewerPage Template" description="A complete page layout for document review with side-by-side form panel.">
+      <PreviewComponent
+        title="DocumentViewerPage Template Preview"
+        code={`import { DocumentViewerPage } from "@/library/templates/document-viewer-page";
+import { TextInput } from "@/library/molecules/text-input";
+import { Button } from "@/library/atoms/button";
+
+export default function ObligationExtractor() {
+  const [obligations, setObligations] = useState([]);
+  
+  return (
+    <DocumentViewerPage
+      showSideMenu={true}
+      logoSrc="/Inpart.svg"
+      collapsedLogoSrc="/Inpart1.svg"
+      
+      headerTitle="Extract all Obligation"
+      
+      pdfFile="./path/to/document.pdf"
+      defaultZoom={0.5}
+      showToolbar={true}
+      exportFileName="document"
+      
+      formHeaderTitle="Extracted obligations"
+      formContent={
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <TextInput
+            label="Obligation Title"
+            placeholder="Enter obligation title"
+          />
+          <TextInput
+            label="Description"
+            placeholder="Enter description"
+            multiline
+            rows={4}
+          />
+          <TextInput
+            label="Due Date"
+            placeholder="YYYY-MM-DD"
+            type="date"
+          />
+          <Button variant="primary" fullWidth>
+            Add Obligation
+          </Button>
+          
+          {/* List of extracted obligations */}
+          {obligations.map((ob, idx) => (
+            <div key={idx} style={{ padding: 12, background: "var(--color-general-neutral-light)", borderRadius: 4 }}>
+              {ob.title}
+            </div>
+          ))}
+        </div>
+      }
+      
+      footerButtons={[
+        { label: "Go back" },
+        { label: "Save & Extract", variant: "primary" }
+      ]}
+    />
+  );
+}`}
+      >
+        <p style={{ marginBottom: 16, color: "var(--color-content-secondary)", fontSize: 14 }}>
+          The DocumentViewerPage template combines SideMenu (deal variant), document viewer, and form panel into a complete page layout.
+          The form content supports any components - TextInput, TextArea, Buttons, etc.
+        </p>
+        <div style={{ height: 700, border: "1px solid var(--color-neutral-200)", borderRadius: 8, overflow: "hidden" }}>
+          <DocumentViewerPage
+            showSideMenu={true}
+            logoSrc="/Inpart.svg"
+            collapsedLogoSrc="/Inpart1.svg"
+            headerTitle="Extract all Obligation"
+            pdfFile="./library/organisms/document-viewer/pharma_agreement.pdf"
+            defaultZoom={0.5}
+            formHeaderTitle="Extracted obligations"
+            formContent={
+              <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-4)" }}>
+                <TextInput
+                  label="Obligation Title"
+                  placeholder="Enter obligation title"
+                />
+                <TextInput
+                  label="Description"
+                  placeholder="Enter description"
+                  multiline={true}
+                  rows={3}
+                />
+                <TextInput
+                  label="Due Date"
+                  placeholder="YYYY-MM-DD"
+                  type="date"
+                />
+                <Button variant="primary" size="md" style={{ width: "100%" }}>
+                  Add Obligation
+                </Button>
+                
+                {/* Extracted obligations list */}
+                {obligations.map(ob => (
+                  <div key={ob.id} style={{ padding: "var(--spacing-2)", background: "var(--color-general-neutral-light)", borderRadius: "var(--radius-xs)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span>{ob.title}</span>
+                    <button onClick={() => handleRemoveObligation(ob.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--color-content-secondary)", fontSize: "16px" }}>×</button>
+                  </div>
+                ))}
+              </div>
+            }
+            footerButtons={[
+              { label: "Extract", variant: "primary", style: { padding: "8px 16px", borderRadius: "4px", background: "var(--color-action-primary-enabled)", color: "white", border: "none", cursor: "pointer", fontWeight: "600" } },
+            ]}
+          />
+        </div>
+      </PreviewComponent>
+    </Section>
+  );
+};
 
 const SidePanelPage = () => {
   const [panelOpen, setPanelOpen] = useState(false);
@@ -4489,24 +4726,24 @@ const [activeTab, setActiveTab] = useState("overview");
               {/* Header */}
               <div style={{ padding: 16, background: "var(--color-general-white)", borderBottom: "1px solid var(--color-action-outline-secondary-enabled)" }}>
                 <ObjectHeader>
-                  <ObjectHeader.TopBar>
-                    <ObjectHeader.TopBarLeft>
-                      <ObjectHeader.Button variant="secondary" size="sm" iconLeading={<ObjectHeader.Icon name="ArrowLeft" size="sm" />}>Back</ObjectHeader.Button>
-                    </ObjectHeader.TopBarLeft>
-                    <ObjectHeader.TopBarRight>
-                      <ObjectHeader.ActionsGroup>
-                        <ObjectHeader.Button variant="primary" size="sm">Save</ObjectHeader.Button>
-                      </ObjectHeader.ActionsGroup>
-                    </ObjectHeader.TopBarRight>
-                  </ObjectHeader.TopBar>
+                  <ObjectHeaderTopBar>
+                    <ObjectHeaderTopBarLeft>
+                      <Button variant="secondary" size="sm" iconLeading={<Icon name="ArrowLeft" size="sm" />}>Back</Button>
+                    </ObjectHeaderTopBarLeft>
+                    <ObjectHeaderTopBarRight>
+                      <ObjectHeaderActionsGroup>
+                        <Button variant="primary" size="sm">Save</Button>
+                      </ObjectHeaderActionsGroup>
+                    </ObjectHeaderTopBarRight>
+                  </ObjectHeaderTopBar>
 
-                  <ObjectHeader.TitleSection>
-                    <ObjectHeader.Meta date="Jan 15, 2024" author="John Doe" />
-                    <ObjectHeader.Title iconName="Beaker">Initiative Name</ObjectHeader.Title>
-                  </ObjectHeader.TitleSection>
+                  <ObjectHeaderTitleSection>
+                    <ObjectHeaderMeta date="Jan 15, 2024" author="John Doe" />
+                    <ObjectHeaderTitle iconName="Beaker">Initiative Name</ObjectHeaderTitle>
+                  </ObjectHeaderTitleSection>
 
-                  <ObjectHeader.StepperSection>
-                    <ObjectHeader.Stepper
+                  <ObjectHeaderStepper>
+                    <Stepper
                       currentStep={2}
                       steps={[
                         { title: "Draft" },
@@ -4515,15 +4752,15 @@ const [activeTab, setActiveTab] = useState("overview");
                         { title: "Active" },
                       ]}
                     />
-                  </ObjectHeader.StepperSection>
+                  </ObjectHeaderStepper>
 
-                  <ObjectHeader.TabsSection>
-                    <ObjectHeader.Tabs selectedKey={activeTab} onSelectionChange={setActiveTab}>
-                      <ObjectHeader.Tab id="overview">Overview</ObjectHeader.Tab>
-                      <ObjectHeader.Tab id="details">Details</ObjectHeader.Tab>
-                      <ObjectHeader.Tab id="history">History</ObjectHeader.Tab>
-                    </ObjectHeader.Tabs>
-                  </ObjectHeader.TabsSection>
+                  <ObjectHeaderTabs>
+                    <Tabs selectedKey={activeTab} onSelectionChange={setActiveTab}>
+                      <Tab id="overview">Overview</Tab>
+                      <Tab id="details">Details</Tab>
+                      <Tab id="history">History</Tab>
+                    </Tabs>
+                  </ObjectHeaderTabs>
                 </ObjectHeader>
               </div>
 
@@ -4616,10 +4853,12 @@ const PAGES = {
   objectHeader: { title: "ObjectHeader", component: ObjectHeaderPage, category: "organisms" },
   hubHeader: { title: "HubHeader", component: HubHeaderPage, category: "organisms" },
   filterPanel: { title: "FilterPanel", component: FilterPanelPage, category: "organisms" },
+  documentViewer: { title: "DocumentViewer", component: DocumentViewerOrganismPage, category: "organisms" },
   paginationOrganism: { title: "Pagination (Organism)", component: PaginationOrganismPage, category: "organisms" },
   // Templates
   hubTemplate: { title: "Hub", component: HubTemplatePage, category: "templates" },
   objectPageTemplate: { title: "ObjectPage", component: ObjectPageTemplatePage, category: "templates" },
+  documentViewerPageTemplate: { title: "DocumentViewerPage", component: DocumentViewerPageTemplatePage, category: "templates" },
   sidePanelTemplate: { title: "SidePanel", component: SidePanelPage, category: "templates" },
 };
 
@@ -4775,9 +5014,11 @@ function getIconForPage(pageKey) {
     objectHeader: "DocumentText",
     hubHeader: "RectangleGroup",
     filterPanel: "Funnel",
+    documentViewer: "DocumentText",
     paginationOrganism: "ChevronDoubleRight",
     hubTemplate: "ViewColumns",
     objectPageTemplate: "Document",
+    documentViewerPageTemplate: "DocumentDuplicate",
     sidePanelTemplate: "RectangleStack",
   };
   return iconMap[pageKey] || "DocumentText";

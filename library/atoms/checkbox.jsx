@@ -43,6 +43,7 @@ const styles = {
   wrapper: {
     display: "inline-flex",
     alignItems: "center",
+    lineHeight: 1,
     gap: "var(--spacing-sm)",
     cursor: "pointer",
     userSelect: "none",
@@ -113,6 +114,8 @@ const styles = {
   },
 
   label: {
+    display: "inline-flex",
+    alignItems: "center",
     color: "var(--color-content-primary)",
     fontWeight: "var(--font-weight-regular)",
   },

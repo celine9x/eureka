@@ -33,6 +33,11 @@ export const SIDE_MENU_VARIANTS = {
   collapsed: "collapsed",
 };
 
+export const SIDE_MENU_POSITIONS = {
+  fixed: "fixed",
+  embedded: "embedded",
+};
+
 const EXPANDED_WIDTH = 250;
 const COLLAPSED_WIDTH = 80;
 
@@ -56,7 +61,7 @@ const styles = {
     boxSizing: "border-box",
     overflow: "hidden",
     transition: "width var(--transition-normal)",
-    zIndex: 100,
+    zIndex: 500,
   },
 
   // Top section (logo + search + menu sections)
@@ -356,6 +361,7 @@ const styles = {
  */
 export const SideMenu = ({
   variant = SIDE_MENU_VARIANTS.collapsed,
+  position = SIDE_MENU_POSITIONS.fixed,
   expandOnHover = true,
   interactiveItems = true,
   activeItemId,
@@ -428,6 +434,15 @@ export const SideMenu = ({
   // Compose container styles
   const containerStyle = {
     ...styles.container,
+    ...(position === SIDE_MENU_POSITIONS.embedded
+      ? {
+          position: "relative",
+          top: "auto",
+          left: "auto",
+          height: "100%",
+          zIndex: "auto",
+        }
+      : null),
     width: isCollapsed ? COLLAPSED_WIDTH : EXPANDED_WIDTH,
     ...style,
   };
@@ -650,6 +665,11 @@ export const SideMenu = ({
 
 SideMenu.displayName = "SideMenu";
 SideMenu.variants = SIDE_MENU_VARIANTS;
+SideMenu.positions = SIDE_MENU_POSITIONS;
+SideMenu.Item = SideMenuItem;
+SideMenu.UserButton = UserButton;
+SideMenu.Icon = Icon;
+SideMenu.Search = Search;
 
 // ─────────────────────────────────────────────
 // EXPORTS

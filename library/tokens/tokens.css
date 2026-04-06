@@ -311,7 +311,9 @@
   --color-general-white: var(--grey-100);
   --color-general-neutral-lighter: var(--grey-98);
   --color-general-neutral-light: var(--grey-95);
+
   --color-general-neutral-dark: var(--grey-40);
+
   --color-general-transparent: transparent;
 
   --color-general-positive: var(--green-95);

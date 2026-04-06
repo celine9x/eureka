@@ -7,7 +7,7 @@
  * Use this as a starting point for list/hub pages in your application.
  */
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { SideMenu } from "../organisms/side-menu/side-menu.jsx";
 import {
   HubHeader,
@@ -26,12 +26,14 @@ import { Button } from "../atoms/button.jsx";
 import { Icon } from "../atoms/icon.jsx";
 import { Checkbox } from "../atoms/checkbox.jsx";
 import { RadioButton, RadioGroup } from "../atoms/radio-button.jsx";
+import { Tooltip } from "../atoms/tooltip.jsx";
 import { Search } from "../molecules/search.jsx";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
 } from "../molecules/dropdown-menu.jsx";
+import { Portal } from "../utils/portal.jsx";
 
 /* ===========================================
    STYLE CONFIGURATION
@@ -96,6 +98,12 @@ const styles = {
       justify-content: flex-start;
       gap: var(--spacing-3);
       margin-bottom: var(--spacing-3);
+    }
+    .hub__clear-filters-action {
+      margin-left: auto;
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
     }
     .hub__active-filters {
       display: flex;
@@ -170,7 +178,8 @@ const styles = {
     }
     .hub__filter-editor {
       width: 336px;
-      max-width: min(336px, calc(100vw - 64px));
+      min-width: 336px;
+      max-width: 336px;
       border-radius: var(--radius-md);
       background: var(--color-general-white);
       outline: 1px solid var(--color-action-outline-secondary-enabled);
@@ -179,6 +188,7 @@ const styles = {
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      box-sizing: border-box;
     }
     .hub__filter-editor-body {
       display: flex;
@@ -187,6 +197,8 @@ const styles = {
       padding: var(--spacing-2);
       max-height: 360px;
       overflow-y: auto;
+      overflow-x: hidden;
+      box-sizing: border-box;
     }
     .hub__filter-editor-row {
       display: inline-flex;
@@ -226,6 +238,10 @@ const styles = {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: var(--spacing-2);
+      min-width: 0;
+    }
+    .hub__filter-editor-grid > * {
+      min-width: 0;
     }
     .hub__filter-editor-label {
       margin: 0;
@@ -238,9 +254,11 @@ const styles = {
       position: relative;
       display: flex;
       align-items: center;
+      min-width: 0;
     }
     .hub__filter-editor-input {
       width: 100%;
+      min-width: 0;
       height: 40px;
       padding: var(--spacing-sm) 32px var(--spacing-sm) var(--spacing-sm);
       border: none;
@@ -277,12 +295,18 @@ const styles = {
       line-height: var(--line-height-body-md);
     }
     .hub__filter-editor-footer {
-      display: inline-flex;
+      display: flex;
       align-items: center;
       justify-content: space-between;
       gap: var(--spacing-2);
       padding: var(--spacing-2) var(--spacing-4);
       border-top: 1px solid var(--color-action-outline-secondary-enabled);
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .hub__filter-editor-footer > * {
+      flex: 1 1 0;
+      min-width: 0;
     }
     .hub__table-wrapper {
       overflow-x: auto;
@@ -304,6 +328,37 @@ const styles = {
       color: var(--color-content-secondary);
       font-family: var(--font-family-primary);
       font-size: var(--text-body-md);
+    }
+    .hub__filter-panel-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--color-general-lightbox);
+      z-index: 400;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 240ms ease;
+    }
+    .hub__filter-panel-overlay.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .hub__filter-panel-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 336px;
+      max-width: 100vw;
+      background: var(--color-general-white);
+      z-index: 401;
+      transform: translateX(100%);
+      transition: transform 280ms cubic-bezier(0.32, 0, 0.15, 1);
+      will-change: transform;
+      box-shadow: -4px 0 24px var(--color-general-lightbox);
+      display: flex;
+    }
+    .hub__filter-panel-drawer.open {
+      transform: translateX(0);
     }
   `,
 };
@@ -508,6 +563,7 @@ export const Hub = ({
   headerActions,
   headerSecondary,
   // Menu props
+  showSideMenu = true,
   menuSections = [],
   menuUser,
   logoSrc,
@@ -556,6 +612,25 @@ export const Hub = ({
 
   const classes = ["hub", className].filter(Boolean).join(" ");
 
+  useEffect(() => {
+    if (!isFilterPanelOpen || typeof document === "undefined") return;
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setIsFilterPanelOpen(false);
+      }
+    };
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isFilterPanelOpen]);
+
   // Handle sort
   const handleSort = (column) => {
     if (!column.sortable) return;
@@ -582,7 +657,7 @@ export const Hub = ({
             key: "__select",
             header: <Checkbox isSelected={allSelected} onChange={() => onSelectAll?.()} />,
             type: "checkbox",
-            width: "48px",
+            width: "var(--size-button-xl)",
             renderCell: (_value, row) => (
               <Checkbox
                 isSelected={selectedRows.includes(row.id)}
@@ -949,15 +1024,17 @@ export const Hub = ({
   return (
     <div className={classes} {...props}>
       {/* Side Menu */}
-      <div className="hub__sidebar">
-        <SideMenu
-          logoSrc={logoSrc}
-          sections={menuSections}
-          user={menuUser}
-          onCreateClick={onMenuCreate}
-          onSearchChange={onMenuSearch}
-        />
-      </div>
+      {showSideMenu && (
+        <div className="hub__sidebar">
+          <SideMenu
+            logoSrc={logoSrc}
+            sections={menuSections}
+            user={menuUser}
+            onCreateClick={onMenuCreate}
+            onSearchChange={onMenuSearch}
+          />
+        </div>
+      )}
 
       {/* Main Content */}
       <div className="hub__main">
@@ -984,70 +1061,90 @@ export const Hub = ({
                 {addFiltersLabel}
               </Button>
             ) : (
-              <div className="hub__active-filters">
-                {activeFilters.map((filter) => {
-                  const filterId = filter.id || filter.key;
-                  const badgeLabel = typeof filter.badgeCount === "number"
-                    ? String(filter.badgeCount)
-                    : filter.value || "";
+              <>
+                <div className="hub__active-filters">
+                  {activeFilters.map((filter) => {
+                    const filterId = filter.id || filter.key;
+                    const badgeLabel = typeof filter.badgeCount === "number"
+                      ? String(filter.badgeCount)
+                      : filter.value || "";
 
-                  return (
-                    <DropdownMenu
-                      key={filterId}
-                      open={openChipId === filterId}
-                      onOpenChange={(nextOpen) => {
-                        setOpenChipId(nextOpen ? filterId : null);
-                        if (nextOpen) {
-                          openChipEditor(filter);
-                        }
-                      }}
-                      closeOnSelect={false}
-                    >
-                      <DropdownMenuTrigger asChild>
-                        <div
-                          role="button"
-                          tabIndex={0}
-                          className="hub__filter-pill"
-                        >
-                          <span className="hub__filter-pill-label">{filter.label}</span>
-                          <span className="hub__filter-pill-meta">
-                            {badgeLabel ? (
-                              <span className="hub__filter-pill-badge">{badgeLabel}</span>
-                            ) : null}
-                            <span className="hub__filter-pill-icon-btn" aria-hidden="true">
-                              <Icon name="ChevronDown" size="sm" />
+                    return (
+                      <DropdownMenu
+                        key={filterId}
+                        open={openChipId === filterId}
+                        onOpenChange={(nextOpen) => {
+                          setOpenChipId(nextOpen ? filterId : null);
+                          if (nextOpen) {
+                            openChipEditor(filter);
+                          }
+                        }}
+                        closeOnSelect={false}
+                      >
+                        <DropdownMenuTrigger asChild>
+                          <div
+                            role="button"
+                            tabIndex={0}
+                            className="hub__filter-pill"
+                          >
+                            <span className="hub__filter-pill-label">{filter.label}</span>
+                            <span className="hub__filter-pill-meta">
+                              {badgeLabel ? (
+                                <span className="hub__filter-pill-badge">{badgeLabel}</span>
+                              ) : null}
+                              <span className="hub__filter-pill-icon-btn" aria-hidden="true">
+                                <Icon name="ChevronDown" size="sm" />
+                              </span>
+                              <button
+                                type="button"
+                                className="hub__filter-pill-icon-btn"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  handleRemoveFilter(filterId);
+                                }}
+                                aria-label={`Remove ${filter.label} filter`}
+                              >
+                                <Icon name="XMark" size="sm" />
+                              </button>
                             </span>
-                            <button
-                              type="button"
-                              className="hub__filter-pill-icon-btn"
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                handleRemoveFilter(filterId);
-                              }}
-                              aria-label={`Remove ${filter.label} filter`}
-                            >
-                              <Icon name="XMark" size="sm" />
-                            </button>
-                          </span>
-                        </div>
-                      </DropdownMenuTrigger>
+                          </div>
+                        </DropdownMenuTrigger>
 
-                      <DropdownMenuContent align="left" position="bottom" width={336}>
-                        {renderChipEditor(filter)}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  );
-                })}
+                        <DropdownMenuContent
+                          align="left"
+                          position="bottom"
+                          width={336}
+                          style={{ maxWidth: 336 }}
+                        >
+                          {renderChipEditor(filter)}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    );
+                  })}
 
-                <Button
-                  variant="secondary"
-                  size="md"
-                  iconLeading={<Icon name="Plus" size="sm" />}
-                  onClick={() => setIsFilterPanelOpen(true)}
-                >
-                  More filters
-                </Button>
-              </div>
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    iconLeading={<Icon name="Plus" size="sm" />}
+                    onClick={() => setIsFilterPanelOpen(true)}
+                  >
+                    More filters
+                  </Button>
+                </div>
+                <div className="hub__clear-filters-action">
+                  <Tooltip content="Remove all" placement="bottom-right">
+                    <Button
+                      variant="secondary"
+                      color="secondary-destructive"
+                      size="md"
+                      iconOnly
+                      ariaLabel="Remove all active filters"
+                      iconLeading={<Icon name="XMark" size="sm" />}
+                      onClick={handleClearFilters}
+                    />
+                  </Tooltip>
+                </div>
+              </>
             )}
           </div>
 
@@ -1062,22 +1159,6 @@ export const Hub = ({
                 />
               </div>
             </div>
-
-            <FilterPanel
-              isOpen={isFilterPanelOpen}
-              title={filterPanelTitle}
-              suggestions={filterSuggestions}
-              allFilters={filterOptions}
-              includedSuggestionKeys={filterIncludedSuggestionKeys}
-              includedFilterKeys={filterIncludedFilterKeys}
-              includedGroupKeys={filterIncludedGroupKeys}
-              maxGroupCount={filterMaxGroupCount}
-              showActivePreview={false}
-              initialSelected={activeFilters}
-              onClose={() => setIsFilterPanelOpen(false)}
-              onClear={handleClearFilters}
-              onApply={handleApplyFilters}
-            />
           </div>
         </div>
 
@@ -1095,10 +1176,55 @@ export const Hub = ({
           </div>
         )}
       </div>
+
+      <Portal containerId="hub-filter-panel-portal">
+        <div
+          className={`hub__filter-panel-overlay${isFilterPanelOpen ? " visible" : ""}`}
+          onClick={() => setIsFilterPanelOpen(false)}
+          aria-hidden="true"
+        />
+        <div
+          className={`hub__filter-panel-drawer${isFilterPanelOpen ? " open" : ""}`}
+          role="dialog"
+          aria-modal="true"
+          aria-label={filterPanelTitle}
+        >
+          <FilterPanel
+            isOpen={isFilterPanelOpen}
+            title={filterPanelTitle}
+            suggestions={filterSuggestions}
+            allFilters={filterOptions}
+            includedSuggestionKeys={filterIncludedSuggestionKeys}
+            includedFilterKeys={filterIncludedFilterKeys}
+            includedGroupKeys={filterIncludedGroupKeys}
+            maxGroupCount={filterMaxGroupCount}
+            showActivePreview={false}
+            initialSelected={activeFilters}
+            onClose={() => setIsFilterPanelOpen(false)}
+            onClear={handleClearFilters}
+            onApply={handleApplyFilters}
+          />
+        </div>
+      </Portal>
     </div>
   );
 };
 
 Hub.displayName = "Hub";
+Hub.SideMenu = SideMenu;
+Hub.Header = HubHeader;
+Hub.HeaderActions = HubHeaderActions;
+Hub.FilterPanel = FilterPanel;
+Hub.Table = Table;
+Hub.Pagination = Pagination;
+Hub.Button = Button;
+Hub.Icon = Icon;
+Hub.Checkbox = Checkbox;
+Hub.RadioButton = RadioButton;
+Hub.RadioGroup = RadioGroup;
+Hub.Search = Search;
+Hub.DropdownMenu = DropdownMenu;
+Hub.DropdownMenuTrigger = DropdownMenuTrigger;
+Hub.DropdownMenuContent = DropdownMenuContent;
 
 export default Hub;

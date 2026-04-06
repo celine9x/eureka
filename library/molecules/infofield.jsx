@@ -84,7 +84,7 @@ const styles = {
     display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",
-    padding: "2px 4px",
+    padding: "var(--spacing-xxs) var(--spacing-1)",
     background: "var(--color-general-neutral-lighter)",
     borderRadius: "var(--radius-sm)",
     outline: "1px solid var(--color-action-outline-secondary-enabled)",
@@ -304,5 +304,10 @@ export const InfofieldGroup = ({
 };
 
 InfofieldGroup.displayName = "InfofieldGroup";
+
+Infofield.Group = InfofieldGroup;
+Infofield.Badge = Badge;
+Infofield.Chip = Chip;
+Infofield.Icon = Icon;
 
 export default Infofield;

@@ -38,7 +38,7 @@ const styles = {
     alignItems: "center",
     gap: 16,
     width: "100%",
-    padding: "16px 24px",
+    padding: "var(--spacing-4) var(--spacing-6)",
     background: "var(--color-general-white)",
     borderRadius: "var(--radius-md)",
     outline: "1px solid var(--color-interaction-outline-enabled)",
@@ -307,5 +307,9 @@ export const RadioCard = ({
 };
 
 RadioCard.displayName = "RadioCard";
+RadioCard.Group = RadioCardGroup;
+RadioCard.Radio = RadioButton;
+
+RadioCardGroup.Card = RadioCard;
 
 export default RadioCard;

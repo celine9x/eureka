@@ -146,7 +146,7 @@ const styles = {
       right: 0;
       background: inherit;
       z-index: 1;
-      box-shadow: -2px 0 4px rgba(0, 0, 0, 0.05);
+      box-shadow: -2px 0 4px var(--color-general-lightbox);
     }
     .table-row-header .table-cell-sticky {
       background: transparent;
@@ -1287,7 +1287,7 @@ export const Table = ({
                     column.header === "Actions");
 
                 const sticky = column.sticky ?? isActionColumn;
-                const width = column.width ?? (isActionColumn ? "56px" : undefined);
+                const width = column.width ?? (isActionColumn ? "calc(var(--spacing-12) + var(--spacing-2))" : undefined);
                 const headerContainerProps = column.headerContainerProps || {};
 
                 return (
@@ -1332,7 +1332,7 @@ export const Table = ({
                 column.header === "Actions");
 
             const sticky = column.sticky ?? isActionColumn;
-            const width = column.width ?? (isActionColumn ? "56px" : undefined);
+            const width = column.width ?? (isActionColumn ? "calc(var(--spacing-12) + var(--spacing-2))" : undefined);
             const value = resolveColumnValue(row, column, rowIndex);
             const cellContainerProps =
               typeof column.cellContainerProps === "function"

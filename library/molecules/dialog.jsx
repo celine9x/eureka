@@ -70,7 +70,7 @@ const styles = {
 
   modal: {
     width: 500,
-    maxWidth: "calc(100vw - 32px)",
+    maxWidth: "calc(100vw - var(--spacing-8))",
     padding: "var(--spacing-6)",
     position: "relative",
     background: "var(--color-general-white)",
@@ -92,8 +92,8 @@ const styles = {
 
   close: {
     position: "absolute",
-    top: 16,
-    right: 16,
+    top: "var(--spacing-4)",
+    right: "var(--spacing-4)",
     width: 24,
     height: 24,
     display: "flex",
@@ -496,5 +496,10 @@ export const AlertDialog = ({
 };
 
 AlertDialog.displayName = "AlertDialog";
+
+Dialog.Confirm = ConfirmDialog;
+Dialog.Alert = AlertDialog;
+Dialog.Button = Button;
+Dialog.Icon = Icon;
 
 export default Dialog;

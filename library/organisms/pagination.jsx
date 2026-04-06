@@ -344,5 +344,7 @@ export const Pagination = ({
 };
 
 Pagination.displayName = "Pagination";
+Pagination.Button = Button;
+Pagination.Icon = Icon;
 
 export default Pagination;

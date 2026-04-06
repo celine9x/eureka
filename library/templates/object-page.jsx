@@ -13,18 +13,16 @@ import {
   ObjectHeaderTopBar,
   ObjectHeaderTopBarLeft,
   ObjectHeaderTopBarRight,
-  ObjectHeaderMeta,
   ObjectHeaderTitleSection,
+  ObjectHeaderMeta,
   ObjectHeaderTitle,
   ObjectHeaderSubinfoRow,
   ObjectHeaderSubinfoItem,
-  ObjectHeaderStepper,
-  ObjectHeaderTabs,
+  ObjectHeaderStepperSection,
+  ObjectHeaderTabsSection,
+  ObjectHeaderBackButton,
 } from "../organisms/object-header.jsx";
 import { Accordion } from "../molecules/accordion.jsx";
-import { Stepper } from "../molecules/stepper.jsx";
-import { Button } from "../atoms/button.jsx";
-import { Icon } from "../atoms/icon.jsx";
 
 const OBJECT_PAGE_MENU_VARIANTS = {
   default: "default",
@@ -249,16 +247,7 @@ export const ObjectPage = ({
   };
 
   // Default back button
-  const defaultTopBarLeft = (
-    <Button
-      variant="secondary"
-      size="md"
-      iconLeading={<Icon name="ArrowLeft" size="sm" />}
-      onClick={onBack}
-    >
-      Back
-    </Button>
-  );
+  const defaultTopBarLeft = <ObjectHeaderBackButton onClick={onBack} />;
 
   return (
     <div className={classes} {...props}>
@@ -334,16 +323,14 @@ export const ObjectPage = ({
 
             {/* Stepper */}
             {steps.length > 0 && (
-              <ObjectHeaderStepper>
-                <Stepper steps={steps} currentStep={currentStep} />
-              </ObjectHeaderStepper>
+              <ObjectHeaderStepperSection steps={steps} currentStep={currentStep} />
             )}
 
             {/* Tabs */}
             {tabs && (
-              <ObjectHeaderTabs>
+              <ObjectHeaderTabsSection>
                 {tabs}
-              </ObjectHeaderTabs>
+              </ObjectHeaderTabsSection>
             )}
           </ObjectHeader>
         </div>
@@ -376,21 +363,21 @@ ObjectPage.menuVariants = OBJECT_PAGE_MENU_VARIANTS;
 
 ObjectPage.SideMenu = SideMenu;
 ObjectPage.Header = ObjectHeader;
-ObjectPage.HeaderTopBar = ObjectHeaderTopBar;
-ObjectPage.HeaderTopBarLeft = ObjectHeaderTopBarLeft;
-ObjectPage.HeaderTopBarRight = ObjectHeaderTopBarRight;
-ObjectPage.HeaderTitleSection = ObjectHeaderTitleSection;
-ObjectPage.HeaderMeta = ObjectHeaderMeta;
-ObjectPage.HeaderTitle = ObjectHeaderTitle;
-ObjectPage.HeaderSubinfoRow = ObjectHeaderSubinfoRow;
-ObjectPage.HeaderSubinfoItem = ObjectHeaderSubinfoItem;
-ObjectPage.HeaderStepper = ObjectHeaderStepper;
-ObjectPage.HeaderTabs = ObjectHeaderTabs;
+ObjectPage.HeaderTopBar = ObjectHeader.TopBar;
+ObjectPage.HeaderTopBarLeft = ObjectHeader.TopBarLeft;
+ObjectPage.HeaderTopBarRight = ObjectHeader.TopBarRight;
+ObjectPage.HeaderTitleSection = ObjectHeader.TitleSection;
+ObjectPage.HeaderMeta = ObjectHeader.Meta;
+ObjectPage.HeaderTitle = ObjectHeader.Title;
+ObjectPage.HeaderSubinfoRow = ObjectHeader.SubinfoRow;
+ObjectPage.HeaderSubinfoItem = ObjectHeader.SubinfoItem;
+ObjectPage.HeaderStepper = ObjectHeader.StepperSection;
+ObjectPage.HeaderTabs = ObjectHeader.TabsSection;
 ObjectPage.Tabs = ObjectHeader.Tabs;
 ObjectPage.Tab = ObjectHeader.Tab;
-ObjectPage.Stepper = Stepper;
+ObjectPage.Stepper = ObjectHeader.Stepper;
 ObjectPage.Accordion = Accordion;
-ObjectPage.Button = Button;
-ObjectPage.Icon = Icon;
+ObjectPage.Button = ObjectHeader.Button;
+ObjectPage.Icon = ObjectHeader.Icon;
 
 export default ObjectPage;

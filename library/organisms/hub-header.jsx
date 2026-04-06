@@ -430,10 +430,6 @@ HubHeader.Search = Search;
 HubHeader.Tabs = Tabs;
 HubHeader.Tab = Tab;
 HubHeader.TabPanel = TabPanel;
-HubHeader.Badge = Badge;
-HubHeader.Tabs = Tabs;
-HubHeader.Tab = Tab;
-HubHeader.TabPanel = TabPanel;
 
 // Re-export commonly used child components for convenience
 export { Button } from "../atoms/button.jsx";

@@ -41,6 +41,7 @@ export * from "./molecules/textarea.jsx";
 
 // Organisms
 export * from "./organisms/filter-panel.jsx";
+export * from "./organisms/document-viewer/document-viewer.jsx";
 export * from "./organisms/hub-header.jsx";
 export * from "./organisms/modal.jsx";
 export * from "./organisms/object-header.jsx";
@@ -52,6 +53,7 @@ export * from "./organisms/table/table.jsx";
 export * from "./organisms/table/tablecell.jsx";
 
 // Templates
+export * from "./templates/document-viewer-page.jsx";
 export * from "./templates/hub.jsx";
 export * from "./templates/object-page.jsx";
 export * from "./templates/side-panel.jsx";

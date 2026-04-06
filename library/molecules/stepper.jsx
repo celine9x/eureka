@@ -155,6 +155,7 @@ export const Stepper = ({
 Stepper.displayName = "Stepper";
 Stepper.orientations = STEPPER_ORIENTATIONS;
 Stepper.stepStatus = STEP_STATUS;
+Stepper.Step = Step;
 
 // Export Step for direct usage
 export { Step } from "../atoms/step.jsx";

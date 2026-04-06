@@ -455,4 +455,8 @@ export const TabPanel = ({ id, style, children, ...props }) => {
 
 TabPanel.displayName = "TabPanel";
 
+Tabs.Tab = Tab;
+Tabs.Panel = TabPanel;
+Tabs.TabPanel = TabPanel;
+
 export default Tabs;

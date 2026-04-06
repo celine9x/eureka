@@ -522,4 +522,10 @@ export const ModalFooter = ({
 
 ModalFooter.displayName = "ModalFooter";
 
+Modal.Header = ModalHeader;
+Modal.Content = ModalContent;
+Modal.Footer = ModalFooter;
+Modal.Button = Button;
+Modal.Icon = Icon;
+
 export default Modal;

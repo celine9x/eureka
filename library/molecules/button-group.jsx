@@ -235,5 +235,9 @@ export const ButtonGroup = ({
 ButtonGroup.displayName = "ButtonGroup";
 ButtonGroup.sizes = BUTTON_GROUP_SIZES;
 ButtonGroup.orientations = BUTTON_GROUP_ORIENTATIONS;
+ButtonGroup.Item = ButtonGroupItem;
+ButtonGroup.ButtonBadge = ButtonBadge;
+
+ButtonGroupItem.Group = ButtonGroup;
 
 export default ButtonGroup;

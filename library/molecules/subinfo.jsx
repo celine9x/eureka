@@ -122,7 +122,7 @@ const styles = {
     fontFamily: "var(--font-family-primary)",
     fontSize: 8,
     fontWeight: "var(--font-weight-bold)",
-    lineHeight: "12px",
+    lineHeight: "var(--line-height-body-overline)",
     textTransform: "uppercase",
     textAlign: "center",
   },

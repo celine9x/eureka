@@ -54,8 +54,8 @@ const styles = {
   toolbar: {
     display: "flex",
     alignItems: "center",
-    gap: 4,
-    padding: "4px 16px",
+    gap: "var(--spacing-1)",
+    padding: "var(--spacing-1) var(--spacing-4)",
     background: "var(--color-general-neutral-light)",
     borderBottom: "1px solid var(--color-action-outline-secondary-enabled)",
   },
@@ -63,14 +63,14 @@ const styles = {
   toolbarGroup: {
     display: "flex",
     alignItems: "center",
-    gap: 4,
+    gap: "var(--spacing-1)",
   },
 
   divider: {
     width: 1,
     height: 24,
     background: "var(--color-action-outline-secondary-enabled)",
-    margin: "0 4px",
+    margin: "0 var(--spacing-1)",
   },
 
   toolbarBtn: {
@@ -105,7 +105,7 @@ const styles = {
 
   content: {
     flex: 1,
-    padding: 16,
+    padding: "var(--spacing-4)",
     minHeight: 80,
     overflowY: "auto",
   },
@@ -132,14 +132,14 @@ const styles = {
     display: "flex",
     justifyContent: "flex-end",
     alignItems: "center",
-    gap: 8,
-    padding: "0 16px 16px",
+    gap: "var(--spacing-2)",
+    padding: "0 var(--spacing-4) var(--spacing-4)",
   },
 
   helper: {
     display: "flex",
     alignItems: "flex-start",
-    gap: 4,
+    gap: "var(--spacing-1)",
   },
 
   helperIcon: {
@@ -675,5 +675,8 @@ export const RichTextInputEditable = ({
 
 RichTextInput.displayName = "RichTextInput";
 RichTextInputEditable.displayName = "RichTextInputEditable";
+RichTextInput.Editable = RichTextInputEditable;
+RichTextInput.Button = Button;
+RichTextInput.Icon = Icon;
 
 export default RichTextInput;

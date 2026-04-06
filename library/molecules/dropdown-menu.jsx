@@ -53,11 +53,11 @@ const styles = {
   positions: {
     top: {
       bottom: "100%",
-      marginBottom: 4,
+      marginBottom: "var(--spacing-1)",
     },
     bottom: {
       top: "100%",
-      marginTop: 4,
+      marginTop: "var(--spacing-1)",
     },
   },
 
@@ -75,7 +75,7 @@ const styles = {
   },
 
   section: {
-    padding: "8px 0",
+    padding: "var(--spacing-2) 0",
   },
 
   sectionDivider: {
@@ -83,11 +83,11 @@ const styles = {
   },
 
   sectionContent: {
-    padding: "0 16px",
+    padding: "0 var(--spacing-4)",
   },
 
   footer: {
-    padding: "8px 24px",
+    padding: "var(--spacing-2) var(--spacing-6)",
     background: "var(--color-general-neutral-light)",
     borderTop: "1px solid var(--color-action-outline-secondary-enabled)",
   },
@@ -96,7 +96,7 @@ const styles = {
     fontFamily: "var(--font-family-primary)",
     fontSize: 9,
     fontWeight: "var(--font-weight-regular)",
-    lineHeight: "12px",
+    lineHeight: "var(--line-height-body-overline)",
     color: "var(--color-content-secondary)",
   },
 };
@@ -109,7 +109,7 @@ const animationKeyframes = `
 @keyframes dropdown-fade-in {
   from {
     opacity: 0;
-    transform: translateY(-4px);
+    transform: translateY(calc(var(--spacing-1) * -1));
   }
   to {
     opacity: 1;
@@ -120,7 +120,7 @@ const animationKeyframes = `
 @keyframes dropdown-fade-in-up {
   from {
     opacity: 0;
-    transform: translateY(4px);
+    transform: translateY(var(--spacing-1));
   }
   to {
     opacity: 1;
@@ -537,6 +537,23 @@ export const SimpleDropdownMenu = ({
 };
 
 SimpleDropdownMenu.displayName = "SimpleDropdownMenu";
+
+DropdownMenu.Trigger = DropdownMenuTrigger;
+DropdownMenu.Content = DropdownMenuContent;
+DropdownMenu.Section = DropdownMenuSection;
+DropdownMenu.Footer = DropdownMenuFooter;
+DropdownMenu.Item = DropdownMenuItem;
+DropdownMenu.Divider = DropdownMenuDivider;
+DropdownMenu.Label = DropdownMenuLabel;
+
+SimpleDropdownMenu.Root = DropdownMenu;
+SimpleDropdownMenu.Trigger = DropdownMenuTrigger;
+SimpleDropdownMenu.Content = DropdownMenuContent;
+SimpleDropdownMenu.Section = DropdownMenuSection;
+SimpleDropdownMenu.Footer = DropdownMenuFooter;
+SimpleDropdownMenu.Item = DropdownMenuItem;
+SimpleDropdownMenu.Divider = DropdownMenuDivider;
+SimpleDropdownMenu.Label = DropdownMenuLabel;
 
 // Re-export item components for convenience
 export { DropdownMenuItem, DropdownMenuDivider, DropdownMenuLabel };

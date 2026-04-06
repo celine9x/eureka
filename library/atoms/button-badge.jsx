@@ -66,7 +66,9 @@ const styles = {
     userSelect: "none",
     boxSizing: "border-box",
     transition: "all var(--transition-fast)",
-    outline: "1px solid var(--color-action-outline-secondary-enabled)",
+    outlineWidth: "1px",
+    outlineStyle: "solid",
+    outlineColor: "var(--color-action-outline-secondary-enabled)",
     outlineOffset: "-1px",
   },
 
@@ -84,7 +86,7 @@ const styles = {
   sizes: {
     lg: {
       base: {
-        padding: 8,
+        padding: "var(--spacing-2)",
         fontSize: "var(--text-body-lg)",
         lineHeight: "var(--line-height-body-lg)",
       },
@@ -92,10 +94,10 @@ const styles = {
     },
     md: {
       base: {
-        padding: "4px 8px",
+        padding: "var(--spacing-1) var(--spacing-2)",
         fontSize: "var(--text-body-md)",
         lineHeight: "var(--line-height-body-md)",
-        minHeight: 32,
+        minHeight: "var(--size-button-md)",
       },
       icon: { width: 14, height: 14 },
     },

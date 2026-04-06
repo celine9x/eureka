@@ -52,9 +52,9 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    width: 64,
-    height: 32,
-    padding: "0 8px",
+    width: "calc(var(--spacing-8) * 2)",
+    height: "var(--size-button-md)",
+    padding: "0 var(--spacing-2)",
     background: "var(--color-general-white)",
     border: "none",
     borderRadius: "var(--radius-md)",
@@ -91,8 +91,8 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    width: 32,
-    height: 32,
+    width: "var(--size-button-md)",
+    height: "var(--size-button-md)",
     padding: 0,
     background: "var(--color-general-white)",
     border: "none",
@@ -119,16 +119,16 @@ const styles = {
   pages: {
     display: "flex",
     alignItems: "center",
-    gap: 8,
+    gap: "var(--spacing-2)",
   },
 
   pageBtn: {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    minWidth: 32,
-    height: 32,
-    padding: "0 8px",
+    minWidth: "var(--size-button-md)",
+    height: "var(--size-button-md)",
+    padding: "0 var(--spacing-2)",
     background: "var(--color-general-white)",
     border: "none",
     borderRadius: "var(--radius-md)",
@@ -589,5 +589,9 @@ export const SimplePagination = ({
 };
 
 SimplePagination.displayName = "SimplePagination";
+
+Pagination.PerPage = PaginationPerPage;
+Pagination.Info = PaginationInfo;
+Pagination.Simple = SimplePagination;
 
 export default Pagination;

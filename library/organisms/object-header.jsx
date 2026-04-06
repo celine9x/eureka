@@ -234,6 +234,57 @@ export const ObjectHeaderTopBarRight = ({
   );
 };
 
+export const ObjectHeaderBackButton = ({
+  label = "Back",
+  iconName = "ArrowLeft",
+  iconSize = "sm",
+  className = "",
+  children,
+  ...props
+}) => {
+  const classes = ["object-header-back-button", className].filter(Boolean).join(" ");
+
+  return (
+    <Button
+      variant="secondary"
+      size="md"
+      iconLeading={<Icon name={iconName} size={iconSize} />}
+      className={classes}
+      {...props}
+    >
+      {children || label}
+    </Button>
+  );
+};
+
+export const ObjectHeaderActionButton = ({
+  iconName,
+  iconSize = "sm",
+  iconLeading,
+  className = "",
+  children,
+  ...props
+}) => {
+  const resolvedIconLeading =
+    iconLeading !== undefined
+      ? iconLeading
+      : iconName
+        ? <Icon name={iconName} size={iconSize} />
+        : undefined;
+
+  return (
+    <Button
+      variant="secondary"
+      size="sm"
+      className={className}
+      iconLeading={resolvedIconLeading}
+      {...props}
+    >
+      {children}
+    </Button>
+  );
+};
+
 /**
  * ObjectHeaderActionsGroup
  *
@@ -375,35 +426,82 @@ export const ObjectHeaderSubinfoItem = ({
 };
 
 /**
- * ObjectHeaderStepper
+ * ObjectHeaderStepper (Internal)
  *
- * Wrapper for the stepper component.
+ * Wrapper for the stepper component - internal use only.
  */
-export const ObjectHeaderStepper = ({
+export const ObjectHeaderStepperSection = ({
+  steps,
+  currentStep = 0,
   className = "",
   children,
   ...props
 }) => {
+  const resolvedContent =
+    children !== undefined && children !== null
+      ? children
+      : Array.isArray(steps) && steps.length > 0
+        ? <Stepper steps={steps} currentStep={currentStep} />
+        : null;
+
   return (
     <div className={`object-header-stepper ${className}`.trim()} {...props}>
-      {children}
+      {resolvedContent}
     </div>
   );
 };
 
 /**
- * ObjectHeaderTabs
+ * ObjectHeaderTabs (Internal)
  *
- * Wrapper for tabs navigation.
+ * Wrapper for tabs navigation - internal use only.
  */
-export const ObjectHeaderTabs = ({
+export const ObjectHeaderTabsSection = ({
+  tabs,
+  activeTab,
+  onTabChange,
   className = "",
   children,
   ...props
 }) => {
+  const resolvedContent =
+    children !== undefined && children !== null
+      ? children
+      : Array.isArray(tabs) && tabs.length > 0
+        ? (
+          <Tabs selectedKey={activeTab} onSelectionChange={onTabChange}>
+            {tabs.map((tabConfig, index) => {
+              if (tabConfig && typeof tabConfig === "object") {
+                const {
+                  id,
+                  label,
+                  badge,
+                  children: tabChildren,
+                  ...tabProps
+                } = tabConfig;
+                const resolvedId = id || `tab-${index + 1}`;
+                return (
+                  <Tab id={resolvedId} key={resolvedId} badge={badge} {...tabProps}>
+                    {tabChildren || label || resolvedId}
+                  </Tab>
+                );
+              }
+
+              const value = String(tabConfig);
+              const resolvedId = value.toLowerCase().trim().replace(/\s+/g, "-");
+              return (
+                <Tab id={resolvedId} key={resolvedId}>
+                  {value}
+                </Tab>
+              );
+            })}
+          </Tabs>
+        )
+        : null;
+
   return (
     <div className={`object-header-tabs ${className}`.trim()} {...props}>
-      {children}
+      {resolvedContent}
     </div>
   );
 };
@@ -417,110 +515,121 @@ export const ObjectHeaderTabs = ({
  *
  * A comprehensive header for object detail pages.
  * @example
- * <ObjectHeader>
- *   <ObjectHeader.TopBar>
- *     <ObjectHeader.TopBarLeft>
- *       <ObjectHeader.Button variant="secondary" size="md" iconLeading={<ObjectHeader.Icon name="ArrowLeft" size="sm" />}>
- *         Back
- *       </ObjectHeader.Button>
- *     </ObjectHeader.TopBarLeft>
- *     <ObjectHeader.TopBarRight>
- *       <ObjectHeader.ActionsGroup>
- *         <ObjectHeader.AvatarGroup avatars={users} max={4} size="sm" />
- *         <ObjectHeader.Button variant="secondary" size="md" iconLeading={<ObjectHeader.Icon name="UserPlus" size="sm" />}>
- *           Manage access
- *         </ObjectHeader.Button>
- *       </ObjectHeader.ActionsGroup>
- *       <ObjectHeader.Divider />
- *       <ObjectHeader.ActionsGroup>
- *         <ObjectHeader.Button variant="secondary" size="md" iconLeading={<ObjectHeader.Icon name="Bookmark" size="sm" />} />
- *         <ObjectHeader.Button variant="secondary" size="md" iconLeading={<ObjectHeader.Icon name="Share" size="sm" />} />
- *       </ObjectHeader.ActionsGroup>
- *     </ObjectHeader.TopBarRight>
- *   </ObjectHeader.TopBar>
+ * import { useState } from "react";
+ * import {
+ *   ObjectHeader,
+ *   ObjectHeaderTopBar,
+ *   ObjectHeaderTopBarLeft,
+ *   ObjectHeaderTopBarRight,
+ *   ObjectHeaderActionsGroup,
+ *   ObjectHeaderDivider,
+ *   ObjectHeaderMeta,
+ *   ObjectHeaderTitleSection,
+ *   ObjectHeaderTitle,
+ *   ObjectHeaderSubinfoRow,
+ *   ObjectHeaderSubinfoItem,
+ *   ObjectHeaderStepper,
+ *   ObjectHeaderTabs,
+ * } from "@/library/organisms/object-header";
+ * import { Button } from "@/library/atoms/button";
+ * import { Icon } from "@/library/atoms/icon";
+ * import { Chip } from "@/library/atoms/chip";
+ * import { Link } from "@/library/atoms/link";
+ * import { AvatarGroup } from "@/library/molecules/avatar-group";
+ * import { Stepper } from "@/library/molecules/stepper";
+ * import { Tabs, Tab } from "@/library/molecules/tabs";
  *
- *   <ObjectHeader.TitleSection>
- *     <ObjectHeader.Meta
- *       date="Tue, Oct 21, 2022"
- *       time="9:21 PM"
- *       author="John Doe"
- *     />
- *     <ObjectHeader.Title iconName="LockClosed" iconVariant="warning">
- *       Deal Title
- *     </ObjectHeader.Title>
- *   </ObjectHeader.TitleSection>
+ * const Example = () => {
+ *   const [activeTab, setActiveTab] = useState("overview");
  *
- *   <ObjectHeader.SubinfoRow>
- *     <ObjectHeader.SubinfoItem>
- *       <ObjectHeader.Chip variant="positive">Active</ObjectHeader.Chip>
- *     </ObjectHeader.SubinfoItem>
- *     <ObjectHeader.SubinfoItem>
- *       <ObjectHeader.SubinfoAvatar name="John Doe" initials="JD" />
- *     </ObjectHeader.SubinfoItem>
- *     <ObjectHeader.SubinfoItem>
- *       <ObjectHeader.Subinfo variant="value" iconName="Building" value="Abbvie Limited" link />
- *     </ObjectHeader.SubinfoItem>
- *   </ObjectHeader.SubinfoRow>
+ *   return (
+ *     <ObjectHeader>
+ *       <ObjectHeaderTopBar>
+ *         <ObjectHeaderTopBarLeft>
+ *           <Button variant="secondary" size="md" iconLeading={<Icon name="ArrowLeft" size="sm" />}>
+ *             Back
+ *           </Button>
+ *         </ObjectHeaderTopBarLeft>
+ *         <ObjectHeaderTopBarRight>
+ *           <ObjectHeaderActionsGroup>
+ *             <AvatarGroup
+ *               avatars={[
+ *                 { name: "John Doe" },
+ *                 { name: "Jane Smith" },
+ *                 { name: "Bob Wilson" },
+ *               ]}
+ *               max={3}
+ *               size="sm"
+ *             />
+ *             <Button variant="secondary" size="md" iconLeading={<Icon name="UserPlus" size="sm" />}>
+ *               Manage access
+ *             </Button>
+ *           </ObjectHeaderActionsGroup>
+ *           <ObjectHeaderDivider />
+ *           <ObjectHeaderActionsGroup>
+ *             <Button variant="secondary" size="md" iconLeading={<Icon name="Bookmark" size="sm" />} />
+ *             <Button variant="secondary" size="md" iconLeading={<Icon name="Share" size="sm" />} />
+ *           </ObjectHeaderActionsGroup>
+ *         </ObjectHeaderTopBarRight>
+ *       </ObjectHeaderTopBar>
  *
- *   <ObjectHeader.StepperSection>
- *     <ObjectHeader.Stepper
- *       currentStep={3}
- *       steps={[
- *         { title: "Identification", subtitle: "Jul 15, 2024" },
- *         { title: "Review", subtitle: "Jul 15, 2024" },
- *         { title: "Evaluation", subtitle: "Jul 15, 2024" },
- *         { title: "Due Diligence", subtitle: "Jul 15, 2024" },
- *         { title: "Negotiation" },
- *         { title: "Contracting" },
- *         { title: "Signed" },
- *       ]}
- *     />
- *   </ObjectHeader.StepperSection>
+ *       <ObjectHeaderTitleSection>
+ *         <ObjectHeaderMeta
+ *           label="Last updated on"
+ *           date="Tue, Oct 21, 2024"
+ *           time="9:21 PM"
+ *           author="John Doe"
+ *         />
+ *         <ObjectHeaderTitle iconName="LockClosed" iconVariant="warning">
+ *           Deal Title - Example Project
+ *         </ObjectHeaderTitle>
+ *       </ObjectHeaderTitleSection>
  *
- *   <ObjectHeader.TabsSection>
- *     <ObjectHeader.Tabs selectedKey={activeTab} onSelectionChange={setActiveTab}>
- *       <ObjectHeader.Tab id="overview">Overview</ObjectHeader.Tab>
- *       <ObjectHeader.Tab id="details">Details</ObjectHeader.Tab>
- *       <ObjectHeader.Tab id="meetings" badge={5}>Meetings</ObjectHeader.Tab>
- *       <ObjectHeader.Tab id="contacts" badge={12}>Contacts</ObjectHeader.Tab>
- *       <ObjectHeader.Tab id="attachments" badge={3}>Attachments</ObjectHeader.Tab>
- *     </ObjectHeader.Tabs>
- *   </ObjectHeader.TabsSection>
- * </ObjectHeader>
+ *       <ObjectHeaderSubinfoRow>
+ *         <ObjectHeaderSubinfoItem>
+ *           <Chip variant="positive">Active</Chip>
+ *         </ObjectHeaderSubinfoItem>
+ *         <ObjectHeaderSubinfoItem>
+ *           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+ *             <span style={{ fontSize: 12, color: "var(--color-content-secondary)" }}>Owner</span>
+ *             <span style={{ fontSize: 14, color: "var(--color-content-primary)" }}>Emma Dupont</span>
+ *           </div>
+ *         </ObjectHeaderSubinfoItem>
+ *         <ObjectHeaderSubinfoItem>
+ *           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+ *             <span style={{ fontSize: 12, color: "var(--color-content-secondary)" }}>Company</span>
+ *             <Link href="#">Abbvie Limited</Link>
+ *           </div>
+ *         </ObjectHeaderSubinfoItem>
+ *       </ObjectHeaderSubinfoRow>
  *
- * // Slot-based API (no deep nesting)
- * <ObjectHeader
- *   topBarLeft={<Button variant="secondary">Back</Button>}
- *   topBarRight={
- *     <>
- *       <Button variant="secondary">Share</Button>
- *       <Button variant="primary">Save</Button>
- *     </>
- *   }
- *   meta={<ObjectHeaderMeta date="Tue, Oct 21, 2022" author="John Doe" />}
- *   title={<ObjectHeaderTitle iconName="LockClosed">Deal Title</ObjectHeaderTitle>}
- *   tabs={
- *     <Tabs>
- *       <Tab id="overview">Overview</Tab>
- *       <Tab id="details">Details</Tab>
- *     </Tabs>
- *   }
- * />
+ *       <ObjectHeaderStepper>
+ *         <Stepper
+ *           currentStep={3}
+ *           steps={[
+ *             { title: "Identification", subtitle: "Jul 15, 2024" },
+ *             { title: "Review", subtitle: "Jul 20, 2024" },
+ *             { title: "Evaluation", subtitle: "Jul 25, 2024" },
+ *             { title: "Due Diligence", subtitle: "In Progress" },
+ *             { title: "Negotiation" },
+ *             { title: "Contracting" },
+ *             { title: "Signed" },
+ *           ]}
+ *         />
+ *       </ObjectHeaderStepper>
  *
- * // Prop-based composition for common internal atoms/molecules
- * <ObjectHeader
- *   backButtonProps={{ children: "Back to deals", onClick: handleBack }}
- *   actionButtons={[
- *     { label: "Manage access", iconName: "UserPlus", onClick: handleAccess },
- *     { iconName: "Bookmark", iconOnly: true, ariaLabel: "Bookmark" },
- *   ]}
- *   tabsItems={[
- *     { id: "overview", label: "Overview" },
- *     { id: "details", label: "Details" },
- *     { id: "contacts", label: "Contacts", badge: 12 },
- *   ]}
- *   defaultSelectedTab="overview"
- * />
+ *       <ObjectHeaderTabs>
+ *         <Tabs selectedKey={activeTab} onSelectionChange={setActiveTab}>
+ *           <Tab id="overview">Overview</Tab>
+ *           <Tab id="details">Details</Tab>
+ *           <Tab id="meetings" badge={5}>Meetings</Tab>
+ *           <Tab id="contacts" badge={12}>Contacts</Tab>
+ *           <Tab id="attachments" badge={3}>Attachments</Tab>
+ *         </Tabs>
+ *       </ObjectHeaderTabs>
+ *     </ObjectHeader>
+ *   );
+ * };
  */
 export const ObjectHeader = ({
   className = "",
@@ -699,11 +808,11 @@ export const ObjectHeader = ({
       )}
 
       {stepper !== undefined && stepper !== null && (
-        <ObjectHeaderStepper {...stepperProps}>{stepper}</ObjectHeaderStepper>
+        <ObjectHeaderStepperSection {...stepperProps}>{stepper}</ObjectHeaderStepperSection>
       )}
 
       {resolvedTabs !== undefined && resolvedTabs !== null && (
-        <ObjectHeaderTabs {...tabsProps}>{resolvedTabs}</ObjectHeaderTabs>
+        <ObjectHeaderTabsSection {...tabsProps}>{resolvedTabs}</ObjectHeaderTabsSection>
       )}
     </>
   );
@@ -727,8 +836,10 @@ ObjectHeader.TitleSection = ObjectHeaderTitleSection;
 ObjectHeader.Title = ObjectHeaderTitle;
 ObjectHeader.SubinfoRow = ObjectHeaderSubinfoRow;
 ObjectHeader.SubinfoItem = ObjectHeaderSubinfoItem;
-ObjectHeader.StepperSection = ObjectHeaderStepper;
-ObjectHeader.TabsSection = ObjectHeaderTabs;
+ObjectHeader.StepperSection = ObjectHeaderStepperSection;
+ObjectHeader.TabsSection = ObjectHeaderTabsSection;
+ObjectHeader.BackButton = ObjectHeaderBackButton;
+ObjectHeader.ActionButton = ObjectHeaderActionButton;
 ObjectHeader.Button = Button;
 ObjectHeader.Icon = Icon;
 ObjectHeader.Badge = Badge;
@@ -743,8 +854,5 @@ ObjectHeader.Tab = Tab;
 ObjectHeader.Subinfo = Subinfo;
 ObjectHeader.SubinfoAvatar = SubinfoAvatar;
 ObjectHeader.SubinfoListItem = SubinfoListItem;
-
-// Re-export commonly used components for convenience
-export { Button, Icon, Badge, Chip, Avatar, Link, AvatarGroup, Stepper, Step, Tabs, Tab, Subinfo, SubinfoAvatar, SubinfoListItem };
 
 export default ObjectHeader;
