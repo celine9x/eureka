@@ -45,6 +45,10 @@ import { DropdownList, DropdownSection, DropdownListItem } from "./library/molec
 import { Subinfo } from "./library/molecules/subinfo.jsx";
 import { Infofield, InfofieldGroup } from "./library/molecules/infofield.jsx";
 import { MiniInfobox } from "./library/molecules/miniinfobox.jsx";
+import { Attachment } from "./library/molecules/attachment.jsx";
+import { AiChatInput } from "./library/molecules/ai-chat-input.jsx";
+import { EmptyState, EMPTY_STATE_SIZES } from "./library/molecules/empty-state.jsx";
+import { Toast, ToastProvider, useToast } from "./library/molecules/toast.jsx";
 
 // ─────────────────────────────────────────────
 // ORGANISMS
@@ -64,6 +68,8 @@ import {
   ObjectHeaderTitle,
   ObjectHeaderSubinfoRow,
   ObjectHeaderSubinfoItem,
+  ObjectHeaderStepperSection as ObjectHeaderStepper,
+  ObjectHeaderTabsSection as ObjectHeaderTabs,
 } from "./library/organisms/object-header.jsx";
 import {
   HubHeader,
@@ -2914,6 +2920,391 @@ const MiniInfoboxPage = () => (
   </Section>
 );
 
+const ToastTriggersDemo = () => {
+  const toast = useToast();
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+        <Button
+          variant="secondary"
+          size="md"
+          onClick={() =>
+            toast.success({
+              message:
+                "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce congue ex elit, non sollicitudin sem vehicula vel.",
+              actionLabel: "Action",
+            })
+          }
+        >
+          Trigger Success
+        </Button>
+
+        <Button
+          variant="secondary"
+          size="md"
+          onClick={() =>
+            toast.warning({
+              message:
+                "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce congue ex elit, non sollicitudin sem vehicula vel.",
+              actionLabel: "Action",
+            })
+          }
+        >
+          Trigger Warning
+        </Button>
+
+        <Button
+          variant="secondary"
+          size="md"
+          onClick={() =>
+            toast.error({
+              message:
+                "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce congue ex elit, non sollicitudin sem vehicula vel.",
+              actionLabel: "Action",
+            })
+          }
+        >
+          Trigger Error
+        </Button>
+
+        <Button
+          variant="secondary"
+          size="md"
+          onClick={() =>
+            toast.info({
+              message:
+                "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce congue ex elit, non sollicitudin sem vehicula vel.",
+              actionLabel: "Action",
+            })
+          }
+        >
+          Trigger Info
+        </Button>
+
+        <Button
+          variant="secondary"
+          size="md"
+          onClick={() =>
+            toast.neutral({
+              message:
+                "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce congue ex elit, non sollicitudin sem vehicula vel.",
+              actionLabel: "Action",
+            })
+          }
+        >
+          Trigger Neutral
+        </Button>
+      </div>
+
+      <p style={{ margin: 0, color: "var(--color-content-secondary)", fontSize: 14 }}>
+        Click any action button above. Toasts slide in and auto-dismiss.
+      </p>
+    </div>
+  );
+};
+
+const ToastPage = () => (
+  <Section title="Toast" description="A stackable notification molecule with slide-in animation and auto-dismiss behavior.">
+    <PreviewComponent
+      title="Trigger Toasts From Actions"
+      code={`import { Button } from "@/library/atoms/button";
+import { ToastProvider, useToast } from "@/library/molecules/toast";
+
+const Triggers = () => {
+  const toast = useToast();
+
+  return (
+    <Button
+      variant="secondary"
+      onClick={() =>
+        toast.success({
+          message: "Operation completed successfully",
+          actionLabel: "Action",
+        })
+      }
+    >
+      Trigger Success
+    </Button>
+  );
+};
+
+<ToastProvider position="bottom-right">
+  <Triggers />
+</ToastProvider>`}
+    >
+      <ToastProvider position="bottom-right">
+        <ToastTriggersDemo />
+      </ToastProvider>
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="All Variants"
+      code={`import { Toast } from "@/library/molecules/toast";
+
+    <Toast variant="success" message="Success message" actionLabel="Action" showActionButton showCloseButton />
+    <Toast variant="warning" message="Warning message" actionLabel="Action" showActionButton showCloseButton={false} />
+    <Toast variant="error" message="Error message" showActionButton={false} showCloseButton />
+    <Toast variant="info" message="Info message" showActionButton={false} showCloseButton={false} />
+    <Toast variant="neutral" message="Neutral message" actionLabel="Action" showActionButton showCloseButton />`}
+    >
+      <div style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 720 }}>
+        <Toast
+          variant="success"
+          message="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce congue ex elit, non sollicitudin sem vehicula vel."
+          actionLabel="Action"
+          showActionButton={true}
+          showCloseButton={true}
+          onDismiss={() => {}}
+        />
+        <Toast
+          variant="warning"
+          message="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce congue ex elit, non sollicitudin sem vehicula vel."
+          actionLabel="Action"
+          showActionButton={true}
+          showCloseButton={false}
+          onDismiss={() => {}}
+        />
+        <Toast
+          variant="error"
+          message="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce congue ex elit, non sollicitudin sem vehicula vel."
+          showActionButton={false}
+          showCloseButton={true}
+          onDismiss={() => {}}
+        />
+        <Toast
+          variant="info"
+          message="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce congue ex elit, non sollicitudin sem vehicula vel."
+          showActionButton={false}
+          showCloseButton={false}
+          onDismiss={() => {}}
+        />
+        <Toast
+          variant="neutral"
+          message="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce congue ex elit, non sollicitudin sem vehicula vel."
+          actionLabel="Action"
+          showActionButton={true}
+          showCloseButton={true}
+          onDismiss={() => {}}
+        />
+      </div>
+    </PreviewComponent>
+  </Section>
+);
+
+const AiChatInputPage = () => {
+  const [value, setValue] = useState("");
+  const [attachments, setAttachments] = useState([
+    { id: "att-1", fileName: "OncoNexa Therape..pdf", fileIconName: "DocumentText" },
+    { id: "att-2", fileName: "Cancer-trial-notes.pdf", fileIconName: "DocumentText" },
+    { id: "att-3", fileName: "Protocol-v4-final.pdf", fileIconName: "DocumentText" },
+    { id: "att-4", fileName: "Partnership-terms.pdf", fileIconName: "DocumentText" },
+  ]);
+
+  return (
+    <Section title="AiChatInput" description="A reusable AI chat composer molecule with Button atom actions.">
+      <PreviewComponent
+        title="Default Composer"
+        code={`import { useState } from "react";
+import { AiChatInput } from "@/library/molecules/ai-chat-input";
+
+const Example = () => {
+  const [prompt, setPrompt] = useState("");
+  const [attachments, setAttachments] = useState([
+    { id: "1", fileName: "OncoNexa Therape..pdf" },
+    { id: "2", fileName: "Cancer-trial-notes.pdf" },
+    { id: "3", fileName: "Protocol-v4-final.pdf" },
+  ]);
+
+  return (
+    <AiChatInput
+      value={prompt}
+      onChange={setPrompt}
+      attachments={attachments}
+      onAttachmentsChange={setAttachments}
+      placeholder="Ask AI anything..."
+      onSubmit={(text) => console.log(text)}
+      onAttach={() => {}}
+    />
+  );
+};`}
+      >
+        <AiChatInput
+          value={value}
+          onChange={setValue}
+          attachments={attachments}
+          onAttachmentsChange={setAttachments}
+          placeholder="Ask AI anything..."
+          onSubmit={(text) => {
+            alert(`Submitted: ${text}`);
+            setValue("");
+          }}
+          onAttach={() => alert("Attach clicked")}
+        />
+      </PreviewComponent>
+
+      <PreviewComponent
+        title="No Attach + Compact"
+        code={`<AiChatInput
+  size="sm"
+  showLeadingButton={false}
+  submitLabel="Ask"
+  placeholder="Type your question"
+/>`}
+      >
+        <AiChatInput
+          size="sm"
+          showLeadingButton={false}
+          submitLabel="Ask"
+          placeholder="Type your question"
+          onSubmit={() => {}}
+        />
+      </PreviewComponent>
+    </Section>
+  );
+};
+
+const AttachmentPage = () => (
+  <Section title="Attachment" description="A file attachment row with metadata and icon action buttons.">
+    <PreviewComponent
+      title="Custom Action Buttons"
+      code={`import { Attachment } from "@/library/molecules/attachment";
+import { Button } from "@/library/atoms/button";
+import { Icon } from "@/library/atoms/icon";
+
+<Attachment
+  fileName="Name-Of-The-Attachment_010203.ext"
+  owner="Jane Doe"
+  date="Oct 21, 2022"
+  actions={[
+    <Button iconOnly variant="secondary" size="sm" ariaLabel="Delete" iconLeading={<Icon name="Trash" size="sm" />} onClick={() => {}} />,
+    <Button iconOnly variant="secondary" size="sm" ariaLabel="Upload" iconLeading={<Icon name="ArrowUp" size="sm" />} onClick={() => {}} />,
+  ]}
+/>`}
+    >
+      <div style={{ borderTop: "1px solid var(--color-action-outline-secondary-enabled)" }}>
+        <Attachment
+          fileName="Name-Of-The-Attachment_010203.ext"
+          owner="Jane Doe"
+          date="Oct 21, 2022"
+          actions={[
+            <Button
+              iconOnly
+              variant="secondary"
+              size="sm"
+              ariaLabel="Delete attachment"
+              iconLeading={<Icon name="Trash" size="sm" />}
+              onClick={() => alert("Delete")}
+            />,
+            <Button
+              iconOnly
+              variant="secondary"
+              size="sm"
+              ariaLabel="Upload new version"
+              iconLeading={<Icon name="ArrowUp" size="sm" />}
+              onClick={() => alert("Upload")}
+            />,
+          ]}
+        />
+      </div>
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="Legacy Boolean API"
+      code={`<Attachment
+  fileName="NDA_Abbvie_2026.pdf"
+  owner="Emma Dupont"
+  date="Apr 6, 2026"
+  showDelete={false}
+/>`}
+    >
+      <div style={{ borderTop: "1px solid var(--color-action-outline-secondary-enabled)" }}>
+        <Attachment
+          fileName="NDA_Abbvie_2026.pdf"
+          owner="Emma Dupont"
+          date="Apr 6, 2026"
+          showDelete={false}
+          onDownload={() => alert("Download")}
+          onMore={() => alert("More")}
+        />
+      </div>
+    </PreviewComponent>
+  </Section>
+);
+
+const EmptyStatePage = () => (
+  <Section title="EmptyState" description="A reusable empty state molecule with optional illustration and Button atom actions.">
+    <PreviewComponent
+      title="Large Empty State"
+      code={`import { EmptyState } from "@/library/molecules/empty-state";
+
+<EmptyState
+  title="Title of empty state"
+  description="Text of empty state"
+  actionLabel="Action"
+  onAction={() => {}}
+/>`}
+    >
+      <div
+        style={{
+          width: "100%",
+          border: "1px solid var(--color-content-brand)",
+          borderRadius: 5,
+          padding: 16,
+          boxSizing: "border-box",
+          display: "flex",
+          justifyContent: "center",
+        }}
+      >
+        <EmptyState
+          title="Title of empty state"
+          description="Text of empty state"
+          actionLabel="Action"
+          onAction={() => alert("Action")}
+        />
+      </div>
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="Compact Empty State"
+      code={`import { EmptyState, EMPTY_STATE_SIZES } from "@/library/molecules/empty-state";
+import { Button } from "@/library/atoms/button";
+
+<EmptyState
+  size={EMPTY_STATE_SIZES.sm}
+  showIllustration={false}
+  title="Title of empty state"
+  description="Text of empty state"
+  actions={[<Button variant="secondary" size="md">Action</Button>]}
+/>`}
+    >
+      <div
+        style={{
+          width: "100%",
+          border: "1px solid var(--color-content-brand)",
+          borderRadius: 5,
+          padding: 16,
+          boxSizing: "border-box",
+          display: "flex",
+          justifyContent: "center",
+        }}
+      >
+        <EmptyState
+          size={EMPTY_STATE_SIZES.sm}
+          showIllustration={false}
+          title="Title of empty state"
+          description="Text of empty state"
+          actions={[
+            <Button key="empty-state-action" variant="secondary" size="md" onClick={() => alert("Action")}>
+              Action
+            </Button>,
+          ]}
+        />
+      </div>
+    </PreviewComponent>
+  </Section>
+);
+
 // ─────────────────────────────────────────────
 // ORGANISM PAGES
 // ─────────────────────────────────────────────
@@ -4846,6 +5237,10 @@ const PAGES = {
   subinfo: { title: "Subinfo", component: SubinfoPage, category: "molecules" },
   infofield: { title: "Infofield", component: InfofieldPage, category: "molecules" },
   miniInfobox: { title: "MiniInfobox", component: MiniInfoboxPage, category: "molecules" },
+  attachment: { title: "Attachment", component: AttachmentPage, category: "molecules" },
+  emptyState: { title: "EmptyState", component: EmptyStatePage, category: "molecules" },
+  aiChatInput: { title: "AiChatInput", component: AiChatInputPage, category: "molecules" },
+  toast: { title: "Toast", component: ToastPage, category: "molecules" },
   // Organisms
   sideMenu: { title: "SideMenu", component: SideMenuPage, category: "organisms" },
   modal: { title: "Modal", component: ModalPage, category: "organisms" },
@@ -5008,6 +5403,10 @@ function getIconForPage(pageKey) {
     subinfo: "InformationCircle",
     infofield: "DocumentText",
     miniInfobox: "ExclamationCircle",
+    attachment: "PaperClip",
+    emptyState: "DocumentText",
+    aiChatInput: "ChatBubbleLeftRight",
+    toast: "InformationCircle",
     sideMenu: "Bars3",
     modal: "Square2Stack",
     table: "TableCells",

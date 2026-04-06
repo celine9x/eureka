@@ -35,6 +35,46 @@ import {
 } from "../molecules/dropdown-menu.jsx";
 import { Portal } from "../utils/portal.jsx";
 
+const HUB_MENU_VARIANTS = {
+  default: "default",
+  deal: "deal",
+};
+
+const DEAL_MENU_SECTIONS = [
+  {
+    items: [
+      { label: "Home", iconName: "Home" },
+      { label: "Dashboard", iconName: "ChartBar" },
+      { label: "Network", iconName: "Share" },
+    ],
+  },
+  {
+    title: "Workspace",
+    items: [
+      { label: "Initiatives", iconName: "initiative" },
+      { label: "Opportunities", iconName: "opportunity", state: "active" },
+      { label: "Agreements", iconName: "agreement" },
+      { label: "Alliances", iconName: "alliance" },
+      { label: "Obligations", iconName: "obligation" },
+    ],
+  },
+  {
+    title: "Directory",
+    items: [
+      { label: "Companies", iconName: "company" },
+      { label: "Contacts", iconName: "contact" },
+      { label: "Meetings", iconName: "meeting" },
+    ],
+    dividerAfter: true,
+  },
+  {
+    title: "Recent Initiatives",
+    items: [
+      { label: "ALLINPART", iconColor: "var(--color-content-brand)", iconLetter: "A" },
+    ],
+  },
+];
+
 /* ===========================================
    STYLE CONFIGURATION
    =========================================== */
@@ -48,6 +88,9 @@ const styles = {
       overflow: hidden;
     }
     .hub__sidebar {
+      flex: 0 0 80px;
+      width: 80px;
+      min-width: 80px;
       flex-shrink: 0;
     }
     .hub__main {
@@ -66,6 +109,17 @@ const styles = {
       flex: 1;
       overflow-y: auto;
       padding: var(--spacing-6);
+    }
+    .hub__container {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: var(--spacing-6);
+    }
+    .hub__main-content {
+      grid-column: span 12;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
     }
     .hub__table-container {
       background: var(--color-general-white);
@@ -564,6 +618,10 @@ export const Hub = ({
   headerSecondary,
   // Menu props
   showSideMenu = true,
+  menuVariant = HUB_MENU_VARIANTS.deal,
+  menuCollapsedLogoSrc,
+  menuExpandOnHover,
+  menuVariantState,
   menuSections = [],
   menuUser,
   logoSrc,
@@ -609,6 +667,19 @@ export const Hub = ({
   const [activeFilters, setActiveFilters] = useState(initialFilters);
   const [openChipId, setOpenChipId] = useState(null);
   const [chipDraftCriteria, setChipDraftCriteria] = useState({});
+
+  const hasCustomMenuSections = Array.isArray(menuSections) && menuSections.length > 0;
+  const isDealMenuVariant = menuVariant === HUB_MENU_VARIANTS.deal;
+  const resolvedMenuSections = hasCustomMenuSections
+    ? menuSections
+    : isDealMenuVariant
+      ? DEAL_MENU_SECTIONS
+      : [];
+  const resolvedMenuVariant = menuVariantState || (isDealMenuVariant ? "collapsed" : undefined);
+  const resolvedMenuExpandOnHover =
+    typeof menuExpandOnHover === "boolean"
+      ? menuExpandOnHover
+      : isDealMenuVariant;
 
   const classes = ["hub", className].filter(Boolean).join(" ");
 
@@ -1027,8 +1098,12 @@ export const Hub = ({
       {showSideMenu && (
         <div className="hub__sidebar">
           <SideMenu
+            position="fixed"
+            variant={resolvedMenuVariant}
+            expandOnHover={resolvedMenuExpandOnHover}
             logoSrc={logoSrc}
-            sections={menuSections}
+            collapsedLogoSrc={menuCollapsedLogoSrc}
+            sections={resolvedMenuSections}
             user={menuUser}
             onCreateClick={onMenuCreate}
             onSearchChange={onMenuSearch}
@@ -1050,6 +1125,8 @@ export const Hub = ({
 
         {/* Body with Table */}
         <div className="hub__body">
+          <div className="hub__container">
+          <div className="hub__main-content">
           <div className="hub__table-toolbar">
             {activeFilters.length === 0 ? (
               <Button
@@ -1160,6 +1237,8 @@ export const Hub = ({
               </div>
             </div>
           </div>
+          </div>{/* /hub__main-content */}
+          </div>{/* /hub__container */}
         </div>
 
         {/* Footer with Pagination */}

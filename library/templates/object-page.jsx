@@ -77,6 +77,9 @@ const styles = {
       overflow: hidden;
     }
     .object-page__sidebar {
+      flex: 0 0 80px;
+      width: 80px;
+      min-width: 80px;
       flex-shrink: 0;
     }
     .object-page__main {
@@ -97,15 +100,21 @@ const styles = {
       overflow-y: auto;
       padding: var(--spacing-6);
     }
-    .object-page__content {
+    .object-page__container {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(12, 1fr);
       gap: var(--spacing-6);
     }
-    .object-page__content--single {
-      grid-template-columns: 1fr;
+    .object-page__content {
+      display: contents;
+    }
+    .object-page__content--single .object-page__column {
+      grid-column: span 12;
     }
     .object-page__column {
+      grid-column: span 6;
+    }
+    .object-page__column-inner {
       display: flex;
       flex-direction: column;
       gap: var(--spacing-4);
@@ -187,7 +196,7 @@ export const ObjectPage = ({
   topBarRight,
   onBack,
   // Menu props
-  menuVariant = OBJECT_PAGE_MENU_VARIANTS.default,
+  menuVariant = OBJECT_PAGE_MENU_VARIANTS.deal,
   menuCollapsedLogoSrc,
   menuExpandOnHover,
   menuVariantState,
@@ -211,10 +220,7 @@ export const ObjectPage = ({
 
   const classes = ["object-page", className].filter(Boolean).join(" ");
 
-  const contentClasses = [
-    "object-page__content",
-    singleColumn && "object-page__content--single",
-  ].filter(Boolean).join(" ");
+  const contentClasses = singleColumn ? "object-page__content--single" : "";
 
   const hasCustomMenuSections = Array.isArray(menuSections) && menuSections.length > 0;
   const isDealMenuVariant = menuVariant === OBJECT_PAGE_MENU_VARIANTS.deal;
@@ -254,6 +260,7 @@ export const ObjectPage = ({
       {/* Side Menu */}
       <div className="object-page__sidebar">
         <SideMenu
+          position="fixed"
           variant={resolvedMenuVariant}
           expandOnHover={resolvedMenuExpandOnHover}
           logoSrc={logoSrc}
@@ -338,16 +345,20 @@ export const ObjectPage = ({
         {/* Body with Two Columns */}
         <div className="object-page__body">
           {children || (
-            <div className={contentClasses}>
+            <div className={`object-page__container ${contentClasses}`}>
               {/* Left Column */}
               <div className="object-page__column">
-                {leftColumnContent || renderSections(leftColumnSections)}
+                <div className="object-page__column-inner">
+                  {leftColumnContent || renderSections(leftColumnSections)}
+                </div>
               </div>
 
               {/* Right Column */}
               {!singleColumn && (
                 <div className="object-page__column">
-                  {rightColumnContent || renderSections(rightColumnSections)}
+                  <div className="object-page__column-inner">
+                    {rightColumnContent || renderSections(rightColumnSections)}
+                  </div>
                 </div>
               )}
             </div>

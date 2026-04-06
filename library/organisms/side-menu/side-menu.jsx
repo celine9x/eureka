@@ -23,6 +23,8 @@ import { Icon } from "../../atoms/icon.jsx";
 import { Search } from "../../molecules/search.jsx";
 import { SideMenuItem } from "./side-menu-item.jsx";
 import { UserButton } from "./user-button.jsx";
+import logoExpandedSrc from "./Inpart.svg";
+import logoCollapsedSrc from "./Inpart1.svg";
 
 // ─────────────────────────────────────────────
 // CONSTANTS
@@ -127,8 +129,10 @@ const styles = {
     paddingRight: 4,
     display: "flex",
     flexDirection: "column",
-    justifyContent: "flex-start",
+    justifyContent: "center",
     alignItems: "flex-start",
+    height: 40,
+    minHeight: 40,
     gap: 10,
   },
 
@@ -473,20 +477,13 @@ export const SideMenu = ({
 
   // Render logo
   const renderLogo = () => {
-    if (logo) return logo;
-    if (logoSrc) {
-      const resolvedLogoSrc = isCollapsed && collapsedLogoSrc ? collapsedLogoSrc : logoSrc;
-      return (
-        <img
-          src={resolvedLogoSrc}
-          alt={logoAlt}
-          style={isCollapsed ? styles.logoCollapsed : styles.logo}
-        />
-      );
-    }
-    // Default logo placeholder
+    const resolvedLogoSrc = isCollapsed ? logoCollapsedSrc : logoExpandedSrc;
     return (
-      <div style={{ ...styles.logo, background: "var(--color-content-primary)" }} />
+      <img
+        src={resolvedLogoSrc}
+        alt={logoAlt}
+        style={isCollapsed ? styles.logoCollapsed : styles.logo}
+      />
     );
   };
 

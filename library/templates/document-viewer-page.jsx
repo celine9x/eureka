@@ -11,6 +11,7 @@
 import React from "react";
 import { SideMenu } from "../organisms/side-menu/side-menu.jsx";
 import { DocumentViewer } from "../organisms/document-viewer/document-viewer.jsx";
+import { Button } from "../atoms/button.jsx";
 import {
   ObjectHeader,
   ObjectHeaderBackButton,
@@ -73,8 +74,10 @@ const styles = {
     }
 
     .document-viewer-page__sidebar {
+      flex: 0 0 80px;
+      width: 80px;
+      min-width: 80px;
       flex-shrink: 0;
-      min-width: 60px;
       background: var(--color-general-white);
       border-right: 1px solid var(--color-action-outline-secondary-enabled);
     }
@@ -155,15 +158,22 @@ const styles = {
       gap: var(--spacing-4);
     }
 
-    .document-viewer-page__footer {
+    .document-viewer-page__form-footer {
       flex: 0 0 auto;
       display: flex;
       align-items: center;
-      justify-content: flex-end;
+      justify-content: space-between;
       gap: var(--spacing-4);
       padding: var(--spacing-6);
       background: var(--color-general-white);
       border-top: 1px solid var(--color-action-outline-secondary-enabled);
+    }
+
+    .document-viewer-page__form-footer-right {
+      margin-left: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-4);
     }
 
     /* Scrollbar styles */
@@ -223,6 +233,11 @@ export const DocumentViewerPage = ({
 
   // Footer props
   footerButtons,
+  showDefaultFooterButtons = false,
+  onDiscard,
+  onCreate,
+  discardLabel = "Discard",
+  createLabel = "Create",
   onActionClick,
 
   // Styling props
@@ -233,6 +248,23 @@ export const DocumentViewerPage = ({
   injectStyles(joinStyles(styles));
 
   const resolvedMenuSections = menuSections || DEAL_MENU_SECTIONS;
+  const resolvedFooterButtons = Array.isArray(footerButtons)
+    ? footerButtons
+    : showDefaultFooterButtons
+      ? [
+          {
+            label: discardLabel,
+            variant: "secondary",
+            color: "secondary-destructive",
+            onClick: onDiscard,
+          },
+          {
+            label: createLabel,
+            variant: "secondary",
+            onClick: onCreate,
+          },
+        ]
+      : [];
 
   return (
     <div className={`document-viewer-page ${className}`} style={style} {...props}>
@@ -240,7 +272,7 @@ export const DocumentViewerPage = ({
       {showSideMenu && (
         <div className="document-viewer-page__sidebar">
           <SideMenu
-            position="embedded"
+            position="fixed"
             variant="collapsed"
             expandOnHover={true}
             logoSrc={logoSrc}
@@ -306,27 +338,45 @@ export const DocumentViewerPage = ({
               <div className="document-viewer-page__form-content">
                 {formContent || children}
               </div>
+
+              {/* Footer with Actions */}
+              {resolvedFooterButtons.length > 0 && (
+                <div className="document-viewer-page__form-footer">
+                  <Button
+                    variant={resolvedFooterButtons[0]?.variant || "secondary"}
+                    color={resolvedFooterButtons[0]?.color}
+                    size={resolvedFooterButtons[0]?.size || "md"}
+                    isDisabled={resolvedFooterButtons[0]?.isDisabled}
+                    onClick={(e) => {
+                      resolvedFooterButtons[0]?.onClick?.(e);
+                      onActionClick?.(0, e);
+                    }}
+                  >
+                    {resolvedFooterButtons[0]?.children || resolvedFooterButtons[0]?.label || "Discard"}
+                  </Button>
+
+                  <div className="document-viewer-page__form-footer-right">
+                    {resolvedFooterButtons.slice(1).map((button, index) => (
+                      <Button
+                        key={index + 1}
+                        variant={button.variant || "secondary"}
+                        color={button.color}
+                        size={button.size || "md"}
+                        isDisabled={button.isDisabled}
+                        onClick={(e) => {
+                          button.onClick?.(e);
+                          onActionClick?.(index + 1, e);
+                        }}
+                      >
+                        {button.children || button.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
-
-        {/* Footer with Buttons */}
-        {footerButtons && footerButtons.length > 0 && (
-          <div className="document-viewer-page__footer">
-            {footerButtons.map((button, index) => (
-              <button
-                key={index}
-                {...button}
-                onClick={(e) => {
-                  button.onClick?.(e);
-                  onActionClick?.(index, e);
-                }}
-              >
-                {button.children || button.label}
-              </button>
-            ))}
-          </div>
-        )}
       </div>
     </div>
   );

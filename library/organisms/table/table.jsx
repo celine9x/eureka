@@ -71,7 +71,8 @@ const styles = {
       overflow-y: hidden;
     }
     .table-body-wrapper {
-      border: 1px solid var(--color-action-outline-secondary-enabled);
+      outline: 1px solid var(--color-action-outline-secondary-enabled);
+      outline-offset: -1px;
       border-radius: 8px;
       overflow: hidden;
       background: var(--color-general-white);
@@ -1287,7 +1288,9 @@ export const Table = ({
                     column.header === "Actions");
 
                 const sticky = column.sticky ?? isActionColumn;
-                const width = column.width ?? (isActionColumn ? "calc(var(--spacing-12) + var(--spacing-2))" : undefined);
+                const width =
+                  column.width ??
+                  (isActionColumn ? "calc(var(--size-button-xl) + var(--spacing-4))" : undefined);
                 const headerContainerProps = column.headerContainerProps || {};
 
                 return (
@@ -1332,7 +1335,9 @@ export const Table = ({
                 column.header === "Actions");
 
             const sticky = column.sticky ?? isActionColumn;
-            const width = column.width ?? (isActionColumn ? "calc(var(--spacing-12) + var(--spacing-2))" : undefined);
+            const width =
+              column.width ??
+              (isActionColumn ? "calc(var(--size-button-xl) + var(--spacing-4))" : undefined);
             const value = resolveColumnValue(row, column, rowIndex);
             const cellContainerProps =
               typeof column.cellContainerProps === "function"
