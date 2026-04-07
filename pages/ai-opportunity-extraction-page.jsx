@@ -12,6 +12,8 @@ import { RadioCard, RadioCardGroup } from "../library/molecules/radio-card.jsx";
 import { ButtonGroup, ButtonGroupItem } from "../library/molecules/button-group.jsx";
 import { Stepper } from "../library/molecules/stepper.jsx";
 import { FileUploader } from "../library/molecules/file-uploader.jsx";
+import { Dialog } from "../library/molecules/dialog.jsx";
+import { Infobox } from "../library/molecules/infobox.jsx";
 import { useToast } from "../library/molecules/toast.jsx";
 import { Modal } from "../library/organisms/modal.jsx";
 import {
@@ -24,7 +26,9 @@ import {
 import { AI_OPPORTUNITY_DATA, ASSET_TYPES } from "./shared/mock-data.js";
 
 const REMEMBER_CHOICE_STORAGE_KEY = "eureka-create-opportunity-remember-choice";
+const REVIEW_PROGRESS_STORAGE_KEY = "eureka-opportunity-review-progress";
 
+const HUB_PATH = "/ai-opportunity-extraction";
 const REVIEW_PATH = "/ai-opportunity-extraction/review";
 
 const REVIEW_DOCUMENT_PAGES = [
@@ -183,6 +187,39 @@ const navigateToPath = (nextPath) => {
   window.dispatchEvent(new PopStateEvent("popstate"));
 };
 
+const readReviewProgress = () => {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const raw = window.localStorage.getItem(REVIEW_PROGRESS_STORAGE_KEY);
+    if (!raw) return null;
+
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed?.opportunities)) return null;
+
+    return {
+      opportunities: parsed.opportunities,
+      activeId: parsed.activeId || "",
+    };
+  } catch (error) {
+    return null;
+  }
+};
+
+const saveReviewProgress = ({ opportunities, activeId }) => {
+  if (typeof window === "undefined") return;
+
+  window.localStorage.setItem(
+    REVIEW_PROGRESS_STORAGE_KEY,
+    JSON.stringify({ opportunities, activeId })
+  );
+};
+
+const clearReviewProgress = () => {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(REVIEW_PROGRESS_STORAGE_KEY);
+};
+
 const styles = {
   modalWrap: {
     display: "flex",
@@ -339,11 +376,124 @@ const styles = {
     justifyContent: "space-between",
     gap: "var(--spacing-2)",
   },
+  formPanelNav: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "flex-start",
+    gap: "var(--spacing-sm)",
+  },
+  formPanelNavText: {
+    color: "var(--color-content-secondary)",
+    fontSize: "var(--text-body-md)",
+    fontFamily: "var(--font-family-primary)",
+    fontWeight: "var(--font-weight-regular)",
+    lineHeight: "var(--line-height-body-md)",
+    whiteSpace: "nowrap",
+  },
+  formPanelNavButton: {
+    height: 24,
+    minWidth: 24,
+    paddingLeft: "var(--spacing-xs)",
+    paddingRight: "var(--spacing-xs)",
+    borderRadius: "var(--radius-xs)",
+  },
   formPanelTitleWrap: {
     display: "flex",
     alignItems: "center",
     gap: "var(--spacing-2)",
     minWidth: 0,
+  },
+  duplicatesSectionWrap: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "var(--spacing-3)",
+    borderRadius: "var(--radius-md)",
+    background: "var(--color-general-neutral-lighter)",
+    padding: "var(--spacing-4)",
+    marginBottom: "var(--spacing-3)",
+  },
+  duplicatesSectionHeader: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: "var(--spacing-2)",
+    cursor: "pointer",
+    userSelect: "none",
+  },
+  duplicatesSectionTitle: {
+    display: "flex",
+    alignItems: "center",
+    gap: "var(--spacing-2)",
+    margin: 0,
+    color: "var(--color-content-primary)",
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-lg)",
+    lineHeight: "var(--line-height-body-lg)",
+    fontWeight: "var(--font-weight-semibold)",
+  },
+  duplicatesSubsectionWrap: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "var(--spacing-2)",
+  },
+  duplicatesSubsectionLabel: {
+    margin: 0,
+    color: "var(--color-content-secondary)",
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-caption)",
+    lineHeight: "var(--line-height-body-caption)",
+    letterSpacing: "0.04em",
+    textTransform: "uppercase",
+    fontWeight: "var(--font-weight-semibold)",
+  },
+  duplicateCard: {
+    display: "flex",
+    alignItems: "center",
+    gap: "var(--spacing-3)",
+    borderRadius: "var(--radius-sm)",
+    background: "var(--color-general-white)",
+    border: "1px solid var(--color-action-outline-secondary-enabled)",
+    padding: "var(--spacing-3)",
+    boxSizing: "border-box",
+  },
+  duplicateCardIcon: {
+    flexShrink: 0,
+    width: 24,
+    height: 24,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "var(--color-content-secondary)",
+  },
+  duplicateCardContent: {
+    flex: 1,
+    display: "flex",
+    flexDirection: "column",
+    gap: "var(--spacing-xs)",
+    minWidth: 0,
+  },
+  duplicateCardTitle: {
+    margin: 0,
+    color: "var(--color-content-primary)",
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-lg)",
+    lineHeight: "var(--line-height-body-lg)",
+    fontWeight: "var(--font-weight-regular)",
+  },
+  duplicateCardMeta: {
+    display: "flex",
+    alignItems: "center",
+    gap: "var(--spacing-2)",
+    color: "var(--color-content-secondary)",
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-md)",
+    lineHeight: "var(--line-height-body-md)",
+  },
+  duplicateCardActions: {
+    display: "flex",
+    alignItems: "center",
+    gap: "var(--spacing-2)",
+    flexShrink: 0,
   },
   formPanelTitle: {
     margin: 0,
@@ -672,13 +822,134 @@ const MultiValuePreviewField = ({ label, values = [], required = false }) => {
   );
 };
 
+const PotentialDuplicatesSection = ({ currentOpportunity, allOpportunities }) => {
+  const [isExpanded, setIsExpanded] = React.useState(true);
+
+  // Find all other opportunities with matched: true, excluding current
+  const matchedOpportunities = allOpportunities.filter(
+    (opp) => opp.matched && opp.id !== currentOpportunity.id
+  );
+
+  if (matchedOpportunities.length === 0) {
+    return null;
+  }
+
+  // Categorize matches (HIGH MATCH and OTHER MATCH)
+  const highMatches = matchedOpportunities.slice(0, 1);
+  const otherMatches = matchedOpportunities.slice(1);
+
+  return (
+    <div style={styles.duplicatesSectionWrap}>
+      <div
+        style={styles.duplicatesSectionHeader}
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <h4 style={styles.duplicatesSectionTitle}>
+          <Icon
+            name={isExpanded ? "ChevronDown" : "ChevronRight"}
+            size="sm"
+          />
+          Potential duplicates
+        </h4>
+        <Badge size="xs">{matchedOpportunities.length}</Badge>
+      </div>
+
+      {isExpanded && (
+        <>
+          {highMatches.length > 0 && (
+            <div style={styles.duplicatesSubsectionWrap}>
+              <p style={styles.duplicatesSubsectionLabel}>High match</p>
+              {highMatches.map((opportunity) => (
+                <div key={opportunity.id} style={styles.duplicateCard}>
+                  <div style={styles.duplicateCardIcon}>
+                    <Icon name="DocumentText" size="sm" />
+                  </div>
+                  <div style={styles.duplicateCardContent}>
+                    <p style={styles.duplicateCardTitle}>
+                      {opportunity.form.company}
+                    </p>
+                    <div style={styles.duplicateCardMeta}>
+                      <span>{opportunity.form.asset}</span>
+                      <span style={{ fontSize: 2 }}>•</span>
+                      <Badge size="xs" variant={
+                        opportunity.form.status === "Active"
+                          ? "default"
+                          : opportunity.form.status === "Qualified"
+                          ? "success"
+                          : "warning"
+                      }>
+                        {opportunity.form.status}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div style={styles.duplicateCardActions}>
+                    <Button variant="secondary" size="sm">Open</Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {otherMatches.length > 0 && (
+            <div style={styles.duplicatesSubsectionWrap}>
+              <p style={styles.duplicatesSubsectionLabel}>Other match</p>
+              {otherMatches.map((opportunity) => (
+                <div key={opportunity.id} style={styles.duplicateCard}>
+                  <div style={styles.duplicateCardIcon}>
+                    <Icon name="DocumentText" size="sm" />
+                  </div>
+                  <div style={styles.duplicateCardContent}>
+                    <p style={styles.duplicateCardTitle}>
+                      {opportunity.form.company}
+                    </p>
+                    <div style={styles.duplicateCardMeta}>
+                      <span>{opportunity.form.asset}</span>
+                      <span style={{ fontSize: 2 }}>•</span>
+                      <Badge size="xs" variant={
+                        opportunity.form.status === "Active"
+                          ? "default"
+                          : opportunity.form.status === "Qualified"
+                          ? "success"
+                          : "warning"
+                      }>
+                        {opportunity.form.status}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div style={styles.duplicateCardActions}>
+                    <Button variant="secondary" size="sm">Open</Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+};
+
+
 export const AiOpportunityExtractionReviewPage = () => {
+  const toast = useToast();
+  const [opportunities, setOpportunities] = React.useState(() => {
+    const saved = readReviewProgress();
+    return saved?.opportunities?.length ? saved.opportunities : EXTRACTED_OPPORTUNITIES;
+  });
   const [activeId, setActiveId] = React.useState(() => {
     const search = new URLSearchParams(window.location.search);
-    return search.get("opportunity") || "";
-  });
+    const fromQuery = search.get("opportunity") || "";
+    if (fromQuery) return fromQuery;
 
-  const selectedOpportunity = EXTRACTED_OPPORTUNITIES.find((item) => item.id === activeId) || null;
+    const saved = readReviewProgress();
+    return saved?.activeId || "";
+  });
+  const [isSaveDialogOpen, setIsSaveDialogOpen] = React.useState(false);
+
+  const selectedOpportunity = opportunities.find((item) => item.id === activeId) || null;
+  const selectedIndex = opportunities.findIndex((item) => item.id === activeId);
+  const hasPrevious = selectedIndex > 0;
+  const hasNext = selectedIndex >= 0 && selectedIndex < opportunities.length - 1;
 
   const onBackToList = React.useCallback(() => {
     setActiveId("");
@@ -689,6 +960,75 @@ export const AiOpportunityExtractionReviewPage = () => {
     setActiveId(opportunityId);
     navigateToPath(`${REVIEW_PATH}?opportunity=${opportunityId}`);
   }, []);
+
+  const onSelectPreviousOpportunity = React.useCallback(() => {
+    if (!hasPrevious) return;
+    const previous = opportunities[selectedIndex - 1];
+    if (!previous) return;
+    onSelectOpportunity(previous.id);
+  }, [hasPrevious, onSelectOpportunity, opportunities, selectedIndex]);
+
+  const onSelectNextOpportunity = React.useCallback(() => {
+    if (!hasNext) return;
+    const next = opportunities[selectedIndex + 1];
+    if (!next) return;
+    onSelectOpportunity(next.id);
+  }, [hasNext, onSelectOpportunity, opportunities, selectedIndex]);
+
+  const onDiscardOpportunity = React.useCallback(() => {
+    if (!selectedOpportunity) return;
+
+    const discardedIndex = opportunities.findIndex(
+      (opp) => opp.id === selectedOpportunity.id
+    );
+
+    const updatedOpportunities = opportunities.filter(
+      (opp) => opp.id !== selectedOpportunity.id
+    );
+    setOpportunities(updatedOpportunities);
+
+    toast.success({
+      message: `"${selectedOpportunity.label}" has been discarded.`,
+      actionLabel: "Undo",
+      onAction: () => {
+        const restored = [
+          ...updatedOpportunities.slice(0, discardedIndex),
+          selectedOpportunity,
+          ...updatedOpportunities.slice(discardedIndex),
+        ];
+        setOpportunities(restored);
+        onSelectOpportunity(selectedOpportunity.id);
+      },
+    });
+
+    const currentIndex = opportunities.findIndex(
+      (opp) => opp.id === selectedOpportunity.id
+    );
+    
+    if (updatedOpportunities.length === 0) {
+      // No more opportunities, go back to list
+      setActiveId("");
+      navigateToPath(REVIEW_PATH);
+    } else if (currentIndex < updatedOpportunities.length) {
+      // Navigate to the next item (which is now at currentIndex due to removal)
+      onSelectOpportunity(updatedOpportunities[currentIndex].id);
+    } else {
+      // If we were at the end, go to the new last item
+      onSelectOpportunity(updatedOpportunities[updatedOpportunities.length - 1].id);
+    }
+  }, [selectedOpportunity, opportunities, onSelectOpportunity, toast]);
+
+  const onSaveAndClose = React.useCallback(() => {
+    if (opportunities.length > 0) {
+      const nextActiveId = selectedOpportunity?.id || opportunities[0]?.id || "";
+      saveReviewProgress({ opportunities, activeId: nextActiveId });
+    } else {
+      clearReviewProgress();
+    }
+
+    setIsSaveDialogOpen(false);
+    navigateToPath(HUB_PATH);
+  }, [opportunities, selectedOpportunity]);
 
   const formHeaderContent = (
     <div style={styles.reviewFormHead}>
@@ -709,7 +1049,7 @@ export const AiOpportunityExtractionReviewPage = () => {
 
   const listContent = (
     <div style={styles.extractedList}>
-      {EXTRACTED_OPPORTUNITIES.map((opportunity, index) => (
+      {opportunities.map((opportunity, index) => (
         <button
           key={opportunity.id}
           type="button"
@@ -738,8 +1078,37 @@ export const AiOpportunityExtractionReviewPage = () => {
           />
           <h3 style={styles.formPanelTitle}>{selectedOpportunity.label}</h3>
         </div>
-        <Badge size="xs">1 of {EXTRACTED_OPPORTUNITIES.length}</Badge>
+        <div style={styles.formPanelNav}>
+          <Button
+            variant="secondary"
+            size="xs"
+            iconOnly
+            ariaLabel="Previous extracted opportunity"
+            iconLeading={<Icon name="ChevronUp" size="sm" />}
+            onClick={onSelectPreviousOpportunity}
+            isDisabled={!hasPrevious}
+            style={styles.formPanelNavButton}
+          />
+          <div style={styles.formPanelNavText}>{`${selectedIndex + 1} of ${opportunities.length}`}</div>
+          <Button
+            variant="secondary"
+            size="xs"
+            iconOnly
+            ariaLabel="Next extracted opportunity"
+            iconLeading={<Icon name="ChevronDown" size="sm" />}
+            onClick={onSelectNextOpportunity}
+            isDisabled={!hasNext}
+            style={styles.formPanelNavButton}
+          />
+        </div>
       </div>
+
+      {selectedOpportunity.matched && (
+        <PotentialDuplicatesSection
+          currentOpportunity={selectedOpportunity}
+          allOpportunities={opportunities}
+        />
+      )}
 
       <Toggle label="Populate missing with databases" isSelected={true} size="sm" />
 
@@ -798,6 +1167,7 @@ export const AiOpportunityExtractionReviewPage = () => {
           label: "Discard",
           variant: "secondary",
           color: "secondary-destructive",
+          onClick: onDiscardOpportunity,
         },
         {
           label: "Create",
@@ -810,42 +1180,69 @@ export const AiOpportunityExtractionReviewPage = () => {
     <ObjectHeader>
       <ObjectHeaderTopBar>
         <ObjectHeaderTopBarLeft>
-          <ObjectHeaderBackButton label="Back" onClick={() => navigateToPath("/ai-opportunity-extraction")} />
+          <ObjectHeaderBackButton label="Back" onClick={() => navigateToPath(HUB_PATH)} />
           <h1 style={styles.reviewHeaderTitle}>Deck.pdf</h1>
         </ObjectHeaderTopBarLeft>
         <ObjectHeaderTopBarRight>
-          <Button variant="primary" size="md" onClick={() => navigateToPath("/ai-opportunity-extraction")}>Save and close</Button>
+          <Button variant="primary" size="md" onClick={() => setIsSaveDialogOpen(true)}>Save and close</Button>
         </ObjectHeaderTopBarRight>
       </ObjectHeaderTopBar>
     </ObjectHeader>
   );
 
   return (
-    <DocumentViewerPage
-      headerContent={headerContent}
-      pages={REVIEW_DOCUMENT_PAGES}
-      defaultPage={1}
-      formHeaderContent={formHeaderContent}
-      formContent={formContent}
-      footerButtons={footerButtons}
-      showDefaultFooterButtons={false}
-      documentViewerProps={{
-        style: {
-          height: "100%",
-          "--document-viewer-height": "100%",
-        },
-      }}
-      style={{ height: "100vh" }}
-    />
+    <>
+      <DocumentViewerPage
+        headerContent={headerContent}
+        pages={REVIEW_DOCUMENT_PAGES}
+        defaultPage={1}
+        formHeaderContent={formHeaderContent}
+        formContent={formContent}
+        footerButtons={footerButtons}
+        showDefaultFooterButtons={false}
+        documentViewerProps={{
+          style: {
+            height: "100%",
+            "--document-viewer-height": "100%",
+          },
+        }}
+        style={{ height: "100vh" }}
+      />
+      <Dialog
+        isOpen={isSaveDialogOpen}
+        onOpenChange={setIsSaveDialogOpen}
+        variant="warning"
+        title=""
+        showIcon={true}
+        showClose={true}
+        secondaryLabel="Continue reviewing"
+        onSecondaryPress={() => setIsSaveDialogOpen(false)}
+        primaryLabel="Save"
+        onPrimaryPress={onSaveAndClose}
+      >
+        {`You have ${opportunities.length} unreviewed opportunities.`}
+      </Dialog>
+    </>
   );
 };
 
 export const AiOpportunityExtractionPage = () => {
   const [rows] = React.useState(AI_OPPORTUNITY_DATA);
   const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false);
+  const [reviewProgress, setReviewProgress] = React.useState(() => readReviewProgress());
 
   const handleExtractToReview = React.useCallback(() => {
+    clearReviewProgress();
+    setReviewProgress(null);
     navigateToPath(REVIEW_PATH);
+  }, []);
+
+  const handleResumeReview = React.useCallback(() => {
+    const saved = readReviewProgress();
+    if (!saved?.opportunities?.length) return;
+
+    const nextId = saved.activeId || saved.opportunities[0]?.id || "";
+    navigateToPath(nextId ? `${REVIEW_PATH}?opportunity=${nextId}` : REVIEW_PATH);
   }, []);
 
   const columns = [
@@ -869,6 +1266,17 @@ export const AiOpportunityExtractionPage = () => {
         data={rows}
         showPagination={true}
         totalItems={rows.length}
+        headerSecondary={
+          reviewProgress?.opportunities?.length ? (
+            <Infobox
+              variant="info"
+              title="You have revisions in progress"
+              description={`${reviewProgress.opportunities.length} unreviewed opportunities remaining.`}
+              actionLabel="Resume"
+              onAction={handleResumeReview}
+            />
+          ) : null
+        }
         headerActions={<Button variant="primary" iconLeading={<Icon name="Plus" size="sm" />} size="md" onClick={() => setIsCreateModalOpen(true)}>Create</Button>}
         emptyMessage="No opportunities found"
       />

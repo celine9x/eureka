@@ -372,9 +372,12 @@ const styles = {
     }
     .hub__footer {
       flex-shrink: 0;
-      padding: var(--spacing-4) var(--spacing-6);
+      margin-top: var(--spacing-3);
+      padding: var(--spacing-4);
       background: var(--color-general-white);
       border-top: 1px solid var(--color-action-outline-secondary-enabled);
+      border: 1px solid var(--color-action-outline-secondary-enabled);
+      border-radius: var(--radius-lg);
     }
     .hub__empty {
       text-align: center;
@@ -760,6 +763,8 @@ export const Hub = ({
       style={{ width: 32, padding: 0, justifyContent: "center" }}
     />
   );
+
+  const shouldShowPagination = showPagination && data.length > 10;
 
   const handleApplyFilters = (filters) => {
     setActiveFilters(filters);
@@ -1237,23 +1242,22 @@ export const Hub = ({
               </div>
             </div>
           </div>
+
+          {shouldShowPagination && (
+            <div className="hub__footer">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                pageSize={pageSize}
+                onPageChange={onPageChange}
+                onPageSizeChange={onPageSizeChange}
+                actionButton={paginationAction !== undefined ? paginationAction : defaultPaginationAction}
+              />
+            </div>
+          )}
           </div>{/* /hub__main-content */}
           </div>{/* /hub__container */}
         </div>
-
-        {/* Footer with Pagination */}
-        {showPagination && (
-          <div className="hub__footer">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              pageSize={pageSize}
-              onPageChange={onPageChange}
-              onPageSizeChange={onPageSizeChange}
-              actionButton={paginationAction !== undefined ? paginationAction : defaultPaginationAction}
-            />
-          </div>
-        )}
       </div>
 
       <Portal containerId="hub-filter-panel-portal">
