@@ -515,6 +515,41 @@
   --shadow-button-light: var(--shadow-light-down);
 
   /* ===========================================
+     AI BUTTON TOKENS
+     =========================================== */
+  /* Primary background + organic blobs */
+  --color-ai-primary-bg: var(--skyblue-60);
+  --color-ai-blob-blue: var(--blue-60);
+  --color-ai-blob-green: var(--green-50);
+  --color-ai-blob-cyan: var(--cyan-70);
+  --opacity-ai-blob-primary: 1;
+  --opacity-ai-blob-secondary: 0.4;
+
+  /* Source gradient requested: #4649FF -> #0EDDA5 */
+  --color-ai-gradient-start: #4649FF;
+  --color-ai-gradient-end: #0EDDA5;
+  --gradient-ai-main: linear-gradient(90deg, #4649FF 0%, #0EDDA5 100%);
+
+  /* AI button semantic usage */
+  --gradient-ai-primary-bg: var(--gradient-ai-main);
+  --gradient-ai-outline-bg: var(--gradient-ai-main);
+  --gradient-ai-secondary-text: var(--gradient-ai-main);
+  --gradient-ai-icon: var(--gradient-ai-main);
+
+  /* Content colors */
+  --color-ai-content-filled: var(--grey-100);     /* white */
+  --color-ai-content-brand: var(--blue-60);       /* fallback solid */
+  --color-ai-content-disabled: var(--grey-70);    /* #93A6CB */
+
+  /* Outlines */
+  --color-ai-outline-enabled: var(--blue-60);     /* #4649FF */
+  --color-ai-outline-hover: var(--blue-50);       /* #383ACC */
+  --color-ai-outline-disabled: var(--grey-90);    /* #D9E0ED */
+
+  /* Backward compatibility aliases */
+  --color-ai-icon-gradient: var(--gradient-ai-icon);
+
+  /* ===========================================
      COMPATIBILITY ALIASES
      =========================================== */
   --color-content-danger: var(--color-content-negative);

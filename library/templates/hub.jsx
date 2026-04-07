@@ -619,6 +619,7 @@ export const Hub = ({
   badge,
   headerActions,
   headerSecondary,
+  headerLeftContent,
   // Menu props
   showSideMenu = true,
   menuVariant = HUB_MENU_VARIANTS.deal,
@@ -1123,6 +1124,7 @@ export const Hub = ({
           <HubHeader
             title={title}
             badge={badge}
+            leftContent={headerLeftContent}
             rightContent={headerActions}
             secondaryContent={headerSecondary}
           />

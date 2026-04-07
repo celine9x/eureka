@@ -3,6 +3,7 @@
 import "./tokens/tokens.css";
 
 // Atoms
+export * from "./atoms/ai-button.jsx";
 export * from "./atoms/avatar.jsx";
 export * from "./atoms/badge.jsx";
 export * from "./atoms/button-badge.jsx";

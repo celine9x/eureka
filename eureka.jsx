@@ -22,6 +22,7 @@ import { Link } from "./library/atoms/link.jsx";
 import { Tooltip } from "./library/atoms/tooltip.jsx";
 import { Step, STEP_STATUS } from "./library/atoms/step.jsx";
 import { ButtonBadge } from "./library/atoms/button-badge.jsx";
+import { AiButton } from "./library/atoms/ai-button.jsx";
 
 // ─────────────────────────────────────────────
 // MOLECULES
@@ -1363,6 +1364,116 @@ const [activeFilter, setActiveFilter] = useState(null);
     </Section>
   );
 };
+
+const AiButtonPage = () => (
+  <Section title="AiButton" description="An AI-branded button with animated blob background and gradient accents. Use primary for key AI actions, secondary for outlined actions, and tertiary for inline contexts.">
+    <PreviewComponent
+      title="Primary — All Sizes"
+      code={`import { AiButton } from "@/library/atoms/ai-button";
+import { Icon } from "@/library/atoms/icon";
+
+<AiButton variant="primary" size="lg" iconLeading={<Icon name="Sparkles" />}>Ask AI</AiButton>
+<AiButton variant="primary" size="md" iconLeading={<Icon name="Sparkles" />}>Ask AI</AiButton>
+<AiButton variant="primary" size="sm" iconLeading={<Icon name="Sparkles" />}>Ask AI</AiButton>`}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+        <AiButton variant="primary" size="lg" iconLeading={<Icon name="Sparkles" />}>Ask AI</AiButton>
+        <AiButton variant="primary" size="md" iconLeading={<Icon name="Sparkles" />}>Ask AI</AiButton>
+        <AiButton variant="primary" size="sm" iconLeading={<Icon name="Sparkles" />}>Ask AI</AiButton>
+      </div>
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="Secondary — All Sizes"
+      code={`import { AiButton } from "@/library/atoms/ai-button";
+import { Icon } from "@/library/atoms/icon";
+
+<AiButton variant="secondary" size="lg" iconLeading={<Icon name="Sparkles" />}>Ask AI</AiButton>
+<AiButton variant="secondary" size="md" iconLeading={<Icon name="Sparkles" />}>Ask AI</AiButton>
+<AiButton variant="secondary" size="sm" iconLeading={<Icon name="Sparkles" />}>Ask AI</AiButton>`}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+        <AiButton variant="secondary" size="lg" iconLeading={<Icon name="Sparkles" />}>Ask AI</AiButton>
+        <AiButton variant="secondary" size="md" iconLeading={<Icon name="Sparkles" />}>Ask AI</AiButton>
+        <AiButton variant="secondary" size="sm" iconLeading={<Icon name="Sparkles" />}>Ask AI</AiButton>
+      </div>
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="Tertiary — All Sizes"
+      code={`import { AiButton } from "@/library/atoms/ai-button";
+import { Icon } from "@/library/atoms/icon";
+
+<AiButton variant="tertiary" size="lg" iconLeading={<Icon name="Sparkles" />}>Ask AI</AiButton>
+<AiButton variant="tertiary" size="md" iconLeading={<Icon name="Sparkles" />}>Ask AI</AiButton>
+<AiButton variant="tertiary" size="sm" iconLeading={<Icon name="Sparkles" />}>Ask AI</AiButton>`}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+        <AiButton variant="tertiary" size="lg" iconLeading={<Icon name="Sparkles" />}>Ask AI</AiButton>
+        <AiButton variant="tertiary" size="md" iconLeading={<Icon name="Sparkles" />}>Ask AI</AiButton>
+        <AiButton variant="tertiary" size="sm" iconLeading={<Icon name="Sparkles" />}>Ask AI</AiButton>
+      </div>
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="States — Primary"
+      code={`import { AiButton } from "@/library/atoms/ai-button";
+import { Icon } from "@/library/atoms/icon";
+
+<AiButton variant="primary" size="lg" iconLeading={<Icon name="Sparkles" />}>Enabled</AiButton>
+<AiButton variant="primary" size="lg" iconLeading={<Icon name="Sparkles" />} isDisabled>Disabled</AiButton>`}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+        <AiButton variant="primary" size="lg" iconLeading={<Icon name="Sparkles" />}>Enabled</AiButton>
+        <AiButton variant="primary" size="lg" iconLeading={<Icon name="Sparkles" />} isDisabled>Disabled</AiButton>
+      </div>
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="States — Secondary"
+      code={`import { AiButton } from "@/library/atoms/ai-button";
+import { Icon } from "@/library/atoms/icon";
+
+<AiButton variant="secondary" size="lg" iconLeading={<Icon name="Sparkles" />}>Enabled</AiButton>
+<AiButton variant="secondary" size="lg" iconLeading={<Icon name="Sparkles" />} isDisabled>Disabled</AiButton>`}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+        <AiButton variant="secondary" size="lg" iconLeading={<Icon name="Sparkles" />}>Enabled</AiButton>
+        <AiButton variant="secondary" size="lg" iconLeading={<Icon name="Sparkles" />} isDisabled>Disabled</AiButton>
+      </div>
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="Icon Only"
+      code={`import { AiButton } from "@/library/atoms/ai-button";
+import { Icon } from "@/library/atoms/icon";
+
+<AiButton variant="primary" size="lg" iconOnly iconLeading={<Icon name="Sparkles" />} />
+<AiButton variant="secondary" size="md" iconOnly iconLeading={<Icon name="Sparkles" />} />
+<AiButton variant="tertiary" size="sm" iconOnly iconLeading={<Icon name="Sparkles" />} />`}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+        <AiButton variant="primary" size="lg" iconOnly iconLeading={<Icon name="Sparkles" />} />
+        <AiButton variant="secondary" size="md" iconOnly iconLeading={<Icon name="Sparkles" />} />
+        <AiButton variant="tertiary" size="sm" iconOnly iconLeading={<Icon name="Sparkles" />} />
+      </div>
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="With Trailing Icon"
+      code={`import { AiButton } from "@/library/atoms/ai-button";
+import { Icon } from "@/library/atoms/icon";
+
+<AiButton variant="primary" size="lg" iconLeading={<Icon name="Sparkles" />} iconTrailing={<Icon name="ChevronDown" />}>Generate</AiButton>
+<AiButton variant="secondary" size="lg" iconLeading={<Icon name="Sparkles" />} iconTrailing={<Icon name="ChevronDown" />}>Generate</AiButton>`}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+        <AiButton variant="primary" size="lg" iconLeading={<Icon name="Sparkles" />} iconTrailing={<Icon name="ChevronDown" />}>Generate</AiButton>
+        <AiButton variant="secondary" size="lg" iconLeading={<Icon name="Sparkles" />} iconTrailing={<Icon name="ChevronDown" />}>Generate</AiButton>
+      </div>
+    </PreviewComponent>
+  </Section>
+);
 
 const RadioButtonPage = () => {
   const [selected, setSelected] = useState("option1");
@@ -5287,6 +5398,7 @@ const PAGES = {
   link: { title: "Link", component: LinkPage, category: "atoms" },
   tooltip: { title: "Tooltip", component: TooltipPage, category: "atoms" },
   buttonBadge: { title: "ButtonBadge", component: ButtonBadgePage, category: "atoms" },
+  aiButton: { title: "AiButton", component: AiButtonPage, category: "atoms" },
   // Molecules
   search: { title: "Search", component: SearchPage, category: "molecules" },
   tabs: { title: "Tabs", component: TabsPage, category: "molecules" },

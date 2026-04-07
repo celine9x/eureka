@@ -115,6 +115,7 @@ export const ButtonGroupItem = ({
   iconName,
   iconRight,
   iconRightName,
+  variant = "secondary",
   onPress,
   onClick,
   style,
@@ -155,6 +156,7 @@ export const ButtonGroupItem = ({
       iconName={iconName}
       iconRight={iconRight}
       iconRightName={iconRightName}
+      variant={variant}
       onClick={onPress || onClick}
       style={itemStyle}
       {...props}

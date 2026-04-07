@@ -12,6 +12,21 @@ import { RadioCard, RadioCardGroup } from "../library/molecules/radio-card.jsx";
 import { ButtonGroup, ButtonGroupItem } from "../library/molecules/button-group.jsx";
 import { Stepper } from "../library/molecules/stepper.jsx";
 import { FileUploader } from "../library/molecules/file-uploader.jsx";
+import { Search } from "../library/molecules/search.jsx";
+import {
+  HubHeaderContextButton,
+  HubHeaderViewToggle,
+  HubHeaderSearch,
+  HubHeaderSmartFilterButton,
+  HubHeaderSettingsButton,
+  HubHeaderExportButton,
+} from "../library/organisms/hub-header.jsx";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuSection,
+} from "../library/molecules/dropdown-menu.jsx";
+import { DropdownMenuItem } from "../library/molecules/dropdown-menu-item.jsx";
 import { Dialog } from "../library/molecules/dialog.jsx";
 import { Infobox } from "../library/molecules/infobox.jsx";
 import { useToast } from "../library/molecules/toast.jsx";
@@ -29,6 +44,7 @@ const REMEMBER_CHOICE_STORAGE_KEY = "eureka-create-opportunity-remember-choice";
 const REVIEW_PROGRESS_STORAGE_KEY = "eureka-opportunity-review-progress";
 
 const HUB_PATH = "/ai-opportunity-extraction";
+const HUB_PATH_V2 = "/ai-opportunity-extraction-v2";
 const REVIEW_PATH = "/ai-opportunity-extraction/review";
 
 const REVIEW_DOCUMENT_PAGES = [
@@ -776,6 +792,227 @@ const CreateOpportunityModal = ({ open, onClose, onExtract }) => {
   );
 };
 
+const CreateOpportunityManualModal = ({ open, onClose }) => {
+  const toast = useToast();
+  const [manualStep, setManualStep] = React.useState(1);
+  const [selectedAssetType, setSelectedAssetType] = React.useState("pharma");
+  const [rememberChoice, setRememberChoice] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!open) return;
+
+    let rememberedConfig = null;
+    try {
+      const raw = window.localStorage.getItem(REMEMBER_CHOICE_STORAGE_KEY);
+      rememberedConfig = raw ? JSON.parse(raw) : null;
+    } catch (error) {
+      rememberedConfig = null;
+    }
+
+    const hasRememberedChoice = Boolean(rememberedConfig?.rememberChoice);
+    setManualStep(hasRememberedChoice ? 2 : 1);
+    setSelectedAssetType(rememberedConfig?.assetType || "pharma");
+    setRememberChoice(hasRememberedChoice);
+  }, [open]);
+
+  const selectedAssetLabel = ASSET_TYPES.find((item) => item.value === selectedAssetType)?.label || "-";
+
+  const persistRememberChoice = React.useCallback(() => {
+    if (rememberChoice) {
+      window.localStorage.setItem(
+        REMEMBER_CHOICE_STORAGE_KEY,
+        JSON.stringify({
+          rememberChoice: true,
+          assetType: selectedAssetType,
+        })
+      );
+      return;
+    }
+
+    window.localStorage.removeItem(REMEMBER_CHOICE_STORAGE_KEY);
+  }, [rememberChoice, selectedAssetType]);
+
+  const handleManualSubmit = React.useCallback(
+    (modeLabel) => {
+      persistRememberChoice();
+      toast.success({
+        message: modeLabel === "open" ? "Opportunity created and opened." : "Opportunity created.",
+      });
+      onClose();
+    },
+    [onClose, persistRememberChoice, toast]
+  );
+
+  const isManualStepOne = manualStep === 1;
+  const isManualStepTwo = manualStep === 2;
+
+  return (
+    <Modal
+      open={open}
+      onClose={onClose}
+      title="Create opportunity"
+      size="lg"
+      style={{ maxWidth: "600px" }}
+      tertiaryLabel={isManualStepOne ? "Cancel" : "Back"}
+      tertiaryVariant={!isManualStepOne ? "secondary" : "tertiary"}
+      onTertiaryClick={
+        isManualStepOne
+          ? onClose
+          : () => {
+              setManualStep(1);
+            }
+      }
+      secondaryLabel={isManualStepTwo ? "Create" : undefined}
+      onSecondaryClick={() => {
+        if (!isManualStepTwo) return;
+        handleManualSubmit("create");
+      }}
+      primaryLabel={isManualStepOne ? "Next" : "Create and open"}
+      onPrimaryClick={() => {
+        if (isManualStepOne) {
+          setManualStep(2);
+          return;
+        }
+
+        handleManualSubmit("open");
+      }}
+    >
+      <div style={styles.modalWrap}>
+        {isManualStepOne ? (
+          <div style={styles.modalWrap}>
+            <Stepper variant="progress" totalSteps={2} currentStep={0} />
+
+            <h3 style={styles.sectionTitle}>Classification</h3>
+            <p style={styles.fieldLabel}>
+              Asset type <span style={styles.required}>*</span>
+            </p>
+
+            <RadioCardGroup value={selectedAssetType} onChange={setSelectedAssetType}>
+              {ASSET_TYPES.map((asset) => (
+                <RadioCard
+                  key={asset.value}
+                  value={asset.value}
+                  label={asset.label}
+                  info={asset.description}
+                  icon={<Icon name={asset.iconName} size="md" />}
+                  hideControl
+                />
+              ))}
+            </RadioCardGroup>
+
+            <Checkbox isSelected={rememberChoice} onChange={setRememberChoice}>
+              Remember my choice
+            </Checkbox>
+          </div>
+        ) : (
+          <div style={styles.modalWrap}>
+            <Stepper variant="progress" totalSteps={2} currentStep={1} />
+
+            <h3 style={styles.sectionTitle}>Information</h3>
+
+            <div style={styles.infoBanner}>
+              <p style={styles.infoText}>
+                You are currently evaluating: <strong>{selectedAssetLabel}</strong>
+              </p>
+              <Button variant="secondary" size="sm" onClick={() => setManualStep(1)}>Change</Button>
+            </div>
+
+            <TextInput label="Company" isRequired placeholder="Select or create company" />
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-sm)" }}>
+              <p style={styles.fieldLabel}>
+                Asset <span style={styles.required}>*</span>
+              </p>
+              <div style={styles.selectShell}>
+                <div style={styles.selectLeft}>
+                  <Icon name="MagnifyingGlass" size="sm" />
+                  <span style={styles.selectText}>Select or create asset</span>
+                </div>
+              </div>
+              <div style={styles.helperRow}>
+                <Icon name="InformationCircle" size="sm" />
+                <span>Select company first</span>
+              </div>
+            </div>
+
+            <TextInput label="Opportunity name" isRequired placeholder="Name your opportunity" />
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-sm)" }}>
+              <p style={styles.fieldLabel}>
+                Opportunity type <span style={styles.optional}>Optional</span>
+              </p>
+              <div style={styles.selectShell}>
+                <div style={styles.selectLeft}>
+                  <span style={styles.selectText}>Select opportunity type</span>
+                </div>
+                <Icon name="ChevronDown" size="sm" />
+              </div>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-sm)" }}>
+              <p style={styles.fieldLabel}>
+                Initiative <span style={styles.required}>*</span>
+              </p>
+              <div style={styles.selectShell}>
+                <div style={styles.selectLeft}>
+                  <span style={styles.selectText}>Select initiative</span>
+                </div>
+                <Icon name="ChevronDown" size="sm" />
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </Modal>
+  );
+};
+
+const ExtractWithAiModal = ({ open, onClose, onExtract }) => {
+  const toast = useToast();
+  const [documents, setDocuments] = React.useState([]);
+
+  React.useEffect(() => {
+    if (!open) return;
+    setDocuments([]);
+  }, [open]);
+
+  const handleExtract = React.useCallback(() => {
+    toast.success({
+      message: `Extraction started for ${documents.length} document${documents.length > 1 ? "s" : ""}.`,
+    });
+    onClose();
+    onExtract?.();
+  }, [documents.length, onClose, onExtract, toast]);
+
+  return (
+    <Modal
+      open={open}
+      onClose={onClose}
+      title="Extract opportunity with AI"
+      size="lg"
+      style={{ maxWidth: "600px" }}
+      tertiaryLabel="Cancel"
+      onTertiaryClick={onClose}
+      primaryLabel="Extract"
+      onPrimaryClick={handleExtract}
+      primaryDisabled={documents.length === 0}
+    >
+      <div style={styles.modalWrap}>
+        <FileUploader
+          showIllustration={false}
+          onFilesSelected={(files) => {
+            const nextDocs = files.map((file, index) => ({
+              id: `${Date.now()}-${index}`,
+              name: file.name,
+            }));
+            setDocuments(nextDocs);
+          }}
+        />
+      </div>
+    </Modal>
+  );
+};
+
 const SelectPreviewField = ({ label, value, required = false, references = [] }) => {
   return (
     <div style={styles.fieldGroup}>
@@ -936,6 +1173,10 @@ export const AiOpportunityExtractionReviewPage = () => {
     const saved = readReviewProgress();
     return saved?.opportunities?.length ? saved.opportunities : EXTRACTED_OPPORTUNITIES;
   });
+  const [returnHubPath] = React.useState(() => {
+    const search = new URLSearchParams(window.location.search);
+    return search.get("source") === "v2" ? HUB_PATH_V2 : HUB_PATH;
+  });
   const [activeId, setActiveId] = React.useState(() => {
     const search = new URLSearchParams(window.location.search);
     const fromQuery = search.get("opportunity") || "";
@@ -953,13 +1194,23 @@ export const AiOpportunityExtractionReviewPage = () => {
 
   const onBackToList = React.useCallback(() => {
     setActiveId("");
-    navigateToPath(REVIEW_PATH);
-  }, []);
+    const params = new URLSearchParams();
+    if (returnHubPath === HUB_PATH_V2) {
+      params.set("source", "v2");
+    }
+    const query = params.toString();
+    navigateToPath(query ? `${REVIEW_PATH}?${query}` : REVIEW_PATH);
+  }, [returnHubPath]);
 
   const onSelectOpportunity = React.useCallback((opportunityId) => {
     setActiveId(opportunityId);
-    navigateToPath(`${REVIEW_PATH}?opportunity=${opportunityId}`);
-  }, []);
+    const params = new URLSearchParams();
+    params.set("opportunity", opportunityId);
+    if (returnHubPath === HUB_PATH_V2) {
+      params.set("source", "v2");
+    }
+    navigateToPath(`${REVIEW_PATH}?${params.toString()}`);
+  }, [returnHubPath]);
 
   const onSelectPreviousOpportunity = React.useCallback(() => {
     if (!hasPrevious) return;
@@ -1008,7 +1259,12 @@ export const AiOpportunityExtractionReviewPage = () => {
     if (updatedOpportunities.length === 0) {
       // No more opportunities, go back to list
       setActiveId("");
-      navigateToPath(REVIEW_PATH);
+      const params = new URLSearchParams();
+      if (returnHubPath === HUB_PATH_V2) {
+        params.set("source", "v2");
+      }
+      const query = params.toString();
+      navigateToPath(query ? `${REVIEW_PATH}?${query}` : REVIEW_PATH);
     } else if (currentIndex < updatedOpportunities.length) {
       // Navigate to the next item (which is now at currentIndex due to removal)
       onSelectOpportunity(updatedOpportunities[currentIndex].id);
@@ -1016,7 +1272,7 @@ export const AiOpportunityExtractionReviewPage = () => {
       // If we were at the end, go to the new last item
       onSelectOpportunity(updatedOpportunities[updatedOpportunities.length - 1].id);
     }
-  }, [selectedOpportunity, opportunities, onSelectOpportunity, toast]);
+  }, [selectedOpportunity, opportunities, onSelectOpportunity, returnHubPath, toast]);
 
   const onSaveAndClose = React.useCallback(() => {
     if (opportunities.length > 0) {
@@ -1027,8 +1283,8 @@ export const AiOpportunityExtractionReviewPage = () => {
     }
 
     setIsSaveDialogOpen(false);
-    navigateToPath(HUB_PATH);
-  }, [opportunities, selectedOpportunity]);
+    navigateToPath(returnHubPath);
+  }, [opportunities, returnHubPath, selectedOpportunity]);
 
   const formHeaderContent = (
     <div style={styles.reviewFormHead}>
@@ -1180,7 +1436,7 @@ export const AiOpportunityExtractionReviewPage = () => {
     <ObjectHeader>
       <ObjectHeaderTopBar>
         <ObjectHeaderTopBarLeft>
-          <ObjectHeaderBackButton label="Back" onClick={() => navigateToPath(HUB_PATH)} />
+          <ObjectHeaderBackButton label="Back" onClick={() => navigateToPath(returnHubPath)} />
           <h1 style={styles.reviewHeaderTitle}>Deck.pdf</h1>
         </ObjectHeaderTopBarLeft>
         <ObjectHeaderTopBarRight>
@@ -1230,6 +1486,8 @@ export const AiOpportunityExtractionPage = () => {
   const [rows] = React.useState(AI_OPPORTUNITY_DATA);
   const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false);
   const [reviewProgress, setReviewProgress] = React.useState(() => readReviewProgress());
+  const [viewMode, setViewMode] = React.useState("list");
+  const [searchValue, setSearchValue] = React.useState("");
 
   const handleExtractToReview = React.useCallback(() => {
     clearReviewProgress();
@@ -1277,12 +1535,153 @@ export const AiOpportunityExtractionPage = () => {
             />
           ) : null
         }
-        headerActions={<Button variant="primary" iconLeading={<Icon name="Plus" size="sm" />} size="md" onClick={() => setIsCreateModalOpen(true)}>Create</Button>}
+        headerLeftContent={
+          <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-2)" }}>
+            <HubHeaderContextButton label="Oncology" starred iconName="User" />
+            <HubHeaderViewToggle value={viewMode} onChange={setViewMode} />
+          </div>
+        }
+        headerActions={
+          <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-2)" }}>
+            <HubHeaderSearch value={searchValue} onChange={setSearchValue} />
+            <HubHeaderSmartFilterButton />
+            <HubHeaderSettingsButton />
+            <HubHeaderExportButton />
+            <Button variant="primary" iconLeading={<Icon name="Plus" size="sm" />} size="md" onClick={() => setIsCreateModalOpen(true)}>Create</Button>
+          </div>
+        }
         emptyMessage="No opportunities found"
       />
       <CreateOpportunityModal
         open={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
+        onExtract={handleExtractToReview}
+      />
+    </>
+  );
+};
+
+export const AiOpportunityExtractionPageV2 = () => {
+  const [rows] = React.useState(AI_OPPORTUNITY_DATA);
+  const [isCreateManualModalOpen, setIsCreateManualModalOpen] = React.useState(false);
+  const [isExtractModalOpen, setIsExtractModalOpen] = React.useState(false);
+  const [isCreateMenuOpen, setIsCreateMenuOpen] = React.useState(false);
+  const [headerActionValue, setHeaderActionValue] = React.useState("");
+  const [reviewProgress, setReviewProgress] = React.useState(() => readReviewProgress());
+  const [viewMode, setViewMode] = React.useState("list");
+  const [searchValue, setSearchValue] = React.useState("");
+
+  const handleExtractToReview = React.useCallback(() => {
+    clearReviewProgress();
+    setReviewProgress(null);
+    navigateToPath(`${REVIEW_PATH}?source=v2`);
+  }, []);
+
+  const handleResumeReview = React.useCallback(() => {
+    const saved = readReviewProgress();
+    if (!saved?.opportunities?.length) return;
+
+    const nextId = saved.activeId || saved.opportunities[0]?.id || "";
+    const params = new URLSearchParams();
+    params.set("source", "v2");
+    if (nextId) {
+      params.set("opportunity", nextId);
+    }
+    navigateToPath(`${REVIEW_PATH}?${params.toString()}`);
+  }, []);
+
+  const handleHeaderActionChange = React.useCallback((nextValue) => {
+    setHeaderActionValue("");
+
+    if (nextValue === "create") {
+      setIsCreateMenuOpen(false);
+      setIsCreateManualModalOpen(true);
+      return;
+    }
+
+    if (nextValue === "menu") {
+      setIsCreateMenuOpen((prev) => !prev);
+    }
+  }, []);
+
+  const columns = [
+    { key: "name", label: "Opportunity", type: "link", sortable: true, width: "280px" },
+    { key: "status", label: "Status", type: "chip", width: "140px", chipProps: { chevron: false, removable: false } },
+    { key: "confidence", label: "Confidence", type: "chip", width: "140px", chipProps: { chevron: false, removable: false } },
+    { key: "value", label: "Est. Value", sortable: true, width: "140px" },
+    { key: "owner", label: "Owner", width: "180px" },
+    { key: "source", label: "Source", width: "160px" },
+    { key: "tags", label: "Tags", type: "badges", width: "200px", maxVisible: 2 },
+    { key: "action", label: "Actions", type: "button", width: "88px", sticky: true },
+  ];
+
+  return (
+    <>
+      <Hub
+        title="Opportunities"
+        badge={String(rows.length)}
+        menuVariant="deal"
+        columns={columns}
+        data={rows}
+        showPagination={true}
+        totalItems={rows.length}
+        headerSecondary={
+          reviewProgress?.opportunities?.length ? (
+            <Infobox
+              variant="info"
+              title="You have revisions in progress"
+              description={`${reviewProgress.opportunities.length} unreviewed opportunities remaining.`}
+              actionLabel="Resume"
+              onAction={handleResumeReview}
+            />
+          ) : null
+        }
+        headerLeftContent={
+          <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-2)" }}>
+            <HubHeaderContextButton
+              label="Oncology"
+              starred
+              iconName="User"
+            />
+            <HubHeaderViewToggle value={viewMode} onChange={setViewMode} />
+          </div>
+        }
+        headerActions={
+          <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-2)" }}>
+            <HubHeaderSearch value={searchValue} onChange={setSearchValue} />
+            <HubHeaderSmartFilterButton />
+            <HubHeaderSettingsButton />
+            <HubHeaderExportButton />
+            <DropdownMenu open={isCreateMenuOpen} onOpenChange={setIsCreateMenuOpen}>
+              <ButtonGroup value={headerActionValue} onChange={handleHeaderActionChange}>
+                <ButtonGroupItem value="create" iconName="Plus">Create</ButtonGroupItem>
+                <ButtonGroupItem value="menu" iconName="ChevronDown" ariaLabel="Open create actions" />
+              </ButtonGroup>
+              <DropdownMenuContent align="right" width={180}>
+                <DropdownMenuSection>
+                  <DropdownMenuItem
+                    label="Extract with AI"
+                    onClick={() => {
+                      setIsCreateMenuOpen(false);
+                      setIsExtractModalOpen(true);
+                    }}
+                  />
+                </DropdownMenuSection>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        }
+        emptyMessage="No opportunities found"
+      />
+
+      <CreateOpportunityManualModal
+        open={isCreateManualModalOpen}
+        onClose={() => setIsCreateManualModalOpen(false)}
+      />
+
+      <ExtractWithAiModal
+        open={isExtractModalOpen}
+        onClose={() => setIsExtractModalOpen(false)}
         onExtract={handleExtractToReview}
       />
     </>

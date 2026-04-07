@@ -157,27 +157,29 @@ export const ButtonBadge = ({
   const [internalActive, setInternalActive] = useState(false);
 
   const isButtonDisabled = isDisabled || disabled;
-  
   // If state is explicitly provided, use it (controlled mode)
   // Otherwise, use internal state (uncontrolled mode with auto-toggle)
   const isControlled = state !== undefined;
-  const effectiveState = isButtonDisabled 
-    ? BUTTON_BADGE_STATES.disabled 
-    : isControlled 
-      ? state 
-      : (internalActive ? BUTTON_BADGE_STATES.active : BUTTON_BADGE_STATES.enabled);
-  
-  const effectiveBadgeColor = badgeColor || STATE_TO_BADGE_COLOR[effectiveState];
-  const badgeSize = size === "lg" ? "md" : "sm";
 
+
+  // Compute effective state before using it
+  const effectiveState = isButtonDisabled
+    ? BUTTON_BADGE_STATES.disabled
+    : isControlled
+      ? state
+      : (internalActive ? BUTTON_BADGE_STATES.active : BUTTON_BADGE_STATES.enabled);
+
+  // Choose variant styles
+  const variantKey = variant === "primary" ? "primary" : "secondary";
+  const variantStyles = styles.variants ? styles.variants[variantKey] : styles.states;
   const sizeStyles = styles.sizes[size];
 
   // Compose button styles
   const buttonStyle = {
     ...styles.base,
     ...sizeStyles.base,
-    ...styles.states[effectiveState],
-    ...(isHovered && effectiveState === "enabled" && styles.states.enabledHover),
+    ...variantStyles[effectiveState],
+    ...(isHovered && effectiveState === "enabled" && variantStyles.enabledHover),
     ...style,
   };
 

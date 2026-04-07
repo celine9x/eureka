@@ -8,11 +8,13 @@
 
 import React from "react";
 import { Button } from "../atoms/button.jsx";
+import { AiButton } from "../atoms/ai-button.jsx";
 import { Badge } from "../atoms/badge.jsx";
 import { Icon } from "../atoms/icon.jsx";
 import { TextInput } from "../molecules/text-input.jsx";
 import { Search } from "../molecules/search.jsx";
 import { Tabs, Tab, TabPanel } from "../molecules/tabs.jsx";
+import { ButtonGroup, ButtonGroupItem } from "../molecules/button-group.jsx";
 
 /* ===========================================
    STYLE CONFIGURATION
@@ -265,6 +267,151 @@ export const HubHeaderSecondary = ({ children, className = "" }) => {
 HubHeaderSecondary.displayName = "HubHeaderSecondary";
 
 /* ===========================================
+   HUB HEADER CONTEXT BUTTON
+   =========================================== */
+
+/**
+ * HubHeaderContextButton
+ *
+ * A dropdown-trigger button representing the active workspace context (e.g. "Oncology").
+ * Shows an optional leading icon, label, optional star indicator, and a chevron.
+ */
+export const HubHeaderContextButton = ({
+  label,
+  iconName = "User",
+  starred = false,
+  onClick,
+  className = "",
+  ...props
+}) => (
+  <Button
+    variant="secondary"
+    size="md"
+    iconLeading={<Icon name={iconName} size="sm" />}
+    iconTrailing={<Icon name="ChevronDown" size="sm" />}
+    onClick={onClick}
+    className={className}
+    {...props}
+  >
+    <span style={{ display: "inline-flex", alignItems: "center", gap: "var(--spacing-sm)" }}>
+      {label}
+      {starred && (
+        <Icon name="Star" size="sm" style={{ color: "var(--color-status-warning-default)" }} />
+      )}
+    </span>
+  </Button>
+);
+
+HubHeaderContextButton.displayName = "HubHeaderContextButton";
+
+/* ===========================================
+   HUB HEADER VIEW TOGGLE
+   =========================================== */
+
+/**
+ * HubHeaderViewToggle
+ *
+ * A list / grid view switcher using ButtonGroup.
+ */
+export const HubHeaderViewToggle = ({ value = "list", onChange, className = "", ...props }) => (
+  <ButtonGroup value={value} onChange={onChange} className={className} {...props}>
+    <ButtonGroupItem value="list" iconName="Bars3" ariaLabel="List view" />
+    <ButtonGroupItem value="grid" iconName="Squares2X2" ariaLabel="Grid view" />
+  </ButtonGroup>
+);
+
+HubHeaderViewToggle.displayName = "HubHeaderViewToggle";
+
+/* ===========================================
+   HUB HEADER SEARCH
+   =========================================== */
+
+/**
+ * HubHeaderSearch
+ *
+ * A pre-styled Search input for the hub header.
+ * Accepts all Search props; defaults width to 200px.
+ */
+export const HubHeaderSearch = ({ width = 200, style, ...props }) => (
+  <div style={{ width, flexShrink: 0, ...style }}>
+    <Search size="md" placeholder="Search with keyword" {...props} />
+  </div>
+);
+
+HubHeaderSearch.displayName = "HubHeaderSearch";
+
+/* ===========================================
+   HUB HEADER SMART FILTER BUTTON
+   =========================================== */
+
+
+/**
+ * HubHeaderSmartFilterButton
+ *
+ * An "AI secondary" Smart filter button with a sparkle icon.
+ */
+
+export const HubHeaderSmartFilterButton = ({ label = "Smart filter", onClick, ...props }) => (
+  <AiButton
+    variant="secondary"
+    size="md"
+    iconLeading={<Icon name="Sparkles" size="sm" />}
+    onClick={onClick}
+    {...props}
+  >
+    {label}
+  </AiButton>
+);
+
+HubHeaderSmartFilterButton.displayName = "HubHeaderSmartFilterButton";
+
+/* ===========================================
+   HUB HEADER SETTINGS BUTTON
+   =========================================== */
+
+/**
+ * HubHeaderSettingsButton
+ *
+ * An icon-only settings button.
+ */
+export const HubHeaderSettingsButton = ({ onClick, ...props }) => (
+  <Button
+    variant="secondary"
+    size="md"
+    iconOnly
+    ariaLabel="Settings"
+    iconLeading={<Icon name="Cog6Tooth" size="sm" />}
+    onClick={onClick}
+    {...props}
+  />
+);
+
+HubHeaderSettingsButton.displayName = "HubHeaderSettingsButton";
+
+/* ===========================================
+   HUB HEADER EXPORT BUTTON
+   =========================================== */
+
+/**
+ * HubHeaderExportButton
+ *
+ * An "Export" button with an upload-arrow icon.
+ */
+export const HubHeaderExportButton = ({ label = "Export", onClick, ...props }) => (
+  <Button
+    variant="secondary"
+    size="md"
+    iconLeading={<Icon name="ArrowUpTray" size="sm" />}
+    onClick={onClick}
+    {...props}
+  >
+    {label}
+  </Button>
+);
+
+HubHeaderExportButton.displayName = "HubHeaderExportButton";
+
+/* ===========================================
    HUB HEADER COMPONENT
    =========================================== */
 
@@ -431,11 +578,18 @@ HubHeader.Search = Search;
 HubHeader.Tabs = Tabs;
 HubHeader.Tab = Tab;
 HubHeader.TabPanel = TabPanel;
+HubHeader.ContextButton = HubHeaderContextButton;
+HubHeader.ViewToggle = HubHeaderViewToggle;
+HubHeader.SearchInput = HubHeaderSearch;
+HubHeader.SmartFilterButton = HubHeaderSmartFilterButton;
+HubHeader.SettingsButton = HubHeaderSettingsButton;
+HubHeader.ExportButton = HubHeaderExportButton;
 
 // Re-export commonly used child components for convenience
 export { Button } from "../atoms/button.jsx";
 export { Icon } from "../atoms/icon.jsx";
 export { Badge } from "../atoms/badge.jsx";
 export { Tabs, Tab, TabPanel } from "../molecules/tabs.jsx";
+export { ButtonGroup, ButtonGroupItem } from "../molecules/button-group.jsx";
 
 export default HubHeader;
