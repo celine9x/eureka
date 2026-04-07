@@ -8,8 +8,14 @@ import { SidePanel } from "./library/templates/side-panel.jsx";
 import { Badge } from "./library/atoms/badge.jsx";
 import { Button } from "./library/atoms/button.jsx";
 import { Icon } from "./library/atoms/icon.jsx";
+import { Checkbox } from "./library/atoms/checkbox.jsx";
 import { TextInput } from "./library/molecules/text-input.jsx";
+import { RadioCard, RadioCardGroup } from "./library/molecules/radio-card.jsx";
+import { ButtonGroup, ButtonGroupItem } from "./library/molecules/button-group.jsx";
+import { Stepper } from "./library/molecules/stepper.jsx";
+import { ChipInput } from "./library/molecules/chip-input.jsx";
 import { Infofield, InfofieldGroup } from "./library/molecules/infofield.jsx";
+import { Modal } from "./library/organisms/modal.jsx";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -411,6 +417,415 @@ const SidePanelTest = () => {
 };
 
 /* ===========================================
+   AI OPPORTUNITY EXTRACTION PAGE
+   =========================================== */
+const AI_OPPORTUNITY_DATA = [
+  {
+    id: 1,
+    name: { label: "Acme Corp - Cloud Migration", href: "#", iconLeadingName: "BuildingOffice2" },
+    status: "Active",
+    confidence: "High",
+    value: "$320K",
+    owner: "Emma Dupont",
+    source: "Email",
+    tags: [{ label: "Cloud" }, { label: "Q2" }],
+    action: { iconName: "EllipsisVertical", iconOnly: true, ariaLabel: "Row actions" },
+  },
+  {
+    id: 2,
+    name: { label: "Blue Sky - Data Platform", href: "#", iconLeadingName: "BuildingOffice2" },
+    status: "Pending",
+    confidence: "Medium",
+    value: "$180K",
+    owner: "Thomas Bernard",
+    source: "CRM",
+    tags: [{ label: "Data" }, { label: "Q3" }],
+    action: { iconName: "EllipsisVertical", iconOnly: true, ariaLabel: "Row actions" },
+  },
+  {
+    id: 3,
+    name: { label: "North Star - AI Expansion", href: "#", iconLeadingName: "BuildingOffice2" },
+    status: "Active",
+    confidence: "High",
+    value: "$540K",
+    owner: "Sophie Martin",
+    source: "Meeting Notes",
+    tags: [{ label: "AI" }, { label: "Strategic" }],
+    action: { iconName: "EllipsisVertical", iconOnly: true, ariaLabel: "Row actions" },
+  },
+];
+
+const ASSET_TYPES = [
+  {
+    value: "pharma",
+    label: "Pharma asset",
+    description: "Molecules or products aimed at licensing or collaboration projects",
+    iconName: "Beaker",
+  },
+  {
+    value: "technology",
+    label: "Technology",
+    description: "Digital health, medical devices or other technology solutions",
+    iconName: "CpuChip",
+  },
+  {
+    value: "organization",
+    label: "Organization asset",
+    description: "Potential partners for out-licensing, M&A, investment, or landscaping",
+    iconName: "BuildingOffice2",
+  },
+  {
+    value: "consumer",
+    label: "Consumer health asset",
+    description: "Consumer health molecules, products, ingredients or technologies",
+    iconName: "Heart",
+  },
+];
+
+const styles = {
+  modalWrap: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "var(--spacing-4)",
+  },
+  sectionTitle: {
+    margin: 0,
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-heading-h3)",
+    lineHeight: "var(--line-height-heading-h3)",
+    fontWeight: "var(--font-weight-bold)",
+    color: "var(--color-content-primary)",
+  },
+  fieldLabel: {
+    margin: 0,
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-md)",
+    lineHeight: "var(--line-height-body-md)",
+    fontWeight: "var(--font-weight-regular)",
+    color: "var(--color-content-primary)",
+  },
+  required: {
+    color: "var(--color-content-negative)",
+  },
+  optional: {
+    color: "var(--color-content-secondary)",
+    marginLeft: "var(--spacing-xs)",
+  },
+  infoBanner: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: "var(--spacing-3)",
+    borderRadius: "var(--radius-md)",
+    background: "var(--color-general-informative)",
+    padding: "var(--spacing-4)",
+    boxSizing: "border-box",
+  },
+  infoText: {
+    margin: 0,
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-lg)",
+    lineHeight: "var(--line-height-body-lg)",
+    color: "var(--color-content-primary)",
+  },
+  helperRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: "var(--spacing-xs)",
+    color: "var(--color-content-secondary)",
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-sm)",
+    lineHeight: "var(--line-height-body-sm)",
+  },
+  selectShell: {
+    width: "100%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: "var(--spacing-3)",
+    borderRadius: "var(--radius-md)",
+    outline: "1px solid var(--color-action-outline-secondary-enabled)",
+    outlineOffset: "-1px",
+    background: "var(--color-general-white)",
+    padding: "var(--spacing-sm) var(--spacing-4)",
+    minHeight: 40,
+    boxSizing: "border-box",
+  },
+  selectLeft: {
+    display: "flex",
+    alignItems: "center",
+    gap: "var(--spacing-sm)",
+    color: "var(--color-content-tertiary)",
+    minWidth: 0,
+  },
+  selectText: {
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+  },
+  documentList: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "var(--spacing-sm)",
+  },
+  documentChip: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "var(--spacing-sm)",
+    padding: "var(--spacing-xs) var(--spacing-sm)",
+    borderRadius: "var(--radius-sm)",
+    background: "var(--color-general-neutral-lighter)",
+    outline: "1px solid var(--color-action-outline-secondary-enabled)",
+    outlineOffset: "-1px",
+  },
+  iconButton: {
+    border: "none",
+    background: "transparent",
+    width: 20,
+    height: 20,
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 0,
+    cursor: "pointer",
+    color: "var(--color-content-secondary)",
+  },
+};
+
+const CreateOpportunityModal = ({ open, onClose }) => {
+  const [mode, setMode] = React.useState("manual");
+  const [manualStep, setManualStep] = React.useState(1);
+  const [selectedAssetType, setSelectedAssetType] = React.useState("pharma");
+  const [rememberChoice, setRememberChoice] = React.useState(false);
+  const [documents, setDocuments] = React.useState([{ id: "seed-doc", name: "Deck.pdf" }]);
+  const fileInputRef = React.useRef(null);
+
+  React.useEffect(() => {
+    if (!open) return;
+    setMode("manual");
+    setManualStep(1);
+    setSelectedAssetType("pharma");
+    setRememberChoice(false);
+    setDocuments([{ id: "seed-doc", name: "Deck.pdf" }]);
+  }, [open]);
+
+  const selectedAssetLabel = ASSET_TYPES.find((item) => item.value === selectedAssetType)?.label || "-";
+
+  const handleFilePicked = (event) => {
+    const fileList = Array.from(event.target?.files || []);
+    if (!fileList.length) return;
+
+    const nextDocs = fileList.map((file, index) => ({
+      id: `${Date.now()}-${index}`,
+      name: file.name,
+    }));
+
+    setDocuments((prev) => [...prev, ...nextDocs]);
+    event.target.value = "";
+  };
+
+  const removeDocument = (id) => {
+    setDocuments((prev) => prev.filter((doc) => doc.id !== id));
+  };
+
+  const manualStepOne = (
+    <div style={styles.modalWrap}>
+      <Stepper variant="progress" totalSteps={2} currentStep={0} />
+
+      <h3 style={styles.sectionTitle}>Classification</h3>
+      <p style={styles.fieldLabel}>
+        Asset type <span style={styles.required}>*</span>
+      </p>
+
+      <RadioCardGroup value={selectedAssetType} onChange={setSelectedAssetType}>
+        {ASSET_TYPES.map((asset) => (
+          <RadioCard
+            key={asset.value}
+            value={asset.value}
+            label={asset.label}
+            info={asset.description}
+            icon={<Icon name={asset.iconName} size="md" />}
+            hideControl
+          />
+        ))}
+      </RadioCardGroup>
+
+      <Checkbox isSelected={rememberChoice} onChange={setRememberChoice}>
+        Remember my choice
+      </Checkbox>
+    </div>
+  );
+
+  const manualStepTwo = (
+    <div style={styles.modalWrap}>
+      <Stepper variant="progress" totalSteps={2} currentStep={1} />
+
+      <h3 style={styles.sectionTitle}>Information</h3>
+
+      <div style={styles.infoBanner}>
+        <p style={styles.infoText}>
+          You are currently evaluating: <strong>{selectedAssetLabel}</strong>
+        </p>
+        <Button variant="secondary" size="sm" onClick={() => setManualStep(1)}>Change</Button>
+      </div>
+
+      <TextInput label="Company" isRequired placeholder="Select or create company" />
+
+      <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-sm)" }}>
+        <p style={styles.fieldLabel}>
+          Asset <span style={styles.required}>*</span>
+        </p>
+        <div style={styles.selectShell}>
+          <div style={styles.selectLeft}>
+            <Icon name="MagnifyingGlass" size="sm" />
+            <span style={styles.selectText}>Select or create asset</span>
+          </div>
+        </div>
+        <div style={styles.helperRow}>
+          <Icon name="InformationCircle" size="sm" />
+          <span>Select company first</span>
+        </div>
+      </div>
+
+      <TextInput label="Opportunity name" isRequired placeholder="Name your opportunity" />
+
+      <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-sm)" }}>
+        <p style={styles.fieldLabel}>
+          Opportunity type <span style={styles.optional}>Optional</span>
+        </p>
+        <div style={styles.selectShell}>
+          <div style={styles.selectLeft}>
+            <span style={styles.selectText}>Select opportunity type</span>
+          </div>
+          <Icon name="ChevronDown" size="sm" />
+        </div>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-sm)" }}>
+        <p style={styles.fieldLabel}>
+          Initiative <span style={styles.required}>*</span>
+        </p>
+        <div style={styles.selectShell}>
+          <div style={styles.selectLeft}>
+            <span style={styles.selectText}>Select initiative</span>
+          </div>
+          <Icon name="ChevronDown" size="sm" />
+        </div>
+      </div>
+    </div>
+  );
+
+  const aiContent = (
+    <div style={styles.modalWrap}>
+      <ChipInput
+        label="Select document"
+        placeholder="Upload and select documents"
+        chips={documents.map((doc) => ({ id: doc.id, label: doc.name }))}
+        onChange={(chips) => {
+          setDocuments(chips.map((chip) => ({ id: chip.id, name: chip.label })));
+        }}
+        onChipRemove={(chipId) => removeDocument(chipId)}
+        onClear={() => setDocuments([])}
+        onDropdownClick={() => fileInputRef.current?.click()}
+        showDropdown
+        showClear
+      />
+
+      <Button variant="secondary" size="sm" onClick={() => fileInputRef.current?.click()} iconLeading={<Icon name="ArrowUpTray" size="sm" />}>
+        Upload documents
+      </Button>
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        style={{ display: "none" }}
+        onChange={handleFilePicked}
+      />
+    </div>
+  );
+
+  const showManual = mode === "manual";
+  const isManualStepOne = showManual && manualStep === 1;
+  const isManualStepTwo = showManual && manualStep === 2;
+
+  return (
+    <Modal
+      open={open}
+      onClose={onClose}
+      title="Create opportunity"
+      size="lg"
+      style={{ maxWidth: "600px" }}
+      tertiaryLabel={showManual ? (isManualStepOne ? "Cancel" : "Back") : "Cancel"}
+      onTertiaryClick={
+        isManualStepOne
+          ? onClose
+          : () => {
+              if (showManual) {
+                setManualStep(1);
+              } else {
+                onClose();
+              }
+            }
+      }
+      secondaryLabel={isManualStepTwo ? "Create" : undefined}
+      onSecondaryClick={onClose}
+      primaryLabel={showManual ? (isManualStepOne ? "Next" : "Create and open") : "Extract"}
+      onPrimaryClick={() => {
+        if (showManual && isManualStepOne) {
+          setManualStep(2);
+          return;
+        }
+        onClose();
+      }}
+      primaryDisabled={!showManual && documents.length === 0}
+    >
+      <div style={styles.modalWrap}>
+        <ButtonGroup value={mode} onChange={setMode} style={{ width: "100%", display: "flex" }}>
+          <ButtonGroupItem value="manual" style={{ flex: 1, justifyContent: "center" }}>Create manually</ButtonGroupItem>
+          <ButtonGroupItem value="ai" style={{ flex: 1, justifyContent: "center" }}>Create with AI</ButtonGroupItem>
+        </ButtonGroup>
+
+        {showManual ? (isManualStepOne ? manualStepOne : manualStepTwo) : aiContent}
+      </div>
+    </Modal>
+  );
+};
+
+const AiOpportunityExtractionPage = () => {
+  const [rows] = React.useState(AI_OPPORTUNITY_DATA);
+  const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false);
+
+  const columns = [
+    { key: "name", label: "Opportunity", type: "link", sortable: true, width: "280px" },
+    { key: "status", label: "Status", type: "chip", width: "140px", chipProps: { chevron: false, removable: false } },
+    { key: "confidence", label: "Confidence", type: "chip", width: "140px", chipProps: { chevron: false, removable: false } },
+    { key: "value", label: "Est. Value", sortable: true, width: "140px" },
+    { key: "owner", label: "Owner", width: "180px" },
+    { key: "source", label: "Source", width: "160px" },
+    { key: "tags", label: "Tags", type: "badges", width: "200px", maxVisible: 2 },
+    { key: "action", label: "Actions", type: "button", width: "88px", sticky: true },
+  ];
+
+  return (
+    <>
+      <Hub
+        title="Opportunities"
+        badge={String(rows.length)}
+        menuVariant="deal"
+        columns={columns}
+        data={rows}
+        showPagination={true}
+        totalItems={rows.length}
+        headerActions={<Button variant="primary" iconLeading={<Icon name="Plus" size="sm" />} size="md" onClick={() => setIsCreateModalOpen(true)}>Create</Button>}
+        emptyMessage="No opportunities found"
+      />
+      <CreateOpportunityModal open={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} />
+    </>
+  );
+};
+
+/* ===========================================
    ROUTER
    =========================================== */
 const RouterApp = () => {
@@ -442,6 +857,10 @@ const RouterApp = () => {
 
   if (path === "/side-panel") {
     return <SidePanelTest />;
+  }
+
+  if (path === "/ai-opportunity-extraction") {
+    return <AiOpportunityExtractionPage />;
   }
 
   return <ComponentLibraryDemo />;

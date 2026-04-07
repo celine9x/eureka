@@ -29,6 +29,7 @@ export * from "./molecules/dropdown-menu-item.jsx";
 export * from "./molecules/dropdown-menu.jsx";
 export * from "./molecules/ai-chat-input.jsx";
 export * from "./molecules/empty-state.jsx";
+export * from "./molecules/file-uploader.jsx";
 export * from "./molecules/infobox.jsx";
 export * from "./molecules/infofield.jsx";
 export * from "./molecules/miniinfobox.jsx";

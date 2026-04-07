@@ -26,6 +26,7 @@ const styles = {
       gap: var(--spacing-4);
       width: 100%;
       padding: var(--spacing-4) var(--spacing-8);
+      background: var(--color-general-neutral-light);
       border-bottom: 1px solid var(--color-action-outline-secondary-enabled);
       box-sizing: border-box;
     }

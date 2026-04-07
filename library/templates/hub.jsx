@@ -102,7 +102,7 @@ const styles = {
     }
     .hub__header {
       flex-shrink: 0;
-      background: var(--color-general-white);
+      background: var(--color-general-neutral-light);
       border-bottom: 1px solid var(--color-action-outline-secondary-enabled);
     }
     .hub__body {

@@ -200,6 +200,7 @@ export const RadioCard = ({
   name: nameProp,
   value,
   checked: checkedProp,
+  hideControl = false,
   isDisabled = false,
   disabled,
   label,
@@ -284,16 +285,18 @@ export const RadioCard = ({
       onBlur={() => setIsFocused(false)}
       {...props}
     >
-      <div style={styles.control}>
-        <RadioButton
-          name={name}
-          value={value}
-          checked={isChecked}
-          disabled={isCardDisabled}
-          size="md"
-          onChange={() => {}}
-        />
-      </div>
+      {!hideControl && (
+        <div style={styles.control}>
+          <RadioButton
+            name={name}
+            value={value}
+            checked={isChecked}
+            disabled={isCardDisabled}
+            size="md"
+            onChange={() => {}}
+          />
+        </div>
+      )}
       <div style={styles.content}>
         <div style={styles.labelRow}>
           {icon && <span style={styles.icon}>{icon}</span>}
