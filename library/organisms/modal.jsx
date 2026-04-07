@@ -253,6 +253,7 @@ export const Modal = ({
   primaryDisabled = false,
   primaryLoading = false,
   primaryVariant = "primary",
+  tertiaryVariant = "tertiary",
   footer,
   closeOnOverlayClick = true,
   closeOnEscape = true,
@@ -371,7 +372,7 @@ export const Modal = ({
                 <div className="modal__footer-left">
                   {tertiaryLabel && (
                     <Button
-                      variant="tertiary"
+                      variant={tertiaryVariant}
                       size="lg"
                       onClick={onTertiaryClick}
                     >

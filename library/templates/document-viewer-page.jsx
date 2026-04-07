@@ -67,7 +67,7 @@ const styles = {
   base: `
     .document-viewer-page {
       display: flex;
-      height: 100%;
+      height: 100vh;
       width: 100%;
       background: var(--color-general-neutral-light);
       overflow: hidden;
@@ -92,7 +92,7 @@ const styles = {
     .document-viewer-page__header {
       flex: 0 0 auto;
       padding: var(--spacing-6);
-      background: var(--color-general-white);
+      background: var(--color-general-neutral-light);
       border-bottom: 1px solid var(--color-action-outline-secondary-enabled);
     }
 
@@ -167,6 +167,9 @@ const styles = {
       padding: var(--spacing-6);
       background: var(--color-general-white);
       border-top: 1px solid var(--color-action-outline-secondary-enabled);
+      position: sticky;
+      bottom: 0;
+      z-index: 2;
     }
 
     .document-viewer-page__form-footer-right {
@@ -224,6 +227,7 @@ export const DocumentViewerPage = ({
   pagePadding = 40,
   showToolbar = true,
   exportFileName = "document-preview",
+  documentViewerProps,
 
   // Form props
   formHeaderContent,
@@ -321,6 +325,7 @@ export const DocumentViewerPage = ({
               pagePadding={pagePadding}
               showToolbar={showToolbar}
               exportFileName={exportFileName}
+              {...documentViewerProps}
             />
           </div>
 

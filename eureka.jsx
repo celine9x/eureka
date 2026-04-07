@@ -46,6 +46,7 @@ import { Subinfo } from "./library/molecules/subinfo.jsx";
 import { Infofield, InfofieldGroup } from "./library/molecules/infofield.jsx";
 import { MiniInfobox } from "./library/molecules/miniinfobox.jsx";
 import { Attachment } from "./library/molecules/attachment.jsx";
+import { FileUploader } from "./library/molecules/file-uploader.jsx";
 import { AiChatInput } from "./library/molecules/ai-chat-input.jsx";
 import { EmptyState, EMPTY_STATE_SIZES } from "./library/molecules/empty-state.jsx";
 import { Toast, ToastProvider, useToast } from "./library/molecules/toast.jsx";
@@ -3255,6 +3256,53 @@ import { Icon } from "@/library/atoms/icon";
   </Section>
 );
 
+const FileUploaderPage = () => {
+  const [lastSelection, setLastSelection] = useState([]);
+
+  return (
+    <Section title="FileUploader" description="A drag-and-drop uploader molecule with browse fallback and file selection callback.">
+      <PreviewComponent
+        title="Default Uploader"
+        code={`import { FileUploader } from "@/library/molecules/file-uploader";
+
+<FileUploader
+  onFilesSelected={(files) => console.log(files)}
+/>`}
+      >
+        <FileUploader
+          onFilesSelected={(files) => {
+            setLastSelection(files.map((file) => file.name));
+          }}
+        />
+      </PreviewComponent>
+
+      <PreviewComponent
+        title="Without Illustration"
+        code={`<FileUploader
+  showIllustration={false}
+  title="Upload evidence files"
+  subtitle="PDF, PNG, DOCX up to 25MB"
+/>`}
+      >
+        <FileUploader
+          showIllustration={false}
+          title="Upload evidence files"
+          subtitle="PDF, PNG, DOCX up to 25MB"
+          onFilesSelected={(files) => {
+            setLastSelection(files.map((file) => file.name));
+          }}
+        />
+      </PreviewComponent>
+
+      {lastSelection.length > 0 ? (
+        <p style={{ marginTop: 8, color: "var(--color-content-secondary)", fontSize: 14 }}>
+          Last selected: {lastSelection.join(", ")}
+        </p>
+      ) : null}
+    </Section>
+  );
+};
+
 const EmptyStatePage = () => (
   <Section title="EmptyState" description="A reusable empty state molecule with optional illustration and Button atom actions.">
     <PreviewComponent
@@ -5261,6 +5309,7 @@ const PAGES = {
   infofield: { title: "Infofield", component: InfofieldPage, category: "molecules" },
   miniInfobox: { title: "MiniInfobox", component: MiniInfoboxPage, category: "molecules" },
   attachment: { title: "Attachment", component: AttachmentPage, category: "molecules" },
+  fileUploader: { title: "FileUploader", component: FileUploaderPage, category: "molecules" },
   emptyState: { title: "EmptyState", component: EmptyStatePage, category: "molecules" },
   aiChatInput: { title: "AiChatInput", component: AiChatInputPage, category: "molecules" },
   toast: { title: "Toast", component: ToastPage, category: "molecules" },
@@ -5426,6 +5475,7 @@ function getIconForPage(pageKey) {
     infofield: "DocumentText",
     miniInfobox: "ExclamationCircle",
     attachment: "PaperClip",
+    fileUploader: "ArrowUpTray",
     emptyState: "DocumentText",
     aiChatInput: "ChatBubbleLeftRight",
     toast: "InformationCircle",

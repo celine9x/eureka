@@ -408,11 +408,11 @@ const styles = {
       transform: translateX(100%);
       transition: transform 280ms cubic-bezier(0.32, 0, 0.15, 1);
       will-change: transform;
-      box-shadow: -4px 0 24px var(--color-general-lightbox);
       display: flex;
     }
     .hub__filter-panel-drawer.open {
       transform: translateX(0);
+      box-shadow: -4px 0 24px var(--color-general-lightbox);
     }
   `,
 };

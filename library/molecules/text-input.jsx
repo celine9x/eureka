@@ -14,6 +14,23 @@
 
 import { useState, useId, forwardRef } from "react";
 
+let placeholderStylesInjected = false;
+
+const injectPlaceholderStyles = () => {
+  if (placeholderStylesInjected || typeof document === "undefined") return;
+
+  const styleEl = document.createElement("style");
+  styleEl.setAttribute("data-eureka", "text-input-placeholder");
+  styleEl.textContent = `
+    .eureka-text-input::placeholder {
+      color: var(--color-content-tertiary);
+      opacity: 1;
+    }
+  `;
+  document.head.appendChild(styleEl);
+  placeholderStylesInjected = true;
+};
+
 // ─────────────────────────────────────────────
 // CONSTANTS
 // ─────────────────────────────────────────────
@@ -223,6 +240,8 @@ export const Input = forwardRef(
     },
     ref
   ) => {
+    injectPlaceholderStyles();
+
     const [isHovered, setIsHovered] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
 
@@ -247,6 +266,7 @@ export const Input = forwardRef(
       <input
         ref={ref}
         type={type}
+        className="eureka-text-input"
         style={inputStyle}
         disabled={isInputDisabled}
         readOnly={isInputReadOnly}

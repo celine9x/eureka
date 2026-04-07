@@ -13,7 +13,7 @@
  * </RadioCardGroup>
  */
 
-import React, { useState, createContext, useContext } from "react";
+import React, { useRef, useState, createContext, useContext } from "react";
 import { RadioButton } from "../atoms/radio-button.jsx";
 
 // ─────────────────────────────────────────────
@@ -58,7 +58,7 @@ const styles = {
 
   cardChecked: {
     background: "var(--color-general-informative)",
-    outlineColor: "var(--color-action-fill-primary-hover)",
+    outlineColor: "var(--color-interaction-outline-enabled)",
     boxShadow: "var(--shadow-dark-down)",
   },
 
@@ -73,7 +73,7 @@ const styles = {
   },
 
   cardDisabledChecked: {
-    outlineColor: "var(--color-action-fill-primary-hover)",
+    outlineColor: "var(--color-interaction-outline-disabled)",
     boxShadow: "var(--shadow-dark-down)",
   },
 
@@ -212,7 +212,8 @@ export const RadioCard = ({
   ...props
 }) => {
   const [isHovered, setIsHovered] = useState(false);
-  const [isFocused, setIsFocused] = useState(false);
+  const [isFocusVisible, setIsFocusVisible] = useState(false);
+  const hadKeyboardEventRef = useRef(false);
 
   const group = useContext(RadioCardGroupContext);
   const name = nameProp || group?.name;
@@ -229,6 +230,8 @@ export const RadioCard = ({
   };
 
   const handleKeyDown = (e) => {
+    hadKeyboardEventRef.current = true;
+
     if ((e.key === " " || e.key === "Enter") && !isCardDisabled && !isChecked) {
       e.preventDefault();
       handleClick();
@@ -243,7 +246,7 @@ export const RadioCard = ({
     ...(isCardDisabled && styles.cardDisabled),
     ...(isCardDisabled && !isChecked && styles.cardDisabledUnchecked),
     ...(isCardDisabled && isChecked && styles.cardDisabledChecked),
-    ...(isFocused && styles.cardFocus),
+    ...(isFocusVisible && styles.cardFocus),
     ...style,
   };
 
@@ -279,10 +282,13 @@ export const RadioCard = ({
       aria-disabled={isCardDisabled}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
+      onMouseDown={() => {
+        hadKeyboardEventRef.current = false;
+      }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      onFocus={() => setIsFocused(true)}
-      onBlur={() => setIsFocused(false)}
+      onFocus={() => setIsFocusVisible(hadKeyboardEventRef.current)}
+      onBlur={() => setIsFocusVisible(false)}
       {...props}
     >
       {!hideControl && (

@@ -76,7 +76,7 @@ const styles = {
     minHeight: 32,
     background: "var(--color-general-white)",
     borderRadius: "var(--radius-md)",
-    outline: "1px solid var(--color-action-outline-secondary-enabled)",
+    outline: "1px solid var(--color-interaction-outline-enabled)",
     outlineOffset: "-1px",
     boxShadow: "var(--shadow-light-down)",
     transition: "all var(--transition-fast)",
@@ -84,7 +84,7 @@ const styles = {
   },
 
   containerHover: {
-    outlineColor: "var(--color-general-neutral-dark)",
+    outlineColor: "var(--color-interaction-outline-hover)",
     boxShadow: "var(--shadow-light-up)",
   },
 
@@ -95,11 +95,12 @@ const styles = {
 
   containerDisabled: {
     background: "var(--color-general-neutral-light)",
+    outlineColor: "var(--color-interaction-outline-disabled)",
     cursor: "not-allowed",
   },
 
   containerError: {
-    outlineColor: "var(--color-content-negative)",
+    outlineColor: "var(--color-interaction-outline-negative)",
   },
 
   containerEmpty: {
