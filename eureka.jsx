@@ -1878,10 +1878,10 @@ const DropdownMenuItemPage = () => (
   </Section>
 );
 
-const StepperPage = () => (
-  <Section title="Stepper" description="A progress stepper showing multiple steps with status indicators.">
+const StagePage = () => (
+  <Section title="Stage" description="A staged progress component showing multiple steps with status indicators.">
     <PreviewComponent
-      title="Basic Stepper"
+      title="Basic Stages"
       code={`import { Stepper } from "@/library/molecules/stepper";
 
 <Stepper
@@ -1903,35 +1903,6 @@ const StepperPage = () => (
           { title: "Published" },
         ]}
       />
-    </PreviewComponent>
-
-    <PreviewComponent
-      title="Vertical Stepper"
-      code={`import { Stepper } from "@/library/molecules/stepper";
-
-<Stepper
-  orientation="vertical"
-  currentStep={2}
-  steps={[
-    { title: "Step 1", subtitle: "Completed" },
-    { title: "Step 2", subtitle: "Completed" },
-    { title: "Step 3", subtitle: "Current" },
-    { title: "Step 4", subtitle: "Pending" },
-  ]}
-/>`}
-    >
-      <div style={{ height: 300 }}>
-        <Stepper
-          orientation="vertical"
-          currentStep={2}
-          steps={[
-            { title: "Step 1", subtitle: "Completed" },
-            { title: "Step 2", subtitle: "Completed" },
-            { title: "Step 3", subtitle: "Current" },
-            { title: "Step 4", subtitle: "Pending" },
-          ]}
-        />
-      </div>
     </PreviewComponent>
 
     <PreviewComponent
@@ -1959,6 +1930,58 @@ const StepperPage = () => (
           { title: "Confirm" },
         ]}
       />
+    </PreviewComponent>
+  </Section>
+);
+
+const StepperInteractive = () => {
+  const [total, setTotal] = React.useState(4);
+  const [current, setCurrent] = React.useState(1);
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <Stepper variant="progress" totalSteps={total} currentStep={current} />
+      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+        <Button size="sm" variant="secondary" onPress={() => setCurrent((c) => Math.max(0, c - 1))}>Prev</Button>
+        <Button size="sm" variant="secondary" onPress={() => setCurrent((c) => Math.min(total - 1, c + 1))}>Next</Button>
+        <span style={{ fontSize: 12, color: "var(--color-content-secondary)" }}>Step {current + 1}/{total}</span>
+        <Button size="sm" variant="secondary" onPress={() => { setTotal((t) => t + 1); }}>+ Step</Button>
+        <Button size="sm" variant="secondary" onPress={() => { setTotal((t) => { const next = Math.max(1, t - 1); setCurrent((c) => Math.min(c, next - 1)); return next; }); }}>− Step</Button>
+      </div>
+    </div>
+  );
+};
+
+const StepperPage = () => (
+  <Section title="Stepper" description="A compact step progress indicator with a segmented progress bar and step label. Pass totalSteps and currentStep to control it.">
+    <PreviewComponent
+      title="Interactive Stepper"
+      code={`import { Stepper } from "@/library/molecules/stepper";
+
+// Simplest usage — just pass totalSteps and currentStep
+<Stepper variant="progress" totalSteps={4} currentStep={1} />`}
+    >
+      <StepperInteractive />
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="Step 1 of 3"
+      code={`<Stepper variant="progress" totalSteps={3} currentStep={0} />`}
+    >
+      <Stepper variant="progress" totalSteps={3} currentStep={0} />
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="Step 2 of 3"
+      code={`<Stepper variant="progress" totalSteps={3} currentStep={1} />`}
+    >
+      <Stepper variant="progress" totalSteps={3} currentStep={1} />
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="Step 3 of 3"
+      code={`<Stepper variant="progress" totalSteps={3} currentStep={2} />`}
+    >
+      <Stepper variant="progress" totalSteps={3} currentStep={2} />
     </PreviewComponent>
   </Section>
 );
@@ -5215,7 +5238,6 @@ const PAGES = {
   radioButton: { title: "RadioButton", component: RadioButtonPage, category: "atoms" },
   link: { title: "Link", component: LinkPage, category: "atoms" },
   tooltip: { title: "Tooltip", component: TooltipPage, category: "atoms" },
-  step: { title: "Step", component: StepPage, category: "atoms" },
   buttonBadge: { title: "ButtonBadge", component: ButtonBadgePage, category: "atoms" },
   // Molecules
   search: { title: "Search", component: SearchPage, category: "molecules" },
@@ -5224,6 +5246,7 @@ const PAGES = {
   textInput: { title: "TextInput", component: TextInputPage, category: "molecules" },
   textarea: { title: "Textarea", component: TextareaPage, category: "molecules" },
   dropdownMenuItem: { title: "DropdownMenuItem", component: DropdownMenuItemPage, category: "molecules" },
+  stage: { title: "Stage", component: StagePage, category: "molecules" },
   stepper: { title: "Stepper", component: StepperPage, category: "molecules" },
   radioCard: { title: "RadioCard", component: RadioCardPage, category: "molecules" },
   pagination: { title: "Pagination", component: PaginationPage, category: "molecules" },
@@ -5382,7 +5405,6 @@ function getIconForPage(pageKey) {
     radioButton: "ListBullet",
     link: "Link",
     tooltip: "ChatBubbleLeftRight",
-    step: "ArrowTrendingUp",
     buttonBadge: "RectangleGroup",
     search: "MagnifyingGlass",
     tabs: "Squares2X2",

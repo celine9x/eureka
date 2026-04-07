@@ -18,6 +18,11 @@ export const STEPPER_ORIENTATIONS = {
   vertical: "vertical",
 };
 
+export const STEPPER_VARIANTS = {
+  detailed: "detailed",
+  progress: "progress",
+};
+
 /** Re-export step status */
 export { STEP_STATUS };
 
@@ -53,6 +58,48 @@ const styles = {
     padding: 0,
     outline: "none",
   },
+
+  progressRoot: {
+    width: "100%",
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "var(--spacing-sm)",
+  },
+
+  progressLabel: {
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-overline)",
+    lineHeight: "var(--line-height-body-overline)",
+    fontWeight: "var(--font-weight-regular)",
+    color: "var(--color-content-secondary)",
+    whiteSpace: "nowrap",
+  },
+
+  progressTrack: {
+    flex: "1 1 0",
+    display: "flex",
+    alignItems: "flex-start",
+  },
+
+  progressSegment: {
+    flex: "1 1 0",
+    height: 4,
+    background: "var(--color-general-neutral-light)",
+  },
+
+  progressSegmentActive: {
+    background: "var(--color-content-brand)",
+  },
+
+  progressSegmentFirst: {
+    borderTopLeftRadius: 16,
+    borderBottomLeftRadius: 16,
+  },
+
+  progressSegmentLast: {
+    borderTopRightRadius: 16,
+    borderBottomRightRadius: 16,
+  },
 };
 
 // ─────────────────────────────────────────────
@@ -87,14 +134,47 @@ const styles = {
  */
 export const Stepper = ({
   orientation = STEPPER_ORIENTATIONS.horizontal,
+  variant = STEPPER_VARIANTS.detailed,
   currentStep = 0,
   steps = [],
+  totalSteps: totalStepsProp,
   showBackground = true,
   onStepClick,
   style,
   children,
   ...props
 }) => {
+  if (variant === STEPPER_VARIANTS.progress) {
+    const totalSteps = Math.max(totalStepsProp ?? steps.length, 1);
+    const clampedCurrentStep = Math.min(Math.max(currentStep, 0), totalSteps - 1);
+
+    return (
+      <div style={styles.progressRoot} {...props}>
+        <div style={styles.progressLabel}>{`Step ${clampedCurrentStep + 1}/${totalSteps}`}</div>
+
+        <div style={styles.progressTrack}>
+          {Array.from({ length: totalSteps }).map((_, index) => {
+            const isFirst = index === 0;
+            const isLast = index === totalSteps - 1;
+            const isActive = index <= clampedCurrentStep;
+
+            return (
+              <div
+                key={`progress-segment-${index}`}
+                style={{
+                  ...styles.progressSegment,
+                  ...(isActive ? styles.progressSegmentActive : null),
+                  ...(isFirst ? styles.progressSegmentFirst : null),
+                  ...(isLast ? styles.progressSegmentLast : null),
+                }}
+              />
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
   // Compose stepper styles
   const stepperStyle = {
     ...styles.base,
@@ -154,6 +234,7 @@ export const Stepper = ({
 
 Stepper.displayName = "Stepper";
 Stepper.orientations = STEPPER_ORIENTATIONS;
+Stepper.variants = STEPPER_VARIANTS;
 Stepper.stepStatus = STEP_STATUS;
 Stepper.Step = Step;
 
