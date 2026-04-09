@@ -2,7 +2,6 @@
  * Eureka Design System - Input Atom
  *
  * Base input element - the smallest building block.
- * Use this directly for simple cases, or compose into molecules.
  *
  * Usage:
  *   <e-input placeholder="Enter text"></e-input>
@@ -14,7 +13,7 @@
  *   - value: string
  *   - disabled: boolean
  *   - readonly: boolean
- *   - error: boolean (triggers error styling)
+ *   - error: boolean
  *   - name: string
  */
 
@@ -26,64 +25,236 @@ class EInput extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
+
+    this.handleInput = this.handleInput.bind(this);
+    this.handleChange = this.handleChange.bind(this);
+    this.handleFocus = this.handleFocus.bind(this);
+    this.handleBlur = this.handleBlur.bind(this);
   }
 
   connectedCallback() {
     this.render();
-    this.setupEventListeners();
+    this.cacheElements();
+    this.attachEventListeners();
+    this.syncInputFromAttributes();
   }
 
-  attributeChangedCallback() {
-    this.render();
-    this.setupEventListeners();
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (!this.shadowRoot) return;
+    if (oldValue === newValue) return;
+
+    if (!this.inputEl) {
+      this.render();
+      this.cacheElements();
+      this.attachEventListeners();
+    }
+
+    this.syncSingleAttribute(name, newValue);
   }
 
-  get type() { return this.getAttribute('type') || 'text'; }
-  get placeholder() { return this.getAttribute('placeholder') || ''; }
-  get value() { return this.getAttribute('value') || ''; }
-  get disabled() { return this.hasAttribute('disabled'); }
-  get readonly() { return this.hasAttribute('readonly'); }
-  get error() { return this.hasAttribute('error'); }
-  get name() { return this.getAttribute('name'); }
+  disconnectedCallback() {
+    this.detachEventListeners();
+  }
+
+  get inputEl() {
+    return this._inputEl;
+  }
+
+  get type() {
+    return this.getAttribute('type') || 'text';
+  }
+
+  set type(val) {
+    if (val == null) {
+      this.removeAttribute('type');
+    } else {
+      this.setAttribute('type', val);
+    }
+  }
+
+  get placeholder() {
+    return this.getAttribute('placeholder') || '';
+  }
+
+  set placeholder(val) {
+    if (val == null) {
+      this.removeAttribute('placeholder');
+    } else {
+      this.setAttribute('placeholder', val);
+    }
+  }
+
+  get value() {
+    return this.getAttribute('value') || '';
+  }
 
   set value(val) {
-    this.setAttribute('value', val);
-    const input = this.shadowRoot.querySelector('input');
-    if (input) input.value = val;
+    const normalized = val ?? '';
+    if (this.getAttribute('value') !== normalized) {
+      this.setAttribute('value', normalized);
+    } else if (this.inputEl && this.inputEl.value !== normalized) {
+      this.inputEl.value = normalized;
+    }
   }
 
-  setupEventListeners() {
-    const input = this.shadowRoot.querySelector('input');
-    if (!input) return;
+  get disabled() {
+    return this.hasAttribute('disabled');
+  }
 
-    input.addEventListener('input', (e) => {
-      this.setAttribute('value', e.target.value);
-      this.dispatchEvent(new CustomEvent('e-input', {
+  set disabled(val) {
+    this.toggleAttribute('disabled', Boolean(val));
+  }
+
+  get readonly() {
+    return this.hasAttribute('readonly');
+  }
+
+  set readonly(val) {
+    this.toggleAttribute('readonly', Boolean(val));
+  }
+
+  get error() {
+    return this.hasAttribute('error');
+  }
+
+  set error(val) {
+    this.toggleAttribute('error', Boolean(val));
+  }
+
+  get name() {
+    return this.getAttribute('name') || '';
+  }
+
+  set name(val) {
+    if (!val) {
+      this.removeAttribute('name');
+    } else {
+      this.setAttribute('name', val);
+    }
+  }
+
+  focus() {
+    this.inputEl?.focus();
+  }
+
+  blur() {
+    this.inputEl?.blur();
+  }
+
+  cacheElements() {
+    this._inputEl = this.shadowRoot.querySelector('input');
+  }
+
+  attachEventListeners() {
+    if (!this.inputEl || this._listenersAttached) return;
+
+    this.inputEl.addEventListener('input', this.handleInput);
+    this.inputEl.addEventListener('change', this.handleChange);
+    this.inputEl.addEventListener('focus', this.handleFocus);
+    this.inputEl.addEventListener('blur', this.handleBlur);
+
+    this._listenersAttached = true;
+  }
+
+  detachEventListeners() {
+    if (!this.inputEl || !this._listenersAttached) return;
+
+    this.inputEl.removeEventListener('input', this.handleInput);
+    this.inputEl.removeEventListener('change', this.handleChange);
+    this.inputEl.removeEventListener('focus', this.handleFocus);
+    this.inputEl.removeEventListener('blur', this.handleBlur);
+
+    this._listenersAttached = false;
+  }
+
+  handleInput(e) {
+    const newValue = e.target.value;
+
+    if (this.getAttribute('value') !== newValue) {
+      this.setAttribute('value', newValue);
+    }
+
+    this.dispatchEvent(
+      new CustomEvent('e-input', {
+        detail: { value: newValue },
+        bubbles: true,
+        composed: true
+      })
+    );
+  }
+
+  handleChange(e) {
+    this.dispatchEvent(
+      new CustomEvent('e-change', {
         detail: { value: e.target.value },
         bubbles: true,
         composed: true
-      }));
-    });
+      })
+    );
+  }
 
-    input.addEventListener('change', (e) => {
-      this.dispatchEvent(new CustomEvent('e-change', {
-        detail: { value: e.target.value },
+  handleFocus() {
+    this.dispatchEvent(
+      new CustomEvent('e-focus', {
         bubbles: true,
         composed: true
-      }));
-    });
+      })
+    );
+  }
 
-    input.addEventListener('focus', () => {
-      this.dispatchEvent(new CustomEvent('e-focus', { bubbles: true, composed: true }));
-    });
+  handleBlur() {
+    this.dispatchEvent(
+      new CustomEvent('e-blur', {
+        bubbles: true,
+        composed: true
+      })
+    );
+  }
 
-    input.addEventListener('blur', () => {
-      this.dispatchEvent(new CustomEvent('e-blur', { bubbles: true, composed: true }));
-    });
+  syncInputFromAttributes() {
+    if (!this.inputEl) return;
+
+    this.inputEl.type = this.type;
+    this.inputEl.placeholder = this.placeholder;
+    this.inputEl.value = this.value;
+    this.inputEl.disabled = this.disabled;
+    this.inputEl.readOnly = this.readonly;
+    this.inputEl.name = this.name;
+    this.inputEl.classList.toggle('error', this.error);
+  }
+
+  syncSingleAttribute(name, value) {
+    if (!this.inputEl) return;
+
+    switch (name) {
+      case 'type':
+        this.inputEl.type = value || 'text';
+        break;
+      case 'placeholder':
+        this.inputEl.placeholder = value || '';
+        break;
+      case 'value':
+        if (this.inputEl.value !== (value || '')) {
+          this.inputEl.value = value || '';
+        }
+        break;
+      case 'disabled':
+        this.inputEl.disabled = this.disabled;
+        break;
+      case 'readonly':
+        this.inputEl.readOnly = this.readonly;
+        break;
+      case 'error':
+        this.inputEl.classList.toggle('error', this.error);
+        break;
+      case 'name':
+        this.inputEl.name = value || '';
+        break;
+    }
   }
 
   render() {
-    const styles = `
+    this.shadowRoot.innerHTML = `
       <style>
         :host {
           display: block;
@@ -101,16 +272,22 @@ class EInput extends HTMLElement {
           border: 1px solid var(--color-interaction-outline-enabled);
           border-radius: var(--radius-md);
           outline: none;
-          transition: all var(--transition-fast);
           box-sizing: border-box;
+          box-shadow: none;
+          transition:
+            border-color var(--transition-fast),
+            box-shadow var(--transition-fast),
+            background-color var(--transition-fast),
+            color var(--transition-fast);
         }
 
         input::placeholder {
           color: var(--color-content-tertiary);
         }
 
-        input:hover:not(:disabled):not(.error) {
+        input:hover:not(:disabled):not(:focus):not(.error) {
           border-color: var(--color-interaction-outline-hover);
+          box-shadow: var(--shadow-medium-down);
         }
 
         input:focus:not(.error) {
@@ -123,9 +300,10 @@ class EInput extends HTMLElement {
           border-color: var(--color-interaction-outline-disabled);
           color: var(--color-content-tertiary);
           cursor: not-allowed;
+          box-shadow: none;
         }
 
-        input:read-only {
+        input:read-only:not(:disabled) {
           background-color: var(--color-general-neutral-lighter);
         }
 
@@ -133,28 +311,20 @@ class EInput extends HTMLElement {
           border-color: var(--color-interaction-outline-negative);
         }
 
-        input.error:focus {
+        input.error:hover:not(:disabled),
+        input.error:focus:not(:disabled) {
           border-color: var(--color-interaction-outline-negative);
           box-shadow: var(--shadow-focus);
         }
       </style>
-    `;
 
-    this.shadowRoot.innerHTML = `
-      ${styles}
-      <input
-        class="${this.error ? 'error' : ''}"
-        type="${this.type}"
-        placeholder="${this.placeholder}"
-        value="${this.value}"
-        ${this.name ? `name="${this.name}"` : ''}
-        ${this.disabled ? 'disabled' : ''}
-        ${this.readonly ? 'readonly' : ''}
-      />
+      <input />
     `;
   }
 }
 
-customElements.define('e-input', EInput);
+if (!customElements.get('e-input')) {
+  customElements.define('e-input', EInput);
+}
 
 export default EInput;

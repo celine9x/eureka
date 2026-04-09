@@ -1,7 +1,7 @@
 /**
  * Eureka Design System - TextInput Molecule
  *
- * A complete text input component with label and helper text.
+ * Complete text input with label and helper text.
  *
  * Usage:
  *   <e-text-input placeholder="Enter text"></e-text-input>
@@ -11,15 +11,15 @@
  *
  * Attributes:
  *   - type: text | email | password | number | tel | url (default: text)
- *   - label: string (optional label above input)
+ *   - label: string
  *   - placeholder: string
  *   - value: string
- *   - helper: string (helper text below input)
+ *   - helper: string
  *   - error: string (error message, triggers error state)
  *   - disabled: boolean
  *   - required: boolean
  *   - readonly: boolean
- *   - name: string (for forms)
+ *   - name: string
  *   - id: string
  *
  * Events:
@@ -42,18 +42,36 @@ class ETextInput extends HTMLElement {
     super();
     this.attachShadow({ mode: 'open' });
     this._inputId = `input-${Math.random().toString(36).slice(2, 11)}`;
+    this._inputRef = null;
+    this._handleInputEvent = this._handleInputEvent.bind(this);
+    this._handleChangeEvent = this._handleChangeEvent.bind(this);
+    this._handleFocusEvent = this._handleFocusEvent.bind(this);
+    this._handleBlurEvent = this._handleBlurEvent.bind(this);
   }
 
   connectedCallback() {
     this.render();
-    this.setupEventListeners();
+    this._cacheElements();
+    this._attachEventListeners();
   }
 
-  attributeChangedCallback() {
-    if (this.shadowRoot.innerHTML) {
+  disconnectedCallback() {
+    this._detachEventListeners();
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (oldValue === newValue || !this.shadowRoot) return;
+
+    // Full re-render only if structural change
+    if (['label', 'helper', 'error'].includes(name)) {
       this.render();
-      this.setupEventListeners();
+      this._cacheElements();
+      this._attachEventListeners();
+      return;
     }
+
+    // Sync props to child input
+    this._syncChildAttribute(name, newValue);
   }
 
   get type() { return this.getAttribute('type') || 'text'; }
@@ -69,46 +87,109 @@ class ETextInput extends HTMLElement {
   get inputId() { return this.getAttribute('id') || this._inputId; }
 
   set value(val) {
-    this.setAttribute('value', val);
-    const input = this.shadowRoot.querySelector('e-input');
-    if (input) input.value = val;
+    this.setAttribute('value', val ?? '');
   }
 
-  setupEventListeners() {
-    const input = this.shadowRoot.querySelector('e-input');
-    if (!input) return;
+  focus() {
+    this._inputRef?.focus();
+  }
 
-    // Remove old listeners by replacing element (simple approach)
-    const newInput = input.cloneNode(true);
-    input.parentNode.replaceChild(newInput, input);
+  blur() {
+    this._inputRef?.blur();
+  }
 
-    newInput.addEventListener('e-input', (e) => {
-      this.setAttribute('value', e.detail.value);
-      this.dispatchEvent(new CustomEvent('e-input', {
-        detail: e.detail,
-        bubbles: true,
-        composed: true
-      }));
-    });
+  _cacheElements() {
+    this._inputRef = this.shadowRoot.querySelector('e-input');
+  }
 
-    newInput.addEventListener('e-change', (e) => {
-      this.dispatchEvent(new CustomEvent('e-change', {
-        detail: e.detail,
-        bubbles: true,
-        composed: true
-      }));
-    });
+  _attachEventListeners() {
+    if (!this._inputRef || this._listenersAttached) return;
 
-    newInput.addEventListener('e-focus', () => {
-      this.dispatchEvent(new CustomEvent('e-focus', { bubbles: true, composed: true }));
-    });
+    this._inputRef.addEventListener('e-input', this._handleInputEvent);
+    this._inputRef.addEventListener('e-change', this._handleChangeEvent);
+    this._inputRef.addEventListener('e-focus', this._handleFocusEvent);
+    this._inputRef.addEventListener('e-blur', this._handleBlurEvent);
 
-    newInput.addEventListener('e-blur', () => {
-      this.dispatchEvent(new CustomEvent('e-blur', { bubbles: true, composed: true }));
-    });
+    this._listenersAttached = true;
+  }
+
+  _detachEventListeners() {
+    if (!this._inputRef || !this._listenersAttached) return;
+
+    this._inputRef.removeEventListener('e-input', this._handleInputEvent);
+    this._inputRef.removeEventListener('e-change', this._handleChangeEvent);
+    this._inputRef.removeEventListener('e-focus', this._handleFocusEvent);
+    this._inputRef.removeEventListener('e-blur', this._handleBlurEvent);
+
+    this._listenersAttached = false;
+  }
+
+  _handleInputEvent(e) {
+    const newValue = e.detail.value;
+    if (this.value !== newValue) {
+      this.setAttribute('value', newValue);
+    }
+    this.dispatchEvent(new CustomEvent('e-input', {
+      detail: e.detail,
+      bubbles: true,
+      composed: true
+    }));
+  }
+
+  _handleChangeEvent(e) {
+    this.dispatchEvent(new CustomEvent('e-change', {
+      detail: e.detail,
+      bubbles: true,
+      composed: true
+    }));
+  }
+
+  _handleFocusEvent() {
+    this.dispatchEvent(new CustomEvent('e-focus', { bubbles: true, composed: true }));
+  }
+
+  _handleBlurEvent() {
+    this.dispatchEvent(new CustomEvent('e-blur', { bubbles: true, composed: true }));
+  }
+
+  _syncChildAttribute(name, value) {
+    if (!this._inputRef) return;
+
+    switch (name) {
+      case 'type':
+        this._inputRef.type = value || 'text';
+        break;
+      case 'placeholder':
+        this._inputRef.placeholder = value || '';
+        break;
+      case 'value':
+        this._inputRef.value = value || '';
+        break;
+      case 'disabled':
+        this._inputRef.disabled = this.disabled;
+        break;
+      case 'readonly':
+        this._inputRef.readonly = this.readonly;
+        break;
+      case 'error':
+        this._inputRef.error = !!this.error;
+        break;
+      case 'name':
+        this._inputRef.name = value || '';
+        break;
+      case 'required':
+        // Handle required on label if needed
+        break;
+      case 'id':
+        // Update label for
+        const label = this.shadowRoot.querySelector('e-label');
+        if (label) label.setAttribute('for', this.inputId);
+        break;
+    }
   }
 
   render() {
+    const inputId = this.inputId;
     const hasError = !!this.error;
 
     const styles = `
@@ -122,28 +203,33 @@ class ETextInput extends HTMLElement {
           flex-direction: column;
           gap: var(--spacing-1, 0.25rem);
         }
+
+        .field:focus-within e-label {
+          color: var(--color-interaction-outline-active);
+        }
       </style>
     `;
 
     const labelHtml = this.label ? `
-      <e-label for="${this.inputId}" ${this.required ? 'required' : ''}>${this.label}</e-label>
+      <e-label for="${inputId}" ${this.required ? 'required' : ''}>${this.label}</e-label>
     ` : '';
 
-    const helperHtml = this.error
-      ? `<e-helper-text variant="error">${this.error}</e-helper-text>`
-      : this.helper
-        ? `<e-helper-text>${this.helper}</e-helper-text>`
-        : '';
+    const helperHtml = this.error ? `
+      <e-helper-text variant="error">${this.error}</e-helper-text>
+    ` : this.helper ? `
+      <e-helper-text>${this.helper}</e-helper-text>
+    ` : '';
 
     this.shadowRoot.innerHTML = `
       ${styles}
       <div class="field">
         ${labelHtml}
         <e-input
+          id="${inputId}"
           type="${this.type}"
           placeholder="${this.placeholder}"
           value="${this.value}"
-          ${this.name ? `name="${this.name}"` : ''}
+          name="${this.name || ''}"
           ${this.disabled ? 'disabled' : ''}
           ${this.readonly ? 'readonly' : ''}
           ${hasError ? 'error' : ''}
@@ -154,6 +240,8 @@ class ETextInput extends HTMLElement {
   }
 }
 
-customElements.define('e-text-input', ETextInput);
+if (!customElements.get('e-text-input')) {
+  customElements.define('e-text-input', ETextInput);
+}
 
 export default ETextInput;

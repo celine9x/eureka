@@ -1240,7 +1240,6 @@ export const FilterPanel = ({
                   const appliedCount = getAppliedOptionCount(criteria);
                   const badges = [];
                   if (appliedCount > 0) badges.push(String(appliedCount));
-                  if (typeof filter.count === "number") badges.push(String(filter.count));
                   return (
                     <FilterPanelRow
                       key={filter.id}
@@ -1265,7 +1264,7 @@ export const FilterPanel = ({
                   }, 0);
 
                   const badges = [];
-                  badges.push({ label: String(objectActiveCount), color: objectActiveCount > 0 ? "brand" : "neutral" });
+                  if (objectActiveCount > 0) badges.push({ label: String(objectActiveCount), color: "brand" });
 
                   return (
                     <FilterPanelRow
@@ -1313,7 +1312,6 @@ export const FilterPanel = ({
                     badges.push({ label: filter.objectLabel, color: "neutral" });
                   }
                   if (appliedCount > 0) badges.push(String(appliedCount));
-                  if (typeof filter.count === "number") badges.push(String(filter.count));
 
                   return (
                     <FilterPanelRow
@@ -1369,8 +1367,21 @@ export const FilterPanel = ({
 
       {(isFilterPickerOpen || activeObject || activeFilter) && (
         <div style={styles.footer}>
-          <Button variant="secondary" size="md" onClick={handleClear}>
-            Clear all
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={
+              activeFilter
+                ? () =>
+                    setCriteriaById((prev) => {
+                      const next = { ...prev };
+                      delete next[activeFilter.id];
+                      return next;
+                    })
+                : handleClear
+            }
+          >
+            {activeFilter ? "Clear" : "Clear all"}
           </Button>
           <Button
             variant="primary"
