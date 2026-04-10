@@ -537,12 +537,13 @@
   --gradient-ai-icon: var(--gradient-ai-main);
 
   /* Content colors */
-  --color-ai-content-filled: var(--grey-100);     /* white */
+  --color-ai-content-filled: var(--gradient-ai-main);     /* white */
   --color-ai-content-brand: var(--blue-60);       /* fallback solid */
-  --color-ai-content-disabled: var(--grey-70);    /* #93A6CB */
+  --color-ai-content-disabled: var(--grey-70);  
+   /* #93A6CB */
 
   /* Outlines */
-  --color-ai-outline-enabled: var(--blue-60);     /* #4649FF */
+  --color-ai-outline-enabled: var(--gradient-ai-main);     /* #4649FF */
   --color-ai-outline-hover: var(--blue-50);       /* #383ACC */
   --color-ai-outline-disabled: var(--grey-90);    /* #D9E0ED */
 

@@ -153,18 +153,19 @@ const styles = {
 
     /* Footer - Grey98 background, Grey90 border top */
     .modal__footer {
-      align-self: stretch;
-      padding-left: var(--spacing-6);
-      padding-right: var(--spacing-6);
-      padding-top: var(--spacing-4);
-      padding-bottom: var(--spacing-4);
-      background: var(--color-general-neutral-lighter);
-      border-top: 1px solid var(--color-action-outline-secondary-enabled);
-      display: inline-flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-shrink: 0;
-    }
+  align-self: stretch;
+  padding-left: var(--spacing-6);
+  padding-right: var(--spacing-6);
+  padding-top: var(--spacing-4);
+  padding-bottom: var(--spacing-4);
+  background: var(--color-general-neutral-lighter);
+  border-top: 1px solid var(--color-action-outline-secondary-enabled);
+  display: inline-flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+  gap: var(--spacing-4);
+}
     .modal__footer--no-tertiary {
       justify-content: flex-end;
     }
@@ -382,28 +383,30 @@ export const Modal = ({
                 </div>
 
                 {/* Right side - Secondary and Primary */}
-                <div className="modal__footer-right">
-                  {secondaryLabel && (
-                    <Button
-                      variant="secondary"
-                      size="lg"
-                      onClick={onSecondaryClick || onClose}
-                    >
-                      {secondaryLabel}
-                    </Button>
-                  )}
-                  {primaryLabel && (
-                    <Button
-                      variant={primaryVariant}
-                      size="lg"
-                      onClick={onPrimaryClick}
-                      isDisabled={primaryDisabled}
-                      loading={primaryLoading}
-                    >
-                      {primaryLabel}
-                    </Button>
-                  )}
-                </div>
+               <div className="modal__footer-right">
+
+
+  {secondaryLabel && (
+    <Button
+      variant="secondary"
+      size="lg"
+      onClick={onSecondaryClick || onClose}
+    >
+      {secondaryLabel}
+    </Button>
+  )}
+    {primaryLabel && (
+    <Button
+      variant={primaryVariant}
+      size="lg"
+      onClick={onPrimaryClick}
+      isDisabled={primaryDisabled}
+      loading={primaryLoading}
+    >
+      {primaryLabel}
+    </Button>
+  )}
+</div>
               </>
             )}
           </div>

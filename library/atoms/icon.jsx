@@ -13,6 +13,7 @@
 import * as HeroiconsOutline from "@heroicons/react/24/outline";
 import * as HeroiconsSolid from "@heroicons/react/24/solid";
 import * as HeroiconsMini from "@heroicons/react/20/solid";
+
 import objectTypeFillSvg from "../../fill.svg";
 
 const OBJECT_TYPE_ICON_DEFS = {
@@ -372,6 +373,8 @@ export { HeroiconsOutline, HeroiconsSolid, HeroiconsMini };
 // ─────────────────────────────────────────────
 // CONVENIENCE WRAPPER COMPONENTS
 // ─────────────────────────────────────────────
+
+
 
 export const ChevronRight = (props) => <Icon name="ChevronRight" {...props} />;
 export const ChevronLeft = (props) => <Icon name="ChevronLeft" {...props} />;

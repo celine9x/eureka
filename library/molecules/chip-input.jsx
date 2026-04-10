@@ -56,7 +56,7 @@ const styles = {
 
   labelText: {
     fontFamily: "var(--font-family-primary)",
-    fontSize: "var(--text-body-caption)",
+    fontSize: "var(--text-body-md)",
     fontWeight: "var(--font-weight-regular)",
     color: "var(--color-content-primary)",
   },

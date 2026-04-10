@@ -20,25 +20,26 @@ const styles = {
     width: "fit-content",
     maxWidth: "100%",
   },
-  bubble: {
-    position: "absolute",
-    zIndex: 2147483647,
-    paddingLeft: "var(--spacing-4)",
-    paddingRight: "var(--spacing-4)",
-    paddingTop: "var(--spacing-2)",
-    paddingBottom: "var(--spacing-2)",
-    borderRadius: "var(--radius-sm)",
-    background: "var(--color-general-tooltip)",
-    boxShadow: "var(--shadow-dark-down)",
-    color: "var(--color-content-inverted)",
-    fontFamily: "var(--font-family-primary)",
-    fontSize: "var(--text-body-md)",
-    lineHeight: "var(--line-height-body-md)",
-    fontWeight: "var(--font-weight-regular)",
-    wordWrap: "break-word",
-    whiteSpace: "normal",
-    pointerEvents: "none",
-  },
+bubble: {
+  position: "absolute",
+  zIndex: 2147483647,
+  paddingLeft: "var(--spacing-4)",
+  paddingRight: "var(--spacing-4)",
+  paddingTop: "var(--spacing-2)",
+  paddingBottom: "var(--spacing-2)",
+  borderRadius: "var(--radius-sm)",
+  background: "var(--color-general-tooltip)",
+  boxShadow: "var(--shadow-dark-down)",
+  color: "var(--color-content-inverted)",
+  fontFamily: "var(--font-family-primary)",
+  fontSize: "var(--text-body-md)",
+  lineHeight: "var(--line-height-body-md)",
+  fontWeight: "var(--font-weight-regular)",
+  wordWrap: "normal", // or remove this line
+  whiteSpace: "nowrap", // add this if you want a single line
+  pointerEvents: "none",
+  display: "inline-block", // ensure it sizes to content
+}
 };
 
 const TOOLTIP_OFFSET = "var(--spacing-xs)";
@@ -56,17 +57,25 @@ const getPlacementStyle = (placement) => {
     case TOOLTIP_PLACEMENTS["bottom-right"]:
       return { top: `calc(100% + ${gap})`, right: 0 };
     case TOOLTIP_PLACEMENTS.left:
-      return { right: `calc(100% + ${gap})`, top: "50%", transform: "translateY(-50%)" };
+      return {
+        right: `calc(100% + ${gap})`,
+        top: "50%",
+        transform: "translateY(-50%)",
+      };
     case TOOLTIP_PLACEMENTS.right:
     default:
-      return { left: `calc(100% + ${gap})`, top: "50%", transform: "translateY(-50%)" };
+      return {
+        left: `calc(100% + ${gap})`,
+        top: "50%",
+        transform: "translateY(-50%)",
+      };
   }
 };
 
 export const Tooltip = ({
   content,
   placement = TOOLTIP_PLACEMENTS["top-right"],
-  maxWidth = 320,
+  maxWidth = 200,
   isDisabled = false,
   open,
   defaultOpen = false,

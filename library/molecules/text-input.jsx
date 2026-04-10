@@ -101,6 +101,7 @@ const styles = {
     border: "none",
     borderRadius: "var(--radius-md)",
     outline: "1px solid var(--color-interaction-outline-enabled)",
+    outlineColor: "var(--color-interaction-outline-enabled)",
     outlineOffset: "-1px",
     boxSizing: "border-box",
     transition: "all var(--transition-fast)",

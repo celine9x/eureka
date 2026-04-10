@@ -56,6 +56,7 @@ import { Toast, ToastProvider, useToast } from "./library/molecules/toast.jsx";
 // ORGANISMS
 // ─────────────────────────────────────────────
 import { SideMenu } from "./library/organisms/side-menu/side-menu.jsx";
+
 import { Modal } from "./library/organisms/modal.jsx";
 import { Table, TableColumns, TableColumn } from "./library/organisms/table/table.jsx";
 import {
@@ -94,6 +95,7 @@ import { Hub } from "./library/templates/hub.jsx";
 import { ObjectPage } from "./library/templates/object-page.jsx";
 import { SidePanel } from "./library/templates/side-panel.jsx";
 import { DocumentViewerPage } from "./library/templates/document-viewer-page.jsx";
+import { AiHomepage } from "./library/templates/ai-homepage.jsx";
 
 // ─────────────────────────────────────────────
 // SHARED PROPS
@@ -409,7 +411,8 @@ const BadgePage = () => (
 <Badge color="positive">Positive</Badge>
 <Badge color="negative">Negative</Badge>
 <Badge color="warning">Warning</Badge>
-<Badge color="informative">Informative</Badge>`}
+<Badge color="informative">Informative</Badge>
+<Badge color="ai">AI</Badge>`}
     >
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
         <Badge color="neutral">Neutral</Badge>
@@ -926,7 +929,7 @@ import { Icon } from "@/library/atoms/icon";
 
 <Chip color="#4649FF">Custom Blue</Chip>
 <Chip color="#FF6B6B">Custom Red</Chip>
-<Chip color="#10B981">Custom Green</Chip>`}
+<Chip color="#10B981">Custom Green</Chip"`}
     >
       <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
         <Chip color="#4649FF">Custom Blue</Chip>
@@ -1579,7 +1582,8 @@ const [searchValue, setSearchValue] = useState("");
   value={searchValue}
   onChange={setSearchValue}
   onSubmit={(value) => alert(\`Searching for: \${value}\`)}
-/>`}
+/>
+`}
       >
         <div style={{ maxWidth: 400 }}>
           <Search
@@ -1816,7 +1820,8 @@ const TextInputPage = () => (
 <TextInput label="Text" type="text" placeholder="Plain text" />
 <TextInput label="Email" type="email" placeholder="email@example.com" />
 <TextInput label="Password" type="password" placeholder="Enter password" />
-<TextInput label="Number" type="number" placeholder="0" />`}
+<TextInput label="Number" type="number" placeholder="0" />
+`}
     >
       <div style={{ display: "flex", flexDirection: "column", gap: 24, maxWidth: 400 }}>
         <TextInput label="Text" type="text" placeholder="Plain text" />
@@ -3041,7 +3046,8 @@ const MiniInfoboxPage = () => (
 <MiniInfobox variant="warning" message="Please review your changes" />
 <MiniInfobox variant="error" message="An error occurred" />
 <MiniInfobox variant="neutral" message="This is a neutral message" />
-<MiniInfobox variant="ai" message="AI-generated content" />`}
+<MiniInfobox variant="ai" message="AI-generated content" />
+`}
     >
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         <MiniInfobox variant="info" message="This is an info message" />
@@ -3167,65 +3173,65 @@ const Triggers = () => {
 <ToastProvider position="bottom-right">
   <Triggers />
 </ToastProvider>`}
-    >
-      <ToastProvider position="bottom-right">
-        <ToastTriggersDemo />
-      </ToastProvider>
-    </PreviewComponent>
+      >
+        <ToastProvider position="bottom-right">
+          <ToastTriggersDemo />
+        </ToastProvider>
+      </PreviewComponent>
 
-    <PreviewComponent
-      title="All Variants"
-      code={`import { Toast } from "@/library/molecules/toast";
+      <PreviewComponent
+        title="All Variants"
+        code={`import { Toast } from "@/library/molecules/toast";
 
     <Toast variant="success" message="Success message" actionLabel="Action" showActionButton showCloseButton />
     <Toast variant="warning" message="Warning message" actionLabel="Action" showActionButton showCloseButton={false} />
     <Toast variant="error" message="Error message" showActionButton={false} showCloseButton />
     <Toast variant="info" message="Info message" showActionButton={false} showCloseButton={false} />
     <Toast variant="neutral" message="Neutral message" actionLabel="Action" showActionButton showCloseButton />`}
-    >
-      <div style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 720 }}>
-        <Toast
-          variant="success"
-          message="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce congue ex elit, non sollicitudin sem vehicula vel."
-          actionLabel="Action"
-          showActionButton={true}
-          showCloseButton={true}
-          onDismiss={() => {}}
-        />
-        <Toast
-          variant="warning"
-          message="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce congue ex elit, non sollicitudin sem vehicula vel."
-          actionLabel="Action"
-          showActionButton={true}
-          showCloseButton={false}
-          onDismiss={() => {}}
-        />
-        <Toast
-          variant="error"
-          message="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce congue ex elit, non sollicitudin sem vehicula vel."
-          showActionButton={false}
-          showCloseButton={true}
-          onDismiss={() => {}}
-        />
-        <Toast
-          variant="info"
-          message="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce congue ex elit, non sollicitudin sem vehicula vel."
-          showActionButton={false}
-          showCloseButton={false}
-          onDismiss={() => {}}
-        />
-        <Toast
-          variant="neutral"
-          message="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce congue ex elit, non sollicitudin sem vehicula vel."
-          actionLabel="Action"
-          showActionButton={true}
-          showCloseButton={true}
-          onDismiss={() => {}}
-        />
-      </div>
-    </PreviewComponent>
-  </Section>
-);
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 720 }}>
+          <Toast
+            variant="success"
+            message="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce congue ex elit, non sollicitudin sem vehicula vel."
+            actionLabel="Action"
+            showActionButton={true}
+            showCloseButton={true}
+            onDismiss={() => {}}
+          />
+          <Toast
+            variant="warning"
+            message="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce congue ex elit, non sollicitudin sem vehicula vel."
+            actionLabel="Action"
+            showActionButton={true}
+            showCloseButton={false}
+            onDismiss={() => {}}
+          />
+          <Toast
+            variant="error"
+            message="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce congue ex elit, non sollicitudin sem vehicula vel."
+            showActionButton={false}
+            showCloseButton={true}
+            onDismiss={() => {}}
+          />
+          <Toast
+            variant="info"
+            message="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce congue ex elit, non sollicitudin sem vehicula vel."
+            showActionButton={false}
+            showCloseButton={false}
+            onDismiss={() => {}}
+          />
+          <Toast
+            variant="neutral"
+            message="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce congue ex elit, non sollicitudin sem vehicula vel."
+            actionLabel="Action"
+            showActionButton={true}
+            showCloseButton={true}
+            onDismiss={() => {}}
+          />
+        </div>
+      </PreviewComponent>
+    </Section>
+  );
 
 const AiChatInputPage = () => {
   const [value, setValue] = useState("");
@@ -3488,7 +3494,7 @@ import { Button } from "@/library/atoms/button";
 );
 
 // ─────────────────────────────────────────────
-// ORGANISM PAGES
+// ORGANISMS
 // ─────────────────────────────────────────────
 
 const SideMenuPage = () => (
@@ -3503,6 +3509,7 @@ import InpartLogoCollapsed from "@/Inpart1.svg";
         {
           items: [
             { label: "Home", iconName: "Home" },
+              { label: "AI assistant", iconName: "Sparkle" },
             { label: "Dashboard", iconName: "ChartBar" },
             { label: "Network", iconName: "Share" },
           ],
@@ -3998,7 +4005,7 @@ const Example = () => {
         <Stepper
           currentStep={3}
           steps={[
-            { title: "Identification", subtitle: "Jul 15, 2024" },
+            { title: "Draft", subtitle: "Jul 15, 2024" },
             { title: "Review", subtitle: "Jul 20, 2024" },
             { title: "Evaluation", subtitle: "Jul 25, 2024" },
             { title: "Due Diligence", subtitle: "In Progress" },
@@ -4053,46 +4060,18 @@ const Example = () => {
             </ObjectHeaderTopBar>
 
             <ObjectHeaderTitleSection>
-              <ObjectHeaderMeta
-                label="Last updated on"
-                date="Tue, Oct 21, 2024"
-                time="9:21 PM"
-                author="John Doe"
-              />
-              <ObjectHeaderTitle iconName="LockClosed" iconVariant="warning">
-                Deal Title - Example Project
-              </ObjectHeaderTitle>
+              <ObjectHeaderMeta date="Jan 15, 2024" />
+              <ObjectHeaderTitle iconName="Document">Simple Document Title</ObjectHeaderTitle>
             </ObjectHeaderTitleSection>
-
-            <ObjectHeaderSubinfoRow>
-              <ObjectHeaderSubinfoItem>
-                <Chip variant="positive">Active</Chip>
-              </ObjectHeaderSubinfoItem>
-              <ObjectHeaderSubinfoItem>
-                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                  <span style={{ fontSize: 12, color: "var(--color-content-secondary)" }}>Owner</span>
-                  <span style={{ fontSize: 14, color: "var(--color-content-primary)" }}>Emma Dupont</span>
-                </div>
-              </ObjectHeaderSubinfoItem>
-              <ObjectHeaderSubinfoItem>
-                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                  <span style={{ fontSize: 12, color: "var(--color-content-secondary)" }}>Company</span>
-                  <Link href="#">Abbvie Limited</Link>
-                </div>
-              </ObjectHeaderSubinfoItem>
-            </ObjectHeaderSubinfoRow>
 
             <ObjectHeaderStepper>
               <Stepper
-                currentStep={3}
+                currentStep={2}
                 steps={[
-                  { title: "Identification", subtitle: "Jul 15, 2024" },
-                  { title: "Review", subtitle: "Jul 20, 2024" },
-                  { title: "Evaluation", subtitle: "Jul 25, 2024" },
-                  { title: "Due Diligence", subtitle: "In Progress" },
-                  { title: "Negotiation" },
-                  { title: "Contracting" },
-                  { title: "Signed" },
+                  { title: "Draft" },
+                  { title: "Review" },
+                  { title: "Approved" },
+                  { title: "Active" },
                 ]}
               />
             </ObjectHeaderStepper>
@@ -4101,9 +4080,7 @@ const Example = () => {
               <Tabs selectedKey={activeTab} onSelectionChange={setActiveTab}>
                 <Tab id="overview">Overview</Tab>
                 <Tab id="details">Details</Tab>
-                <Tab id="meetings" badge={5}>Meetings</Tab>
-                <Tab id="contacts" badge={12}>Contacts</Tab>
-                <Tab id="attachments" badge={3}>Attachments</Tab>
+                <Tab id="history">History</Tab>
               </Tabs>
             </ObjectHeaderTabs>
         </ObjectHeader>
@@ -4141,7 +4118,9 @@ import { Icon } from "@/library/atoms/icon";
 
   <ObjectHeaderTitleSection>
     <ObjectHeaderMeta date="Jan 15, 2024" />
-    <ObjectHeaderTitle iconName="Document">Simple Document Title</ObjectHeaderTitle>
+    <ObjectHeaderTitle iconName="Document">
+      Simple Document Title
+    </ObjectHeaderTitle>
   </ObjectHeaderTitleSection>
 </ObjectHeader>`}
       >
@@ -4242,7 +4221,7 @@ const HubHeaderPage = () => (
       <HubHeader>
         <HubHeaderRow>
           <HubHeaderLeft>
-            <HubHeaderTitle badge="12">Portfolio</HubHeaderTitle>
+            <HubHeaderLabel badge="12">Portfolio</HubHeaderLabel>
             <HubHeaderControls>
               <HubHeader.Search size="md" placeholder="Search..." />
               <HubHeader.Button variant="secondary" size="md" iconLeading={<HubHeader.Icon name="Funnel" size="sm" />}>Filter</HubHeader.Button>
@@ -4718,11 +4697,16 @@ const SIDE_PANEL_STEPS = [
 ];
 
 const DocumentViewerPageTemplatePage = () => {
+
   // Add TextInput import at component level for usage in demo
   const [obligations, setObligations] = useState([
     { id: 1, title: "Clause 1.1", status: "created" },
     { id: 2, title: "Clause 1.2", status: "created" },
   ]);
+
+  // Fix: Add missing state for pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const handleAddObligation = () => {
     const newId = Math.max(...obligations.map(o => o.id), 0) + 1;
@@ -4801,48 +4785,56 @@ export default function ObligationExtractor() {
           The form content supports any components - TextInput, TextArea, Buttons, etc.
         </p>
         <div style={{ height: 700, border: "1px solid var(--color-neutral-200)", borderRadius: 8, overflow: "hidden" }}>
-          <DocumentViewerPage
-            showSideMenu={true}
-            logoSrc="/Inpart.svg"
-            collapsedLogoSrc="/Inpart1.svg"
-            headerTitle="Extract all Obligation"
-            pdfFile="./library/organisms/document-viewer/pharma_agreement.pdf"
-            defaultZoom={0.5}
-            formHeaderTitle="Extracted obligations"
-            formContent={
-              <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-4)" }}>
-                <TextInput
-                  label="Obligation Title"
-                  placeholder="Enter obligation title"
+          <div style={{ display: "flex", height: "100%", background: "var(--color-general-neutral-light)" }}>
+            {/* Mini Sidebar Preview */}
+            <div style={{ width: 200, borderRight: "1px solid var(--color-action-outline-secondary-enabled)", overflow: "hidden" }}>
+              <div style={{ fontSize: 16, fontWeight: 700, color: "var(--color-content-brand)", marginBottom: 24 }}>Eureka</div>
+              <div style={{ fontSize: 12, color: "var(--color-content-secondary)" }}>Side Menu Preview</div>
+            </div>
+
+            {/* Main Content Preview */}
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+              {/* Header */}
+              <div style={{ padding: 16, background: "var(--color-general-white)", borderBottom: "1px solid var(--color-action-outline-secondary-enabled)" }}>
+                <HubHeader
+                  title="Companies"
+                  badge="124"
+                  showBorder={false}
+                  rightContent={
+                    <HubHeaderActions>
+                      <Button variant="primary" size="sm">Add Company</Button>
+                    </HubHeaderActions>
+                  }
                 />
-                <TextInput
-                  label="Description"
-                  placeholder="Enter description"
-                  multiline={true}
-                  rows={3}
-                />
-                <TextInput
-                  label="Due Date"
-                  placeholder="YYYY-MM-DD"
-                  type="date"
-                />
-                <Button variant="primary" size="md" style={{ width: "100%" }}>
-                  Add Obligation
-                </Button>
-                
-                {/* Extracted obligations list */}
-                {obligations.map(ob => (
-                  <div key={ob.id} style={{ padding: "var(--spacing-2)", background: "var(--color-general-neutral-light)", borderRadius: "var(--radius-xs)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span>{ob.title}</span>
-                    <button onClick={() => handleRemoveObligation(ob.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--color-content-secondary)", fontSize: "16px" }}>×</button>
-                  </div>
-                ))}
               </div>
-            }
-            footerButtons={[
-              { label: "Extract", variant: "primary", style: { padding: "8px 16px", borderRadius: "4px", background: "var(--color-action-primary-enabled)", color: "white", border: "none", cursor: "pointer", fontWeight: "600" } },
-            ]}
-          />
+
+              {/* Table Area */}
+              <div style={{ flex: 1, padding: 16, overflow: "auto" }}>
+                <Table
+                  columns={[
+                    { key: "name", header: "Company Name", variant: "short-text", sortable: true, width: "300px" },
+                    { key: "status", header: "Status", variant: "badge", sortable: false, width: "300px" },
+                    { key: "revenue", header: "Revenue", variant: "short-text", sortable: true, width: "300px" },
+                    { key: "employees", header: "Employees", variant: "short-text", sortable: true, width: "300px" },
+                  ]}
+                  rows={SIDE_PANEL_DEMO_ROWS}
+                  onRowClick={({ row }) => handleRowClick({ row })}
+                />
+              </div>
+
+              {/* Footer with Pagination */}
+              <div style={{ padding: 16, background: "var(--color-general-white)", borderTop: "1px solid var(--color-action-outline-secondary-enabled)" }}>
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={10}
+                  perPage={pageSize}
+                  onPageChange={setCurrentPage}
+                  onPerPageChange={setPageSize}
+                  showPerPage
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </PreviewComponent>
     </Section>
@@ -5111,13 +5103,13 @@ const HubTemplatePage = () => {
         <div style={{ height: 500, border: "1px solid var(--color-neutral-200)", borderRadius: 8, overflow: "hidden" }}>
           <div style={{ display: "flex", height: "100%", background: "var(--color-general-neutral-light)" }}>
             {/* Mini Sidebar Preview */}
-            <div style={{ width: 200, background: "var(--color-general-white)", borderRight: "1px solid var(--color-action-outline-secondary-enabled)", padding: 16 }}>
+            <div style={{ width: 200, borderRight: "1px solid var(--color-action-outline-secondary-enabled)", overflow: "hidden" }}>
               <div style={{ fontSize: 16, fontWeight: 700, color: "var(--color-content-brand)", marginBottom: 24 }}>Eureka</div>
               <div style={{ fontSize: 12, color: "var(--color-content-secondary)" }}>Side Menu Preview</div>
             </div>
 
             {/* Main Content Preview */}
-            <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
               {/* Header */}
               <div style={{ padding: 16, background: "var(--color-general-white)", borderBottom: "1px solid var(--color-action-outline-secondary-enabled)" }}>
                 <HubHeader
@@ -5301,7 +5293,9 @@ const [activeTab, setActiveTab] = useState("overview");
                 <ObjectHeader>
                   <ObjectHeaderTopBar>
                     <ObjectHeaderTopBarLeft>
-                      <Button variant="secondary" size="sm" iconLeading={<Icon name="ArrowLeft" size="sm" />}>Back</Button>
+                      <Button variant="secondary" size="sm" iconLeading={<Icon name="ArrowLeft" size="sm" />}>
+                        Back
+                      </Button>
                     </ObjectHeaderTopBarLeft>
                     <ObjectHeaderTopBarRight>
                       <ObjectHeaderActionsGroup>
@@ -5381,6 +5375,24 @@ const [activeTab, setActiveTab] = useState("overview");
   );
 };
 
+const AiHomepageTemplatePage = () => (
+    <Section title="AI Homepage Template" description="A complete AI assistant homepage template with greeting, chat input, and task list.">
+      <PreviewComponent
+        title="AI Homepage Preview"
+        code={`import { AiHomepage } from "@/library/templates/ai-homepage";
+
+<AiHomepage />`}
+      >
+        <p style={{ marginBottom: 16, color: "var(--color-content-secondary)", fontSize: 14 }}>
+          The AI Homepage template combines SideMenu, AiChatInput, and RadioCard components into a complete AI assistant landing page.
+        </p>
+        <div style={{ height: 600, border: "1px solid var(--color-neutral-200)", borderRadius: 8, overflow: "hidden" }}>
+          <AiHomepage />
+        </div>
+      </PreviewComponent>
+    </Section>
+);
+
 // ─────────────────────────────────────────────
 // PAGE CONFIG
 // ─────────────────────────────────────────────
@@ -5439,6 +5451,7 @@ const PAGES = {
   objectPageTemplate: { title: "ObjectPage", component: ObjectPageTemplatePage, category: "templates" },
   documentViewerPageTemplate: { title: "DocumentViewerPage", component: DocumentViewerPageTemplatePage, category: "templates" },
   sidePanelTemplate: { title: "SidePanel", component: SidePanelPage, category: "templates" },
+  aiHomepageTemplate: { title: "AiHomepage", component: AiHomepageTemplatePage, category: "templates" },
 };
 
 // ─────────────────────────────────────────────

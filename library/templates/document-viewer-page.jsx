@@ -11,6 +11,7 @@
 import React from "react";
 import { SideMenu } from "../organisms/side-menu/side-menu.jsx";
 import { DocumentViewer } from "../organisms/document-viewer/document-viewer.jsx";
+import { CreationFormPanel } from "../organisms/section/creation-form-panel.jsx";
 import { Button } from "../atoms/button.jsx";
 import {
   ObjectHeader,
@@ -28,6 +29,7 @@ const DEAL_MENU_SECTIONS = [
   {
     items: [
       { label: "Home", iconName: "Home" },
+           { label: "AI assistant", iconName: "Star" },
       { label: "Dashboard", iconName: "ChartBar" },
       { label: "Network", iconName: "Share" },
     ],
@@ -142,6 +144,12 @@ const styles = {
       overflow: hidden;
     }
 
+    .document-viewer-page__form-section > .creation-form-panel {
+      height: 100%;
+      outline: none;
+      border-radius: 0;
+    }
+
     .document-viewer-page__form-header {
       flex: 0 0 auto;
       padding: var(--spacing-6);
@@ -151,7 +159,7 @@ const styles = {
 
     .document-viewer-page__form-content {
       flex: 1 1 auto;
-      padding: var(--spacing-6);
+
       overflow-y: auto;
       display: flex;
       flex-direction: column;
@@ -164,9 +172,10 @@ const styles = {
       align-items: center;
       justify-content: space-between;
       gap: var(--spacing-4);
-      padding: var(--spacing-6);
+      padding: var(--spacing-4);
+      
       background: var(--color-general-white);
-      border-top: 1px solid var(--color-action-outline-secondary-enabled);
+     
       position: sticky;
       bottom: 0;
       z-index: 2;
@@ -229,7 +238,11 @@ export const DocumentViewerPage = ({
   exportFileName = "document-preview",
   documentViewerProps,
 
-  // Form props
+  // Form panel props (new CreationFormPanel integration)
+  useFormPanel = false,
+  formPanelProps = {},
+
+  // Form props (legacy support)
   formHeaderContent,
   formHeaderTitle,
   formContent,
@@ -329,8 +342,17 @@ export const DocumentViewerPage = ({
             />
           </div>
 
-          {/* Form Section */}
-          {(formContent || children || formHeaderContent || formHeaderTitle) && (
+          {/* Form Section - Using CreationFormPanel */}
+          {useFormPanel && (
+            <div className="document-viewer-page__form-section" style={{ outline: "none" }}>
+              <CreationFormPanel {...formPanelProps}>
+                {formContent || children}
+              </CreationFormPanel>
+            </div>
+          )}
+
+          {/* Form Section - Legacy Support */}
+          {!useFormPanel && (formContent || children || formHeaderContent || formHeaderTitle) && (
             <div className="document-viewer-page__form-section">
               {/* Form Header */}
               {(formHeaderContent || formHeaderTitle) && (

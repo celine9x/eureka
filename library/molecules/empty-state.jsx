@@ -8,7 +8,6 @@
  */
 
 import { Button } from "../atoms/button.jsx";
-import createIllustrationSrc from "../../Illustrations/Create.svg";
 
 export const EMPTY_STATE_SIZES = {
   md: "md",

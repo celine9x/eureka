@@ -6,6 +6,7 @@
  * Uses inline styles with CSS variables from tokens.css for consistent styling.
  */
 
+import { useEffect, useRef, useState } from "react";
 import { Icon } from "../atoms/icon.jsx";
 
 // ─────────────────────────────────────────────
@@ -39,7 +40,6 @@ const VARIANT_ICONS = {
 const styles = {
   base: {
     display: "inline-flex",
-    alignItems: "center",
     gap: "var(--spacing-xs)",
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-body-md)",
@@ -58,14 +58,13 @@ const styles = {
       icon: { color: "var(--color-content-negative)" },
     },
     info: {
-      icon: { color: "var(--color-action-fill-primary-enabled)" },
+      icon: { color: "var(--color-content-informative)" },
     },
     neutral: {
       icon: { color: "var(--color-content-secondary)" },
     },
     ai: {
       text: { color: "var(--color-content-brand)" },
-      // AI gradient is handled via SVG fill
     },
   },
 
@@ -80,6 +79,8 @@ const styles = {
 
   message: {
     flex: 1,
+    lineHeight: 1.4,
+    minWidth: 0,
   },
 };
 
@@ -123,7 +124,6 @@ const AIGradientIcon = () => (
 /**
  * MiniInfobox
  *
- *
  * @example
  * <MiniInfobox variant="success" message="Operation completed successfully" />
  * <MiniInfobox variant="warning" message="Please review your changes" />
@@ -139,32 +139,64 @@ export const MiniInfobox = ({
   children,
   ...props
 }) => {
+  const messageRef = useRef(null);
+  const [isMultiline, setIsMultiline] = useState(false);
+
   const variantStyles = styles.variants[variant] || styles.variants.info;
   const defaultIconName = VARIANT_ICONS[variant] || VARIANT_ICONS.info;
   const finalIconName = iconName || defaultIconName;
 
-  // Use children as message if message prop not provided
   const displayMessage = message || children;
 
-  // Compose base styles
+  useEffect(() => {
+    const el = messageRef.current;
+    if (!el) return;
+
+    const checkIfMultiline = () => {
+      const computedStyle = window.getComputedStyle(el);
+      let lineHeight = parseFloat(computedStyle.lineHeight);
+
+      if (Number.isNaN(lineHeight)) {
+        const fontSize = parseFloat(computedStyle.fontSize);
+        lineHeight = fontSize * 1.4;
+      }
+
+      const height = el.getBoundingClientRect().height;
+      const multiline = height > lineHeight * 1.5;
+
+      setIsMultiline(multiline);
+    };
+
+    checkIfMultiline();
+
+    const resizeObserver = new ResizeObserver(() => {
+      checkIfMultiline();
+    });
+
+    resizeObserver.observe(el);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [displayMessage]);
+
   const baseStyle = {
     ...styles.base,
+    alignItems: isMultiline ? "flex-start" : "center",
     ...style,
   };
 
-  // Icon styles
   const iconStyle = {
     ...styles.icon,
+    ...(isMultiline ? { marginTop: 2 } : {}),
     ...(variantStyles.icon || {}),
   };
 
-  // Message styles (for AI variant)
   const messageStyle = {
     ...styles.message,
     ...(variantStyles.text || {}),
   };
 
-  // Render icon based on variant
   const renderIcon = () => {
     if (icon) {
       return <span style={iconStyle}>{icon}</span>;
@@ -172,7 +204,7 @@ export const MiniInfobox = ({
 
     if (variant === "ai") {
       return (
-        <span style={styles.icon}>
+        <span style={iconStyle}>
           <AIGradientIcon />
         </span>
       );
@@ -188,7 +220,9 @@ export const MiniInfobox = ({
   return (
     <div style={baseStyle} role="status" {...props}>
       {renderIcon()}
-      <span style={messageStyle}>{displayMessage}</span>
+      <span ref={messageRef} style={messageStyle}>
+        {displayMessage}
+      </span>
     </div>
   );
 };

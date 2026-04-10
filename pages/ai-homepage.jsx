@@ -10,9 +10,8 @@ import { Checkbox } from "../library/atoms/checkbox.jsx";
 import { TextInput } from "../library/molecules/text-input.jsx";
 import { RadioCard, RadioCardGroup } from "../library/molecules/radio-card.jsx";
 import { ButtonGroup, ButtonGroupItem } from "../library/molecules/button-group.jsx";
-import {FileUploader} from "../library/molecules/file-uploader.jsx";
 import { Stepper } from "../library/molecules/stepper.jsx";
-
+import { FileUploader } from "../library/molecules/file-uploader.jsx";
 import { Search } from "../library/molecules/search.jsx";
 import {
   HubHeaderContextButton,
@@ -1664,8 +1663,7 @@ export const AiOpportunityExtractionPageV2 = () => {
                     label="Extract with AI"
                     onClick={() => {
                       setIsCreateMenuOpen(false);
-                      window.history.pushState({}, "", "/ai-opportunity-extraction/review");
-                      window.dispatchEvent(new PopStateEvent("popstate"));
+                      setIsExtractModalOpen(true);
                     }}
                   />
                 </DropdownMenuSection>
