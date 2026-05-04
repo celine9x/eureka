@@ -67,6 +67,7 @@ const styles = {
 
   itemActive: {
     borderColor: "var(--color-action-fill-primary-enabled)",
+    borderLeft: "1px solid var(--color-action-fill-primary-enabled)",
     zIndex: 10,
     position: "relative",
   },

@@ -91,16 +91,26 @@ const styles = {
     }
     .object-page__header {
       flex-shrink: 0;
-      background: var(--color-general-white);
       border-bottom: 1px solid var(--color-action-outline-secondary-enabled);
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      column-gap: var(--spacing-6);
       padding: 0 var(--spacing-6);
+    }
+    .object-page__header > * {
+      grid-column: 2 / span 10;
     }
     .object-page__body {
       flex: 1;
       overflow-y: auto;
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      column-gap: var(--spacing-6);
       padding: var(--spacing-6);
+      align-content: start;
     }
     .object-page__container {
+      grid-column: 2 / span 10;
       display: grid;
       grid-template-columns: repeat(12, 1fr);
       gap: var(--spacing-6);

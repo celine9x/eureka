@@ -155,7 +155,7 @@ const DropdownMenuContext = createContext(null);
  * A section within the dropdown menu, visually separated by dividers.
  *
  */
-export const DropdownMenuSection = ({ children, showDivider = false, style }) => {
+export const DropdownMenuSection = ({ children, showDivider = false, style, contentStyle }) => {
   const sectionStyle = {
     ...styles.section,
     ...(showDivider && styles.sectionDivider),
@@ -164,7 +164,7 @@ export const DropdownMenuSection = ({ children, showDivider = false, style }) =>
 
   return (
     <div style={sectionStyle}>
-      <div style={styles.sectionContent}>{children}</div>
+      <div style={{ ...styles.sectionContent, ...contentStyle }}>{children}</div>
     </div>
   );
 };

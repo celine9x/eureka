@@ -52,10 +52,16 @@ import { AiChatInput } from "./library/molecules/ai-chat-input.jsx";
 import { EmptyState, EMPTY_STATE_SIZES } from "./library/molecules/empty-state.jsx";
 import { Toast, ToastProvider, useToast } from "./library/molecules/toast.jsx";
 
+import { DatePicker } from "./library/molecules/datepicker.jsx";
+import { RichTextInput, RichTextInputEditable } from "./library/molecules/rich-text-input.jsx";
+
 // ─────────────────────────────────────────────
 // ORGANISMS
 // ─────────────────────────────────────────────
 import { SideMenu } from "./library/organisms/side-menu/side-menu.jsx";
+import { SideMenuItem, SIDE_MENU_ITEM_STATES } from "./library/organisms/side-menu/side-menu-item.jsx";
+import { UserButton, USER_BUTTON_STATES } from "./library/organisms/side-menu/user-button.jsx";
+import { TableCell, TABLECELL_VARIANTS, TableCellLinkRow, TableCellLinkedName, TableCellTwoLevel, TableCellTags } from "./library/organisms/table/tablecell.jsx";
 
 import { Modal } from "./library/organisms/modal.jsx";
 import { Table, TableColumns, TableColumn } from "./library/organisms/table/table.jsx";
@@ -256,6 +262,45 @@ const DemoBox = ({ children }) => (
 // ─────────────────────────────────────────────
 // ATOM PAGES
 // ─────────────────────────────────────────────
+
+const StepAtomPage = () => (
+  <Section title="Step" description="A single step indicator atom used inside Stepper or standalone progress indicators.">
+    <PreviewComponent
+      title="All Step Statuses"
+      code={`import { Step } from "@/library/atoms/step";
+
+<Step status="completed" title="Completed" showLine={false} />
+<Step status="current" title="Current" showLine={false} />
+<Step status="next" title="Next" showLine={false} />
+<Step status="pending" title="Pending" showLine={false} />
+<Step status="disabled" title="Disabled" showLine={false} />`}
+    >
+      <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+        <Step status="completed" title="Completed" showLine={false} />
+        <Step status="current" title="Current" showLine={false} />
+        <Step status="next" title="Next" showLine={false} />
+        <Step status="pending" title="Pending" showLine={false} />
+        <Step status="disabled" title="Disabled" showLine={false} />
+      </div>
+    </PreviewComponent>
+    <PreviewComponent
+      title="Horizontal Steps"
+      code={`<div style={{ display: "flex" }}>
+  <Step status="completed" title="Step 1" />
+  <Step status="completed" title="Step 2" />
+  <Step status="current" title="Step 3" />
+  <Step status="next" title="Step 4" showLine={false} />
+</div>`}
+    >
+      <div style={{ display: "flex" }}>
+        <Step status="completed" title="Step 1" />
+        <Step status="completed" title="Step 2" />
+        <Step status="current" title="Step 3" />
+        <Step status="next" title="Step 4" showLine={false} />
+      </div>
+    </PreviewComponent>
+  </Section>
+);
 
 const ButtonPage = () => (
   <Section title="Button" description="A flexible button with variants, sizes, and loading states.">
@@ -1532,6 +1577,146 @@ const RadioButtonPage = () => {
 // MOLECULE PAGES
 // ─────────────────────────────────────────────
 
+const DatePickerPage = () => {
+  const [singleDate, setSingleDate] = React.useState(null);
+  const [rangeStart, setRangeStart] = React.useState(null);
+  const [rangeEnd, setRangeEnd] = React.useState(null);
+
+  return (
+    <Section title="DatePicker" description="A calendar-based date picker supporting single date and date range selection.">
+      <PreviewComponent
+        title="Single Date Picker"
+        code={`import { DatePicker } from "@/library/molecules/datepicker";
+import { useState } from "react";
+
+const [date, setDate] = useState(null);
+
+<DatePicker value={date} onChange={setDate} />`}
+      >
+        <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
+          <DatePicker value={singleDate} onChange={setSingleDate} />
+        </div>
+        {singleDate && (
+          <p style={{ marginTop: 12, fontSize: 14, color: "var(--color-content-secondary)" }}>
+            Selected: {singleDate.toLocaleDateString()}
+          </p>
+        )}
+      </PreviewComponent>
+
+      <PreviewComponent
+        title="Date Range Picker"
+        code={`import { DatePicker } from "@/library/molecules/datepicker";
+import { useState } from "react";
+
+const [rangeStart, setRangeStart] = useState(null);
+const [rangeEnd, setRangeEnd] = useState(null);
+
+<DatePicker
+  range
+  rangeStart={rangeStart}
+  rangeEnd={rangeEnd}
+  onRangeChange={({ start, end }) => { setRangeStart(start); setRangeEnd(end); }}
+/>`}
+      >
+        <DatePicker
+          range
+          rangeStart={rangeStart}
+          rangeEnd={rangeEnd}
+          onRangeChange={({ start, end }) => { setRangeStart(start); setRangeEnd(end); }}
+        />
+        {rangeStart && (
+          <p style={{ marginTop: 12, fontSize: 14, color: "var(--color-content-secondary)" }}>
+            Range: {rangeStart.toLocaleDateString()} → {rangeEnd ? rangeEnd.toLocaleDateString() : "(select end)"}
+          </p>
+        )}
+      </PreviewComponent>
+
+      <PreviewComponent
+        title="Dual Calendar Range Picker"
+        code={`<DatePicker range dual />`}
+      >
+        <DatePicker range dual />
+      </PreviewComponent>
+    </Section>
+  );
+};
+
+const RichTextInputPage = () => {
+  const [value, setValue] = React.useState("");
+  const [editableValue, setEditableValue] = React.useState("");
+
+  return (
+    <Section title="RichTextInput" description="A rich text editor with formatting toolbar and optional submit action.">
+      <PreviewComponent
+        title="Default RichTextInput"
+        code={`import { RichTextInput } from "@/library/molecules/rich-text-input";
+import { useState } from "react";
+
+const [value, setValue] = useState("");
+
+<RichTextInput
+  placeholder="Write a comment..."
+  value={value}
+  onChange={setValue}
+  onSubmit={(v) => console.log(v)}
+/>`}
+      >
+        <RichTextInput
+          placeholder="Write a comment..."
+          value={value}
+          onChange={setValue}
+          onSubmit={(v) => alert(`Submitted: ${v}`)}
+        />
+      </PreviewComponent>
+
+      <PreviewComponent
+        title="Without Toolbar"
+        code={`<RichTextInput showToolbar={false} placeholder="No toolbar..." />`}
+      >
+        <RichTextInput showToolbar={false} placeholder="No toolbar..." />
+      </PreviewComponent>
+
+      <PreviewComponent
+        title="Without Footer"
+        code={`<RichTextInput showFooter={false} placeholder="No footer/submit..." />`}
+      >
+        <RichTextInput showFooter={false} placeholder="No footer/submit..." />
+      </PreviewComponent>
+
+      <PreviewComponent
+        title="Disabled State"
+        code={`<RichTextInput disabled placeholder="Disabled editor" />`}
+      >
+        <RichTextInput disabled placeholder="Disabled editor" />
+      </PreviewComponent>
+
+      <PreviewComponent
+        title="Error State"
+        code={`<RichTextInput error helperText="This field is required" placeholder="Error state" />`}
+      >
+        <RichTextInput error helperText="This field is required" placeholder="Error state" />
+      </PreviewComponent>
+
+      <PreviewComponent
+        title="Editable Inline Variant"
+        code={`import { RichTextInputEditable } from "@/library/molecules/rich-text-input";
+
+<RichTextInputEditable
+  placeholder="Click to edit..."
+  value={editableValue}
+  onChange={setEditableValue}
+/>`}
+      >
+        <RichTextInputEditable
+          placeholder="Click to edit..."
+          value={editableValue}
+          onChange={setEditableValue}
+        />
+      </PreviewComponent>
+    </Section>
+  );
+};
+
 const SearchPage = () => {
   const [searchValue, setSearchValue] = useState("");
 
@@ -1792,6 +1977,27 @@ const AccordionPage = () => (
 
 const TextInputPage = () => (
   <Section title="TextInput" description="A complete text input with label, input field, and helper/error text.">
+    <PreviewComponent
+      title="Sizes"
+      code={`import { TextInput } from "@/library/molecules/text-input";
+
+<TextInput size="sm" label="Small" placeholder="Small input..." />
+<TextInput size="md" label="Medium (default)" placeholder="Medium input..." />
+<TextInput size="lg" label="Large" placeholder="Large input..." />`}
+    >
+      <div style={{ display: "flex", alignItems: "flex-end", gap: 16, flexWrap: "wrap" }}>
+        <div style={{ flex: 1, minWidth: 160 }}>
+          <TextInput size="sm" label="Small" placeholder="Small input..." />
+        </div>
+        <div style={{ flex: 1, minWidth: 160 }}>
+          <TextInput size="md" label="Medium (default)" placeholder="Medium input..." />
+        </div>
+        <div style={{ flex: 1, minWidth: 160 }}>
+          <TextInput size="lg" label="Large" placeholder="Large input..." />
+        </div>
+      </div>
+    </PreviewComponent>
+
     <PreviewComponent
       title="All TextInput States"
       code={`import { TextInput } from "@/library/molecules/text-input";
@@ -3496,6 +3702,165 @@ import { Button } from "@/library/atoms/button";
 // ─────────────────────────────────────────────
 // ORGANISMS
 // ─────────────────────────────────────────────
+
+const SideMenuItemPage = () => (
+  <Section title="SideMenuItem" description="A standalone navigation item used inside SideMenu sections.">
+    <PreviewComponent
+      title="All States"
+      code={`import { SideMenuItem, SIDE_MENU_ITEM_STATES } from "@/library/organisms/side-menu/side-menu-item";
+import { Icon } from "@/library/atoms/icon";
+
+<SideMenuItem label="Enabled" iconName="Home" state="enabled" />
+<SideMenuItem label="Active" iconName="Sparkles" state="active" />
+<SideMenuItem label="Disabled" iconName="LockClosed" state="disabled" />`}
+    >
+      <div style={{ width: 240, display: "flex", flexDirection: "column", gap: 4 }}>
+        <SideMenuItem label="Enabled" iconName="Home" state={SIDE_MENU_ITEM_STATES.enabled} />
+        <SideMenuItem label="Active" iconName="Sparkles" state={SIDE_MENU_ITEM_STATES.active} />
+        <SideMenuItem label="Disabled" iconName="LockClosed" state={SIDE_MENU_ITEM_STATES.disabled} />
+      </div>
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="With Badge"
+      code={`<SideMenuItem label="Notifications" iconName="Bell" showBadge badgeLabel="5" />`}
+    >
+      <div style={{ width: 240 }}>
+        <SideMenuItem label="Notifications" iconName="Bell" showBadge badgeLabel="5" />
+      </div>
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="Object Type Icons"
+      code={`<SideMenuItem label="Initiatives" iconName="initiative" />
+<SideMenuItem label="Opportunities" iconName="opportunity" state="active" />
+<SideMenuItem label="Agreements" iconName="agreement" />`}
+    >
+      <div style={{ width: 240, display: "flex", flexDirection: "column", gap: 4 }}>
+        <SideMenuItem label="Initiatives" iconName="initiative" />
+        <SideMenuItem label="Opportunities" iconName="opportunity" state="active" />
+        <SideMenuItem label="Agreements" iconName="agreement" />
+      </div>
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="Collapsed (Icon Only)"
+      code={`<SideMenuItem label="Home" iconName="Home" showLabel={false} />`}
+    >
+      <div style={{ display: "flex", gap: 4 }}>
+        <SideMenuItem label="Home" iconName="Home" showLabel={false} />
+        <SideMenuItem label="Dashboard" iconName="ChartBar" showLabel={false} state="active" />
+        <SideMenuItem label="Settings" iconName="Cog6Tooth" showLabel={false} />
+      </div>
+    </PreviewComponent>
+  </Section>
+);
+
+const UserButtonPage = () => (
+  <Section title="UserButton" description="A user profile button displayed at the bottom of the SideMenu with avatar, name, and email.">
+    <PreviewComponent
+      title="Default State"
+      code={`import { UserButton } from "@/library/organisms/side-menu/user-button";
+
+<UserButton name="Linh Nguyen" email="linh.nguyen@inpart.io" avatarInitials="LN" />`}
+    >
+      <div style={{ width: 240 }}>
+        <UserButton name="Linh Nguyen" email="linh.nguyen@inpart.io" avatarInitials="LN" />
+      </div>
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="All States"
+      code={`<UserButton state="default" name="Jane Doe" email="jane@example.com" avatarInitials="JD" />
+<UserButton state="hover" name="Jane Doe" email="jane@example.com" avatarInitials="JD" />
+<UserButton state="active" name="Jane Doe" email="jane@example.com" avatarInitials="JD" />`}
+    >
+      <div style={{ width: 240, display: "flex", flexDirection: "column", gap: 8 }}>
+        <p style={{ fontSize: 12, color: "var(--color-content-secondary)", margin: 0 }}>Default</p>
+        <UserButton state={USER_BUTTON_STATES.default} name="Jane Doe" email="jane@example.com" avatarInitials="JD" />
+        <p style={{ fontSize: 12, color: "var(--color-content-secondary)", margin: 0 }}>Active</p>
+        <UserButton state={USER_BUTTON_STATES.active} name="Jane Doe" email="jane@example.com" avatarInitials="JD" />
+      </div>
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="Collapsed (Avatar Only)"
+      code={`<UserButton collapsed name="Jane Doe" avatarInitials="JD" />`}
+    >
+      <UserButton collapsed name="Jane Doe" avatarInitials="JD" />
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="Without Email"
+      code={`<UserButton name="Admin User" avatarInitials="AU" showEmail={false} />`}
+    >
+      <div style={{ width: 240 }}>
+        <UserButton name="Admin User" avatarInitials="AU" showEmail={false} />
+      </div>
+    </PreviewComponent>
+  </Section>
+);
+
+const TableCellPage = () => (
+  <Section title="TableCell" description="Individual table cell variants used inside the Table organism.">
+    <PreviewComponent
+      title="All TableCell Variants"
+      code={`import { TableCell, TABLECELL_VARIANTS } from "@/library/organisms/table/tablecell";
+
+<TableCell variant="short-text">Short text cell</TableCell>
+<TableCell variant="long-text">Long text content that may overflow</TableCell>`}
+    >
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {Object.values(TABLECELL_VARIANTS).map((variant) => (
+          <div key={variant} style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <span style={{ width: 140, fontSize: 12, color: "var(--color-content-secondary)", flexShrink: 0 }}>{variant}</span>
+            <TableCell variant={variant}>
+              {variant === "short-text" && "Short text"}
+              {variant === "long-text" && "Long text content that may overflow in narrow columns"}
+              {variant === "badge" && <Badge color="positive" size="sm">Active</Badge>}
+              {variant === "chip" && <Chip variant="primary" size="sm">Tag</Chip>}
+              {variant === "checkbox" && <Checkbox size="sm" type="unchecked" state="enabled" />}
+              {variant === "link" && <Link href="#">Linked item</Link>}
+              {variant === "text-icon" && (
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <Icon name="User" size="sm" /><span>John Doe</span>
+                </div>
+              )}
+              {variant === "button" && <Button variant="secondary" size="sm">Action</Button>}
+            </TableCell>
+          </div>
+        ))}
+      </div>
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="TwoLevel Cell"
+      code={`import { TableCellTwoLevel } from "@/library/organisms/table/tablecell";
+
+<TableCellTwoLevel primary="Primary text" secondary="Secondary label" />`}
+    >
+      <TableCellTwoLevel primary="Acme Corporation" secondary="acme.com" />
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="Tags Cell"
+      code={`import { TableCellTags } from "@/library/organisms/table/tablecell";
+
+<TableCellTags items={[{ label: "React" }, { label: "TypeScript" }]} maxVisible={3} />`}
+    >
+      <TableCellTags
+        items={[
+          { label: "React" },
+          { label: "TypeScript" },
+          { label: "Node.js" },
+          { label: "GraphQL" },
+          { label: "Docker" },
+        ]}
+        maxVisible={3}
+      />
+    </PreviewComponent>
+  </Section>
+);
 
 const SideMenuPage = () => (
   <Section title="SideMenu" description="A complete sidebar navigation with logo, search, menu sections, and user profile.">
@@ -5411,7 +5776,10 @@ const PAGES = {
   tooltip: { title: "Tooltip", component: TooltipPage, category: "atoms" },
   buttonBadge: { title: "ButtonBadge", component: ButtonBadgePage, category: "atoms" },
   aiButton: { title: "AiButton", component: AiButtonPage, category: "atoms" },
+  step: { title: "Step", component: StepAtomPage, category: "atoms" },
   // Molecules
+  datePicker: { title: "DatePicker", component: DatePickerPage, category: "molecules" },
+  richTextInput: { title: "RichTextInput", component: RichTextInputPage, category: "molecules" },
   search: { title: "Search", component: SearchPage, category: "molecules" },
   tabs: { title: "Tabs", component: TabsPage, category: "molecules" },
   accordion: { title: "Accordion", component: AccordionPage, category: "molecules" },
@@ -5438,6 +5806,9 @@ const PAGES = {
   aiChatInput: { title: "AiChatInput", component: AiChatInputPage, category: "molecules" },
   toast: { title: "Toast", component: ToastPage, category: "molecules" },
   // Organisms
+  sideMenuItem: { title: "SideMenuItem", component: SideMenuItemPage, category: "organisms" },
+  userButton: { title: "UserButton", component: UserButtonPage, category: "organisms" },
+  tableCell: { title: "TableCell", component: TableCellPage, category: "organisms" },
   sideMenu: { title: "SideMenu", component: SideMenuPage, category: "organisms" },
   modal: { title: "Modal", component: ModalPage, category: "organisms" },
   table: { title: "Table", component: TablePage, category: "organisms" },
@@ -5616,6 +5987,13 @@ function getIconForPage(pageKey) {
     objectPageTemplate: "Document",
     documentViewerPageTemplate: "DocumentDuplicate",
     sidePanelTemplate: "RectangleStack",
+    aiHomepageTemplate: "Sparkles",
+    step: "ArrowTrendingUp",
+    datePicker: "Calendar",
+    richTextInput: "PencilSquare",
+    sideMenuItem: "Bars3",
+    userButton: "UserCircle",
+    tableCell: "TableCells",
   };
   return iconMap[pageKey] || "DocumentText";
 }

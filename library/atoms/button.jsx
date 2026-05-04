@@ -499,7 +499,10 @@ export const Button = forwardRef(
     };
 
     const textStyle = {
-      ...(isLinkTypeColor || noTextPadding ? {} : styles.textPadding),
+      ...(isLinkTypeColor || noTextPadding ? {} : {
+        paddingLeft: iconLeading ? undefined : styles.textPadding.paddingLeft,
+        paddingRight: iconTrailing ? undefined : styles.textPadding.paddingRight,
+      }),
     };
 
     const commonProps = {

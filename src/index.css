@@ -4,6 +4,15 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap');
 
+/* Prevent browser autofill blue background */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px var(--color-general-white, #ffffff) inset !important;
+  -webkit-text-fill-color: var(--color-content-primary, #1a1a2e) !important;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
 .side-menu-scrollable::-webkit-scrollbar {
 	display: none;
 }

@@ -27,7 +27,7 @@ const styles = {
       flex-direction: column;
       gap: var(--spacing-4);
       width: 100%;
-      padding: var(--spacing-4) var(--spacing-8);
+      padding: var(--spacing-4) 0;
       background: var(--color-general-neutral-light);
       border-bottom: 1px solid var(--color-action-outline-secondary-enabled);
       box-sizing: border-box;
@@ -165,7 +165,7 @@ export const HubHeaderTitle = ({
         {children}
       </span>
       {badge && (
-        <Badge variant={badgeVariant} size="sm">
+        <Badge color={badgeVariant} size="sm" shape="pill">
           {badge}
         </Badge>
       )}
@@ -287,8 +287,8 @@ export const HubHeaderContextButton = ({
   <Button
     variant="secondary"
     size="md"
-    iconLeading={<Icon name={iconName} size="sm" />}
-    iconTrailing={<Icon name="ChevronDown" size="sm" />}
+    iconLeading={<Icon name={iconName} size="sm" variant="solid" />}
+    iconTrailing={<Icon name="ChevronDown" size="sm" variant="solid" />}
     onClick={onClick}
     className={className}
     {...props}
@@ -296,7 +296,7 @@ export const HubHeaderContextButton = ({
     <span style={{ display: "inline-flex", alignItems: "center", gap: "var(--spacing-sm)" }}>
       {label}
       {starred && (
-        <Icon name="Star" size="sm" style={{ color: "var(--color-status-warning-default)" }} />
+        <Icon name="Star" size="sm" variant="solid" style={{ color: "var(--color-status-warning-default)" }} />
       )}
     </span>
   </Button>

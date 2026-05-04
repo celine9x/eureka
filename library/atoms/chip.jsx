@@ -44,6 +44,8 @@ const styles = {
   base: {
     display: "inline-flex",
     alignItems: "center",
+    minWidth: 0,
+    maxWidth: "100%",
     background: "var(--color-general-neutral-lighter)",
     borderRadius: "var(--radius-sm)",
     outline: "1px solid var(--color-action-outline-secondary-enabled)",
@@ -75,6 +77,9 @@ const styles = {
   },
 
   label: {
+    minWidth: 0,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
     fontWeight: "var(--font-weight-regular)",
     whiteSpace: "nowrap",
   },

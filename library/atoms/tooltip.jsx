@@ -76,6 +76,7 @@ export const Tooltip = ({
   content,
   placement = TOOLTIP_PLACEMENTS["top-right"],
   maxWidth = 200,
+  width,
   isDisabled = false,
   open,
   defaultOpen = false,
@@ -118,6 +119,9 @@ export const Tooltip = ({
     ...styles.bubble,
     ...getPlacementStyle(placement),
     maxWidth,
+    width,
+    whiteSpace: (maxWidth || width) ? "normal" : "nowrap",
+    wordWrap: (maxWidth || width) ? "break-word" : "normal",
   };
 
   const trigger = isValidElement(children)

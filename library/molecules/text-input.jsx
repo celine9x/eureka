@@ -50,6 +50,12 @@ export const INPUT_TYPES = {
   url: "url",
 };
 
+export const INPUT_SIZES = {
+  sm: "sm",
+  md: "md",
+  lg: "lg",
+};
+
 export const HELPER_VARIANTS = {
   default: "default",
   error: "error",
@@ -91,20 +97,38 @@ const styles = {
 
   input: {
     width: "100%",
-    padding: "var(--spacing-sm) var(--spacing-3)",
     fontFamily: "var(--font-family-primary)",
-    fontSize: "var(--text-body-lg)",
     fontWeight: "var(--font-weight-regular)",
-    lineHeight: "var(--line-height-body-lg)",
     color: "var(--color-content-primary)",
     background: "var(--color-interaction-fill-enabled)",
     border: "none",
     borderRadius: "var(--radius-md)",
-    outline: "1px solid var(--color-interaction-outline-enabled)",
+    outline: "1px solid var(--color-action-outline-secondary-enabled)",
     outlineColor: "var(--color-interaction-outline-enabled)",
     outlineOffset: "-1px",
     boxSizing: "border-box",
     transition: "all var(--transition-fast)",
+  },
+
+  inputSizes: {
+    // sm → 32px height: (32 - 16px line-height) / 2 = 8px vertical padding
+    sm: {
+      padding: "var(--spacing-sm) var(--spacing-3)",
+      fontSize: "var(--text-body-md)",
+      lineHeight: "var(--line-height-body-md)",
+    },
+    // md → 40px height: (40 - 20px line-height) / 2 = 10px vertical padding
+    md: {
+      padding: "var(--spacing-2-5) var(--spacing-3)",
+      fontSize: "var(--text-body-lg)",
+      lineHeight: "var(--line-height-body-lg)",
+    },
+    // lg → 48px height: (48 - 20px line-height) / 2 = 14px vertical padding
+    lg: {
+      padding: "var(--spacing-3-5) var(--spacing-3)",
+      fontSize: "var(--text-body-lg)",
+      lineHeight: "var(--line-height-body-lg)",
+    },
   },
 
   inputHover: {
@@ -231,6 +255,7 @@ export const Input = forwardRef(
   (
     {
       type = INPUT_TYPES.text,
+      size = INPUT_SIZES.md,
       state = INPUT_STATES.default,
       isDisabled = false,
       disabled,
@@ -252,6 +277,7 @@ export const Input = forwardRef(
     // Compose input styles
     const inputStyle = {
       ...styles.input,
+      ...styles.inputSizes[size] || styles.inputSizes.md,
       ...(isHovered && !isInputDisabled && !isFocused && styles.inputHover),
       ...(isFocused && !isInputDisabled && state === INPUT_STATES.default && styles.inputFocus),
       ...(state === INPUT_STATES.error && !isFocused && styles.inputError),
@@ -284,9 +310,7 @@ export const Input = forwardRef(
 Input.displayName = "Input";
 Input.types = INPUT_TYPES;
 Input.states = INPUT_STATES;
-
-// ─────────────────────────────────────────────
-// TEXT INPUT COMPONENT (MOLECULE)
+Input.sizes = INPUT_SIZES;
 // ─────────────────────────────────────────────
 
 /**
@@ -299,6 +323,7 @@ export const TextInput = forwardRef(
   (
     {
       type = INPUT_TYPES.text,
+      size = INPUT_SIZES.md,
       label,
       placeholder,
       value,
@@ -365,6 +390,7 @@ export const TextInput = forwardRef(
           ref={ref}
           id={inputId}
           type={type}
+          size={size}
           name={name}
           placeholder={placeholder}
           value={value}
@@ -387,6 +413,7 @@ export const TextInput = forwardRef(
 TextInput.displayName = "TextInput";
 TextInput.types = INPUT_TYPES;
 TextInput.states = INPUT_STATES;
+TextInput.sizes = INPUT_SIZES;
 TextInput.Label = Label;
 TextInput.Input = Input;
 TextInput.HelperText = HelperText;

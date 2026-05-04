@@ -104,13 +104,25 @@ const styles = {
       flex-shrink: 0;
       background: var(--color-general-neutral-light);
       border-bottom: 1px solid var(--color-action-outline-secondary-enabled);
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      column-gap: var(--spacing-6);
+      padding: 0 var(--spacing-6);
+    }
+    .hub__header > * {
+      grid-column: 1 / span 12;
     }
     .hub__body {
       flex: 1;
       overflow-y: auto;
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      column-gap: var(--spacing-6);
       padding: var(--spacing-6);
+      align-content: start;
     }
     .hub__container {
+      grid-column: 2 / span 10;
       display: grid;
       grid-template-columns: repeat(12, 1fr);
       gap: var(--spacing-6);

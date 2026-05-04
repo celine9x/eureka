@@ -93,9 +93,15 @@ const styles = {
 
     .document-viewer-page__header {
       flex: 0 0 auto;
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      column-gap: var(--spacing-6);
       padding: var(--spacing-6);
       background: var(--color-general-neutral-light);
       border-bottom: 1px solid var(--color-action-outline-secondary-enabled);
+    }
+    .document-viewer-page__header > * {
+      grid-column: 2 / span 10;
     }
 
     .document-viewer-page__header .object-header {
@@ -118,11 +124,19 @@ const styles = {
     }
 
     .document-viewer-page__content {
-      display: flex;
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      column-gap: var(--spacing-6);
       flex: 1 1 auto;
-      gap: var(--spacing-6);
       padding: var(--spacing-6);
       overflow: hidden;
+    }
+    .document-viewer-page__content-inner {
+      grid-column: 2 / span 10;
+      display: flex;
+      gap: var(--spacing-6);
+      overflow: hidden;
+      min-height: 0;
     }
 
     .document-viewer-page__viewer-section {
@@ -320,6 +334,7 @@ export const DocumentViewerPage = ({
 
         {/* Main Content */}
         <div className="document-viewer-page__content">
+          <div className="document-viewer-page__content-inner">
           {/* Document Viewer Section */}
           <div className="document-viewer-page__viewer-section">
             <DocumentViewer
@@ -403,6 +418,7 @@ export const DocumentViewerPage = ({
               )}
             </div>
           )}
+          </div>{/* end content-inner */}
         </div>
       </div>
     </div>

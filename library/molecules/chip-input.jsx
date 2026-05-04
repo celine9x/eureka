@@ -77,6 +77,7 @@ const styles = {
     background: "var(--color-general-white)",
     borderRadius: "var(--radius-md)",
     outline: "1px solid var(--color-interaction-outline-enabled)",
+    outlineColor: "var(--color-interaction-outline-enabled)",
     outlineOffset: "-1px",
     boxShadow: "var(--shadow-light-down)",
     transition: "all var(--transition-fast)",
