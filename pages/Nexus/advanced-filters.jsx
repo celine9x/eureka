@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useLayoutEffect } from "react";
 import { Tabs, Tab } from "../../library/molecules/tabs.jsx";
 import TextInput from "../../library/molecules/text-input.jsx";
 import ChipInput from "../../library/molecules/chip-input.jsx";
@@ -12,6 +12,7 @@ import {
 } from "../../library/molecules/dropdown-menu.jsx";
 import { Button } from "../../library/atoms/button.jsx";
 import { Icon } from "../../library/atoms/icon.jsx";
+import { Chip } from "../../library/atoms/chip.jsx";
 import { Tooltip } from "../../library/atoms/tooltip.jsx";
 import MiniInfobox from "../../library/molecules/miniinfobox.jsx";
 
@@ -52,8 +53,8 @@ const CONDITION_SECTIONS = [
 
 const ALL_CONDITIONS = CONDITION_SECTIONS.flat();
 
-// Text-only fields (value is free text), rest are chip/multi-select
-const TEXT_FIELDS = ["clinical-indication"];
+// Text-only fields (value is free text): only text-condition-type logic applies for all fields
+const TEXT_FIELDS = [];
 
 const FIELD_OPTIONS = {
   "therapeutic-area": [
@@ -339,7 +340,7 @@ const ConditionDropdown = ({ value, fieldId, onChange }) => {
         {CONDITION_SECTIONS.map((section, si) => (
           <React.Fragment key={si}>
             {si > 0 && <DropdownMenuDivider />}
-            <DropdownMenuSection>
+            <DropdownMenuSection style={{ padding: 0 }}>
               {section.map((opt) => (
                 <DropdownMenuItem
                   key={opt.id}
@@ -389,7 +390,10 @@ const ChipSelectInput = ({ fieldId, value, onChange }) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [hovered, setHovered] = useState(false);
-  const wrapperRef = React.useRef(null);
+  const [overflowTooltipVisible, setOverflowTooltipVisible] = useState(false);
+  const wrapperRef = useRef(null);
+  const chipRowRef = useRef(null);
+  const [visibleCount, setVisibleCount] = useState(null);
   const options = FIELD_OPTIONS[fieldId] || [];
   const selected = value || [];
 
@@ -401,6 +405,14 @@ const ChipSelectInput = ({ fieldId, value, onChange }) => {
   const addChip = (id) => {
     onChange([...selected, id]);
     setSearch("");
+  };
+  // free-text entry (when no predefined options match)
+  const handleSearchKeyDown = (e) => {
+    if (e.key === "Enter" && search.trim() && options.length === 0) {
+      const newId = search.trim().toLowerCase().replace(/\s+/g, "-");
+      if (!selected.includes(newId)) onChange([...selected, newId]);
+      setSearch("");
+    }
   };
 
   // Close on outside click
@@ -419,6 +431,36 @@ const ChipSelectInput = ({ fieldId, value, onChange }) => {
     return { id, label: opt ? opt.label : id };
   });
 
+  // Compute how many chips fit in one row
+  useLayoutEffect(() => {
+    if (!chipRowRef.current || chips.length === 0) {
+      setVisibleCount(null);
+      return;
+    }
+    const container = chipRowRef.current;
+    const containerWidth = container.offsetWidth;
+    const children = Array.from(container.querySelectorAll("[data-chip]"));
+    if (children.length === 0) { setVisibleCount(null); return; }
+    let usedWidth = 0;
+    let count = 0;
+    // Reserve space for the badge if not all chips fit
+    const BADGE_WIDTH = 40;
+    for (let i = 0; i < children.length; i++) {
+      const w = children[i].offsetWidth + 4; // 4px gap
+      const remaining = children.length - i - 1;
+      const needsBadge = remaining > 0 && (usedWidth + w + (remaining > 0 ? BADGE_WIDTH : 0)) > containerWidth;
+      if (usedWidth + w > containerWidth || needsBadge) {
+        break;
+      }
+      usedWidth += w;
+      count++;
+    }
+    setVisibleCount(count < chips.length ? count : null);
+  }, [chips.length, open]);
+
+  const displayChips = visibleCount !== null ? chips.slice(0, visibleCount) : chips;
+  const hiddenChips = visibleCount !== null ? chips.slice(visibleCount) : [];
+
   return (
     <div ref={wrapperRef} style={{ position: "relative", width: "100%" }}>
       {/* Trigger / chip display */}
@@ -429,9 +471,8 @@ const ChipSelectInput = ({ fieldId, value, onChange }) => {
         style={{
           display: "flex",
           alignItems: "center",
-          flexWrap: "wrap",
           gap: "var(--spacing-xs)",
-          minHeight: 32,
+          height: 32,
           padding: "0 var(--spacing-sm)",
           background: "var(--color-general-white)",
           borderRadius: "var(--radius-md)",
@@ -445,6 +486,7 @@ const ChipSelectInput = ({ fieldId, value, onChange }) => {
           boxSizing: "border-box",
           width: "100%",
           transition: "all var(--transition-fast)",
+          overflow: "hidden",
         }}
       >
         {chips.length === 0 && (
@@ -459,40 +501,65 @@ const ChipSelectInput = ({ fieldId, value, onChange }) => {
             Select options
           </span>
         )}
-        {chips.map((chip) => (
-          <span
-            key={chip.id}
+        {chips.length > 0 && (
+          <div
+            ref={chipRowRef}
             style={{
-              display: "inline-flex",
+              flex: 1,
+              display: "flex",
               alignItems: "center",
               gap: 4,
-              padding: "2px 8px",
-              background: "var(--color-general-neutral-light)",
-              borderRadius: "var(--radius-sm)",
-              fontFamily: "var(--font-family-primary)",
-              fontSize: "var(--text-body-sm)",
-              color: "var(--color-content-primary)",
-              whiteSpace: "nowrap",
+              overflow: "hidden",
+              minWidth: 0,
             }}
           >
-            {chip.label}
-            <button
-              type="button"
-              onClick={(e) => { e.stopPropagation(); removeChip(chip.id); }}
-              style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                padding: 0,
-                display: "flex",
-                alignItems: "center",
-                color: "var(--color-content-secondary)",
-              }}
-            >
-              <Icon name="XMark" size={12} />
-            </button>
-          </span>
-        ))}
+            {displayChips.map((chip) => (
+              <span key={chip.id} data-chip style={{ flexShrink: 0, borderRadius: "var(--radius-xs)", overflow: "hidden" }}>
+                <Chip
+                  size="md"
+                  removable
+                  onRemove={(e) => { e && e.stopPropagation(); removeChip(chip.id); }}
+                  style={{ borderRadius: "var(--radius-xs)" }}
+                >
+                  {chip.label}
+                </Chip>
+              </span>
+            ))}
+            {hiddenChips.length > 0 && (
+              <Tooltip
+                content={
+                  <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                    {hiddenChips.map((c) => <div key={c.id}>{c.label}</div>)}
+                  </div>
+                }
+                placement="bottom-left"
+              >
+                <span
+                  style={{
+                    flexShrink: 0,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    padding: "var(--spacing-xs)",
+                    background: "var(--color-general-neutral-lighter)",
+                    borderRadius: "var(--radius-xs)",
+                    outline: "1px solid var(--color-action-outline-secondary-enabled)",
+                    outlineOffset: "-1px",
+                    boxShadow: "var(--shadow-light-down)",
+                    fontFamily: "var(--font-family-primary)",
+                    fontSize: "var(--text-body-md)",
+                    lineHeight: "var(--line-height-body-md)",
+                    color: "var(--color-content-secondary)",
+                    whiteSpace: "nowrap",
+                    cursor: "default",
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  +{hiddenChips.length}
+                </span>
+              </Tooltip>
+            )}
+          </div>
+        )}
         <span style={{ marginLeft: "auto", flexShrink: 0, color: "var(--color-content-secondary)" }}>
           <Icon name="ChevronDown" size={12} style={{ transform: open ? "rotate(180deg)" : undefined }} />
         </span>
@@ -523,7 +590,8 @@ const ChipSelectInput = ({ fieldId, value, onChange }) => {
               autoFocus
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search..."
+              onKeyDown={handleSearchKeyDown}
+              placeholder={options.length === 0 ? "Type and press Enter to add..." : "Search..."}
               onClick={(e) => e.stopPropagation()}
               style={{
                 width: "100%",
@@ -539,7 +607,7 @@ const ChipSelectInput = ({ fieldId, value, onChange }) => {
           </div>
           {/* Options list */}
           <div style={{ overflowY: "auto", padding: "var(--spacing-xs) 0" }}>
-            {filtered.length === 0 && (
+            {options.length > 0 && filtered.length === 0 && (
               <div style={{
                 padding: "var(--spacing-sm) var(--spacing-md)",
                 fontFamily: "var(--font-family-primary)",
@@ -650,7 +718,7 @@ const CriterionRow = ({ row, index, isFirst, isLogicDisabled, isGrouped, onChang
 
       <FieldDropdown
         value={row.fieldId}
-        onChange={(fieldId) => onChange({ ...row, fieldId, conditionId: null, value: null })}
+        onChange={(fieldId) => onChange({ ...row, fieldId, value: null })}
         usedFields={usedFields}
       />
 
@@ -676,7 +744,17 @@ const CriterionRow = ({ row, index, isFirst, isLogicDisabled, isGrouped, onChang
         />
       </div>
 
-      <RowActionsMenu onDelete={onDelete} onConvertToGroup={onConvertToGroup} isGrouped={isGrouped} />
+      {isGrouped ? (
+        <Button
+          variant="tertiary"
+          size="sm"
+          iconLeading={<Icon name="Trash" size={16} />}
+          style={{ flexShrink: 0 }}
+          onClick={onDelete}
+        />
+      ) : (
+        <RowActionsMenu onDelete={onDelete} onConvertToGroup={onConvertToGroup} isGrouped={isGrouped} />
+      )}
     </div>
   );
 };
@@ -848,10 +926,12 @@ const AdvancedSearchTab = () => {
 
   const hasIncomplete = rows.some(isRowIncomplete) || groups.some((g) => g.rows.some(isRowIncomplete));
   const isEmpty = items.length === 0;
+  const hasAtLeastOneComplete = rows.some((r) => !isRowIncomplete(r)) || groups.some((g) => g.rows.some((r) => !isRowIncomplete(r)));
+  const canGenerate = hasAtLeastOneComplete && searchName.trim();
 
   const handleGenerate = () => {
     setShowValidation(true);
-    if (!isEmpty && !hasIncomplete && searchName.trim()) {
+    if (canGenerate) {
       alert(`Generating results for: ${searchName}`);
     }
   };
@@ -968,7 +1048,7 @@ const AdvancedSearchTab = () => {
             />
           </div>
           <div style={{ flexShrink: 0, marginTop: 20 }}>
-            <Button variant="primary" iconLeading={<Icon name="SparklesSolid" size={16} />} onClick={handleGenerate}>
+            <Button variant="primary" iconLeading={<Icon name="SparklesSolid" size={16} />} disabled={!canGenerate} onClick={handleGenerate}>
               Generate results
             </Button>
           </div>
@@ -994,29 +1074,59 @@ const BASIC_FIELDS = [
 
 const BasicSearchTab = () => {
   const [values, setValues] = useState({});
+  const [searchName, setSearchName] = useState("");
 
   const setField = (fieldId, chips) => {
     setValues((prev) => ({ ...prev, [fieldId]: chips }));
   };
 
+  const hasAnyCriteria = Object.values(values).some((v) => v && v.length > 0);
+  const canGenerate = hasAnyCriteria && searchName.trim();
+
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(3, 1fr)",
-        gap: "var(--spacing-md)",
-      }}
-    >
-      {BASIC_FIELDS.map((field) => (
-        <ChipInput
-          key={field.id}
-          label={field.label}
-          placeholder={field.placeholder}
-          chips={values[field.id] || []}
-          onChange={(chips) => setField(field.id, chips)}
-          options={FIELD_OPTIONS[field.id] || []}
-        />
-      ))}
+    <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-md)" }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          gap: "var(--spacing-md)",
+        }}
+      >
+        {BASIC_FIELDS.map((field) => (
+          <ChipInput
+            key={field.id}
+            label={field.label}
+            placeholder={field.placeholder}
+            chips={values[field.id] || []}
+            onChange={(chips) => setField(field.id, chips)}
+            options={FIELD_OPTIONS[field.id] || []}
+          />
+        ))}
+      </div>
+
+      {/* Name input + generate */}
+      <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-md)" }}>
+        <div style={{ flex: 1 }}>
+          <TextInput
+            label="Name this search"
+            isRequired
+            size="sm"
+            placeholder="Input the name of this search"
+            value={searchName}
+            onChange={(e) => setSearchName(e.target.value)}
+          />
+        </div>
+        <div style={{ flexShrink: 0, marginTop: 20 }}>
+          <Button
+            variant="primary"
+            iconLeading={<Icon name="SparklesSolid" size={16} />}
+            disabled={!canGenerate}
+            onClick={() => canGenerate && alert(`Generating results for: ${searchName}`)}
+          >
+            Generate results
+          </Button>
+        </div>
+      </div>
     </div>
   );
 };
@@ -1035,6 +1145,7 @@ export const AdvancedFiltersPage = () => {
         background: "var(--color-general-neutral-light)",
         boxSizing: "border-box",
         fontFamily: "var(--font-family-primary)",
+        paddingTop: 48, 
       }}
     >
       <div
@@ -1049,7 +1160,7 @@ export const AdvancedFiltersPage = () => {
         <div
           style={{
             fontFamily: "var(--font-family-primary)",
-            fontSize: "var(--text-body-lg)",
+            fontSize: "var(--text-heading-h2)",
             fontWeight: "var(--font-weight-semibold)",
             color: "var(--color-content-primary)",
           }}

@@ -111,21 +111,24 @@ const styles = {
   },
 
   inputSizes: {
-    // sm → 32px height: (32 - 16px line-height) / 2 = 8px vertical padding
+    // sm → 32px height
     sm: {
-      padding: "var(--spacing-sm) var(--spacing-3)",
+      height: 32,
+      padding: "0 var(--spacing-3)",
       fontSize: "var(--text-body-md)",
       lineHeight: "var(--line-height-body-md)",
     },
-    // md → 40px height: (40 - 20px line-height) / 2 = 10px vertical padding
+    // md → 40px height
     md: {
-      padding: "var(--spacing-2-5) var(--spacing-3)",
+      height: 40,
+      padding: "0 var(--spacing-3)",
       fontSize: "var(--text-body-lg)",
       lineHeight: "var(--line-height-body-lg)",
     },
-    // lg → 48px height: (48 - 20px line-height) / 2 = 14px vertical padding
+    // lg → 48px height
     lg: {
-      padding: "var(--spacing-3-5) var(--spacing-3)",
+      height: 48,
+      padding: "0 var(--spacing-3)",
       fontSize: "var(--text-body-lg)",
       lineHeight: "var(--line-height-body-lg)",
     },
