@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import ChipInput from "../library/molecules/chip-input.jsx";
-import { DropdownList, DropdownSection } from "../library/molecules/dropdown-list.jsx";
-import { Checkbox } from "../library/atoms/checkbox.jsx";
-import { Icon } from "../library/atoms/icon.jsx";
+import ChipInput from "../../library/molecules/chip-input.jsx";
+import { DropdownList, DropdownSection } from "../../library/molecules/dropdown-list.jsx";
+import { Checkbox } from "../../library/atoms/checkbox.jsx";
+import { Icon } from "../../library/atoms/icon.jsx";
 
 const ONTOLOGY_TREE = [
   {

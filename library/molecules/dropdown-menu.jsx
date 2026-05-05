@@ -83,7 +83,10 @@ const styles = {
   },
 
   sectionContent: {
-    padding: "0 var(--spacing-4)",
+    padding: "0 var(--spacing-2)",
+    display: "flex",
+    flexDirection: "column",
+    gap: "var(--spacing-1)",
   },
 
   footer: {

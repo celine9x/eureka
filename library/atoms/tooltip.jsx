@@ -35,10 +35,13 @@ bubble: {
   fontSize: "var(--text-body-md)",
   lineHeight: "var(--line-height-body-md)",
   fontWeight: "var(--font-weight-regular)",
-  wordWrap: "normal", // or remove this line
-  whiteSpace: "nowrap", // add this if you want a single line
+  whiteSpace: "normal",
+  wordWrap: "break-word",
+  overflowWrap: "break-word",
   pointerEvents: "none",
-  display: "inline-block", // ensure it sizes to content
+  display: "inline-block",
+  width: "max-content",
+  maxWidth: 300,
 }
 };
 
@@ -118,10 +121,8 @@ export const Tooltip = ({
   const bubbleStyle = {
     ...styles.bubble,
     ...getPlacementStyle(placement),
-    maxWidth,
-    width,
-    whiteSpace: (maxWidth || width) ? "normal" : "nowrap",
-    wordWrap: (maxWidth || width) ? "break-word" : "normal",
+    ...(maxWidth !== 200 && { maxWidth }),
+    ...(width && { width, maxWidth: width }),
   };
 
   const trigger = isValidElement(children)
