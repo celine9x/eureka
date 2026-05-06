@@ -298,6 +298,7 @@ export const DropdownListItem = ({
   badge,
   action,
   hidden = false,
+  noCheckbox = false,
   onChange,
   style,
   children,
@@ -354,9 +355,11 @@ export const DropdownListItem = ({
       {...props}
     >
       <div style={styles.itemLeft}>
-        <div style={styles.itemCheckbox}>
-          <Checkbox isSelected={checked} isDisabled={isItemDisabled} size="sm" onChange={() => {}} />
-        </div>
+        {!noCheckbox && (
+          <div style={styles.itemCheckbox}>
+            <Checkbox isSelected={checked} isDisabled={isItemDisabled} size="sm" onChange={() => {}} />
+          </div>
+        )}
 
         {icon && <div style={styles.itemIcon}>{icon}</div>}
 

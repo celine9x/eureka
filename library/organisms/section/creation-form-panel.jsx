@@ -167,7 +167,7 @@ const styles = {
       padding: var(--spacing-6);
       display: flex;
       flex-direction: column;
-      gap: var(--spacing-6);
+      gap: var(--spacing-4);
     }
 
     .creation-form-panel__content::-webkit-scrollbar {
@@ -187,7 +187,6 @@ const styles = {
       flex: 0 0 auto;
       display: flex;
       align-items: center;
-      justify-content: space-between;
       gap: var(--spacing-4);
       padding: var(--spacing-4) var(--spacing-6);
       background: var(--color-general-white);
@@ -198,16 +197,11 @@ const styles = {
     }
 
     .creation-form-panel__footer-left {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--spacing-3);
+      display: contents;
     }
 
     .creation-form-panel__footer-right {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--spacing-3);
-      margin-left: auto;
+      display: contents;
     }
 
     /* Collapsible Section */
@@ -537,6 +531,7 @@ export const CreationFormPanel = forwardRef(
                     iconTrailing={btn.iconTrailing}
                     onClick={btn.onClick}
                     isDisabled={btn.isDisabled}
+                    style={{ flex: 1, ...btn.style }}
                     {...btn.props}
                   >
                     {btn.label}
@@ -556,6 +551,7 @@ export const CreationFormPanel = forwardRef(
                     iconTrailing={btn.iconTrailing}
                     onClick={btn.onClick}
                     isDisabled={btn.isDisabled}
+                    style={{ flex: 1, ...btn.style }}
                     {...btn.props}
                   >
                     {btn.label}

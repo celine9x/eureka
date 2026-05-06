@@ -3629,34 +3629,45 @@ const FileUploaderPage = () => {
 const EmptyStatePage = () => (
   <Section title="EmptyState" description="A reusable empty state molecule with optional illustration and Button atom actions.">
     <PreviewComponent
-      title="Large Empty State"
+      title="Default Empty State"
       code={`import { EmptyState } from "@/library/molecules/empty-state";
 
 <EmptyState
-  title="Title of empty state"
-  description="Text of empty state"
-  actionLabel="Action"
+  illustrationVariant="noResult"
+  title="No results found"
+  description="Try adjusting your search or filters"
+  actionLabel="Clear filters"
   onAction={() => {}}
 />`}
     >
-      <div
-        style={{
-          width: "100%",
-          border: "1px solid var(--color-content-brand)",
-          borderRadius: 5,
-          padding: 16,
-          boxSizing: "border-box",
-          display: "flex",
-          justifyContent: "center",
-        }}
-      >
-        <EmptyState
-          title="Title of empty state"
-          description="Text of empty state"
-          actionLabel="Action"
-          onAction={() => alert("Action")}
-        />
-      </div>
+      <EmptyState
+        illustrationVariant="noResult"
+        title="No results found"
+        description="Try adjusting your search or filters"
+        actionLabel="Clear filters"
+        onAction={() => alert("Clear filters")}
+      />
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="Create Empty State"
+      code={`import { EmptyState } from "@/library/molecules/empty-state";
+
+<EmptyState
+  illustrationVariant="create"
+  title="Create something new"
+  description="Get started by creating your first item"
+  actionLabel="Create"
+  onAction={() => {}}
+/>`}
+    >
+      <EmptyState
+        illustrationVariant="create"
+        title="Create something new"
+        description="Get started by creating your first item"
+        actionLabel="Create"
+        onAction={() => alert("Create")}
+      />
     </PreviewComponent>
 
     <PreviewComponent
@@ -3667,34 +3678,22 @@ import { Button } from "@/library/atoms/button";
 <EmptyState
   size={EMPTY_STATE_SIZES.sm}
   showIllustration={false}
-  title="Title of empty state"
-  description="Text of empty state"
-  actions={[<Button variant="secondary" size="md">Action</Button>]}
+  title="No items yet"
+  description="Add your first item to get started"
+  actions={[<Button variant="secondary" size="md">Add item</Button>]}
 />`}
     >
-      <div
-        style={{
-          width: "100%",
-          border: "1px solid var(--color-content-brand)",
-          borderRadius: 5,
-          padding: 16,
-          boxSizing: "border-box",
-          display: "flex",
-          justifyContent: "center",
-        }}
-      >
-        <EmptyState
-          size={EMPTY_STATE_SIZES.sm}
-          showIllustration={false}
-          title="Title of empty state"
-          description="Text of empty state"
-          actions={[
-            <Button key="empty-state-action" variant="secondary" size="md" onClick={() => alert("Action")}>
-              Action
-            </Button>,
-          ]}
-        />
-      </div>
+      <EmptyState
+        size={EMPTY_STATE_SIZES.sm}
+        showIllustration={false}
+        title="No items yet"
+        description="Add your first item to get started"
+        actions={[
+          <Button key="empty-state-action" variant="secondary" size="md" onClick={() => alert("Add item")}>
+            Add item
+          </Button>,
+        ]}
+      />
     </PreviewComponent>
   </Section>
 );

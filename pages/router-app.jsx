@@ -6,6 +6,7 @@ import {
   AiOpportunityExtractionReviewPage,
 } from "./ai-opportunity-extraction-page.jsx";
 import { OpportunityExtractionViewerPage } from "./opportunity-extraction-viewer-page.jsx";
+import { OpportunityExtractionViewerPage as OpportunityExtractionReviewPage } from "./opportunity-extraction/review.jsx";
 import AiHomepage from "./ai-homepage.jsx";
 import AddAgreementModalPage from "./add-agreement-modal.jsx";
 import {
@@ -23,6 +24,7 @@ const EXTRACTION_PATH = "/ai-opportunity-extraction";
 const EXTRACTION_V2_PATH = "/ai-opportunity-extraction-v2";
 const EXTRACTION_REVIEW_PATH = "/ai-opportunity-extraction/review";
 const EXTRACTION_VIEWER_PATH = "/opportunity-extraction-viewer";
+const OPPORTUNITY_EXTRACTION_REVIEW_PATH = "/opportunity-extraction/review";
 const ONTOLOGY_ROUTER_PROTOTYPE_PATH = "/nexus/ontology";
 const ADVANCED_FILTERS_PATH = "/nexus/advanced-filters";
 const AI_HOMEPAGE_PATH = "/ai-homepage";
@@ -41,6 +43,7 @@ const isAllowedPath = (currentPath) => {
     currentPath === EXTRACTION_V2_PATH ||
     currentPath === EXTRACTION_REVIEW_PATH ||
     currentPath === EXTRACTION_VIEWER_PATH ||
+    currentPath === OPPORTUNITY_EXTRACTION_REVIEW_PATH ||
     currentPath === ONTOLOGY_ROUTER_PROTOTYPE_PATH ||
     currentPath === ADVANCED_FILTERS_PATH ||
     currentPath === AI_HOMEPAGE_PATH ||
@@ -94,6 +97,10 @@ export const RouterApp = () => {
 
   if (path === EXTRACTION_VIEWER_PATH) {
     return <OpportunityExtractionViewerPage />;
+  }
+
+  if (path === OPPORTUNITY_EXTRACTION_REVIEW_PATH) {
+    return <OpportunityExtractionReviewPage />;
   }
 
   if (path === ONTOLOGY_ROUTER_PROTOTYPE_PATH) {

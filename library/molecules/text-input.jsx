@@ -13,6 +13,7 @@
  */
 
 import { useState, useId, forwardRef } from "react";
+import MiniInfobox from "./miniinfobox.jsx";
 
 let placeholderStylesInjected = false;
 
@@ -103,7 +104,8 @@ const styles = {
     background: "var(--color-interaction-fill-enabled)",
     border: "none",
     borderRadius: "var(--radius-md)",
-    outline: "1px solid var(--color-action-outline-secondary-enabled)",
+    outlineStyle: "solid",
+    outlineWidth: "1px",
     outlineColor: "var(--color-interaction-outline-enabled)",
     outlineOffset: "-1px",
     boxSizing: "border-box",
@@ -138,10 +140,7 @@ const styles = {
     outlineColor: "var(--color-interaction-outline-hover)",
   },
 
-  inputFocus: {
-    outlineColor: "var(--color-interaction-outline-active)",
-    boxShadow: "var(--shadow-focus)",
-  },
+  inputFocus: {},
 
   inputError: {
     outlineColor: "var(--color-interaction-outline-negative)",
@@ -149,7 +148,6 @@ const styles = {
 
   inputErrorFocus: {
     outlineColor: "var(--color-interaction-outline-negative)",
-    boxShadow: "var(--shadow-focus)",
   },
 
   inputSuccess: {
@@ -158,7 +156,6 @@ const styles = {
 
   inputSuccessFocus: {
     outlineColor: "var(--color-content-positive)",
-    boxShadow: "var(--shadow-focus)",
   },
 
   inputDisabled: {
@@ -406,7 +403,11 @@ export const TextInput = forwardRef(
         />
 
         {helperMessage && (
-          <HelperText variant={helperVariant}>{helperMessage}</HelperText>
+          hasError
+            ? <MiniInfobox variant="error" message={helperMessage} />
+            : hasSuccess
+            ? <MiniInfobox variant="success" message={helperMessage} />
+            : <MiniInfobox variant="info" message={helperMessage} />
         )}
       </div>
     );
