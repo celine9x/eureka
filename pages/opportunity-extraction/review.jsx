@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
+import { XCircleIcon } from "@heroicons/react/16/solid";
 import { FormSectionTitle } from "../../library/organisms/section/form-section-title.jsx";
 import { DocumentViewerPage } from "../../library/templates/document-viewer-page.jsx";
 import { CreationFormPanel } from "../../library/organisms/section/creation-form-panel.jsx";
@@ -590,7 +592,8 @@ const STATUS_OPTIONS = ["Active", "Qualified", "Pending", "Closed"];
 const INITIATIVE_OPTIONS = ["Oncology", "Cardiology", "Immunology", "Neurology", "Rare Disease"];
 const ASSET_TYPE_OPTIONS = ["Pharma/Biotech", "Technology", "Organisation", "Consumer Health"];
 const ASSET_OPTIONS = ["NVT-101", "ONX-317", "CCP-045", "IMX-220", "GSB-318"];
-const COMPANY_OPTIONS = ["NeuroVanta Therapeutics", "OncoNexa Therapeutics", "CardiaCore Pharma", "ImmuniX Therapeutics", "GenoSphere Bio"];
+const COMPANY_OPTIONS = ["NeuroVanta Therapeutics", "CardiaCore Pharma", "ImmuniX Therapeutics", "GenoSphere Bio"];
+const NEW_COMPANY_OPTIONS = ["OncoNexa Therapeutics"];
 const OPPORTUNITY_TYPE_OPTIONS = ["Research Collaboration", "Co-development", "Licensing", "Acquisition", "Joint Venture"];
 
 // Clinical indications options by category
@@ -629,18 +632,25 @@ const SelectField = ({
   showRevert = false,
   error,
   hint,
+  onClear,
+  trailingBadge,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [dropUp, setDropUp] = useState(false);
+  const [dropdownRect, setDropdownRect] = useState(null);
   const dropdownRef = useRef(null);
   const triggerRef = useRef(null);
+  const portalRef = useRef(null);
 
   const isModified = showRevert && !!originalValue && value !== originalValue;
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+      if (
+        dropdownRef.current && !dropdownRef.current.contains(e.target) &&
+        portalRef.current && !portalRef.current.contains(e.target)
+      ) {
         setIsOpen(false);
       }
     };
@@ -674,6 +684,7 @@ const SelectField = ({
       const spaceBelow = window.innerHeight - rect.bottom;
       const dropdownHeight = Math.min(options.length * 44 + 16, 240);
       setDropUp(spaceBelow < dropdownHeight);
+      setDropdownRect(rect);
     }
     setIsOpen(true);
   };
@@ -685,6 +696,7 @@ const SelectField = ({
       const spaceBelow = window.innerHeight - rect.bottom;
       const dropdownHeight = Math.min(options.length * 44 + 16, 240);
       setDropUp(spaceBelow < dropdownHeight);
+      setDropdownRect(rect);
     }
     setIsOpen((prev) => !prev);
   };
@@ -730,6 +742,18 @@ const SelectField = ({
               </button>
             </Tooltip>
           )}
+          {trailingBadge && value && (
+            <span style={{ pointerEvents: "none" }}>{trailingBadge}</span>
+          )}
+          {onClear && value && (
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onClear(); }}
+              style={{ pointerEvents: "auto", background: "transparent", border: "none", padding: 0, cursor: "pointer", display: "flex", alignItems: "center", color: "var(--color-content-tertiary)" }}
+            >
+              <XCircleIcon style={{ width: 12, height: 12 }} />
+            </button>
+          )}
           <button
             type="button"
             onClick={handleChevronClick}
@@ -757,8 +781,18 @@ const SelectField = ({
           </button>
         </div>
       </div>
-      {isOpen && (
-        <div style={{ ...styles.selectDropdown, marginTop: 0, ...dropdownPositionStyle }}>
+      {isOpen && dropdownRect && createPortal(
+        <div
+          ref={portalRef}
+          style={{
+            position: "fixed",
+            top: dropUp ? undefined : dropdownRect.bottom + 4,
+            bottom: dropUp ? window.innerHeight - dropdownRect.top + 4 : undefined,
+            left: dropdownRect.left,
+            width: dropdownRect.width,
+            zIndex: 9999,
+          }}
+        >
           <DropdownList noSearch noAdd>
             {newOptions.length > 0 && (
               <DropdownSection title={newSectionTitle}>
@@ -790,7 +824,8 @@ const SelectField = ({
               ))}
             </DropdownSection>
           </DropdownList>
-        </div>
+        </div>,
+        document.body
       )}
       {error && (
         <MiniInfobox variant="error" message={error} />
@@ -1395,13 +1430,16 @@ export const OpportunityExtractionViewerPage = () => {
       const oppType = selectedItem.opportunityType;
       const typeConfig = OPPORTUNITY_TYPE_FIELDS[oppType];
       if (oppType && typeConfig?.requiredFields?.length) {
-        const extracted = getExtractedData(selectedItem.id, oppType) || {};
-        typeConfig.requiredFields.forEach((fieldKey) => {
-          if (!extracted[fieldKey]) {
-            const fieldDef = typeConfig.fields.find((f) => f.key === fieldKey);
-            errors[fieldKey] = `${fieldDef?.label || fieldKey} is required`;
-          }
-        });
+        const extracted = getExtractedData(selectedItem.id, oppType);
+        // Only validate if user has already extracted data for this type
+        if (extracted) {
+          typeConfig.requiredFields.forEach((fieldKey) => {
+            if (!extracted[fieldKey]) {
+              const fieldDef = typeConfig.fields.find((f) => f.key === fieldKey);
+              errors[fieldKey] = `${fieldDef?.label || fieldKey} is required`;
+            }
+          });
+        }
       }
 
       if (Object.keys(errors).length > 0) {
@@ -1472,64 +1510,6 @@ export const OpportunityExtractionViewerPage = () => {
     selectedItem &&
     selectedItem.type === "opportunity" && (
       <>
-        {(() => {
-          const requiredFilled =
-            !!selectedItem.assetType &&
-            !!selectedItem.company &&
-            !!selectedItem.name &&
-            !!selectedItem.initiative &&
-            (selectedItem.assetType === "Organisation" || !!selectedItem.asset);
-          if (!requiredFilled) return null;
-          const isExtracting = extractingOppIds.includes(selectedItem.id);
-          // Check if this specific opportunity + opportunityType combination has extracted data
-          const isExtracted = hasExtractedData(selectedItem.id, selectedItem.opportunityType);
-          if (isExtracted || isExtracting) return null;
-          return (
-            <div style={styles.extractMoreSection}>
-              <p style={styles.extractMoreTitle}>Extract additional fields</p>
-              <Checkbox
-                isSelected={applyToAllOpps}
-                onChange={(isSelected) => {
-                  setApplyToAllOpps(isSelected);
-                  if (isSelected && selectedItem) {
-                    setOpportunities((prev) =>
-                      prev.map((opp) =>
-                        opp.id === selectedItem.id
-                          ? opp
-                          : {
-                              ...opp,
-                              initiative: selectedItem.initiative || opp.initiative,
-                              opportunityType:
-                                selectedItem.opportunityType || opp.opportunityType,
-                            }
-                      )
-                    );
-                  }
-                }}
-                style={{ alignItems: "flex-start" }}
-              >
-                <span style={{ display: "inline-flex", alignItems: "center", gap: "var(--spacing-xs)" }}>
-                  Apply to other opportunities
-                  <Tooltip placement="bottom-center" content="Copies initiative and opportunity type to other opportunities and extracts their fields.">
-                    <Icon name="InformationCircle" variant="solid" size="sm" style={{ color: "var(--color-content-tertiary)", cursor: "help" }} />
-                  </Tooltip>
-                </span>
-              </Checkbox>
-              <div style={{ width: "100%" }}>
-                <AiButton
-                  variant="secondary"
-                  size="md"
-                  iconLeading={<Icon name="SparklesSolid" size="sm" />}
-                  style={{ width: "100%" }}
-                  onClick={handleExtractMore}
-                >
-                  Extract fields
-                </AiButton>
-              </div>
-            </div>
-          );
-        })()}
-
         <div style={styles.editableField}>
           <SelectField
             label="Asset type"
@@ -1565,44 +1545,18 @@ export const OpportunityExtractionViewerPage = () => {
 
             // Editable field with clear option
             return (
-              <div style={{ position: "relative" }}>
-                <SelectField
-                  label="Opportunity type"
-                  value={currentValue}
-                  options={OPPORTUNITY_TYPE_OPTIONS}
-                  onChange={(value) =>
-                    updateOpportunityField(selectedItem.id, "opportunityType", value)
-                  }
-                  originalValue={getInitialOpportunityById(selectedItem.id)?.opportunityType}
-                  showRevert={populateMissing}
-                  placeholder="Select option"
-                />
-                {currentValue && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      updateOpportunityField(selectedItem.id, "opportunityType", "");
-                    }}
-                    style={{
-                      position: "absolute",
-                      bottom: 8,
-                      right: 36,
-                      background: "transparent",
-                      border: "none",
-                      padding: 2,
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      color: "var(--color-content-tertiary)",
-                      zIndex: 2,
-                    }}
-                    title="Clear opportunity type"
-                  >
-                    <Icon name="XMark" size="sm" />
-                  </button>
-                )}
-              </div>
+              <SelectField
+                label="Opportunity type"
+                value={currentValue}
+                options={OPPORTUNITY_TYPE_OPTIONS}
+                onChange={(value) =>
+                  updateOpportunityField(selectedItem.id, "opportunityType", value)
+                }
+                originalValue={getInitialOpportunityById(selectedItem.id)?.opportunityType}
+                showRevert={populateMissing}
+                placeholder="Select option"
+                onClear={() => updateOpportunityField(selectedItem.id, "opportunityType", "")}
+              />
             );
           })()}
         </div>
@@ -1618,9 +1572,7 @@ export const OpportunityExtractionViewerPage = () => {
                 : COMPANY_OPTIONS
             }
             newOptions={
-              selectedItem.id === "opp-2" && selectedItem.company
-                ? [selectedItem.company]
-                : []
+              selectedItem.id === "opp-2" ? NEW_COMPANY_OPTIONS : []
             }
             onChange={(value) =>
               updateOpportunityField(selectedItem.id, "company", value)
@@ -1628,17 +1580,12 @@ export const OpportunityExtractionViewerPage = () => {
             originalValue={getInitialOpportunityById(selectedItem.id)?.company}
             showRevert={populateMissing}
             error={fieldErrors.company}
-          />
-          {selectedItem.id === "opp-2" && selectedItem.company && (
-            <div style={{ position: "absolute", bottom: 8, right: 36, zIndex: 2 }}>
-              <Tooltip
-                placement="bottom-right"
-                content="This company is new and will be created along with this opportunity."
-              >
+            trailingBadge={
+              selectedItem.id === "opp-2" && NEW_COMPANY_OPTIONS.includes(selectedItem.company) ? (
                 <Badge size="sm" color="neutral">New</Badge>
-              </Tooltip>
-            </div>
-          )}
+              ) : null
+            }
+          />
         </div>
 
         {selectedItem.assetType !== "Organisation" && (
@@ -1701,6 +1648,71 @@ export const OpportunityExtractionViewerPage = () => {
           />
         </div>
 
+        {(() => {
+          const requiredFilled =
+            !!selectedItem.assetType &&
+            !!selectedItem.company &&
+            !!selectedItem.name &&
+            !!selectedItem.initiative &&
+            (selectedItem.assetType === "Organisation" || !!selectedItem.asset);
+          if (!requiredFilled) return null;
+          const isExtracting = extractingOppIds.includes(selectedItem.id);
+          // Check if this specific opportunity + opportunityType combination has extracted data
+          const isExtracted = hasExtractedData(selectedItem.id, selectedItem.opportunityType);
+          if (isExtracted || isExtracting) return null;
+          return (
+            <div
+              ref={(el) => {
+                if (el) {
+                  el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                }
+              }}
+              style={styles.extractMoreSection}
+            >
+              <p style={styles.extractMoreTitle}>Extract additional fields</p>
+              <Checkbox
+                isSelected={applyToAllOpps}
+                onChange={(isSelected) => {
+                  setApplyToAllOpps(isSelected);
+                  if (isSelected && selectedItem) {
+                    setOpportunities((prev) =>
+                      prev.map((opp) =>
+                        opp.id === selectedItem.id
+                          ? opp
+                          : {
+                              ...opp,
+                              initiative: selectedItem.initiative || opp.initiative,
+                              opportunityType:
+                                selectedItem.opportunityType || opp.opportunityType,
+                            }
+                      )
+                    );
+                  }
+                }}
+                style={{ alignItems: "flex-start" }}
+              >
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "var(--spacing-xs)" }}>
+                  Apply to other opportunities
+                  <Tooltip placement="bottom-center" content="Copy initiative and type to other opportunities and extracts their additionalfields.">
+                    <Icon name="InformationCircle" variant="solid" size="sm" style={{ color: "var(--color-content-tertiary)", cursor: "help" }} />
+                  </Tooltip>
+                </span>
+              </Checkbox>
+              <div style={{ width: "100%" }}>
+                <AiButton
+                  variant="secondary"
+                  size="md"
+                  iconLeading={<Icon name="SparklesSolid" size="sm" />}
+                  style={{ width: "100%" }}
+                  onClick={handleExtractMore}
+                >
+                  Extract fields
+                </AiButton>
+              </div>
+            </div>
+          );
+        })()}
+
         {extractingOppIds.includes(selectedItem.id) && (
           <div
             ref={(el) => {
@@ -1719,6 +1731,7 @@ export const OpportunityExtractionViewerPage = () => {
                   ? "This will take sometime."
                   : "This will take sometime. "
               }
+              actionLabel={null}
             />
           </div>
         )}

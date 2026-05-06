@@ -1,0 +1,23 @@
+[07:37:08.250] [INFO] storybook v10.3.5
+[07:38:43.529] [PROMPT] Port 6006 is not available. 
+Would you like to run Storybook on port 6012 instead? {"choice":true}
+[07:38:50.371] [DEBUG] Getting package.json info for C:/Users/lnguyen/OneDrive - Inpart/Documents/Code/eureka/package.json...
+[07:38:58.053] [WARN] No story files found for the specified pattern: [34msrc\**\*.mdx[39m
+[07:38:58.059] [WARN] No story files found for the specified pattern: [34msrc\**\*.stories.@(js|jsx|mjs|ts|tsx)[39m
+[07:38:58.070] [WARN] No story files found for the specified pattern: [34mlibrary\tokens\**\*.stories.@(js|jsx|mjs|ts|tsx)[39m
+[07:38:58.807] [DEBUG] The file C:/Users/lnguyen/OneDrive - Inpart/Documents/Code/eureka/library/atoms/__stories__/index.stories.jsx is empty. Skipping indexing.
+[07:39:00.413] [WARN] 🚨 Unable to index files:
+- ./library/templates/__stories__/ai-chat-page.stories.jsx: Missing semicolon. (6:11)
+- ./library/templates/__stories__/ai-homepage.stories.jsx: Identifier 'React' has already been declared. (15:7)
+[07:39:00.429] [ERROR] Error: [38;2;241;97;97mUnable to index files:
+- ./library/templates/__stories__/ai-chat-page.stories.jsx: Missing semicolon. (6:11)
+- ./library/templates/__stories__/ai-homepage.stories.jsx: Identifier 'React' has already been declared. (15:7)[39m
+    at _StoryIndexGenerator.getIndexAndStats (file:///C:/Users/lnguyen/OneDrive%20-%20Inpart/Documents/Code/eureka/node_modules/storybook/dist/core-server/index.js:6282:15)
+    at async _StoryIndexGenerator.getIndex (file:///C:/Users/lnguyen/OneDrive%20-%20Inpart/Documents/Code/eureka/node_modules/storybook/dist/core-server/index.js:6271:13)
+    at async Object.experimental_serverChannel (file:///C:/Users/lnguyen/OneDrive%20-%20Inpart/Documents/Code/eureka/node_modules/@storybook/addon-vitest/dist/preset.js:464:14)
+    at async buildDevStandalone (file:///C:/Users/lnguyen/OneDrive%20-%20Inpart/Documents/Code/eureka/node_modules/storybook/dist/core-server/index.js:8027:32)
+    at async withTelemetry (file:///C:/Users/lnguyen/OneDrive%20-%20Inpart/Documents/Code/eureka/node_modules/storybook/dist/_node-chunks/chunk-FIR43JGQ.js:225:12)
+    at async dev (file:///C:/Users/lnguyen/OneDrive%20-%20Inpart/Documents/Code/eureka/node_modules/storybook/dist/bin/core.js:2736:3)
+    at async _Command.<anonymous> (file:///C:/Users/lnguyen/OneDrive%20-%20Inpart/Documents/Code/eureka/node_modules/storybook/dist/bin/core.js:2806:92)
+[07:39:00.461] [WARN] Broken build, fix the error above.
+You may need to refresh the browser.

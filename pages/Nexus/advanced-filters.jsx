@@ -214,6 +214,7 @@ const LogicDropdown = ({ value, onChange, disabled }) => {
           display: "inline-flex",
           alignItems: "center",
           justifyContent: "center",
+          border: "1px solid var(--color-action-outline-secondary-enabled)",
           minWidth: 64,
           height: 32,
           padding: "0 var(--spacing-sm)",
@@ -246,6 +247,7 @@ const LogicDropdown = ({ value, onChange, disabled }) => {
           fontSize: "var(--text-body-md)",
           fontWeight: "var(--font-weight-regular)",
           color: "var(--color-content-secondary)",
+          border: "1px solid var(--color-action-outline-secondary-enabled)",
         }}
       >
         {value}
@@ -700,7 +702,7 @@ const RowActionsMenu = ({ onConvertToGroup, onDelete, isGrouped }) => {
 let nextId = 1;
 const genId = () => `row-${nextId++}`;
 
-const CriterionRow = ({ row, index, isFirst, isLogicDisabled, isGrouped, onChange, onDelete, onConvertToGroup, usedFields = [] }) => {
+const CriterionRow = ({ row, index, isFirst, isLogicDisabled, isGrouped, onChange, onDelete, onConvertToGroup, usedFields = [], groupLogic, onGroupLogicChange }) => {
   return (
     <div
       style={{
@@ -710,11 +712,40 @@ const CriterionRow = ({ row, index, isFirst, isLogicDisabled, isGrouped, onChang
         flexWrap: "nowrap",
       }}
     >
-      <LogicDropdown
-        value={isFirst ? "Where" : row.logic}
-        onChange={(logic) => onChange({ ...row, logic })}
-        disabled={!isFirst && isLogicDisabled}
-      />
+      {!isGrouped && (
+        <LogicDropdown
+          value={isFirst ? "Where" : row.logic}
+          onChange={(logic) => onChange({ ...row, logic })}
+          disabled={!isFirst && isLogicDisabled}
+        />
+      )}
+      {isGrouped && !isFirst && (
+        <LogicDropdown
+          value={groupLogic}
+          onChange={onGroupLogicChange}
+          disabled={index > 1}
+        />
+      )}
+      {isGrouped && isFirst && (
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            minWidth: 64,
+            height: 32,
+            padding: "0 var(--spacing-sm)",
+            background: "var(--color-general-neutral-light)",
+            borderRadius: "var(--radius-md)",
+            fontFamily: "var(--font-family-primary)",
+            fontSize: "var(--text-body-md)",
+            fontWeight: "var(--font-weight-regular)",
+            color: "var(--color-content-secondary)",
+          }}
+        >
+          Where
+        </div>
+      )}
 
       <FieldDropdown
         value={row.fieldId}
@@ -765,25 +796,22 @@ const CriterionRow = ({ row, index, isFirst, isLogicDisabled, isGrouped, onChang
 
 const CriteriaGroup = ({ group, groupIndex, onChange, onDeleteGroup }) => {
   const usedFields = group.rows.map((r) => r.fieldId).filter(Boolean);
+  const groupLogic = group.rowLogic || "And";
 
-  const groupLogic = group.rows[1]?.logic || "And";
-
+  const setGroupLogic = (rowLogic) => {
+    onChange({ ...group, rowLogic });
+  };
   const addRow = () => {
     const nextField = SEARCH_FIELDS.find((f) => !usedFields.includes(f.id));
     onChange({
       ...group,
-      rows: [...group.rows, { id: genId(), logic: groupLogic, fieldId: nextField?.id || "therapeutic-area", conditionId: "has-any-of", value: null }],
+      rows: [...group.rows, { id: genId(), fieldId: nextField?.id || "therapeutic-area", conditionId: "has-any-of", value: null }],
     });
   };
 
   const updateRow = (rowIndex, updated) => {
     let rows = [...group.rows];
-    // If logic changed on row 1, sync all non-first rows
-    if (rowIndex === 1 && updated.logic !== rows[rowIndex].logic) {
-      rows = rows.map((r, i) => i === 0 ? r : { ...r, logic: updated.logic });
-    } else {
-      rows[rowIndex] = updated;
-    }
+    rows[rowIndex] = updated;
     onChange({ ...group, rows });
   };
 
@@ -798,6 +826,7 @@ const CriteriaGroup = ({ group, groupIndex, onChange, onDeleteGroup }) => {
     <div
       style={{
         background: "var(--color-general-neutral-light)",
+        border: "1px solid var(--color-action-outline-secondary-enabled)",
         borderRadius: "var(--radius-md)",
         padding: "var(--spacing-md)",
         display: "flex",
@@ -827,11 +856,13 @@ const CriteriaGroup = ({ group, groupIndex, onChange, onDeleteGroup }) => {
           row={row}
           index={i}
           isFirst={i === 0}
-          isLogicDisabled={i > 1}
+          isLogicDisabled={false}
           isGrouped
           onChange={(updated) => updateRow(i, updated)}
           onDelete={() => deleteRow(i)}
           usedFields={usedFields}
+          groupLogic={groupLogic}
+          onGroupLogicChange={setGroupLogic}
         />
       ))}
 
@@ -905,8 +936,9 @@ const AdvancedSearchTab = () => {
   const updateItem = (id, updated) => {
     setItems((prev) => {
       const idx = prev.findIndex((it) => it.id === id);
-      // If logic changed on item at index 1, sync all non-first items
-      if (idx === 1 && updated.logic !== undefined && updated.logic !== prev[idx].logic) {
+      const item = prev[idx];
+      // Only sync top-level logic across rows (not groups) when a row's logic changes
+      if (item?.type === "row" && updated.logic !== undefined && updated.logic !== item.logic) {
         return prev.map((it, i) => i === 0 ? it : { ...it, logic: updated.logic });
       }
       return prev.map((it) => (it.id === id ? { ...it, ...updated } : it));
@@ -920,7 +952,7 @@ const AdvancedSearchTab = () => {
   const convertRowToGroup = (id) => {
     setItems((prev) => prev.map((it) => {
       if (it.id !== id) return it;
-      return { type: "group", id: it.id, logic: it.logic, rows: [{ ...it, type: "row", logic: "Where" }] };
+      return { type: "group", id: it.id, logic: it.logic, rowLogic: "And", rows: [{ ...it, type: "row", logic: "Where" }] };
     }));
   };
 
