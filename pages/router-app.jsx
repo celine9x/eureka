@@ -18,6 +18,7 @@ import {
 } from "./templates-preview.jsx";
 import { OntologyRouterPrototypePage } from "./Nexus/ontology-router-prototype.jsx";
 import AdvancedFiltersPage from "./Nexus/advanced-filters.jsx";
+import AdvancedFiltersResultsPage from "./Nexus/advanced-filters-results.jsx";
 
 const LIBRARY_PATH = "/library";
 const EXTRACTION_PATH = "/ai-opportunity-extraction";
@@ -27,6 +28,7 @@ const EXTRACTION_VIEWER_PATH = "/opportunity-extraction-viewer";
 const OPPORTUNITY_EXTRACTION_REVIEW_PATH = "/opportunity-extraction/review";
 const ONTOLOGY_ROUTER_PROTOTYPE_PATH = "/nexus/ontology";
 const ADVANCED_FILTERS_PATH = "/nexus/advanced-filters";
+const ADVANCED_FILTERS_RESULTS_PATH = "/nexus/advanced-filters-results";
 const AI_HOMEPAGE_PATH = "/ai-homepage";
 const ADD_AGREEMENT_PATH = "/add-agreement";
 const ADD_AGREEMENT_PRIVATE_OPPORTUNITY_PATH = "/add-agreement/private-opportunity";
@@ -46,6 +48,7 @@ const isAllowedPath = (currentPath) => {
     currentPath === OPPORTUNITY_EXTRACTION_REVIEW_PATH ||
     currentPath === ONTOLOGY_ROUTER_PROTOTYPE_PATH ||
     currentPath === ADVANCED_FILTERS_PATH ||
+    currentPath === ADVANCED_FILTERS_RESULTS_PATH ||
     currentPath === AI_HOMEPAGE_PATH ||
     currentPath === ADD_AGREEMENT_PATH ||
     currentPath === ADD_AGREEMENT_PRIVATE_OPPORTUNITY_PATH ||
@@ -109,6 +112,10 @@ export const RouterApp = () => {
 
   if (path === ADVANCED_FILTERS_PATH) {
     return <AdvancedFiltersPage />;
+  }
+
+  if (path === ADVANCED_FILTERS_RESULTS_PATH) {
+    return <AdvancedFiltersResultsPage />;
   }
 
   if (path === AI_HOMEPAGE_PATH) {

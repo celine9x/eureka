@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { XCircleIcon } from "@heroicons/react/16/solid";
+import { SparklesIcon } from "@heroicons/react/24/outline";
 import { FormSectionTitle } from "../../library/organisms/section/form-section-title.jsx";
 import { DocumentViewerPage } from "../../library/templates/document-viewer-page.jsx";
 import { CreationFormPanel } from "../../library/organisms/section/creation-form-panel.jsx";
@@ -1033,7 +1034,7 @@ export const OpportunityExtractionViewerPage = () => {
   const [selectedId, setSelectedId] = useState(null);
   const [populateMissing, setPopulateMissing] = useState(true);
   const [showLinkMenu, setShowLinkMenu] = useState(false);
-  const [applyToAllOpps, setApplyToAllOpps] = useState(false);
+  const [applyToAllOpps, setApplyToAllOpps] = useState(true);
   const [extractingOppIds, setExtractingOppIds] = useState([]);
   // Track extracted data per opportunity + initiative: { "opp-1:Oncology": { field: value, ... } }
   const [extractedDataByOppInitiative, setExtractedDataByOppInitiative] = useState({});
@@ -1669,7 +1670,7 @@ export const OpportunityExtractionViewerPage = () => {
               }}
               style={styles.extractMoreSection}
             >
-              <p style={styles.extractMoreTitle}>Extract additional fields</p>
+              <p style={styles.extractMoreTitle}>Extract more fields</p>
               <Checkbox
                 isSelected={applyToAllOpps}
                 onChange={(isSelected) => {
@@ -1693,20 +1694,18 @@ export const OpportunityExtractionViewerPage = () => {
               >
                 <span style={{ display: "inline-flex", alignItems: "center", gap: "var(--spacing-xs)" }}>
                   Apply to other opportunities
-                  <Tooltip placement="bottom-center" content="Copy initiative and type to other opportunities and extracts their additionalfields.">
-                    <Icon name="InformationCircle" variant="solid" size="sm" style={{ color: "var(--color-content-tertiary)", cursor: "help" }} />
-                  </Tooltip>
+                 
                 </span>
               </Checkbox>
               <div style={{ width: "100%" }}>
                 <AiButton
                   variant="secondary"
                   size="md"
-                  iconLeading={<Icon name="SparklesSolid" size="sm" />}
+                  iconLeading={<SparklesIcon style={{ width: 16, height: 16 }} />}
                   style={{ width: "100%" }}
                   onClick={handleExtractMore}
                 >
-                  Extract fields
+                  Extract
                 </AiButton>
               </div>
             </div>

@@ -13,22 +13,18 @@ import {
 import { Button } from "../../library/atoms/button.jsx";
 import { Icon } from "../../library/atoms/icon.jsx";
 import { Chip } from "../../library/atoms/chip.jsx";
+import { Checkbox } from "../../library/atoms/checkbox.jsx";
 import { Tooltip } from "../../library/atoms/tooltip.jsx";
 import MiniInfobox from "../../library/molecules/miniinfobox.jsx";
+import {
+  SEARCH_FIELDS,
+  FIELD_OPTIONS,
+  ONTOLOGY_FIELD_TREES,
+} from "./nexus-search-data.js";
 
 // ─────────────────────────────────────────────
 // CONSTANTS
 // ─────────────────────────────────────────────
-
-const SEARCH_FIELDS = [
-  { id: "therapeutic-area", label: "Therapeutic area", icon: "Squares2X2" },
-  { id: "drug-type", label: "Drug type", icon: "BeakerIcon" },
-  { id: "target", label: "Target", icon: "AdjustmentsHorizontal" },
-  { id: "mechanism", label: "Mechanism", icon: "Cog6Tooth" },
-  { id: "clinical-indication", label: "Clinical indication", icon: "Heart" },
-  { id: "development-phase", label: "Development phase", icon: "PencilSquare" },
-  { id: "territories", label: "Territories", icon: "GlobeAlt" },
-];
 
 const CONDITION_SECTIONS = [
   [
@@ -56,101 +52,261 @@ const ALL_CONDITIONS = CONDITION_SECTIONS.flat();
 // Text-only fields (value is free text): only text-condition-type logic applies for all fields
 const TEXT_FIELDS = [];
 
-const FIELD_OPTIONS = {
-  "therapeutic-area": [
-    { id: "anticancer", label: "Anticancer" },
-    { id: "cancer", label: "Cancer" },
-    { id: "oncology", label: "Oncology" },
-    { id: "immunology", label: "Immunology" },
-    { id: "neurology", label: "Neurology" },
-    { id: "cardiovascular", label: "Cardiovascular" },
-    { id: "infectious-disease", label: "Infectious disease" },
-    { id: "rare-disease", label: "Rare disease" },
-    { id: "metabolic", label: "Metabolic" },
-    { id: "respiratory", label: "Respiratory" },
-    { id: "hematology", label: "Hematology" },
-    { id: "dermatology", label: "Dermatology" },
-    { id: "ophthalmology", label: "Ophthalmology" },
-    { id: "gastroenterology", label: "Gastroenterology" },
-    { id: "rheumatology", label: "Rheumatology" },
-  ],
-  "drug-type": [
-    { id: "small-molecule", label: "Small molecule" },
-    { id: "biologic", label: "Biologic" },
-    { id: "monoclonal-antibody", label: "Monoclonal antibody" },
-    { id: "bispecific-antibody", label: "Bispecific antibody" },
-    { id: "adc", label: "Antibody-drug conjugate (ADC)" },
-    { id: "gene-therapy", label: "Gene therapy" },
-    { id: "cell-therapy", label: "Cell therapy" },
-    { id: "rna-therapy", label: "RNA therapy" },
-    { id: "peptide", label: "Peptide" },
-    { id: "vaccine", label: "Vaccine" },
-    { id: "radiopharmaceutical", label: "Radiopharmaceutical" },
-  ],
-  target: [
-    { id: "pd-1", label: "PD-1" },
-    { id: "pd-l1", label: "PD-L1" },
-    { id: "ctla-4", label: "CTLA-4" },
-    { id: "her2", label: "HER2" },
-    { id: "vegf", label: "VEGF" },
-    { id: "vegfr", label: "VEGFR" },
-    { id: "egfr", label: "EGFR" },
-    { id: "cd19", label: "CD19" },
-    { id: "cd20", label: "CD20" },
-    { id: "cd38", label: "CD38" },
-    { id: "bcma", label: "BCMA" },
-    { id: "kras", label: "KRAS" },
-    { id: "braf", label: "BRAF" },
-    { id: "mek", label: "MEK" },
-    { id: "alk", label: "ALK" },
-    { id: "ros1", label: "ROS1" },
-    { id: "lag-3", label: "LAG-3" },
-    { id: "tim-3", label: "TIM-3" },
-    { id: "tigit", label: "TIGIT" },
-  ],
-  mechanism: [
-    { id: "checkpoint-inhibitor", label: "Checkpoint inhibitor" },
-    { id: "monoclonal-antibody", label: "Monoclonal antibody" },
-    { id: "kinase-inhibitor", label: "Kinase inhibitor" },
-    { id: "car-t", label: "CAR-T cell therapy" },
-    { id: "proteasome-inhibitor", label: "Proteasome inhibitor" },
-    { id: "parp-inhibitor", label: "PARP inhibitor" },
-    { id: "cdk-inhibitor", label: "CDK inhibitor" },
-    { id: "btk-inhibitor", label: "BTK inhibitor" },
-    { id: "pi3k-inhibitor", label: "PI3K inhibitor" },
-    { id: "hdac-inhibitor", label: "HDAC inhibitor" },
-    { id: "bcl2-inhibitor", label: "BCL-2 inhibitor" },
-    { id: "angiogenesis-inhibitor", label: "Angiogenesis inhibitor" },
-    { id: "immunomodulator", label: "Immunomodulator" },
-    { id: "hormone-therapy", label: "Hormone therapy" },
-  ],
-  "development-phase": [
-    { id: "discovery", label: "Discovery" },
-    { id: "preclinical", label: "Preclinical" },
-    { id: "ind-filed", label: "IND Filed" },
-    { id: "phase-1", label: "Phase 1 Clinical" },
-    { id: "phase-1-2", label: "Phase 1/2 Clinical" },
-    { id: "phase-2", label: "Phase 2 Clinical" },
-    { id: "phase-2-3", label: "Phase 2/3 Clinical" },
-    { id: "phase-3", label: "Phase 3 Clinical" },
-    { id: "nda-bla-filed", label: "NDA/BLA Filed" },
-    { id: "approved", label: "Approved" },
-    { id: "post-market", label: "Post-market" },
-  ],
-  territories: [
-    { id: "us", label: "United States" },
-    { id: "eu", label: "European Union" },
-    { id: "uk", label: "United Kingdom" },
-    { id: "jp", label: "Japan" },
-    { id: "cn", label: "China" },
-    { id: "ca", label: "Canada" },
-    { id: "au", label: "Australia" },
-    { id: "kr", label: "South Korea" },
-    { id: "br", label: "Brazil" },
-    { id: "in", label: "India" },
-    { id: "global", label: "Global" },
-    { id: "row", label: "Rest of World" },
-  ],
+const ONTOLOGY_FIELDS = ["drug-type", "target", "clinical-indication"];
+
+// ─────────────────────────────────────────────
+// ONTOLOGY HELPERS
+// ─────────────────────────────────────────────
+
+const ontologyGetLeafIds = (node) => {
+  if (!node.children || node.children.length === 0) return [node.id];
+  return node.children.flatMap(ontologyGetLeafIds);
+};
+
+const ontologyBuildLookup = (nodes, map = new Map()) => {
+  nodes.forEach((node) => {
+    map.set(node.id, node);
+    if (node.children?.length) ontologyBuildLookup(node.children, map);
+  });
+  return map;
+};
+
+const ontologyMatchesTree = (node, query) => {
+  if (!query.trim()) return true;
+  if (node.label.toLowerCase().includes(query.trim().toLowerCase())) return true;
+  return (node.children || []).some((child) => ontologyMatchesTree(child, query));
+};
+
+const ontologyGetSelectionState = (node, selectedLeafIds) => {
+  const leafIds = ontologyGetLeafIds(node);
+  const selectedCount = leafIds.filter((id) => selectedLeafIds.has(id)).length;
+  if (selectedCount === 0) return { checked: false, indeterminate: false, leafIds };
+  if (selectedCount === leafIds.length) return { checked: true, indeterminate: false, leafIds };
+  return { checked: false, indeterminate: true, leafIds };
+};
+
+const ontologySummarizeSelection = (nodes, selectedLeafIds) => {
+  const chips = [];
+  const visit = (node) => {
+    const state = ontologyGetSelectionState(node, selectedLeafIds);
+    if (state.checked) { chips.push({ id: node.id, label: node.label }); return; }
+    if (!node.children?.length) {
+      if (selectedLeafIds.has(node.id)) chips.push({ id: node.id, label: node.label });
+      return;
+    }
+    node.children.forEach(visit);
+  };
+  nodes.forEach(visit);
+  return chips;
+};
+
+// ─────────────────────────────────────────────
+// ONTOLOGY TREE ROW
+// ─────────────────────────────────────────────
+
+const OntologyTreeRow = ({ node, depth, expandedIds, onToggleExpanded, onToggleSelection, selectedLeafIds, searchQuery }) => {
+  const [hovered, setHovered] = React.useState(false);
+  const hasChildren = Boolean(node.children?.length);
+  if (!ontologyMatchesTree(node, searchQuery)) return null;
+  const isExpanded = expandedIds.has(node.id) || Boolean(searchQuery.trim());
+  const selectionState = ontologyGetSelectionState(node, selectedLeafIds);
+  return (
+    <>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "var(--spacing-xs)",
+          padding: `var(--spacing-xs) var(--spacing-sm) var(--spacing-xs) calc(var(--spacing-sm) + ${depth} * 16px)`,
+          borderRadius: "var(--radius-sm)",
+          background: hovered ? "var(--color-general-neutral-lighter)" : "transparent",
+          boxSizing: "border-box",
+        }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+      >
+        {hasChildren ? (
+          <button
+            type="button"
+            style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 16, height: 16, border: "none", background: "transparent", color: "var(--color-content-secondary)", cursor: "pointer", flexShrink: 0, padding: 0 }}
+            onClick={(e) => { e.stopPropagation(); onToggleExpanded(node.id); }}
+          >
+            <Icon name={isExpanded ? "ChevronDown" : "ChevronRight"} size={12} />
+          </button>
+        ) : (
+          <span style={{ width: 16, flexShrink: 0 }} />
+        )}
+        <Checkbox
+          size="sm"
+          isSelected={selectionState.checked}
+          isIndeterminate={selectionState.indeterminate}
+          onChange={() => onToggleSelection(node)}
+        />
+        <button
+          type="button"
+          style={{ display: "flex", flex: 1, minWidth: 0, border: "none", background: "transparent", padding: 0, cursor: "pointer", textAlign: "left", fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-md)", color: "var(--color-content-primary)", lineHeight: "var(--line-height-body-md)" }}
+          onClick={() => onToggleSelection(node)}
+        >
+          {node.label}
+        </button>
+      </div>
+      {hasChildren && isExpanded && node.children.map((child) => (
+        <OntologyTreeRow
+          key={child.id}
+          node={child}
+          depth={depth + 1}
+          expandedIds={expandedIds}
+          onToggleExpanded={onToggleExpanded}
+          onToggleSelection={onToggleSelection}
+          selectedLeafIds={selectedLeafIds}
+          searchQuery={searchQuery}
+        />
+      ))}
+    </>
+  );
+};
+
+// ─────────────────────────────────────────────
+// ONTOLOGY CHIP SELECT INPUT
+// ─────────────────────────────────────────────
+
+const OntologyChipSelectInput = ({ fieldId, value, onChange }) => {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [hovered, setHovered] = useState(false);
+  const [expandedIds, setExpandedIds] = useState(new Set());
+  const wrapperRef = useRef(null);
+  const chipRowRef = useRef(null);
+  const [visibleCount, setVisibleCount] = useState(null);
+
+  const tree = ONTOLOGY_FIELD_TREES[fieldId] || [];
+  const selectedLeafIds = React.useMemo(() => new Set(value || []), [value]);
+  const chips = React.useMemo(() => ontologySummarizeSelection(tree, selectedLeafIds), [tree, selectedLeafIds]);
+
+  React.useEffect(() => {
+    const handler = (e) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!chipRowRef.current || chips.length === 0) { setVisibleCount(null); return; }
+    const container = chipRowRef.current;
+    const containerWidth = container.offsetWidth;
+    const children = Array.from(container.querySelectorAll("[data-chip]"));
+    if (children.length === 0) { setVisibleCount(null); return; }
+    const BADGE_WIDTH = 40;
+    let usedWidth = 0, count = 0;
+    for (let i = 0; i < children.length; i++) {
+      const w = children[i].offsetWidth + 4;
+      const remaining = children.length - i - 1;
+      if (usedWidth + w > containerWidth || (remaining > 0 && usedWidth + w + BADGE_WIDTH > containerWidth)) break;
+      usedWidth += w; count++;
+    }
+    setVisibleCount(count < chips.length ? count : null);
+  }, [chips.length, open]);
+
+  const displayChips = visibleCount !== null ? chips.slice(0, visibleCount) : chips;
+  const hiddenChips = visibleCount !== null ? chips.slice(visibleCount) : [];
+
+  const toggleExpanded = (nodeId) => {
+    setExpandedIds((prev) => { const next = new Set(prev); next.has(nodeId) ? next.delete(nodeId) : next.add(nodeId); return next; });
+  };
+
+  const toggleSelection = (node) => {
+    const { checked, leafIds } = ontologyGetSelectionState(node, selectedLeafIds);
+    const next = new Set(selectedLeafIds);
+    if (checked) leafIds.forEach((id) => next.delete(id));
+    else leafIds.forEach((id) => next.add(id));
+    onChange([...next]);
+  };
+
+  const removeChip = (chipId) => {
+    const lookup = ontologyBuildLookup(tree);
+    const node = lookup.get(chipId);
+    if (!node) return;
+    const leafIds = ontologyGetLeafIds(node);
+    const next = new Set(selectedLeafIds);
+    leafIds.forEach((id) => next.delete(id));
+    onChange([...next]);
+  };
+
+  return (
+    <div ref={wrapperRef} style={{ position: "relative", width: "100%" }}>
+      <div
+        onClick={() => setOpen((o) => !o)}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={{
+          display: "flex", alignItems: "center", gap: "var(--spacing-xs)", height: 32,
+          padding: "0 var(--spacing-sm)", background: "var(--color-general-white)",
+          borderRadius: "var(--radius-md)",
+          outline: hovered && !open ? "1px solid var(--color-interaction-outline-hover)" : open ? "1px solid var(--color-interaction-outline-active)" : "1px solid var(--color-interaction-outline-enabled)",
+          outlineOffset: "-1px", cursor: "pointer", boxSizing: "border-box", width: "100%",
+          transition: "all var(--transition-fast)", overflow: "hidden",
+        }}
+      >
+        {chips.length === 0 && (
+          <span style={{ flex: 1, fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-md)", color: "var(--color-content-tertiary)" }}>Select options</span>
+        )}
+        {chips.length > 0 && (
+          <div ref={chipRowRef} style={{ flex: 1, display: "flex", alignItems: "center", gap: 4, overflow: "hidden", minWidth: 0 }}>
+            {displayChips.map((chip) => (
+              <span key={chip.id} data-chip style={{ flexShrink: 0, borderRadius: "var(--radius-xs)", overflow: "hidden" }}>
+                <Chip size="md" removable onRemove={(e) => { e && e.stopPropagation(); removeChip(chip.id); }} style={{ borderRadius: "var(--radius-xs)" }}>
+                  {chip.label}
+                </Chip>
+              </span>
+            ))}
+            {hiddenChips.length > 0 && (
+              <Tooltip content={<div style={{ display: "flex", flexDirection: "column", gap: 2 }}>{hiddenChips.map((c) => <div key={c.id}>{c.label}</div>)}</div>} placement="bottom-left">
+                <span
+                  style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", padding: "var(--spacing-xs)", background: "var(--color-general-neutral-lighter)", borderRadius: "var(--radius-xs)", outline: "1px solid var(--color-action-outline-secondary-enabled)", outlineOffset: "-1px", boxShadow: "var(--shadow-light-down)", fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-md)", color: "var(--color-content-secondary)", whiteSpace: "nowrap", cursor: "default" }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  +{hiddenChips.length}
+                </span>
+              </Tooltip>
+            )}
+          </div>
+        )}
+        <span style={{ marginLeft: "auto", flexShrink: 0, color: "var(--color-content-secondary)" }}>
+          <Icon name="ChevronDown" size={12} style={{ transform: open ? "rotate(180deg)" : undefined }} />
+        </span>
+      </div>
+
+      {open && (
+        <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 1000, background: "var(--color-general-white)", borderRadius: "var(--radius-md)", border: "1px solid var(--color-action-outline-secondary-enabled)", boxShadow: "var(--shadow-medium-down)", overflow: "hidden", maxHeight: 300, display: "flex", flexDirection: "column" }}>
+          <div style={{ padding: "var(--spacing-sm)", borderBottom: "1px solid var(--color-action-outline-secondary-enabled)" }}>
+            <input
+              autoFocus
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search..."
+              onClick={(e) => e.stopPropagation()}
+              style={{ width: "100%", border: "1px solid var(--color-interaction-outline-enabled)", borderRadius: "var(--radius-sm)", padding: "4px 8px", fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-md)", outline: "none", boxSizing: "border-box" }}
+            />
+          </div>
+          <div style={{ overflowY: "auto", padding: "var(--spacing-xs) var(--spacing-xs)" }}>
+            {tree.map((node) => (
+              <OntologyTreeRow
+                key={node.id}
+                node={node}
+                depth={0}
+                expandedIds={expandedIds}
+                onToggleExpanded={toggleExpanded}
+                onToggleSelection={toggleSelection}
+                selectedLeafIds={selectedLeafIds}
+                searchQuery={search}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
 // ─────────────────────────────────────────────
@@ -383,6 +539,10 @@ const ValueInput = ({ fieldId, conditionId, value, onChange }) => {
         style={{ width: "100%" }}
       />
     );
+  }
+
+  if (ONTOLOGY_FIELDS.includes(fieldId)) {
+    return <OntologyChipSelectInput fieldId={fieldId} value={value} onChange={onChange} />;
   }
 
   return <ChipSelectInput fieldId={fieldId} value={value} onChange={onChange} />;
@@ -964,7 +1124,10 @@ const AdvancedSearchTab = () => {
   const handleGenerate = () => {
     setShowValidation(true);
     if (canGenerate) {
-      alert(`Generating results for: ${searchName}`);
+      const criteria = JSON.stringify({ searchName, items });
+      const encoded = encodeURIComponent(criteria);
+      window.history.pushState({}, "", `/nexus/advanced-filters-results?criteria=${encoded}`);
+      window.dispatchEvent(new PopStateEvent("popstate"));
     }
   };
 
