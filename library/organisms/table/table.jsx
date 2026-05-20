@@ -70,6 +70,16 @@ const styles = {
       overflow-x: auto;
       overflow-y: hidden;
     }
+    .table-body-wrapper .table-row-header {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+    .table-body-wrapper .table-row-header > * {
+      background: var(--color-general-white);
+      border: none !important;
+      border-bottom: none !important;
+    }
     .table-body-wrapper {
       outline: 1px solid var(--color-action-outline-secondary-enabled);
       outline-offset: -1px;
@@ -1272,45 +1282,39 @@ export const Table = ({
 
   const renderColumnMode = () => {
     const headerRow = (
-      <div className="table-header-wrapper">
-        <div className="table-scroll-container">
-          <div className="table-inner" role="table">
-            <TableRow variant="header">
-              {resolvedColumns.map((column, columnIndex) => {
-                const columnVariant = getColumnVariant(column);
-                const isActionColumn =
-                  columnVariant === TABLE_COLUMN_TYPES.button &&
-                  (column.key === "action" ||
-                    column.key === "actions" ||
-                    column.header === "action" ||
-                    column.header === "actions" ||
-                    column.header === "Action" ||
-                    column.header === "Actions");
+      <TableRow variant="header">
+        {resolvedColumns.map((column, columnIndex) => {
+          const columnVariant = getColumnVariant(column);
+          const isActionColumn =
+            columnVariant === TABLE_COLUMN_TYPES.button &&
+            (column.key === "action" ||
+              column.key === "actions" ||
+              column.header === "action" ||
+              column.header === "actions" ||
+              column.header === "Action" ||
+              column.header === "Actions");
 
-                const sticky = column.sticky ?? isActionColumn;
-                const width =
-                  column.width ??
-                  (isActionColumn ? "calc(var(--size-button-xl) + var(--spacing-4))" : undefined);
-                const headerContainerProps = column.headerContainerProps || {};
+          const sticky = column.sticky ?? isActionColumn;
+          const width =
+            column.width ??
+            (isActionColumn ? "calc(var(--size-button-xl) + var(--spacing-4))" : undefined);
+          const headerContainerProps = column.headerContainerProps || {};
 
-                return (
-                  <TableCellHeader
-                    key={column.key || `column-${columnIndex}`}
-                    sortable={Boolean(column.sortable)}
-                    sort={column.sort || ""}
-                    onSort={column.onSort}
-                    sticky={sticky}
-                    width={width}
-                    {...headerContainerProps}
-                  >
-                    {column.header || column.label || ""}
-                  </TableCellHeader>
-                );
-              })}
-            </TableRow>
-          </div>
-        </div>
-      </div>
+          return (
+            <TableCellHeader
+              key={column.key || `column-${columnIndex}`}
+              sortable={Boolean(column.sortable)}
+              sort={column.sort || ""}
+              onSort={column.onSort}
+              sticky={sticky}
+              width={width}
+              {...headerContainerProps}
+            >
+              {column.header || column.label || ""}
+            </TableCellHeader>
+          );
+        })}
+      </TableRow>
     );
 
     const bodyRows = rows.map((row, rowIndex) => {
@@ -1370,17 +1374,15 @@ export const Table = ({
       ) : null;
 
     return (
-      <>
-        {headerRow}
-        <div className="table-body-wrapper">
-          <div className="table-scroll-container">
-            <div className="table-inner" role="table">
-              {bodyRows}
-              {emptyRow}
-            </div>
+      <div className="table-body-wrapper">
+        <div className="table-scroll-container">
+          <div className="table-inner" role="table">
+            {headerRow}
+            {bodyRows}
+            {emptyRow}
           </div>
         </div>
-      </>
+      </div>
     );
   };
 

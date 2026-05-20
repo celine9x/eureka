@@ -305,7 +305,7 @@ const parseSearchCriteria = () => {
   }
 };
 
-export const AdvancedFiltersResultsPage = () => {
+export const AdvancedFiltersResults2Page = () => {
   const [page, setPage] = useState(1);
   const { searchName, items } = parseSearchCriteria();
 
@@ -412,8 +412,8 @@ export const AdvancedFiltersResultsPage = () => {
             const params = new URLSearchParams(window.location.search);
             const criteria = params.get("criteria");
             const url = criteria
-              ? `/nexus/search?criteria=${criteria}`
-              : "/nexus/search";
+              ? `/nexus/search2?criteria=${criteria}`
+              : "/nexus/search2";
             window.history.pushState({}, "", url);
             window.dispatchEvent(new PopStateEvent("popstate"));
           }}
@@ -437,4 +437,4 @@ export const AdvancedFiltersResultsPage = () => {
   );
 };
 
-export default AdvancedFiltersResultsPage;
+export default AdvancedFiltersResults2Page;

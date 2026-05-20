@@ -465,7 +465,79 @@ export const RESULT_ASSETS = [
     "development-phase": ["approved"],
     "territories": ["us", "eu", "jp", "ca", "au"],
   },
+  {
+    id: 11,
+    name: "CAR-T / Gene Therapy Combo",
+    company: { primary: "VectorCell AG", secondary: "Cell & Gene Therapy" },
+    status: { label: "Active", color: "positive", shape: "pill" },
+    tags: { items: [{ label: "Phase 1/2" }, { label: "CD19" }] },
+    dealValue: "$460,000",
+    startDate: "Nov 5, 2026",
+    owner: "James Torres",
+    "therapeutic-area": ["hematology", "oncology"],
+    "drug-type": ["car-t", "gene-therapy"],
+    "target": ["cd19"],
+    "mechanism": ["car-t"],
+    "clinical-indication": ["leukemia", "lymphoma"],
+    "development-phase": ["phase-1-2"],
+    "territories": ["us", "eu"],
+  },
 ];
+
+// ─────────────────────────────────────────────
+// ASSET FILTERING
+// ─────────────────────────────────────────────
+
+/**
+ * Filters RESULT_ASSETS against the search criteria items from the advanced filters page.
+ * Supports: has-any-of, has-all-of, has-none-of, is-exactly, is-exactly-not, is-empty, is-not-empty
+ */
+export const filterAssets = (assets, items = []) => {
+  const rows = [];
+  items.forEach((item) => {
+    if (item.type === "row") rows.push(item);
+    else if (item.type === "group") item.rows.forEach((r) => rows.push(r));
+  });
+
+  if (rows.length === 0) return assets;
+
+  return assets.filter((asset) => {
+    return rows.every((row) => {
+      if (!row.fieldId) return true;
+      const assetValues = Array.isArray(asset[row.fieldId])
+        ? asset[row.fieldId]
+        : asset[row.fieldId] != null ? [String(asset[row.fieldId])] : [];
+      const criteriaValues = Array.isArray(row.value)
+        ? row.value
+        : row.value != null ? [String(row.value)] : [];
+
+      switch (row.conditionId) {
+        case "has-any-of":
+          return criteriaValues.some((v) => assetValues.includes(v));
+        case "has-all-of":
+          return criteriaValues.every((v) => assetValues.includes(v));
+        case "has-none-of":
+          return criteriaValues.every((v) => !assetValues.includes(v));
+        case "is-exactly": {
+          const a = [...assetValues].sort().join(",");
+          const b = [...criteriaValues].sort().join(",");
+          return a === b;
+        }
+        case "is-exactly-not": {
+          const a = [...assetValues].sort().join(",");
+          const b = [...criteriaValues].sort().join(",");
+          return a !== b;
+        }
+        case "is-empty":
+          return assetValues.length === 0;
+        case "is-not-empty":
+          return assetValues.length > 0;
+        default:
+          return true;
+      }
+    });
+  });
+};
 
 // ─────────────────────────────────────────────
 // FILTER BUILDER  (criteria → Hub initialFilters)
@@ -477,6 +549,80 @@ export const RESULT_ASSETS = [
  *   - configured fields: label includes condition text, badgeCount = selected value count
  *   - unconfigured fields: label = field label only, badgeCount = total options count
  */
+// Flatten a tree into an array of label strings (for Hub multipleChoice options)
+const flattenTreeLabels = (nodes) => {
+  const labels = [];
+  const visit = (node) => {
+    labels.push(node.label);
+    if (node.children?.length) node.children.forEach(visit);
+  };
+  nodes.forEach(visit);
+  return labels;
+};
+
+/**
+ * Builds the filterSuggestions array expected by the Hub template.
+ * Each nexus search field becomes a multipleChoice suggestion with its option labels.
+ */
+export const buildHubFilterSuggestions = () =>
+  SEARCH_FIELDS.map((field) => {
+    const isOntology = ["drug-type", "target", "clinical-indication"].includes(field.id);
+    const options = isOntology
+      ? flattenTreeLabels(ONTOLOGY_FIELD_TREES[field.id])
+      : (FIELD_OPTIONS[field.id] || []).map((o) => o.label);
+    return { key: field.id, label: field.label, type: "multiple-choice", options };
+  });
+
+/**
+ * Builds filterSuggestions scoped to what was actually selected in the search criteria.
+ * Configured fields only expose the selected values as options.
+ * Unconfigured fields expose all options.
+ */
+export const buildHubFilterSuggestionsFromCriteria = (items = []) => {
+  const criteriaByField = {};
+  const visit = (row) => {
+    if (!row.fieldId) return;
+    criteriaByField[row.fieldId] = row;
+  };
+  items.forEach((item) => {
+    if (item.type === "row") visit(item);
+    else if (item.type === "group") item.rows.forEach(visit);
+  });
+
+  const NEGATIVE_CONDITIONS = new Set(["is-exactly-not", "has-none-of"]);
+
+  return SEARCH_FIELDS.map((field) => {
+    const isOntology = ["drug-type", "target", "clinical-indication"].includes(field.id);
+    const allOptions = isOntology
+      ? flattenTreeLabels(ONTOLOGY_FIELD_TREES[field.id])
+      : (FIELD_OPTIONS[field.id] || []).map((o) => o.label);
+
+    const criteria = criteriaByField[field.id];
+    const noValueConditions = ["is-empty", "is-not-empty"];
+    let options = allOptions;
+
+    if (criteria && !noValueConditions.includes(criteria.conditionId) && criteria.value) {
+      const excludedIds = new Set(Array.isArray(criteria.value) ? criteria.value : [criteria.value]);
+      const isNegative = NEGATIVE_CONDITIONS.has(criteria.conditionId);
+
+      if (isNegative) {
+        // Show all options except the excluded ones
+        const allIds = isOntology
+          ? flattenTreeLabels(ONTOLOGY_FIELD_TREES[field.id]).map((l) =>
+              Object.entries(OPTION_LABEL_MAP).find(([, v]) => v === l)?.[0] || l)
+          : (FIELD_OPTIONS[field.id] || []).map((o) => o.id);
+        const remainingIds = allIds.filter((id) => !excludedIds.has(id));
+        options = remainingIds.map((id) => OPTION_LABEL_MAP[id] || id);
+      } else {
+        // Show only the selected values
+        options = [...excludedIds].map((id) => OPTION_LABEL_MAP[id] || id);
+      }
+    }
+
+    return { key: field.id, label: field.label, type: "multiple-choice", options };
+  });
+};
+
 export const buildInitialFilters = (items = []) => {
   // Flatten criteria from items (rows + group rows)
   const criteriaByField = {};
@@ -500,30 +646,81 @@ export const buildInitialFilters = (items = []) => {
       const conditionLabel = CONDITION_LABELS[criteria.conditionId] || criteria.conditionId;
       const isNoValue = noValueConditions.includes(criteria.conditionId);
 
-      let badgeCount;
+      // For ontology fields keep raw IDs; for flat fields resolve to labels.
+      // For negative conditions (is-exactly-not, has-none-of), the dropdown
+      // should show ALL options EXCEPT the excluded ones — all checked.
+      const NEGATIVE_CONDITIONS = new Set(["is-exactly-not", "has-none-of"]);
+      const isNegative = NEGATIVE_CONDITIONS.has(criteria.conditionId);
+      const isOntologyField = ["drug-type", "target", "clinical-indication"].includes(field.id);
+
+      const criteriaIds = isNoValue ? [] :
+        Array.isArray(criteria.value) ? criteria.value :
+        criteria.value ? [criteria.value] : [];
+
+      let selectedOptions;
       if (isNoValue) {
-        badgeCount = undefined;
-      } else if (Array.isArray(criteria.value)) {
-        badgeCount = criteria.value.length;
-      } else if (criteria.value) {
-        badgeCount = 1;
+        selectedOptions = [];
+      } else if (isNegative) {
+        // Negative conditions (has-none-of, is-exactly-not) are already handled by
+        // filterAssets on the base results. The chip filter is for further narrowing,
+        // so start with no pre-selection — nothing checked by default.
+        selectedOptions = [];
+      } else {
+        // Always store IDs
+        selectedOptions = criteriaIds;
       }
+
+      const badgeCount = isNoValue ? undefined : selectedOptions.length || undefined;
 
       return {
         id: field.id,
-        label: isNoValue
-          ? `${field.label} ${conditionLabel}`
-          : field.label,
+        label: isNoValue ? `${field.label} ${conditionLabel}` : field.label,
         value: isNoValue ? undefined : conditionLabel,
         badgeCount,
+        criteria: {
+          type: "multiple-choice",
+          selectedOptions,
+          includeEmpty: isNoValue,
+          text: "",
+          from: "",
+          to: "",
+          min: "",
+          max: "",
+          selectedOption: "",
+        },
       };
     }
 
-    // Not configured — show total options count
+    // Not configured — all options selected by default (show everything), always store IDs
+    const isOntologyField = ["drug-type", "target", "clinical-indication"].includes(field.id);
+    const flattenTreeIds = (nodes) => {
+      const ids = [];
+      const visit = (node) => {
+        if (!node.children?.length) ids.push(node.id);
+        else node.children.forEach(visit);
+      };
+      nodes.forEach(visit);
+      return ids;
+    };
+    const allSelectedOptions = isOntologyField
+      ? flattenTreeIds(ONTOLOGY_FIELD_TREES[field.id])
+      : (FIELD_OPTIONS[field.id] || []).map((o) => o.id);
+
     return {
       id: field.id,
       label: field.label,
-      badgeCount: FIELD_TOTAL_COUNTS[field.id],
+      badgeCount: undefined,
+      criteria: {
+        type: "multiple-choice",
+        selectedOptions: [],
+        includeEmpty: false,
+        text: "",
+        from: "",
+        to: "",
+        min: "",
+        max: "",
+        selectedOption: "",
+      },
     };
   });
 };

@@ -64,6 +64,7 @@ import { UserButton, USER_BUTTON_STATES } from "./library/organisms/side-menu/us
 import { TableCell, TABLECELL_VARIANTS, TableCellLinkRow, TableCellLinkedName, TableCellTwoLevel, TableCellTags } from "./library/organisms/table/tablecell.jsx";
 
 import { Modal } from "./library/organisms/modal.jsx";
+import { AccessControlModal } from "./library/organisms/access-control-modal.jsx";
 import { Table, TableColumns, TableColumn } from "./library/organisms/table/table.jsx";
 import {
   ObjectHeader,
@@ -4052,6 +4053,44 @@ import InpartLogoCollapsed from "@/Inpart1.svg";
   </Section>
 );
 
+const AccessControlModalPage = () => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const mockUsers = [
+    { name: "John Doe", role: "Owner" },
+    { name: "Alice Johnson", role: "Can edit" },
+    { name: "Bob Smith", role: "Can view" },
+  ];
+
+  return (
+    <Section title="AccessControlModal" description="A modal for managing object access with public/private toggle.">
+      <PreviewComponent
+        title="Access Control Modal"
+        code={`import { AccessControlModal } from "@/library/organisms/access-control-modal";
+
+<AccessControlModal
+  open={isOpen}
+  onClose={() => setIsOpen(false)}
+  objectLabel="agreement"
+  users={[{ name: "John Doe", role: "Owner" }]}
+/>`}
+      >
+        <div style={{ display: "flex", gap: 12 }}>
+          <Button variant="primary" onClick={() => setIsOpen(true)}>
+            Open Access Control
+          </Button>
+        </div>
+        <AccessControlModal
+          open={isOpen}
+          onClose={() => setIsOpen(false)}
+          objectLabel="agreement"
+          users={mockUsers}
+        />
+      </PreviewComponent>
+    </Section>
+  );
+};
+
 const ModalPage = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLargeOpen, setIsLargeOpen] = useState(false);
@@ -5809,6 +5848,7 @@ const PAGES = {
   userButton: { title: "UserButton", component: UserButtonPage, category: "organisms" },
   tableCell: { title: "TableCell", component: TableCellPage, category: "organisms" },
   sideMenu: { title: "SideMenu", component: SideMenuPage, category: "organisms" },
+  accessControlModal: { title: "AccessControlModal", component: AccessControlModalPage, category: "organisms" },
   modal: { title: "Modal", component: ModalPage, category: "organisms" },
   table: { title: "Table", component: TablePage, category: "organisms" },
   objectHeader: { title: "ObjectHeader", component: ObjectHeaderPage, category: "organisms" },

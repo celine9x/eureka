@@ -1154,7 +1154,7 @@ const AdvancedSearchTab = () => {
     if (canGenerate) {
       const criteria = JSON.stringify({ searchName, items });
       const encoded = encodeURIComponent(criteria);
-      window.history.pushState({}, "", `/nexus/results?criteria=${encoded}`);
+      window.history.pushState({}, "", `/nexus/results2?criteria=${encoded}`);
       window.dispatchEvent(new PopStateEvent("popstate"));
     }
   };
@@ -1358,7 +1358,7 @@ const BasicSearchTab = () => {
 // PAGE
 // ─────────────────────────────────────────────
 
-export const AdvancedFiltersPage = () => {
+export const AdvancedFilters2Page = () => {
   const [tab, setTab] = useState("advanced");
 
   return (
@@ -1409,4 +1409,4 @@ export const AdvancedFiltersPage = () => {
   );
 };
 
-export default AdvancedFiltersPage;
+export default AdvancedFilters2Page;

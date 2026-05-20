@@ -110,7 +110,7 @@ const styles = {
       padding: 0 var(--spacing-6);
     }
     .hub__header > * {
-      grid-column: 1 / span 12;
+      grid-column: 2 / span 10;
     }
     .hub__body {
       flex: 1;
@@ -674,6 +674,9 @@ export const Hub = ({
   filterPanelTitle = "Filters",
   addFiltersLabel = "Add filters",
   onFiltersApply,
+  showFilterActions = true,
+  showFilterRemove = true,
+  filterEditorRenderers = {},
   className = "",
   ...props
 }) => {
@@ -813,8 +816,11 @@ export const Hub = ({
     const fallbackType = filter.type || FILTER_TYPES.text;
     const fallbackLabel = filter.label || "Filter";
 
-    const lookupKey = filter.id || filter.key;
-    const lookupMeta = lookupKey ? filterLookup[lookupKey] : null;
+    const rawKey = filter.id || filter.key;
+    // Try direct key first, then suggestion-prefixed key as fallback
+    const lookupMeta = rawKey
+      ? filterLookup[rawKey] || filterLookup[`suggestion::${rawKey}`]
+      : null;
 
     return {
       type: lookupMeta?.type || fallbackType,
@@ -916,9 +922,15 @@ export const Hub = ({
       </div>
     );
 
+    const filterId = filter.id || filter.key;
+    const customRenderer = filterEditorRenderers[filterId];
+
     return (
       <div className="hub__filter-editor">
         <div className="hub__filter-editor-body">
+          {customRenderer
+            ? customRenderer(filter, { draft, updateDraft: (upd) => updateDraftCriteria(filter, upd) })
+            : (<>
           {meta.type === FILTER_TYPES.text && (
             <div className="hub__filter-editor-fields">
               {clearableInput({
@@ -1090,6 +1102,7 @@ export const Hub = ({
               </div>
             </div>
           )}
+          </>)}
         </div>
 
         <div className="hub__filter-editor-footer">
@@ -1191,17 +1204,19 @@ export const Hub = ({
                               <span className="hub__filter-pill-icon-btn" aria-hidden="true">
                                 <Icon name="ChevronDown" size="sm" />
                               </span>
-                              <button
-                                type="button"
-                                className="hub__filter-pill-icon-btn"
-                                onClick={(event) => {
-                                  event.stopPropagation();
-                                  handleRemoveFilter(filterId);
-                                }}
-                                aria-label={`Remove ${filter.label} filter`}
-                              >
-                                <Icon name="XMark" size="sm" />
-                              </button>
+                              {showFilterRemove && (
+                                <button
+                                  type="button"
+                                  className="hub__filter-pill-icon-btn"
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    handleRemoveFilter(filterId);
+                                  }}
+                                  aria-label={`Remove ${filter.label} filter`}
+                                >
+                                  <Icon name="XMark" size="sm" />
+                                </button>
+                              )}
                             </span>
                           </div>
                         </DropdownMenuTrigger>
@@ -1218,28 +1233,32 @@ export const Hub = ({
                     );
                   })}
 
-                  <Button
-                    variant="secondary"
-                    size="md"
-                    iconLeading={<Icon name="Plus" size="sm" />}
-                    onClick={() => setIsFilterPanelOpen(true)}
-                  >
-                    More filters
-                  </Button>
-                </div>
-                <div className="hub__clear-filters-action">
-                  <Tooltip content="Remove all" placement="bottom-right">
+                  {showFilterActions && (
                     <Button
                       variant="secondary"
-                      color="secondary-destructive"
                       size="md"
-                      iconOnly
-                      ariaLabel="Remove all active filters"
-                      iconLeading={<Icon name="XMark" size="sm" />}
-                      onClick={handleClearFilters}
-                    />
-                  </Tooltip>
+                      iconLeading={<Icon name="Plus" size="sm" />}
+                      onClick={() => setIsFilterPanelOpen(true)}
+                    >
+                      More filters
+                    </Button>
+                  )}
                 </div>
+                {showFilterActions && (
+                  <div className="hub__clear-filters-action">
+                    <Tooltip content="Remove all" placement="bottom-right">
+                      <Button
+                        variant="secondary"
+                        color="secondary-destructive"
+                        size="md"
+                        iconOnly
+                        ariaLabel="Remove all active filters"
+                        iconLeading={<Icon name="XMark" size="sm" />}
+                        onClick={handleClearFilters}
+                      />
+                    </Tooltip>
+                  </div>
+                )}
               </>
             )}
           </div>

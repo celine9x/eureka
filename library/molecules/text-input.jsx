@@ -261,6 +261,7 @@ export const Input = forwardRef(
       disabled,
       isReadOnly = false,
       readOnly,
+      iconLeading,
       style,
       ...props
     },
@@ -278,6 +279,7 @@ export const Input = forwardRef(
     const inputStyle = {
       ...styles.input,
       ...styles.inputSizes[size] || styles.inputSizes.md,
+      ...(iconLeading && { paddingLeft: 36 }),
       ...(isHovered && !isInputDisabled && !isFocused && styles.inputHover),
       ...(isFocused && !isInputDisabled && state === INPUT_STATES.default && styles.inputFocus),
       ...(state === INPUT_STATES.error && !isFocused && styles.inputError),
@@ -288,6 +290,36 @@ export const Input = forwardRef(
       ...(isInputReadOnly && styles.inputReadOnly),
       ...style,
     };
+
+    if (iconLeading) {
+      return (
+        <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+          <span style={{
+            position: "absolute",
+            left: 10,
+            display: "flex",
+            alignItems: "center",
+            color: "var(--color-content-tertiary)",
+            pointerEvents: "none",
+          }}>
+            {iconLeading}
+          </span>
+          <input
+            ref={ref}
+            type={type}
+            className="eureka-text-input"
+            style={{ ...inputStyle, width: "100%" }}
+            disabled={isInputDisabled}
+            readOnly={isInputReadOnly}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            {...props}
+          />
+        </div>
+      );
+    }
 
     return (
       <input
@@ -341,6 +373,7 @@ export const TextInput = forwardRef(
       onChange,
       onFocus,
       onBlur,
+      iconLeading,
       style,
       multiline: _multiline,
       rows: _rows,
@@ -397,6 +430,7 @@ export const TextInput = forwardRef(
           state={inputState}
           isDisabled={fieldDisabled}
           isReadOnly={fieldReadOnly}
+          iconLeading={iconLeading}
           onChange={onChange}
           onFocus={onFocus}
           onBlur={onBlur}
