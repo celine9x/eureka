@@ -13,7 +13,7 @@ export const SEARCH_FIELDS = [
 ];
 
 // ─────────────────────────────────────────────
-// FLAT FIELD OPTIONS (10X EXPANDED)
+// FLAT FIELD OPTIONS
 // ─────────────────────────────────────────────
 
 export const FIELD_OPTIONS = {
@@ -33,21 +33,6 @@ export const FIELD_OPTIONS = {
     { id: "ophthalmology", label: "Ophthalmology" },
     { id: "gastroenterology", label: "Gastroenterology" },
     { id: "rheumatology", label: "Rheumatology" },
-    { id: "endocrinology", label: "Endocrinology" },
-    { id: "nephrology", label: "Nephrology" },
-    { id: "pulmonology", label: "Pulmonology" },
-    { id: "hepatology", label: "Hepatology" },
-    { id: "psychiatry", label: "Psychiatry" },
-    { id: "nephro-oncology", label: "Nephro-Oncology" },
-    { id: "uro-oncology", label: "Uro-Oncology" },
-    { id: "thoracic-oncology", label: "Thoracic Oncology" },
-    { id: "head-neck-oncology", label: "Head & Neck Oncology" },
-    { id: "gynecologic-oncology", label: "Gynecologic Oncology" },
-    { id: "gastric-oncology", label: "Gastric Oncology" },
-    { id: "colorectal-oncology", label: "Colorectal Oncology" },
-    { id: "pancreatic-oncology", label: "Pancreatic Oncology" },
-    { id: "hepatocellular-oncology", label: "Hepatocellular Oncology" },
-    { id: "breast-oncology", label: "Breast Oncology" },
   ],
   "mechanism": [
     { id: "checkpoint-inhibitor", label: "Checkpoint inhibitor" },
@@ -64,22 +49,6 @@ export const FIELD_OPTIONS = {
     { id: "angiogenesis-inhibitor", label: "Angiogenesis inhibitor" },
     { id: "immunomodulator", label: "Immunomodulator" },
     { id: "hormone-therapy", label: "Hormone therapy" },
-    { id: "mek-inhibitor", label: "MEK inhibitor" },
-    { id: "braf-inhibitor", label: "BRAF inhibitor" },
-    { id: "mdm2-inhibitor", label: "MDM2 inhibitor" },
-    { id: "hsp90-inhibitor", label: "HSP90 inhibitor" },
-    { id: "chk1-inhibitor", label: "CHK1 inhibitor" },
-    { id: "rock-inhibitor", label: "ROCK inhibitor" },
-    { id: "tgf-beta-inhibitor", label: "TGF-Beta inhibitor" },
-    { id: "cox-inhibitor", label: "COX inhibitor" },
-    { id: "pd-1-inhibitor", label: "PD-1 inhibitor" },
-    { id: "pd-l1-inhibitor", label: "PD-L1 inhibitor" },
-    { id: "lag-3-inhibitor", label: "LAG-3 inhibitor" },
-    { id: "tim-3-inhibitor", label: "TIM-3 inhibitor" },
-    { id: "sting-agonist", label: "STING agonist" },
-    { id: "tlr-agonist", label: "TLR agonist" },
-    { id: "ox40-agonist", label: "OX40 agonist" },
-    { id: "trail-receptor-agonist", label: "TRAIL receptor agonist" },
   ],
   "development-phase": [
     { id: "discovery", label: "Discovery" },
@@ -93,15 +62,6 @@ export const FIELD_OPTIONS = {
     { id: "nda-bla-filed", label: "NDA/BLA Filed" },
     { id: "approved", label: "Approved" },
     { id: "post-market", label: "Post-market" },
-    { id: "phase-1-expansion", label: "Phase 1 Expansion" },
-    { id: "phase-2-expansion", label: "Phase 2 Expansion" },
-    { id: "phase-3-expansion", label: "Phase 3 Expansion" },
-    { id: "poa-filed", label: "POA Filed" },
-    { id: "breakthrough-therapy", label: "Breakthrough Therapy" },
-    { id: "fast-track", label: "Fast Track" },
-    { id: "priority-review", label: "Priority Review" },
-    { id: "accelerated-approval", label: "Accelerated Approval" },
-    { id: "conditional-approval", label: "Conditional Approval" },
   ],
   "territories": [
     { id: "us", label: "United States" },
@@ -116,29 +76,11 @@ export const FIELD_OPTIONS = {
     { id: "in", label: "India" },
     { id: "global", label: "Global" },
     { id: "row", label: "Rest of World" },
-    { id: "ch", label: "Switzerland" },
-    { id: "se", label: "Sweden" },
-    { id: "de", label: "Germany" },
-    { id: "fr", label: "France" },
-    { id: "it", label: "Italy" },
-    { id: "es", label: "Spain" },
-    { id: "nl", label: "Netherlands" },
-    { id: "be", label: "Belgium" },
-    { id: "mx", label: "Mexico" },
-    { id: "ar", label: "Argentina" },
-    { id: "ru", label: "Russia" },
-    { id: "th", label: "Thailand" },
-    { id: "sg", label: "Singapore" },
-    { id: "nz", label: "New Zealand" },
-    { id: "za", label: "South Africa" },
-    { id: "ae", label: "United Arab Emirates" },
-    { id: "il", label: "Israel" },
-    { id: "tr", label: "Turkey" },
   ],
 };
 
 // ─────────────────────────────────────────────
-// ONTOLOGY TREES (10X EXPANDED)
+// ONTOLOGY TREES  (drug-type, target, clinical-indication)
 // ─────────────────────────────────────────────
 
 export const DRUG_TYPE_TREE = [
@@ -151,53 +93,22 @@ export const DRUG_TYPE_TREE = [
         label: "Monoclonal Antibody",
         children: [
           { id: "bispecific-antibody", label: "Bispecific Antibody" },
-          { id: "trispecific-antibody", label: "Trispecific Antibody" },
           { id: "adc", label: "Antibody-Drug Conjugate (ADC)" },
-          { id: "adc-bispecific", label: "Bispecific ADC" },
-          { id: "adc-tdc", label: "ADC with Targeted Degradation" },
         ],
       },
       { id: "gene-therapy", label: "Gene Therapy" },
-      { id: "gene-therapy-aav", label: "Gene Therapy (AAV)" },
-      { id: "gene-therapy-lv", label: "Gene Therapy (Lentiviral)" },
-      { id: "gene-therapy-nk", label: "Gene Therapy (Non-viral)" },
       {
         id: "cell-therapy",
         label: "Cell Therapy",
-        children: [
-          { id: "car-t", label: "CAR-T Cell Therapy" },
-          { id: "car-nk", label: "CAR-NK Cell Therapy" },
-          { id: "car-m", label: "CAR-M Cell Therapy" },
-          { id: "tcr-therapy", label: "TCR Therapy" },
-          { id: "stem-cell-therapy", label: "Stem Cell Therapy" },
-        ],
+        children: [{ id: "car-t", label: "CAR-T Cell Therapy" }],
       },
       { id: "rna-therapy", label: "RNA Therapy" },
-      { id: "rna-siRNA", label: "siRNA Therapy" },
-      { id: "rna-miRNA", label: "miRNA Therapy" },
-      { id: "rna-asRNA", label: "Antisense RNA Therapy" },
-      { id: "rna-mRNA", label: "mRNA Therapy" },
       { id: "peptide", label: "Peptide" },
-      { id: "peptide-cyclic", label: "Cyclic Peptide" },
-      { id: "peptide-pht", label: "Peptide with PHTase" },
       { id: "vaccine", label: "Vaccine" },
-      { id: "vaccine-therapeutic", label: "Therapeutic Vaccine" },
-      { id: "vaccine-personalized", label: "Personalized Vaccine" },
-      { id: "protein-therapy", label: "Protein Therapy" },
-      { id: "enzyme-replacement", label: "Enzyme Replacement" },
-      { id: "antibody-fusion", label: "Antibody Fusion Protein" },
     ],
   },
   { id: "small-molecule", label: "Small Molecule" },
-  { id: "small-molecule-oral", label: "Small Molecule (Oral)" },
-  { id: "small-molecule-iv", label: "Small Molecule (IV)" },
-  { id: "small-molecule-inhaled", label: "Small Molecule (Inhaled)" },
-  { id: "small-molecule-topical", label: "Small Molecule (Topical)" },
   { id: "radiopharmaceutical", label: "Radiopharmaceutical" },
-  { id: "radiopharmaceutical-alpha", label: "Alpha Radiopharmaceutical" },
-  { id: "radiopharmaceutical-beta", label: "Beta Radiopharmaceutical" },
-  { id: "radiopharmaceutical-lutetium", label: "Lu-177 Radiopharmaceutical" },
-  { id: "radiopharmaceutical-ac225", label: "Ac-225 Radiopharmaceutical" },
 ];
 
 export const TARGET_TREE = [
@@ -207,14 +118,10 @@ export const TARGET_TREE = [
     children: [
       { id: "pd-1", label: "PD-1" },
       { id: "pd-l1", label: "PD-L1" },
-      { id: "pd-l2", label: "PD-L2" },
       { id: "ctla-4", label: "CTLA-4" },
       { id: "lag-3", label: "LAG-3" },
       { id: "tim-3", label: "TIM-3" },
       { id: "tigit", label: "TIGIT" },
-      { id: "btla", label: "BTLA" },
-      { id: "icos", label: "ICOS" },
-      { id: "ox40", label: "OX40" },
     ],
   },
   {
@@ -222,15 +129,9 @@ export const TARGET_TREE = [
     label: "Growth Factors & Receptors",
     children: [
       { id: "her2", label: "HER2" },
-      { id: "her3", label: "HER3" },
-      { id: "her4", label: "HER4" },
       { id: "vegf", label: "VEGF" },
       { id: "vegfr", label: "VEGFR" },
-      { id: "vegfr1", label: "VEGFR1" },
-      { id: "vegfr2", label: "VEGFR2" },
-      { id: "vegfr3", label: "VEGFR3" },
       { id: "egfr", label: "EGFR" },
-      { id: "igf1r", label: "IGF1R" },
     ],
   },
   {
@@ -239,13 +140,7 @@ export const TARGET_TREE = [
     children: [
       { id: "cd19", label: "CD19" },
       { id: "cd20", label: "CD20" },
-      { id: "cd22", label: "CD22" },
-      { id: "cd30", label: "CD30" },
-      { id: "cd33", label: "CD33" },
       { id: "cd38", label: "CD38" },
-      { id: "cd47", label: "CD47" },
-      { id: "cd70", label: "CD70" },
-      { id: "cd123", label: "CD123" },
       { id: "bcma", label: "BCMA" },
     ],
   },
@@ -254,31 +149,10 @@ export const TARGET_TREE = [
     label: "Oncogenes & Signaling",
     children: [
       { id: "kras", label: "KRAS" },
-      { id: "kras-g12c", label: "KRAS G12C" },
-      { id: "kras-g12d", label: "KRAS G12D" },
-      { id: "kras-g12v", label: "KRAS G12V" },
       { id: "braf", label: "BRAF" },
       { id: "mek", label: "MEK" },
       { id: "alk", label: "ALK" },
       { id: "ros1", label: "ROS1" },
-      { id: "ntrk", label: "NTRK" },
-      { id: "ret", label: "RET" },
-    ],
-  },
-  {
-    id: "kinase-targets",
-    label: "Kinase Targets",
-    children: [
-      { id: "src-kinase", label: "SRC Kinase" },
-      { id: "jaks", label: "JAKs" },
-      { id: "mtor", label: "mTOR" },
-      { id: "pi3k", label: "PI3K" },
-      { id: "akt", label: "AKT" },
-      { id: "pdk1", label: "PDK1" },
-      { id: "map2k", label: "MAP2K" },
-      { id: "mapk", label: "MAPK" },
-      { id: "erk", label: "ERK" },
-      { id: "p38-mapk", label: "p38 MAPK" },
     ],
   },
 ];
@@ -293,14 +167,8 @@ export const CLINICAL_INDICATION_TREE = [
         label: "Hematologic Malignancies",
         children: [
           { id: "leukemia", label: "Leukemia" },
-          { id: "aml", label: "Acute Myeloid Leukemia" },
-          { id: "cml", label: "Chronic Myeloid Leukemia" },
-          { id: "all", label: "Acute Lymphoid Leukemia" },
           { id: "lymphoma", label: "Lymphoma" },
           { id: "multiple-myeloma", label: "Multiple Myeloma" },
-          { id: "lymphoma-hodgkins", label: "Hodgkin's Lymphoma" },
-          { id: "lymphoma-tnhl", label: "T-cell Non-Hodgkin Lymphoma" },
-          { id: "lymphoma-bnhl", label: "B-cell Non-Hodgkin Lymphoma" },
         ],
       },
       {
@@ -308,15 +176,9 @@ export const CLINICAL_INDICATION_TREE = [
         label: "Solid Tumors",
         children: [
           { id: "lung-cancer", label: "Lung Cancer" },
-          { id: "lung-nsclc", label: "NSCLC" },
-          { id: "lung-sclc", label: "SCLC" },
           { id: "breast-cancer", label: "Breast Cancer" },
-          { id: "breast-her2", label: "HER2+ Breast Cancer" },
-          { id: "breast-hr", label: "HR+ Breast Cancer" },
           { id: "colorectal-cancer", label: "Colorectal Cancer" },
           { id: "prostate-cancer", label: "Prostate Cancer" },
-          { id: "melanoma", label: "Melanoma" },
-          { id: "ovarian-cancer", label: "Ovarian Cancer" },
         ],
       },
     ],
@@ -332,12 +194,6 @@ export const CLINICAL_INDICATION_TREE = [
           { id: "rheumatoid-arthritis", label: "Rheumatoid Arthritis" },
           { id: "lupus", label: "Lupus" },
           { id: "multiple-sclerosis", label: "Multiple Sclerosis" },
-          { id: "ankylosing-spondylitis", label: "Ankylosing Spondylitis" },
-          { id: "psoriasis", label: "Psoriasis" },
-          { id: "psoriatic-arthritis", label: "Psoriatic Arthritis" },
-          { id: "inflammatory-bowel-disease", label: "Inflammatory Bowel Disease" },
-          { id: "ibd-crohns", label: "Crohn's Disease" },
-          { id: "ibd-uc", label: "Ulcerative Colitis" },
         ],
       },
     ],
@@ -348,10 +204,6 @@ export const CLINICAL_INDICATION_TREE = [
     children: [
       { id: "alzheimers-disease", label: "Alzheimer's Disease" },
       { id: "parkinsons-disease", label: "Parkinson's Disease" },
-      { id: "amyotrophic-lateral-sclerosis", label: "Amyotrophic Lateral Sclerosis (ALS)" },
-      { id: "frontotemporal-dementia", label: "Frontotemporal Dementia" },
-      { id: "progressive-supranuclear-palsy", label: "Progressive Supranuclear Palsy" },
-      { id: "primary-age-related-tauopathy", label: "Primary Age-Related Tauopathy" },
     ],
   },
   {
@@ -359,11 +211,7 @@ export const CLINICAL_INDICATION_TREE = [
     label: "Cardiovascular",
     children: [
       { id: "heart-failure", label: "Heart Failure" },
-      { id: "hf-reduced-ef", label: "HF with Reduced EF" },
-      { id: "hf-preserved-ef", label: "HF with Preserved EF" },
       { id: "atrial-fibrillation", label: "Atrial Fibrillation" },
-      { id: "coronary-artery-disease", label: "Coronary Artery Disease" },
-      { id: "acute-coronary-syndrome", label: "Acute Coronary Syndrome" },
     ],
   },
   {
@@ -373,20 +221,6 @@ export const CLINICAL_INDICATION_TREE = [
       { id: "hiv", label: "HIV" },
       { id: "hepatitis-b", label: "Hepatitis B" },
       { id: "hepatitis-c", label: "Hepatitis C" },
-      { id: "tuberculosis", label: "Tuberculosis" },
-      { id: "covid-19", label: "COVID-19" },
-      { id: "rsv", label: "Respiratory Syncytial Virus" },
-    ],
-  },
-  {
-    id: "metabolic-indication",
-    label: "Metabolic Diseases",
-    children: [
-      { id: "type-2-diabetes", label: "Type 2 Diabetes" },
-      { id: "obesity", label: "Obesity" },
-      { id: "nonalcoholic-fatty-liver-disease", label: "NAFLD" },
-      { id: "primary-biliary-cholangitis", label: "Primary Biliary Cholangitis" },
-      { id: "primary-sclerosing-cholangitis", label: "Primary Sclerosing Cholangitis" },
     ],
   },
 ];
@@ -456,150 +290,199 @@ export const getOptionLabel = (fieldId, valueId) =>
   OPTION_LABEL_MAP[valueId] ?? valueId;
 
 // ─────────────────────────────────────────────
-// MOCK RESULT ASSETS (110 ASSETS - 10X EXPANDED)
+// MOCK RESULT ASSETS
 // ─────────────────────────────────────────────
 
-const generateAssets = () => {
-  const companies = [
-    { primary: "OncoBio Inc", secondary: "Oncology" },
-    { primary: "CellGen Therapeutics", secondary: "Cell Therapy" },
-    { primary: "PrecisionDrug Co", secondary: "Small Molecule" },
-    { primary: "TargetMed Labs", secondary: "Biologics" },
-    { primary: "HemaForce BV", secondary: "Hematology" },
-    { primary: "GenomeTx Ltd", secondary: "Oncology" },
-    { primary: "ImmunoCo SA", secondary: "Immunology" },
-    { primary: "RheuGen Pharma", secondary: "Autoimmune" },
-    { primary: "KinasePath Inc", secondary: "Oncology" },
-    { primary: "BloodRx Corp", secondary: "Hematology" },
-    { primary: "VectorCell AG", secondary: "Cell & Gene Therapy" },
-    { primary: "NeuraTech Systems", secondary: "Neurology" },
-    { primary: "CardioInnovate Ltd", secondary: "Cardiovascular" },
-    { primary: "MetaboGen Pharma", secondary: "Metabolic" },
-    { primary: "BioVaccine Inc", secondary: "Vaccines" },
-    { primary: "ProteinDynamics AG", secondary: "Biologics" },
-    { primary: "RNATherapy Corp", secondary: "RNA" },
-    { primary: "RadioMed Pharma", secondary: "Radiopharmaceuticals" },
-    { primary: "PeptideTech Solutions", secondary: "Peptides" },
-    { primary: "StemCell Innovations", secondary: "Cell Therapy" },
-  ];
-
-  const therapyTypes = [
-    "Nivolumab Combination Therapy",
-    "CD19 CAR-T Program",
-    "EGFR Kinase Inhibitor",
-    "HER2 ADC Platform",
-    "BCMA BiTE Program",
-    "PARP Inhibitor Alliance",
-    "PD-L1 Bispecific Antibody",
-    "RA mRNA Immunomodulator",
-    "ALK Inhibitor — 3rd Gen",
-    "CD38 Naked Antibody",
-    "CAR-T / Gene Therapy Combo",
-    "KRAS G12C Inhibitor",
-    "HER3 Bispecific Antibody",
-    "CD20 Monoclonal Antibody",
-    "VEGFR Inhibitor Combination",
-    "TIM-3 Checkpoint Inhibitor",
-    "TIGIT Dual Inhibitor",
-    "LAG-3 Immunomodulator",
-    "OX40 Agonist Therapy",
-    "CTLA-4 Enhanced Antibody",
-    "KRAS/MEK Dual Inhibitor",
-    "BRAF Inhibitor Next Generation",
-    "mTOR/PI3K Dual Inhibitor",
-    "RET Inhibitor Program",
-    "NTRK Fusion Inhibitor",
-    "ALK Fusion Inhibitor",
-    "ROS1 Inhibitor Therapy",
-    "FGFR Inhibitor Platform",
-    "MET Inhibitor Combination",
-    "c-Met Inhibitor Program",
-  ];
-
-  const phases = [
-    "Phase 1", "Phase 2", "Phase 3", "Phase 1/2", "Phase 2/3",
-    "Discovery", "Preclinical", "IND Filed", "Approved", "Post-market"
-  ];
-
-  const assets = [];
-
-  for (let i = 1; i <= 110; i++) {
-    const company = companies[(i - 1) % companies.length];
-    const therapyType = therapyTypes[(i - 1) % therapyTypes.length];
-    const phase = phases[(i - 1) % phases.length];
-
-    // Assign varied search fields
-    const therapeuticAreaOptions = FIELD_OPTIONS["therapeutic-area"];
-    const mechanismOptions = FIELD_OPTIONS["mechanism"];
-    const developmentPhaseOptions = FIELD_OPTIONS["development-phase"];
-    const territoriesOptions = FIELD_OPTIONS["territories"];
-
-    // Varied combinations to ensure different assets have different field values
-    const therapeuticAreaIdx = (i - 1) % therapeuticAreaOptions.length;
-    const mechanismIdx = (i - 1) % mechanismOptions.length;
-    const devPhaseIdx = (i - 1) % developmentPhaseOptions.length;
-    const territory1Idx = i % territoriesOptions.length;
-    const territory2Idx = (i + 1) % territoriesOptions.length;
-
-    const therapeuticArea = therapeuticAreaOptions[therapeuticAreaIdx];
-    const mechanism = mechanismOptions[mechanismIdx];
-    const devPhase = developmentPhaseOptions[devPhaseIdx];
-    const territory1 = territoriesOptions[territory1Idx];
-    const territory2 = territoriesOptions[territory2Idx];
-
-    // Ontology field assignments - use varied indices to distribute across tree
-    const drugTypeLeafIds = getAllLeafIds(DRUG_TYPE_TREE);
-    const targetLeafIds = getAllLeafIds(TARGET_TREE);
-    const indicationLeafIds = getAllLeafIds(CLINICAL_INDICATION_TREE);
-
-    const drugType = drugTypeLeafIds[(i - 1) % drugTypeLeafIds.length];
-    const target = targetLeafIds[(i - 1) % targetLeafIds.length];
-    const indication = indicationLeafIds[(i - 1) % indicationLeafIds.length];
-
-    const dealValue = (Math.floor(Math.random() * 7) + 1) * 100000;
-
-    assets.push({
-      id: i,
-      name: `${therapyType} #${i}`,
-      company,
-      status: i % 10 === 0 ? 
-        { label: "Approved", color: "positive", shape: "pill" } :
-        i % 7 === 0 ?
-        { label: "Draft", color: "neutral", shape: "pill" } :
-        i % 5 === 0 ?
-        { label: "Under review", color: "warning", shape: "pill" } :
-        { label: "Active", color: "positive", shape: "pill" },
-      tags: { items: [{ label: phase }, { label: target }] },
-      dealValue: `$${dealValue.toLocaleString()}`,
-      startDate: `${String((i % 12) + 1).padStart(2, "0")}/01/2026`,
-      owner: ["Alexandra Johnson", "Alice Johnson", "Bob Smith", "Carol Davis", "David Wilson", "Eve Martinez", "Frank Lee", "Grace Kim", "Henry Park", "Isabelle Chen"][i % 10],
-      "therapeutic-area": [therapeuticArea.id, therapeuticAreaOptions[(therapeuticAreaIdx + 1) % therapeuticAreaOptions.length].id].slice(0, i % 2 + 1),
-      "drug-type": [drugType],
-      "target": [target],
-      "mechanism": [mechanism.id],
-      "clinical-indication": [indication],
-      "development-phase": [devPhase.id],
-      "territories": territory1.id === territory2.id ? [territory1.id] : [territory1.id, territory2.id],
-    });
-  }
-
-  return assets;
-};
-
-const getAllLeafIds = (tree) => {
-  const leaves = [];
-  const visit = (node) => {
-    if (!node.children || node.children.length === 0) {
-      leaves.push(node.id);
-    } else {
-      node.children.forEach(visit);
-    }
-  };
-  tree.forEach(visit);
-  return leaves;
-};
-
-export const RESULT_ASSETS = generateAssets();
+export const RESULT_ASSETS = [
+  {
+    id: 1,
+    name: "Nivolumab Combination Therapy",
+    company: { primary: "OncoBio Inc", secondary: "Oncology" },
+    status: { label: "Active", color: "positive", shape: "pill" },
+    tags: { items: [{ label: "Phase 3" }, { label: "PD-1" }] },
+    dealValue: "$420,000",
+    startDate: "Jan 10, 2026",
+    owner: "Alexandra Johnson",
+    // Search field values
+    "therapeutic-area": ["oncology", "cancer"],
+    "drug-type": ["monoclonal-antibody"],
+    "target": ["pd-1"],
+    "mechanism": ["checkpoint-inhibitor"],
+    "clinical-indication": ["lung-cancer", "colorectal-cancer"],
+    "development-phase": ["phase-3"],
+    "territories": ["us", "eu"],
+  },
+  {
+    id: 2,
+    name: "CD19 CAR-T Program",
+    company: { primary: "CellGen Therapeutics", secondary: "Cell Therapy" },
+    status: { label: "Active", color: "positive", shape: "pill" },
+    tags: { items: [{ label: "Phase 2" }, { label: "CD19" }] },
+    dealValue: "$380,000",
+    startDate: "Feb 1, 2026",
+    owner: "Alice Johnson",
+    "therapeutic-area": ["hematology", "oncology"],
+    "drug-type": ["car-t"],
+    "target": ["cd19"],
+    "mechanism": ["car-t"],
+    "clinical-indication": ["leukemia", "lymphoma"],
+    "development-phase": ["phase-2"],
+    "territories": ["us", "eu", "uk"],
+  },
+  {
+    id: 3,
+    name: "EGFR Kinase Inhibitor",
+    company: { primary: "PrecisionDrug Co", secondary: "Small Molecule" },
+    status: { label: "Active", color: "positive", shape: "pill" },
+    tags: { items: [{ label: "Phase 2/3" }, { label: "EGFR" }] },
+    dealValue: "$290,000",
+    startDate: "Mar 15, 2026",
+    owner: "Bob Smith",
+    "therapeutic-area": ["oncology"],
+    "drug-type": ["small-molecule"],
+    "target": ["egfr"],
+    "mechanism": ["kinase-inhibitor"],
+    "clinical-indication": ["lung-cancer"],
+    "development-phase": ["phase-2-3"],
+    "territories": ["us", "jp", "eu"],
+  },
+  {
+    id: 4,
+    name: "HER2 ADC Platform",
+    company: { primary: "TargetMed Labs", secondary: "Biologics" },
+    status: { label: "Draft", color: "neutral", shape: "pill" },
+    tags: { items: [{ label: "Phase 1/2" }, { label: "HER2" }] },
+    dealValue: "$185,000",
+    startDate: "Apr 1, 2026",
+    owner: "Carol Davis",
+    "therapeutic-area": ["oncology"],
+    "drug-type": ["adc"],
+    "target": ["her2"],
+    "mechanism": ["monoclonal-antibody"],
+    "clinical-indication": ["breast-cancer"],
+    "development-phase": ["phase-1-2"],
+    "territories": ["us", "eu"],
+  },
+  {
+    id: 5,
+    name: "BCMA BiTE Program",
+    company: { primary: "HemaForce BV", secondary: "Hematology" },
+    status: { label: "Active", color: "positive", shape: "pill" },
+    tags: { items: [{ label: "Phase 2" }, { label: "BCMA" }] },
+    dealValue: "$310,000",
+    startDate: "May 10, 2026",
+    owner: "David Wilson",
+    "therapeutic-area": ["hematology"],
+    "drug-type": ["bispecific-antibody"],
+    "target": ["bcma"],
+    "mechanism": ["monoclonal-antibody"],
+    "clinical-indication": ["multiple-myeloma"],
+    "development-phase": ["phase-2"],
+    "territories": ["us", "eu", "jp"],
+  },
+  {
+    id: 6,
+    name: "PARP Inhibitor Alliance",
+    company: { primary: "GenomeTx Ltd", secondary: "Oncology" },
+    status: { label: "Active", color: "positive", shape: "pill" },
+    tags: { items: [{ label: "Phase 3" }, { label: "BRCA" }] },
+    dealValue: "$510,000",
+    startDate: "Jun 1, 2026",
+    owner: "Eve Martinez",
+    "therapeutic-area": ["oncology", "rare-disease"],
+    "drug-type": ["small-molecule"],
+    "target": ["kras"],
+    "mechanism": ["parp-inhibitor"],
+    "clinical-indication": ["breast-cancer", "prostate-cancer"],
+    "development-phase": ["phase-3"],
+    "territories": ["us", "eu", "ca"],
+  },
+  {
+    id: 7,
+    name: "PD-L1 Bispecific Antibody",
+    company: { primary: "ImmunoCo SA", secondary: "Immunology" },
+    status: { label: "Under review", color: "warning", shape: "pill" },
+    tags: { items: [{ label: "Phase 1" }, { label: "PD-L1" }] },
+    dealValue: "$95,000",
+    startDate: "Jul 15, 2026",
+    owner: "Frank Lee",
+    "therapeutic-area": ["immunology", "oncology"],
+    "drug-type": ["bispecific-antibody"],
+    "target": ["pd-l1", "lag-3"],
+    "mechanism": ["checkpoint-inhibitor"],
+    "clinical-indication": ["solid-tumors", "lung-cancer"],
+    "development-phase": ["phase-1"],
+    "territories": ["us"],
+  },
+  {
+    id: 8,
+    name: "RA mRNA Immunomodulator",
+    company: { primary: "RheuGen Pharma", secondary: "Autoimmune" },
+    status: { label: "Active", color: "positive", shape: "pill" },
+    tags: { items: [{ label: "Phase 2" }, { label: "Autoimmune" }] },
+    dealValue: "$230,000",
+    startDate: "Aug 1, 2026",
+    owner: "Grace Kim",
+    "therapeutic-area": ["immunology", "rheumatology"],
+    "drug-type": ["rna-therapy"],
+    "target": ["tigit"],
+    "mechanism": ["immunomodulator"],
+    "clinical-indication": ["rheumatoid-arthritis"],
+    "development-phase": ["phase-2"],
+    "territories": ["us", "eu", "uk", "jp"],
+  },
+  {
+    id: 9,
+    name: "ALK Inhibitor — 3rd Gen",
+    company: { primary: "KinasePath Inc", secondary: "Oncology" },
+    status: { label: "Active", color: "positive", shape: "pill" },
+    tags: { items: [{ label: "Phase 2" }, { label: "ALK" }] },
+    dealValue: "$170,000",
+    startDate: "Sep 10, 2026",
+    owner: "Henry Park",
+    "therapeutic-area": ["oncology"],
+    "drug-type": ["small-molecule"],
+    "target": ["alk"],
+    "mechanism": ["kinase-inhibitor"],
+    "clinical-indication": ["lung-cancer"],
+    "development-phase": ["phase-2"],
+    "territories": ["us", "eu", "kr"],
+  },
+  {
+    id: 10,
+    name: "CD38 Naked Antibody",
+    company: { primary: "BloodRx Corp", secondary: "Hematology" },
+    status: { label: "Approved", color: "positive", shape: "pill" },
+    tags: { items: [{ label: "Approved" }, { label: "CD38" }] },
+    dealValue: "$750,000",
+    startDate: "Oct 1, 2025",
+    owner: "Isabelle Chen",
+    "therapeutic-area": ["hematology"],
+    "drug-type": ["monoclonal-antibody"],
+    "target": ["cd38"],
+    "mechanism": ["monoclonal-antibody"],
+    "clinical-indication": ["multiple-myeloma"],
+    "development-phase": ["approved"],
+    "territories": ["us", "eu", "jp", "ca", "au"],
+  },
+  {
+    id: 11,
+    name: "CAR-T / Gene Therapy Combo",
+    company: { primary: "VectorCell AG", secondary: "Cell & Gene Therapy" },
+    status: { label: "Active", color: "positive", shape: "pill" },
+    tags: { items: [{ label: "Phase 1/2" }, { label: "CD19" }] },
+    dealValue: "$460,000",
+    startDate: "Nov 5, 2026",
+    owner: "James Torres",
+    "therapeutic-area": ["hematology", "oncology"],
+    "drug-type": ["car-t", "gene-therapy"],
+    "target": ["cd19"],
+    "mechanism": ["car-t"],
+    "clinical-indication": ["leukemia", "lymphoma"],
+    "development-phase": ["phase-1-2"],
+    "territories": ["us", "eu"],
+  },
+];
 
 // ─────────────────────────────────────────────
 // ASSET FILTERING

@@ -10,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuDivider,
 } from "../../library/molecules/dropdown-menu.jsx";
+import { DropdownList, DropdownListItem, DropdownSection } from "../../library/molecules/dropdown-list.jsx";
 import { Button } from "../../library/atoms/button.jsx";
 import { Icon } from "../../library/atoms/icon.jsx";
 import { Chip } from "../../library/atoms/chip.jsx";
@@ -89,6 +90,20 @@ const ontologyMatchesTree = (node, query) => {
   if (!query.trim()) return true;
   if (node.label.toLowerCase().includes(query.trim().toLowerCase())) return true;
   return (node.children || []).some((child) => ontologyMatchesTree(child, query));
+};
+
+const ontologyGetMatchingLeafIds = (nodes, query) => {
+  const normalizedQuery = query.trim().toLowerCase();
+  if (!normalizedQuery) return [];
+
+  const collect = (node) => {
+    const selfMatches = node.label.toLowerCase().includes(normalizedQuery);
+    if (selfMatches) return ontologyGetLeafIds(node);
+    if (!node.children?.length) return [];
+    return node.children.flatMap(collect);
+  };
+
+  return [...new Set(nodes.flatMap(collect))];
 };
 
 const ontologyGetSelectionState = (node, selectedLeafIds) => {
@@ -196,6 +211,10 @@ const OntologyChipSelectInput = ({ fieldId, value, onChange }) => {
   const tree = ONTOLOGY_FIELD_TREES[fieldId] || [];
   const selectedLeafIds = React.useMemo(() => new Set(value || []), [value]);
   const chips = React.useMemo(() => ontologySummarizeSelection(tree, selectedLeafIds), [tree, selectedLeafIds]);
+  const matchingLeafIds = React.useMemo(() => ontologyGetMatchingLeafIds(tree, search), [tree, search]);
+  const shouldShowSelectAllSearchResults = search.trim().length > 0 && matchingLeafIds.length > 0;
+  const allSearchResultsSelected =
+    matchingLeafIds.length > 0 && matchingLeafIds.every((id) => selectedLeafIds.has(id));
 
   React.useEffect(() => {
     const handler = (e) => {
@@ -244,6 +263,16 @@ const OntologyChipSelectInput = ({ fieldId, value, onChange }) => {
     const leafIds = ontologyGetLeafIds(node);
     const next = new Set(selectedLeafIds);
     leafIds.forEach((id) => next.delete(id));
+    onChange([...next]);
+  };
+
+  const toggleSelectAllSearchResults = () => {
+    const next = new Set(selectedLeafIds);
+    if (allSearchResultsSelected) {
+      matchingLeafIds.forEach((id) => next.delete(id));
+    } else {
+      matchingLeafIds.forEach((id) => next.add(id));
+    }
     onChange([...next]);
   };
 
@@ -304,6 +333,25 @@ const OntologyChipSelectInput = ({ fieldId, value, onChange }) => {
             />
           </div>
           <div style={{ overflowY: "auto", padding: "var(--spacing-xs) var(--spacing-xs)" }}>
+            {shouldShowSelectAllSearchResults && (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "var(--spacing-xs)",
+                  padding: "var(--spacing-xs) var(--spacing-sm)",
+                  borderBottom: "1px solid var(--color-action-outline-secondary-enabled)",
+                  marginBottom: "var(--spacing-xs)",
+                  cursor: "pointer",
+                }}
+                onClick={toggleSelectAllSearchResults}
+              >
+                <Checkbox size="sm" isSelected={allSearchResultsSelected} onChange={toggleSelectAllSearchResults} />
+                <span style={{ fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-md)", color: "var(--color-content-primary)" }}>
+                  Select all search results
+                </span>
+              </div>
+            )}
             {tree.map((node) => (
               <OntologyTreeRow
                 key={node.id}
@@ -458,8 +506,12 @@ const LogicDropdown = ({ value, onChange, disabled }) => {
 
 const FieldDropdown = ({ value, onChange, usedFields = [] }) => {
   const [open, setOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const selected = SEARCH_FIELDS.find((f) => f.id === value);
   const availableFields = SEARCH_FIELDS.filter((f) => f.id === value || !usedFields.includes(f.id));
+  const visibleFields = availableFields.filter((field) =>
+    field.label.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -473,20 +525,34 @@ const FieldDropdown = ({ value, onChange, usedFields = [] }) => {
         </InputTrigger>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="left" position="bottom" width={220}>
-        <DropdownMenuSection>
-          {availableFields.map((field) => (
-            <DropdownMenuItem
+        <DropdownList
+          noAdd
+          onSearch={setSearchQuery}
+          searchPlaceholder="Search field"
+          style={{
+            outline: "none",
+            boxShadow: "none",
+            borderRadius: 0,
+            background: "transparent",
+            "--dropdown-list-max-height": "280px",
+            minWidth: 220,
+          }}
+        >
+          {visibleFields.map((field) => (
+            <DropdownListItem
               key={field.id}
-              label={field.label}
-              iconName={field.icon}
-              active={field.id === value}
-              onClick={() => {
+              value={field.id}
+              checked={field.id === value}
+              icon={<Icon name={field.icon} size={14} />}
+              onChange={() => {
                 onChange(field.id);
                 setOpen(false);
               }}
-            />
+            >
+              {field.label}
+            </DropdownListItem>
           ))}
-        </DropdownMenuSection>
+        </DropdownList>
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -498,6 +564,7 @@ const FieldDropdown = ({ value, onChange, usedFields = [] }) => {
 
 const ConditionDropdown = ({ value, fieldId, onChange }) => {
   const [open, setOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const selected = ALL_CONDITIONS.find((o) => o.id === value) || ALL_CONDITIONS.find((o) => o.id === "has-any-of");
 
   return (
@@ -509,24 +576,44 @@ const ConditionDropdown = ({ value, fieldId, onChange }) => {
         </InputTrigger>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="left" position="bottom" width={200}>
-        {CONDITION_SECTIONS.map((section, si) => (
-          <React.Fragment key={si}>
-            {si > 0 && <DropdownMenuDivider />}
-            <DropdownMenuSection style={{ padding: 0 }}>
-              {section.map((opt) => (
-                <DropdownMenuItem
-                  key={opt.id}
-                  label={opt.label}
-                  active={opt.id === selected.id}
-                  onClick={() => {
-                    onChange(opt.id);
-                    setOpen(false);
-                  }}
-                />
-              ))}
-            </DropdownMenuSection>
-          </React.Fragment>
-        ))}
+        <DropdownList
+          noAdd
+          onSearch={setSearchQuery}
+          searchPlaceholder="Search condition"
+          style={{
+            outline: "none",
+            boxShadow: "none",
+            borderRadius: 0,
+            background: "transparent",
+            "--dropdown-list-max-height": "280px",
+            minWidth: 200,
+          }}
+        >
+          {CONDITION_SECTIONS.map((section, si) => {
+            const visible = section.filter((opt) =>
+              opt.label.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+            if (visible.length === 0) return null;
+
+            return (
+              <DropdownSection key={si}>
+                {visible.map((opt) => (
+                  <DropdownListItem
+                    key={opt.id}
+                    value={opt.id}
+                    checked={opt.id === selected.id}
+                    onChange={() => {
+                      onChange(opt.id);
+                      setOpen(false);
+                    }}
+                  >
+                    {opt.label}
+                  </DropdownListItem>
+                ))}
+              </DropdownSection>
+            );
+          })}
+        </DropdownList>
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -573,14 +660,37 @@ const ChipSelectInput = ({ fieldId, value, onChange }) => {
   const options = FIELD_OPTIONS[fieldId] || [];
   const selected = value || [];
 
-  const filtered = options.filter(
-    (o) => !selected.includes(o.id) && o.label.toLowerCase().includes(search.toLowerCase())
+  const normalizedSearch = search.trim().toLowerCase();
+  const filtered = options.filter((o) =>
+    o.label.toLowerCase().includes(normalizedSearch)
   );
+  const filteredIds = filtered.map((opt) => opt.id);
+  const isSearchMode = normalizedSearch.length > 0;
+  const shouldShowSelectAllSearchResults = isSearchMode && filteredIds.length > 0;
+  const allSearchResultsSelected =
+    filteredIds.length > 0 && filteredIds.every((id) => selected.includes(id));
 
   const removeChip = (id) => onChange(selected.filter((s) => s !== id));
   const addChip = (id) => {
     onChange([...selected, id]);
     setSearch("");
+  };
+  const toggleChip = (id) => {
+    if (selected.includes(id)) {
+      removeChip(id);
+      return;
+    }
+    addChip(id);
+  };
+
+  const toggleSelectAllSearchResults = () => {
+    const next = new Set(selected);
+    if (allSearchResultsSelected) {
+      filteredIds.forEach((id) => next.delete(id));
+    } else {
+      filteredIds.forEach((id) => next.add(id));
+    }
+    onChange([...next]);
   };
   // free-text entry (when no predefined options match)
   const handleSearchKeyDown = (e) => {
@@ -760,65 +870,62 @@ const ChipSelectInput = ({ fieldId, value, onChange }) => {
             flexDirection: "column",
           }}
         >
-          {/* Search */}
-          <div style={{ padding: "var(--spacing-sm)", borderBottom: "1px solid var(--color-action-outline-secondary-enabled)" }}>
-            <input
-              autoFocus
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onKeyDown={handleSearchKeyDown}
-              placeholder={options.length === 0 ? "Type and press Enter to add..." : "Search..."}
-              onClick={(e) => e.stopPropagation()}
-              style={{
-                width: "100%",
-                border: "1px solid var(--color-interaction-outline-enabled)",
-                borderRadius: "var(--radius-sm)",
-                padding: "4px 8px",
-                fontFamily: "var(--font-family-primary)",
-                fontSize: "var(--text-body-md)",
-                outline: "none",
-                boxSizing: "border-box",
-              }}
-            />
-          </div>
-          {/* Options list */}
-          <div style={{ overflowY: "auto", padding: "var(--spacing-xs) 0" }}>
-            {options.length > 0 && filtered.length === 0 && (
-              <div style={{
-                padding: "var(--spacing-sm) var(--spacing-md)",
-                fontFamily: "var(--font-family-primary)",
-                fontSize: "var(--text-body-sm)",
-                color: "var(--color-content-tertiary)",
-              }}>
-                No options found
-              </div>
-            )}
-            {filtered.map((opt) => (
-              <button
-                key={opt.id}
-                type="button"
-                onClick={(e) => { e.stopPropagation(); addChip(opt.id); }}
+          {options.length === 0 ? (
+            <div style={{ padding: "var(--spacing-sm)", borderBottom: "1px solid var(--color-action-outline-secondary-enabled)" }}>
+              <input
+                autoFocus
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                onKeyDown={handleSearchKeyDown}
+                placeholder="Type and press Enter to add..."
+                onClick={(e) => e.stopPropagation()}
                 style={{
-                  display: "flex",
-                  alignItems: "center",
                   width: "100%",
-                  padding: "var(--spacing-sm) var(--spacing-md)",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
+                  border: "1px solid var(--color-interaction-outline-enabled)",
+                  borderRadius: "var(--radius-sm)",
+                  padding: "4px 8px",
                   fontFamily: "var(--font-family-primary)",
                   fontSize: "var(--text-body-md)",
-                  color: "var(--color-content-primary)",
-                  textAlign: "left",
+                  outline: "none",
                   boxSizing: "border-box",
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.background = "var(--color-general-neutral-lighter)"}
-                onMouseLeave={(e) => e.currentTarget.style.background = "none"}
-              >
-                <HighlightMatch text={opt.label} query={search} />
-              </button>
-            ))}
-          </div>
+              />
+            </div>
+          ) : (
+            <DropdownList
+              noAdd
+              onSearch={setSearch}
+              searchPlaceholder="Search..."
+              style={{
+                outline: "none",
+                boxShadow: "none",
+                borderRadius: 0,
+                background: "transparent",
+                "--dropdown-list-max-height": "260px",
+              }}
+            >
+              {shouldShowSelectAllSearchResults && (
+                <DropdownListItem
+                  value="__select-all-search-results__"
+                  checked={allSearchResultsSelected}
+                  onChange={toggleSelectAllSearchResults}
+                  style={{ borderBottom: "1px solid var(--color-action-outline-secondary-enabled)" }}
+                >
+                  Select all search results
+                </DropdownListItem>
+              )}
+              {filtered.map((opt) => (
+                <DropdownListItem
+                  key={opt.id}
+                  value={opt.id}
+                  checked={selected.includes(opt.id)}
+                  onChange={() => toggleChip(opt.id)}
+                >
+                  <HighlightMatch text={opt.label} query={search} />
+                </DropdownListItem>
+              ))}
+            </DropdownList>
+          )}
         </div>
       )}
     </div>
@@ -1082,6 +1189,89 @@ const isRowIncomplete = (row) => {
   return false;
 };
 
+const DEFAULT_FIELD_ID = "therapeutic-area";
+
+const findAvailableFieldId = (usedFields = [], currentFieldId) => {
+  const used = new Set(usedFields.filter(Boolean));
+  if (currentFieldId && !used.has(currentFieldId)) return currentFieldId;
+  const next = SEARCH_FIELDS.find((f) => !used.has(f.id));
+  return next?.id || currentFieldId || DEFAULT_FIELD_ID;
+};
+
+const normalizeRowsAtSameLevel = (rows = []) => {
+  const used = new Set();
+  return rows.map((row) => {
+    let nextFieldId = row.fieldId;
+    if (!nextFieldId || used.has(nextFieldId)) {
+      nextFieldId = findAvailableFieldId([...used], row.fieldId);
+    }
+    used.add(nextFieldId);
+    return { ...row, fieldId: nextFieldId };
+  });
+};
+
+const ensureUniqueItemsAndRowIds = (items = []) => {
+  const usedItemIds = new Set();
+
+  const nextUniqueId = (preferredId, usedSet) => {
+    if (preferredId && !usedSet.has(preferredId)) {
+      usedSet.add(preferredId);
+      return preferredId;
+    }
+
+    let generated = genId();
+    while (usedSet.has(generated)) {
+      generated = genId();
+    }
+    usedSet.add(generated);
+    return generated;
+  };
+
+  return items.map((item) => {
+    const normalizedItemId = nextUniqueId(item.id, usedItemIds);
+
+    if (item.type !== "group") {
+      return { ...item, id: normalizedItemId };
+    }
+
+    const usedRowIds = new Set();
+    const rows = (item.rows || []).map((row) => ({
+      ...row,
+      id: nextUniqueId(row.id, usedRowIds),
+    }));
+
+    return {
+      ...item,
+      id: normalizedItemId,
+      rows,
+    };
+  });
+};
+
+const normalizeItemsByLevel = (items = []) => {
+  const idSafeItems = ensureUniqueItemsAndRowIds(items);
+  const topRows = idSafeItems.filter((item) => item.type === "row");
+  const normalizedTopRows = normalizeRowsAtSameLevel(topRows);
+  let topRowCursor = 0;
+
+  return idSafeItems.map((item) => {
+    if (item.type === "row") {
+      const normalized = normalizedTopRows[topRowCursor] || item;
+      topRowCursor += 1;
+      return { ...item, fieldId: normalized.fieldId };
+    }
+
+    if (item.type === "group") {
+      return {
+        ...item,
+        rows: normalizeRowsAtSameLevel(item.rows || []),
+      };
+    }
+
+    return item;
+  });
+};
+
 // ─────────────────────────────────────────────
 // ADVANCED SEARCH TAB
 // ─────────────────────────────────────────────
@@ -1100,9 +1290,10 @@ const parseCriteriaFromUrl = () => {
 const AdvancedSearchTab = () => {
   const [items, setItems] = useState(() => {
     const saved = parseCriteriaFromUrl();
-    return saved?.items || [
+    const parsedItems = saved?.items || [
       { type: "row", id: genId(), logic: "Where", fieldId: "therapeutic-area", conditionId: "has-any-of", value: null },
     ];
+    return normalizeItemsByLevel(parsedItems);
   });
   const [searchName, setSearchName] = useState(() => parseCriteriaFromUrl()?.searchName || "");
   const [showValidation, setShowValidation] = useState(false);
@@ -1115,33 +1306,49 @@ const AdvancedSearchTab = () => {
   const addRow = () => {
     const usedFields = rows.map((r) => r.fieldId).filter(Boolean);
     const nextField = SEARCH_FIELDS.find((f) => !usedFields.includes(f.id));
-    setItems((prev) => [
-      ...prev,
-      { type: "row", id: genId(), logic: topLevelLogic, fieldId: nextField?.id || "therapeutic-area", conditionId: "has-any-of", value: null },
-    ]);
+    setItems((prev) =>
+      normalizeItemsByLevel([
+        ...prev,
+        { type: "row", id: genId(), logic: topLevelLogic, fieldId: nextField?.id || "therapeutic-area", conditionId: "has-any-of", value: null },
+      ])
+    );
   };
 
   const updateItem = (id, updated) => {
     setItems((prev) => {
       const idx = prev.findIndex((it) => it.id === id);
+      if (idx === -1) return prev;
       const item = prev[idx];
       // Only sync top-level logic across rows (not groups) when a row's logic changes
       if (item?.type === "row" && updated.logic !== undefined && updated.logic !== item.logic) {
-        return prev.map((it, i) => i === 0 ? it : { ...it, logic: updated.logic });
+        const nextItems = prev.map((it, i) => i === 0 ? it : { ...it, logic: updated.logic });
+        return normalizeItemsByLevel(nextItems);
       }
-      return prev.map((it) => (it.id === id ? { ...it, ...updated } : it));
+      const nextItems = prev.map((it, i) => (i === idx ? { ...it, ...updated } : it));
+      return normalizeItemsByLevel(nextItems);
     });
   };
 
   const deleteItem = (id) => {
-    setItems((prev) => prev.filter((it) => it.id !== id));
+    setItems((prev) => {
+      const idx = prev.findIndex((it) => it.id === id);
+      if (idx === -1) return prev;
+      return normalizeItemsByLevel(prev.filter((_, i) => i !== idx));
+    });
   };
 
   const convertRowToGroup = (id) => {
-    setItems((prev) => prev.map((it) => {
-      if (it.id !== id) return it;
-      return { type: "group", id: it.id, logic: it.logic, rowLogic: "And", rows: [{ ...it, type: "row", logic: "Where" }] };
-    }));
+    setItems((prev) => {
+      const idx = prev.findIndex((it) => it.id === id);
+      if (idx === -1) return prev;
+
+      const nextItems = prev.map((it, i) => {
+        if (i !== idx) return it;
+        return { type: "group", id: it.id, logic: it.logic, rowLogic: "And", rows: [{ ...it, type: "row", logic: "Where" }] };
+      });
+
+      return normalizeItemsByLevel(nextItems);
+    });
   };
 
   const hasIncomplete = rows.some(isRowIncomplete) || groups.some((g) => g.rows.some(isRowIncomplete));

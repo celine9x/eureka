@@ -165,6 +165,12 @@ const styles = {
       gap: var(--spacing-3);
       margin-bottom: var(--spacing-3);
     }
+    .hub__table-toolbar-suffix {
+      margin-left: auto;
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+    }
     .hub__clear-filters-action {
       margin-left: auto;
       flex-shrink: 0;
@@ -677,6 +683,9 @@ export const Hub = ({
   showFilterActions = true,
   showFilterRemove = true,
   filterEditorRenderers = {},
+  toolbarTopContent,
+  filterToolbarSuffix,
+  filterBadgeLabelResolver,
   className = "",
   ...props
 }) => {
@@ -1159,6 +1168,7 @@ export const Hub = ({
         <div className="hub__body">
           <div className="hub__container">
           <div className="hub__main-content">
+          {toolbarTopContent ? <div style={{ marginBottom: "var(--spacing-3)" }}>{toolbarTopContent}</div> : null}
           <div className="hub__table-toolbar">
             {activeFilters.length === 0 ? (
               <Button
@@ -1174,9 +1184,10 @@ export const Hub = ({
                 <div className="hub__active-filters">
                   {activeFilters.map((filter) => {
                     const filterId = filter.id || filter.key;
-                    const badgeLabel = typeof filter.badgeCount === "number"
-                      ? String(filter.badgeCount)
-                      : filter.value || "";
+                    const resolvedBadgeLabel = filterBadgeLabelResolver?.(filter);
+                    const badgeLabel = resolvedBadgeLabel != null
+                      ? String(resolvedBadgeLabel)
+                      : (typeof filter.badgeCount === "number" ? String(filter.badgeCount) : filter.value || "");
 
                     return (
                       <DropdownMenu
@@ -1259,6 +1270,9 @@ export const Hub = ({
                     </Tooltip>
                   </div>
                 )}
+                {filterToolbarSuffix ? (
+                  <div className="hub__table-toolbar-suffix">{filterToolbarSuffix}</div>
+                ) : null}
               </>
             )}
           </div>
