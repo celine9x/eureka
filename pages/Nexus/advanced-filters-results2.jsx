@@ -1,13 +1,11 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Hub } from "../../library/templates/hub.jsx";
 import { Icon } from "../../library/atoms/icon.jsx";
-import { Checkbox } from "../../library/atoms/checkbox.jsx";
 import { Chip } from "../../library/atoms/chip.jsx";
 import { DropdownMenuDivider } from "../../library/molecules/dropdown-menu-item.jsx";
-import { DropdownList, DropdownListItem, DropdownSection } from "../../library/molecules/dropdown-list.jsx";
+import { DropdownList, DropdownListItem } from "../../library/molecules/dropdown-list.jsx";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent } from "../../library/molecules/dropdown-menu.jsx";
 import {
-  RESULT_ASSETS,
   buildInitialFilters,
   buildHubFilterSuggestionsFromCriteria,
   filterAssets,
@@ -17,12 +15,159 @@ import {
   ONTOLOGY_FIELD_TREES,
 } from "./nexus-search-data.js";
 import Button from "../../library/atoms/button.jsx";
+import csvInputRaw from "./2026-05-21T07-32-53-150Z.csv?raw";
 
 // ─────────────────────────────────────────────
 // ONTOLOGY HELPERS
 // ─────────────────────────────────────────────
 
 const ONTOLOGY_FIELDS = ["drug-type", "target", "clinical-indication"];
+
+const CSV_FIELD_COLUMN_MAP = {
+  "therapeutic-area": "Therapeutic Areas",
+  "drug-type": "Drug Type",
+  "target": "Target",
+  "mechanism": "Mechanisms of Action",
+  "clinical-indication": "Clinical Indications",
+  "development-phase": "Development Phases",
+  "territories": "Country",
+};
+
+const csvToId = (value) =>
+  String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+const parsePipeValues = (value) =>
+  String(value || "")
+    .split("|")
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+
+const parseCsv = (text) => {
+  if (!text) return [];
+
+  const rows = [];
+  let current = "";
+  let row = [];
+  let inQuotes = false;
+
+  for (let i = 0; i < text.length; i += 1) {
+    const char = text[i];
+    const next = text[i + 1];
+
+    if (char === '"') {
+      if (inQuotes && next === '"') {
+        current += '"';
+        i += 1;
+      } else {
+        inQuotes = !inQuotes;
+      }
+      continue;
+    }
+
+    if (char === "," && !inQuotes) {
+      row.push(current);
+      current = "";
+      continue;
+    }
+
+    if ((char === "\n" || char === "\r") && !inQuotes) {
+      if (char === "\r" && next === "\n") i += 1;
+      row.push(current);
+      if (row.some((field) => field.length > 0)) rows.push(row);
+      row = [];
+      current = "";
+      continue;
+    }
+
+    current += char;
+  }
+
+  if (current.length > 0 || row.length > 0) {
+    row.push(current);
+    if (row.some((field) => field.length > 0)) rows.push(row);
+  }
+
+  if (rows.length === 0) return [];
+
+  const headers = rows[0].map((header) => header.trim());
+  return rows.slice(1).map((values) => {
+    const record = {};
+    headers.forEach((header, index) => {
+      record[header] = (values[index] || "").trim();
+    });
+    return record;
+  });
+};
+
+const toStatusBadge = (statusText) => {
+  const value = String(statusText || "").trim();
+  const normalized = value.toLowerCase();
+  const label = value || "Active";
+
+  if (normalized.includes("suspend")) return { label, color: "neutral", shape: "pill" };
+  if (normalized.includes("preclinical") || normalized.includes("phase 1")) {
+    return { label, color: "warning", shape: "pill" };
+  }
+  if (normalized.includes("launched") || normalized.includes("approved") || normalized.includes("phase 3")) {
+    return { label, color: "positive", shape: "pill" };
+  }
+  return { label, color: "positive", shape: "pill" };
+};
+
+const toDisplayDate = (isoDate) => {
+  if (!isoDate) return "-";
+  const parsed = new Date(isoDate);
+  if (Number.isNaN(parsed.getTime())) return "-";
+  const month = String(parsed.getMonth() + 1).padStart(2, "0");
+  const day = String(parsed.getDate()).padStart(2, "0");
+  const year = parsed.getFullYear();
+  return `${month}/${day}/${year}`;
+};
+
+const buildAssetsFromCsv = (records) => {
+  const labelMap = {};
+
+  const assets = records.map((record, index) => {
+    const id = record.ID || `csv-${index + 1}`;
+    const companyParts = parsePipeValues(record["Active Company"]);
+    const sourceParts = parsePipeValues(record.Sources);
+    const statusText = record["Asset Status"] || record["Opportunity Status"] || record["Highest Phase"];
+
+    const mappedSearchFields = Object.fromEntries(
+      Object.entries(CSV_FIELD_COLUMN_MAP).map(([fieldId, csvColumn]) => {
+        const values = parsePipeValues(record[csvColumn]);
+        const ids = values
+          .map((value) => ({ id: csvToId(value), label: value }))
+          .filter((entry) => Boolean(entry.id));
+        ids.forEach(({ id: valueId, label }) => {
+          labelMap[valueId] = label;
+        });
+        return [fieldId, ids.map(({ id: valueId }) => valueId)];
+      })
+    );
+
+    return {
+      id,
+      name: record.Name || `Asset ${index + 1}`,
+      company: {
+        primary: companyParts[0] || "-",
+        secondary: companyParts[1] || undefined,
+      },
+      status: toStatusBadge(statusText),
+      dealValue: "-",
+      startDate: toDisplayDate(record["Modified At"] || record["Created At"]),
+      owner: sourceParts[0] || "-",
+      ...mappedSearchFields,
+    };
+  });
+
+  return { assets, labelMap };
+};
 
 const ontologyBuildLookup = (nodes, map = new Map()) => {
   nodes.forEach((node) => {
@@ -154,6 +299,7 @@ const GroupedFilterEditor = ({ draft, updateDraft, fieldId, scopeIds, extraIds, 
   const isOntology = ONTOLOGY_FIELDS.includes(fieldId);
   const [expandedIds, setExpandedIds] = useState(new Set());
   const [searchQuery, setSearchQuery] = useState("");
+  const [groupExpanded, setGroupExpanded] = useState({ scope: true, extra: true });
   const normalizedSearch = searchQuery.trim().toLowerCase();
 
   const getLabel = (id) => OPTION_LABEL_MAP[id] || id;
@@ -166,6 +312,10 @@ const GroupedFilterEditor = ({ draft, updateDraft, fieldId, scopeIds, extraIds, 
   const visibleExtraIds = filterBySearch(extraIds);
   const visibleSearchResultIds = [...new Set([...visibleScopeIds, ...visibleExtraIds])];
   const ontologyTree = ONTOLOGY_FIELD_TREES[fieldId] || [];
+  const ontologyKnownIdSet = useMemo(
+    () => new Set(ontologyCollectNodeIds(ontologyTree)),
+    [ontologyTree]
+  );
 
   const ontologyVisibleNodeIds = useMemo(() => {
     if (!isOntology || normalizedSearch.length === 0) return [];
@@ -174,7 +324,14 @@ const GroupedFilterEditor = ({ draft, updateDraft, fieldId, scopeIds, extraIds, 
     return [...new Set(ontologyCollectNodeIds(filteredTree))];
   }, [isOntology, normalizedSearch, ontologyTree, scopeIds, extraIds, searchQuery]);
 
-  const visibleIdsForSelectAll = isOntology ? ontologyVisibleNodeIds : visibleSearchResultIds;
+  const ontologyVisibleUnknownIds = useMemo(() => {
+    if (!isOntology) return [];
+    return visibleSearchResultIds.filter((id) => !ontologyKnownIdSet.has(id));
+  }, [isOntology, visibleSearchResultIds, ontologyKnownIdSet]);
+
+  const visibleIdsForSelectAll = isOntology
+    ? [...new Set([...ontologyVisibleNodeIds, ...ontologyVisibleUnknownIds])]
+    : visibleSearchResultIds;
   const shouldShowSelectAllSearchResults = normalizedSearch.length > 0 && visibleIdsForSelectAll.length > 0;
   const allSearchResultsSelected =
     visibleIdsForSelectAll.length > 0 && visibleIdsForSelectAll.every((id) => selectedSet.has(id));
@@ -207,6 +364,25 @@ const GroupedFilterEditor = ({ draft, updateDraft, fieldId, scopeIds, extraIds, 
     });
   };
 
+  const onToggleGroupExpanded = (groupKey) => {
+    setGroupExpanded((prev) => ({
+      ...prev,
+      [groupKey]: !prev[groupKey],
+    }));
+  };
+
+  const onToggleGroupSelectAll = (groupIds, allGroupSelected) => {
+    updateDraft((prev) => {
+      const next = new Set(prev.selectedOptions || []);
+      if (allGroupSelected) {
+        groupIds.forEach((id) => next.delete(id));
+      } else {
+        groupIds.forEach((id) => next.add(id));
+      }
+      return { ...prev, selectedOptions: [...next] };
+    });
+  };
+
   const renderItems = (ids) =>
     ids.map((id) => (
       <DropdownListItem
@@ -227,52 +403,48 @@ const GroupedFilterEditor = ({ draft, updateDraft, fieldId, scopeIds, extraIds, 
     const renderNode = (node, depth = 0) => {
       const hasChildren = node.children?.length > 0;
       const isExpanded = expandedIds.has(node.id);
+      const treeControl = hasChildren ? (
+        <button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation();
+            onToggleExpanded(node.id);
+          }}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: 16,
+            height: 16,
+            border: "none",
+            background: "transparent",
+            color: "var(--color-content-secondary)",
+            cursor: "pointer",
+            padding: 0,
+          }}
+          aria-label={isExpanded ? "Collapse" : "Expand"}
+        >
+          <Icon name={isExpanded ? "ChevronDown" : "ChevronRight"} size={12} />
+        </button>
+      ) : (
+        <span style={{ width: 16, height: 16, display: "inline-block" }} aria-hidden="true" />
+      );
       
       return (
         <div key={node.id}>
-          <div
+          <DropdownListItem
+            value={node.id}
+            checked={selectedSet.has(node.id)}
+            onChange={onItemChange}
+            icon={treeControl}
+            iconBeforeCheckbox
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "var(--spacing-xs)",
+              padding: "4px 8px",
               paddingLeft: `calc(var(--spacing-sm) + ${depth} * 16px)`,
-              paddingTop: "4px",
-              paddingBottom: "4px",
-              paddingRight: "8px",
             }}
           >
-            {hasChildren ? (
-              <button
-                type="button"
-                onClick={() => onToggleExpanded(node.id)}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  width: 16,
-                  height: 16,
-                  border: "none",
-                  background: "transparent",
-                  color: "var(--color-content-secondary)",
-                  cursor: "pointer",
-                  flexShrink: 0,
-                  padding: 0,
-                }}
-              >
-                <Icon name={isExpanded ? "ChevronDown" : "ChevronRight"} size={12} />
-              </button>
-            ) : (
-              <span style={{ width: 16, flexShrink: 0 }} />
-            )}
-            <Checkbox
-              size="sm"
-              isSelected={selectedSet.has(node.id)}
-              onChange={() => onItemChange({ value: node.id })}
-            />
-            <label style={{ cursor: "pointer", flex: 1, fontSize: "var(--text-body-md)" }}>
-              {node.label}
-            </label>
-          </div>
+            {node.label}
+          </DropdownListItem>
           {hasChildren && isExpanded && node.children.map((child) => renderNode(child, depth + 1))}
         </div>
       );
@@ -280,6 +452,80 @@ const GroupedFilterEditor = ({ draft, updateDraft, fieldId, scopeIds, extraIds, 
 
     return visibleTree.map((node) => renderNode(node, 0));
   };
+
+  const splitOntologyIds = (ids) => ({
+    knownIds: ids.filter((id) => ontologyKnownIdSet.has(id)),
+    unknownIds: ids.filter((id) => !ontologyKnownIdSet.has(id)),
+  });
+
+  const renderUnknownOntologyItems = (ids) =>
+    ids.map((id) => (
+      <DropdownListItem
+        key={id}
+        value={id}
+        checked={selectedSet.has(id)}
+        onChange={onItemChange}
+        icon={<span style={{ width: 16, height: 16, display: "inline-block" }} aria-hidden="true" />}
+        iconBeforeCheckbox
+        style={{
+          padding: "4px 8px",
+          paddingLeft: "var(--spacing-sm)",
+          paddingRight: "8px",
+        }}
+      >
+        {getLabel(id)}
+      </DropdownListItem>
+    ));
+
+  const { knownIds: knownScopeIds, unknownIds: unknownScopeIds } = splitOntologyIds(visibleScopeIds);
+  const { knownIds: knownExtraIds, unknownIds: unknownExtraIds } = splitOntologyIds(visibleExtraIds);
+
+  const getOntologyVisibleIds = (knownIds, unknownIds) => {
+    const selectedTree = buildSelectedTree(ontologyTree, new Set(knownIds));
+    const visibleTree = ontologyFilterTreeBySearch(selectedTree, searchQuery);
+    return [...new Set([...ontologyCollectNodeIds(visibleTree), ...unknownIds])];
+  };
+
+  const scopeVisibleIdsForSelectAll = isOntology
+    ? getOntologyVisibleIds(knownScopeIds, unknownScopeIds)
+    : visibleScopeIds;
+  const extraVisibleIdsForSelectAll = isOntology
+    ? getOntologyVisibleIds(knownExtraIds, unknownExtraIds)
+    : visibleExtraIds;
+
+  const allScopeSelected =
+    scopeVisibleIdsForSelectAll.length > 0 &&
+    scopeVisibleIdsForSelectAll.every((id) => selectedSet.has(id));
+  const allExtraSelected =
+    extraVisibleIdsForSelectAll.length > 0 &&
+    extraVisibleIdsForSelectAll.every((id) => selectedSet.has(id));
+
+  const renderGroupHeader = (groupKey, title) => (
+    <button
+      type="button"
+      onClick={() => onToggleGroupExpanded(groupKey)}
+      style={{
+        width: "100%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "4px 8px",
+        border: "none",
+        background: "transparent",
+        cursor: "pointer",
+        fontFamily: "var(--font-family-primary)",
+        fontSize: "var(--text-body-md)",
+        fontWeight: "var(--font-weight-regular)",
+        color: "var(--color-content-secondary)",
+        textAlign: "left",
+      }}
+    >
+      <span>{title}</span>
+      <Icon name={groupExpanded[groupKey] ? "ChevronDown" : "ChevronRight"} size={12} />
+    </button>
+  );
+
+  const shouldShowGlobalSelectAll = shouldShowSelectAllSearchResults && !hasTwoGroups;
 
   return (
     <DropdownList
@@ -295,39 +541,104 @@ const GroupedFilterEditor = ({ draft, updateDraft, fieldId, scopeIds, extraIds, 
         "--dropdown-list-max-height": "280px",
       }}
     >
-      {shouldShowSelectAllSearchResults && (
+      {shouldShowGlobalSelectAll && (
         <DropdownListItem
           value="__select-all-search-results__"
           checked={allSearchResultsSelected}
           onChange={onSelectAllSearchResults}
           style={{ borderBottom: "1px solid var(--color-action-outline-secondary-enabled)" }}
         >
-          Select all search results
+          Select all
         </DropdownListItem>
       )}
       {isOntology ? (
         hasTwoGroups ? (
           <>
-            <DropdownSection title="From initial search">
-              {renderOntologyTree(scopeIds)}
-            </DropdownSection>
+            <div style={{ padding: "8px", display: "flex", flexDirection: "column", gap: 4 }}>
+              {renderGroupHeader("scope", "From initial search")}
+              {groupExpanded.scope ? (
+                <>
+                  {scopeVisibleIdsForSelectAll.length > 0 ? (
+                    <DropdownListItem
+                      value="__select-all-scope__"
+                      checked={allScopeSelected}
+                      onChange={() => onToggleGroupSelectAll(scopeVisibleIdsForSelectAll, allScopeSelected)}
+                      style={{ padding: "4px 8px" }}
+                    >
+                      Select all
+                    </DropdownListItem>
+                  ) : null}
+                  {renderOntologyTree(knownScopeIds)}
+                  {renderUnknownOntologyItems(unknownScopeIds)}
+                </>
+              ) : null}
+            </div>
             <DropdownMenuDivider />
-            <DropdownSection title="Also found in results">
-              {renderOntologyTree(extraIds)}
-            </DropdownSection>
+            <div style={{ padding: "8px", display: "flex", flexDirection: "column", gap: 4 }}>
+              {renderGroupHeader("extra", "Also found in results")}
+              {groupExpanded.extra ? (
+                <>
+                  {extraVisibleIdsForSelectAll.length > 0 ? (
+                    <DropdownListItem
+                      value="__select-all-extra__"
+                      checked={allExtraSelected}
+                      onChange={() => onToggleGroupSelectAll(extraVisibleIdsForSelectAll, allExtraSelected)}
+                      style={{ padding: "4px 8px" }}
+                    >
+                      Select all
+                    </DropdownListItem>
+                  ) : null}
+                  {renderOntologyTree(knownExtraIds)}
+                  {renderUnknownOntologyItems(unknownExtraIds)}
+                </>
+              ) : null}
+            </div>
           </>
         ) : (
-          renderOntologyTree([...scopeIds, ...extraIds])
+          <>
+            {renderOntologyTree([...knownScopeIds, ...knownExtraIds])}
+            {renderUnknownOntologyItems([...unknownScopeIds, ...unknownExtraIds])}
+          </>
         )
       ) : (
         hasTwoGroups ? (
           <>
             {visibleScopeIds.length > 0 ? (
-              <DropdownSection title="From initial search">{renderItems(visibleScopeIds)}</DropdownSection>
+              <div style={{ padding: "8px", display: "flex", flexDirection: "column", gap: 4 }}>
+                {renderGroupHeader("scope", "From initial search")}
+                {groupExpanded.scope ? (
+                  <>
+                    <DropdownListItem
+                      value="__select-all-scope__"
+                      checked={allScopeSelected}
+                      onChange={() => onToggleGroupSelectAll(scopeVisibleIdsForSelectAll, allScopeSelected)}
+                      style={{ padding: "4px 8px" }}
+                    >
+                      Select all
+                    </DropdownListItem>
+                    {renderItems(visibleScopeIds)}
+                  </>
+                ) : null}
+              </div>
             ) : null}
             {visibleScopeIds.length > 0 && visibleExtraIds.length > 0 ? <DropdownMenuDivider /> : null}
             {visibleExtraIds.length > 0 ? (
-              <DropdownSection title="Also found in results">{renderItems(visibleExtraIds)}</DropdownSection>
+              <div style={{ padding: "8px", display: "flex", flexDirection: "column", gap: 4 }}>
+                {renderGroupHeader("extra", "Also found in results")}
+                {groupExpanded.extra ? (
+                  <>
+                    <DropdownListItem
+                      value="__select-all-extra__"
+                      checked={allExtraSelected}
+                      onChange={() => onToggleGroupSelectAll(extraVisibleIdsForSelectAll, allExtraSelected)}
+                      style={{ padding: "4px 8px" }}
+                    >
+                      Select all
+                    </DropdownListItem>
+                    {renderItems(visibleExtraIds)}
+                  </>
+                ) : null}
+              </div>
             ) : null}
           </>
         ) : (
@@ -410,7 +721,28 @@ const criteriaColumns = SEARCH_FIELDS.map((field) => ({
 }));
 
 const columns = [
-  { key: "name", label: "Name", sortable: true, type: "short-text" },
+  {
+    key: "name",
+    label: "Name",
+    sortable: true,
+    type: "short-text",
+    width: "240px",
+    renderCell: (val) => (
+      <span
+        title={val || ""}
+        style={{
+          display: "block",
+          width: "240px",
+          minWidth: 0,
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {val}
+      </span>
+    ),
+  },
   {
     key: "company",
     label: "Company",
@@ -513,133 +845,105 @@ const getCriteriaValueLabels = (row) => {
   return { type: "flat", labels: rawValues.map((valueId) => OPTION_LABEL_MAP[valueId] || String(valueId)) };
 };
 
-const SearchScopeStrip = ({ items, onEdit }) => {
-  const rows = useMemo(() => flattenCriteriaRowsForStrip(items), [items]);
-  const [openChipId, setOpenChipId] = useState(null);
+const SearchLogicStrip = ({ items, onEdit }) => {
+  const getFieldLabel = (fieldId) => SEARCH_FIELDS.find((f) => f.id === fieldId)?.label || fieldId;
+
+  const getValueLabels = (fieldId, value) => {
+    if (value === null || value === undefined) return [];
+    const values = Array.isArray(value) ? value : [value];
+    return values.map((id) => OPTION_LABEL_MAP[id] || String(id));
+  };
+
+  const renderReviewRow = (row, keyPrefix) => {
+    const fieldLabel = getFieldLabel(row.fieldId);
+    const isNegative = row.conditionId === "has-none-of";
+    const conditionLabel = isNegative ? "is not" : "is";
+    const valueLabels = getValueLabels(row.fieldId, row.value);
+    const displayed = valueLabels.slice(0, 2);
+    if (valueLabels.length > 2) displayed.push(`+${valueLabels.length - 2}`);
+
+    return (
+      <div
+        key={keyPrefix}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: "var(--spacing-xs)",
+          padding: "var(--spacing-xs) var(--spacing-sm)",
+          borderRadius: "var(--radius-sm)",
+          background: "var(--color-general-white)",
+          outline: "1px solid var(--color-action-outline-secondary-enabled)",
+          outlineOffset: "-1px",
+        }}
+      >
+        <span style={{ fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-md)", color: "var(--color-content-secondary)" }}>{fieldLabel}</span>
+        <span style={{ fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-md)", color: isNegative ? "var(--color-content-negative)" : "var(--color-content-primary)" }}>{conditionLabel}</span>
+        {displayed.length > 0 ? displayed.map((label, i) => (
+          <React.Fragment key={`${keyPrefix}-v-${i}`}>
+            {i > 0 && <span style={{ fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-md)", color: isNegative ? "var(--color-content-negative)" : "var(--color-content-primary)" }}>or</span>}
+            <span style={{ fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-md)", color: "var(--color-content-secondary)" }}>{label}</span>
+          </React.Fragment>
+        )) : (
+          <span style={{ fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-md)", color: "var(--color-content-secondary)" }}>-</span>
+        )}
+      </div>
+    );
+  };
+
+  const topLevelLogic = items[1]?.logic || "Or";
 
   return (
     <div
       style={{
         background: "var(--color-general-neutral-default)",
         border: "1px solid var(--color-action-outline-secondary-enabled)",
-      
         borderRadius: "var(--radius-lg)",
         padding: "var(--spacing-md)",
         display: "flex",
-        alignItems: "center",
+        alignItems: "flex-start",
         justifyContent: "space-between",
         gap: "var(--spacing-md)",
       }}
     >
-      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "var(--spacing-sm)", minWidth: 0, flex: 1 }}>
-        <span
-          style={{
-            fontFamily: "var(--font-family-primary)",
-            fontSize: "var(--text-body-lg)",
-            color: "var(--color-content-primary)",
-            fontWeight: 500,
-            whiteSpace: "nowrap",
-          }}
-        >
-          Search scope
+      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "var(--spacing-xs)", minWidth: 0, flex: 1 }}>
+        <span style={{ fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-md)", color: "var(--color-content-primary)", whiteSpace: "nowrap" }}>
+          Show all assets that have
         </span>
-        {rows.map(({ row }, index) => {
-          const fieldLabel = SEARCH_FIELDS.find((field) => field.id === row.fieldId)?.label || row.fieldId;
-          const valueLabels = getCriteriaValueLabels(row);
-          const valueCount = valueLabels.type === "ontology" ? valueLabels.valueIds.size : valueLabels.labels.length;
-          const chipLabel = `${fieldLabel} (${valueCount})`;
-          const chipId = row.id || `${row.fieldId}-${index}`;
-          const isOpen = openChipId === chipId;
-
-          return (
-            <DropdownMenu key={chipId} open={isOpen} onOpenChange={(open) => setOpenChipId(open ? chipId : null)}>
-              <DropdownMenuTrigger asChild>
-                <button
-                  type="button"
-                  style={{
-                    border: "none",
-                    background: "transparent",
-                    padding: 0,
-                    display: "inline-flex",
-                    minWidth: 0,
-                    maxWidth: "100%",
-                    cursor: "pointer",
-                  }}
-                >
-                  <Chip
-                    size="md"
-                    chevron
-                    style={{
-                      maxWidth: 460,
-                      background: "var(--color-general-white)",
-                      outline: isOpen ? "1px solid var(--color-interaction-outline-active)" : "1px solid var(--color-action-outline-secondary-enabled)",
-                      outlineOffset: -1,
-                      boxShadow: "none",
-                    }}
-                  >
-                    {chipLabel}
-                  </Chip>
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="left" position="bottom" width={280}>
-                <div style={{ padding: "8px 0", maxHeight: 240, overflowY: "auto" }}>
-                  {valueCount > 0 ? (
-                    valueLabels.type === "ontology" ? (
-                      (() => {
-                        const tree = ONTOLOGY_FIELD_TREES[valueLabels.fieldId] || [];
-                        const selectedTree = buildSelectedTree(tree, valueLabels.valueIds);
-                        return selectedTree.length > 0 ? (
-                          selectedTree.map((node) => <RenderTreeNode key={node.id} node={node} depth={0} />)
-                        ) : (
-                          <div style={{ padding: "6px 12px", color: "var(--color-content-secondary)" }}>
-                            {CONDITION_LABELS[row.conditionId] || "No values"}
-                          </div>
-                        );
-                      })()
-                    ) : (
-                      valueLabels.labels.map((value) => (
-                        <div
-                          key={`${fieldLabel}-${value}`}
-                          style={{
-                            padding: "6px 12px",
-                            fontFamily: "var(--font-family-primary)",
-                            fontSize: "var(--text-body-md)",
-                            color: "var(--color-content-primary)",
-                            lineHeight: "var(--line-height-body-md)",
-                          }}
-                        >
-                          {value}
-                        </div>
-                      ))
-                    )
-                  ) : (
-                    <div
-                      style={{
-                        padding: "6px 12px",
-                        fontFamily: "var(--font-family-primary)",
-                        fontSize: "var(--text-body-md)",
-                        color: "var(--color-content-secondary)",
-                        lineHeight: "var(--line-height-body-md)",
-                      }}
-                    >
-                      {CONDITION_LABELS[row.conditionId] || "No values"}
-                    </div>
-                  )}
-                </div>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          );
-        })}
+        {items.map((item, index) => (
+          <React.Fragment key={`logic-${index}`}>
+            {index > 0 && (
+              <span style={{ fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-md)", fontWeight: "var(--font-weight-semibold)", color: "var(--color-content-primary)" }}>
+                {(item.logic || topLevelLogic).toUpperCase()}
+              </span>
+            )}
+            {item.type === "group" ? (
+              <div style={{ display: "inline-flex", alignItems: "center", flexWrap: "wrap", gap: "var(--spacing-xs)", padding: "var(--spacing-xs)", borderRadius: "var(--radius-sm)", border: "1px dashed var(--color-action-outline-secondary-enabled)", background: "var(--color-general-neutral-lighter)" }}>
+                {(item.rows || []).map((row, rowIndex) => (
+                  <React.Fragment key={`logic-group-${item.id}-${row.id}`}>
+                    {rowIndex > 0 && (
+                      <span style={{ fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-md)", fontWeight: "var(--font-weight-semibold)", color: "var(--color-content-primary)" }}>
+                        {(item.rowLogic || "And").toUpperCase()}
+                      </span>
+                    )}
+                    {renderReviewRow(row, `logic-group-row-${item.id}-${row.id}-${rowIndex}`)}
+                  </React.Fragment>
+                ))}
+              </div>
+            ) : (
+              renderReviewRow(item, `logic-row-${item.id}-${index}`)
+            )}
+          </React.Fragment>
+        ))}
       </div>
-
       <Button
         variant="secondary"
         size="sm"
         iconLeading={<Icon name="PencilSquare" size={16} />}
         onClick={onEdit}
-        aria-label="Edit search scope"
+        style={{ flexShrink: 0 }}
       >
-        Edit
+        Modify
       </Button>
     </div>
   );
@@ -647,12 +951,18 @@ const SearchScopeStrip = ({ items, onEdit }) => {
 
 export const AdvancedFiltersResults2Page = () => {
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const { searchName, items } = parseSearchCriteria();
 
   const filterSuggestions = useMemo(() => buildHubFilterSuggestionsFromCriteria(items), []);
 
-  const baseAssets = useMemo(() => filterAssets(RESULT_ASSETS, items), []);
+  const csvDataset = useMemo(() => buildAssetsFromCsv(parseCsv(csvInputRaw)), []);
+  const baseAssets = useMemo(() => filterAssets(csvDataset.assets, items), [csvDataset.assets, items]);
+
+  useEffect(() => {
+    Object.assign(OPTION_LABEL_MAP, csvDataset.labelMap);
+  }, [csvDataset.labelMap]);
 
   const openSearchBuilder = () => {
     const params = new URLSearchParams(window.location.search);
@@ -722,6 +1032,11 @@ export const AdvancedFiltersResults2Page = () => {
   }, [items]);
 
   const [appliedFilters, setAppliedFilters] = useState(() => initialFilters);
+
+  useEffect(() => {
+    setAppliedFilters(initialFilters);
+    setPage(1);
+  }, [initialFilters]);
 
   const filterEditorRenderers = useMemo(() =>
     Object.fromEntries(
@@ -795,36 +1110,76 @@ export const AdvancedFiltersResults2Page = () => {
     [appliedFilters, baseAssets],
   );
 
+  const totalPages = useMemo(
+    () => Math.max(1, Math.ceil(tableData.length / pageSize)),
+    [tableData.length, pageSize]
+  );
+
+  useEffect(() => {
+    setPage((prev) => Math.min(prev, totalPages));
+  }, [totalPages]);
+
+  const pagedTableData = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return tableData.slice(start, start + pageSize);
+  }, [tableData, page, pageSize]);
+
   return (
     <Hub
       title={searchName || "Search Results"}
       badge={String(tableData.length)}
       menuSections={menuSections}
       menuUser={menuUser}
+      headerActions={
+        <div style={{ display: "inline-flex", alignItems: "center", gap: "var(--spacing-2)" }}>
+          <Button
+            variant="secondary"
+            size="md"
+            iconLeading={<Icon name="ArrowUpTray" size="sm" />}
+          >
+            Export
+          </Button>
+          <Button
+            variant="primary"
+            size="md"
+            iconLeading={<Icon name="Plus" size="sm" />}
+          >
+            New project
+          </Button>
+        </div>
+      }
       toolbarTopContent={
-        <SearchScopeStrip
+        <SearchLogicStrip
           items={items}
           onEdit={openSearchBuilder}
         />
       }
       filterBadgeLabelResolver={(filter) => {
-        const filterId = filter.id || filter.key;
-        const appliedFilter = appliedFilters.find(f => (f.id || f.key) === filterId);
-        const selectedCount = appliedFilter?.criteria?.selectedOptions?.length || 0;
-        return selectedCount > 0 ? String(selectedCount) : "";
+          const selectedCount = Array.isArray(filter.criteria?.selectedOptions)
+            ? filter.criteria.selectedOptions.length
+            : 0;
+          const includeEmptyCount = filter.criteria?.includeEmpty ? 1 : 0;
+          const total = selectedCount + includeEmptyCount;
+          return total > 0 ? String(total) : undefined;
       }}
       initialFilters={initialFilters}
       filterSuggestions={filterSuggestions}
       filterEditorRenderers={filterEditorRenderers}
       onFiltersApply={setAppliedFilters}
       showFilterActions={false}
+      showClearFiltersAction={true}
+      clearFiltersBehavior="clear-criteria"
       showFilterRemove={false}
       columns={columns}
-      data={tableData}
+      data={pagedTableData}
       currentPage={page}
-      totalPages={1}
-      pageSize={10}
+      totalPages={totalPages}
+      pageSize={pageSize}
       onPageChange={setPage}
+      onPageSizeChange={(nextSize) => {
+        setPageSize(nextSize);
+        setPage(1);
+      }}
     />
   );
 };

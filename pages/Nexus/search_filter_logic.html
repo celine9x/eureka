@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Market Intelligence — Search & Filter Logic</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#FAFBFC;min-height:100vh;font-size:13px}
+button,select,input{font-family:'DM Sans',sans-serif}
+.mono{font-family:'DM Mono',monospace}
+.tooltip-wrap{position:relative;display:inline-flex;align-items:center}
+.tooltip-box{display:none;position:absolute;left:20px;top:-4px;width:210px;background:#1E293B;color:#F1F5F9;border-radius:8px;padding:10px;font-size:11px;z-index:100;line-height:1.6;box-shadow:0 8px 24px rgba(0,0,0,0.2);pointer-events:none}
+.tooltip-box::before{content:'';position:absolute;left:-4px;top:10px;width:8px;height:8px;background:#1E293B;transform:rotate(45deg)}
+.tooltip-wrap:hover .tooltip-box{display:block}
+.tree-item{transition:background 0.1s}
+.tree-item:hover{background:#F8FAFC}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+// ── Ontology data ─────────────────────────────────────────────────────────────
+const INDICATION_TREE = [
+  { id:'imm', label:'Immune-mediated diseases', children:[
+    { id:'derm', label:'Dermatology', children:[
+      { id:'pso', label:'Psoriasis', canonical:true, synonyms:['Psoriasis vulgaris','Plaque psoriasis','Chronic plaque psoriasis'], children:[
+        { id:'pso-p', label:'Plaque psoriasis', canonical:false, synonyms:['Chronic plaque psoriasis'] },
+        { id:'pso-g', label:'Guttate psoriasis', canonical:false },
+        { id:'pso-e', label:'Erythrodermic psoriasis', canonical:false },
+      ]},
+      { id:'ad', label:'Atopic dermatitis', canonical:true, synonyms:['Eczema','AD','Atopic eczema'] },
+      { id:'psa', label:'Psoriatic arthritis', canonical:true, synonyms:['PsA'] },
+    ]},
+    { id:'rheum', label:'Rheumatology', children:[
+      { id:'ra', label:'Rheumatoid arthritis', canonical:true, synonyms:['RA'] },
+      { id:'sle', label:'Systemic lupus erythematosus', canonical:true, synonyms:['SLE','Lupus'] },
+      { id:'ln', label:'Lupus nephritis', canonical:true, synonyms:['LN'] },
+    ]},
+  ]},
+  { id:'onc', label:'Oncology', children:[
+    { id:'lung', label:'Lung cancer', children:[
+      { id:'nsclc', label:'Non-Small Cell Lung Cancer', canonical:true, synonyms:['NSCLC','Lung adenocarcinoma','Squamous cell lung carcinoma'] },
+      { id:'sclc', label:'Small Cell Lung Cancer', canonical:true, synonyms:['SCLC'] },
+    ]},
+    { id:'mel', label:'Melanoma', canonical:true, synonyms:['Malignant melanoma','Cutaneous melanoma'] },
+    { id:'lymph', label:'Lymphoma', children:[
+      { id:'dlbcl', label:'Diffuse large B-cell lymphoma', canonical:true, synonyms:['DLBCL'] },
+      { id:'cll', label:'Chronic lymphocytic leukaemia', canonical:true, synonyms:['CLL'] },
+    ]},
+  ]},
+  { id:'resp', label:'Respiratory diseases', children:[
+    { id:'asthma', label:'Asthma', canonical:true, synonyms:['Bronchial asthma','Allergic asthma'] },
+    { id:'copd', label:'COPD', canonical:true, synonyms:['Chronic obstructive pulmonary disease'] },
+    { id:'covid', label:'COVID-19', canonical:true, synonyms:['SARS-CoV-2 infection','Coronavirus disease'] },
+    { id:'rsv', label:'RSV infection', canonical:true, synonyms:['Respiratory syncytial virus'] },
+  ]},
+];
+
+const MODALITY_TREE = [
+  { id:'sm', label:'Small molecule', canonical:true, synonyms:['Small molecule drug','SMD'] },
+  { id:'ab', label:'Antibody', children:[
+    { id:'mab', label:'Monoclonal antibody', canonical:true, synonyms:['mAb','Monospecific antibody'] },
+    { id:'bsab', label:'Bispecific antibody', canonical:true, synonyms:['BsAb','Bispecific mAb'] },
+    { id:'adc', label:'Antibody-drug conjugate', canonical:true, synonyms:['ADC'] },
+    { id:'abfrag', label:'Antibody fragment', canonical:true, synonyms:['Fab fragment','scFv','Nanobody'] },
+  ]},
+  { id:'cell', label:'Cell therapy', children:[
+    { id:'cart', label:'CAR-T', canonical:true, synonyms:['Chimeric antigen receptor T-cell','CAR T-cell therapy'] },
+    { id:'tils', label:'TIL therapy', canonical:true, synonyms:['Tumour-infiltrating lymphocytes'] },
+    { id:'nk', label:'NK cell therapy', canonical:true, synonyms:['Natural killer cell therapy'] },
+  ]},
+  { id:'gene', label:'Gene therapy', canonical:true, synonyms:['Gene transfer therapy'] },
+  { id:'rna', label:'RNA therapy', children:[
+    { id:'mrna', label:'mRNA therapy', canonical:true, synonyms:['Messenger RNA therapy'] },
+    { id:'sirna', label:'siRNA', canonical:true, synonyms:['Small interfering RNA','RNA interference'] },
+    { id:'asomRNA', label:'Antisense oligonucleotide', canonical:true, synonyms:['ASO'] },
+  ]},
+  { id:'vacc', label:'Vaccine', canonical:true, synonyms:['Prophylactic vaccine','Therapeutic vaccine'] },
+];
+
+const FLAT_VALUES = {
+  Target:['IL-17','IL-4R','PD-L1','GLP-1','TSLP','CD20','VEGF','EGFR','BTK','JAK1','JAK2','TNF-alpha'],
+  'Therapeutic area':['Oncology','Immunology','Inflammation','Neurology','Rare disease','Metabolic','Respiratory'],
+  Company:['AstraZeneca','Pfizer','Novartis','Roche','AbbVie','Regeneron','Eli Lilly','BMS','GSK','Sanofi'],
+  Phase:['Pre-clinical','Phase I','Phase II','Phase III','Approved'],
+};
+
+const TREE_FIELDS = new Set(['Indication','Modality']);
+
+const CONNECTOR_COLORS = {
+  AND:{bg:'#E8F0FE',text:'#1A56DB',border:'#3B82F6'},
+  OR:{bg:'#ECFDF5',text:'#059669',border:'#10B981'},
+  NOT:{bg:'#FEF2F2',text:'#DC2626',border:'#EF4444'},
+};
+
+// ── Filter page tree data ───────────────────────────────────────────────────
+const FILTER_INDICATION = [
+  { id:'pso', label:'Psoriasis', count:28, isScope:true, synonyms:['Psoriasis vulgaris','Plaque psoriasis','Chronic plaque psoriasis'], children:[
+    { id:'pso-p', label:'Plaque psoriasis', count:22 },
+    { id:'pso-g', label:'Guttate psoriasis', count:4 },
+  ]},
+  { id:'ad', label:'Atopic dermatitis', count:31, synonyms:['Eczema','AD'] },
+  { id:'psa', label:'Psoriatic arthritis', count:19, synonyms:['PsA'] },
+  { id:'ra', label:'Rheumatoid arthritis', count:14, synonyms:['RA'] },
+  { id:'ln', label:'Lupus nephritis', count:8, synonyms:['LN'] },
+];
+
+const FILTER_MODALITY = [
+  { id:'sm', label:'Small molecule', count:41 },
+  { id:'ab', label:'Antibody', count:67, children:[
+    { id:'mab', label:'Monoclonal antibody', count:38 },
+    { id:'bsab', label:'Bispecific antibody', count:17 },
+    { id:'adc', label:'ADC', count:12 },
+  ]},
+  { id:'cell', label:'Cell therapy', count:21, children:[
+    { id:'cart', label:'CAR-T', count:15 },
+    { id:'nk', label:'NK cell therapy', count:6 },
+  ]},
+  { id:'gene', label:'Gene therapy', count:11 },
+];
+
+const FILTER_DATA_FLAT = {
+  Company:[{label:'AbbVie',count:23},{label:'Pfizer',count:18},{label:'Novartis',count:15},{label:'AstraZeneca',count:14},{label:'Regeneron',count:11}],
+  Phase:[{label:'Phase III',count:34},{label:'Phase II',count:48},{label:'Phase I',count:27},{label:'Approved',count:9}],
+};
+
+// ── State ─────────────────────────────────────────────────────────────────
+let state = {
+  tab:'search',
+  rows:[{id:1,field:'Indication',values:[],connector:'AND',withinLogic:'OR'}],
+  nextId:2,
+  pickerOpen:{},
+  pickerQuery:{},
+  treeExpanded:{},
+  // filter page
+  filters:{},
+  facetOpen:{Indication:true,Modality:true,Company:false,Phase:false},
+  filterTreeExpanded:{},
+};
+
+// ── DOM helpers ───────────────────────────────────────────────────────────
+function el(tag,attrs,...children){
+  const e=document.createElement(tag);
+  if(attrs){Object.entries(attrs).forEach(([k,v])=>{
+    if(k==='style'&&typeof v==='object')Object.assign(e.style,v);
+    else if(k.startsWith('on'))e.addEventListener(k.slice(2).toLowerCase(),v);
+    else if(k==='html')e.innerHTML=v;
+    else e.setAttribute(k,v);
+  });}
+  children.flat().forEach(c=>{if(c!=null)e.appendChild(typeof c==='string'?document.createTextNode(c):c);});
+  return e;
+}
+
+// ── Flatten tree to get all descendant ids ─────────────────────────────────
+function getAllIds(nodes){
+  const ids=[];
+  function walk(n){ids.push(n.id||n.label);if(n.children)n.children.forEach(walk);}
+  nodes.forEach(walk);
+  return ids;
+}
+function getAllLabels(nodes){
+  const labels=[];
+  function walk(n){labels.push(n.label);if(n.children)n.children.forEach(walk);}
+  nodes.forEach(walk);
+  return labels;
+}
+
+// ── Logic toggle ──────────────────────────────────────────────────────────
+function logicToggle(value,onChange,options){
+  options=options||['AND','OR','NOT'];
+  const wrap=el('div',{style:{display:'inline-flex',borderRadius:6,overflow:'hidden',border:'1px solid #E2E8F0'}});
+  options.forEach((opt,i)=>{
+    const active=value===opt,c=CONNECTOR_COLORS[opt];
+    wrap.appendChild(el('button',{
+      style:{padding:'3px 10px',fontSize:11,fontWeight:700,fontFamily:"'DM Mono',monospace",
+        letterSpacing:'0.05em',border:'none',cursor:'pointer',
+        background:active?c.bg:'#F8FAFC',color:active?c.text:'#94A3B8',
+        borderRight:i<options.length-1?'1px solid #E2E8F0':'none',transition:'all 0.15s'},
+      onclick:()=>onChange(opt)
+    },opt));
+  });
+  return wrap;
+}
+
+// ── Tag chip ──────────────────────────────────────────────────────────────
+function tagChip(label,not,onRemove){
+  return el('span',{style:{display:'inline-flex',alignItems:'center',gap:4,padding:'3px 10px 3px 8px',
+    background:not?'#FEF2F2':'#F1F5F9',border:`1px solid ${not?'#FCA5A5':'#CBD5E1'}`,
+    borderRadius:20,fontSize:12,fontFamily:"'DM Mono',monospace",color:not?'#991B1B':'#1E293B'}},
+    not?el('span',{style:{fontSize:10,fontWeight:700,color:'#DC2626',marginRight:2}},'NOT'):null,
+    label,
+    el('button',{style:{background:'none',border:'none',cursor:'pointer',color:not?'#DC2626':'#94A3B8',
+      padding:0,marginLeft:2,fontSize:13,lineHeight:1},onclick:onRemove},'×')
+  );
+}
+
+// ── Synonym tooltip icon ──────────────────────────────────────────────────
+function synTooltip(synonyms){
+  if(!synonyms||!synonyms.length)return null;
+  const wrap=el('span',{className:'tooltip-wrap'});
+  wrap.appendChild(el('span',{style:{width:14,height:14,borderRadius:'50%',background:'#E2E8F0',
+    display:'inline-flex',alignItems:'center',justifyContent:'center',fontSize:9,
+    color:'#64748B',cursor:'help',marginLeft:4,flexShrink:0,fontFamily:"'DM Mono',monospace"}},'i'));
+  const box=el('div',{className:'tooltip-box'});
+  box.appendChild(el('div',{style:{fontWeight:700,marginBottom:4,color:'#94A3B8',fontSize:10,letterSpacing:'0.06em'}},'ALSO KNOWN AS'));
+  synonyms.forEach(s=>box.appendChild(el('div',{},s)));
+  wrap.appendChild(box);
+  return wrap;
+}
+
+// ── Tree node for value picker (search page) ──────────────────────────────
+function treeNode(node,rowId,depth,searchQ){
+  const row=state.rows.find(r=>r.id===rowId);
+  const selected=row?row.values:[];
+  const isSelected=selected.some(v=>v.label===node.label);
+  const hasChildren=node.children&&node.children.length>0;
+  const expKey=`${rowId}_${node.id||node.label}`;
+  const expanded=state.treeExpanded[expKey];
+  const matchesSearch=!searchQ||node.label.toLowerCase().includes(searchQ.toLowerCase())||(node.synonyms&&node.synonyms.some(s=>s.toLowerCase().includes(searchQ.toLowerCase())));
+  const childrenMatchSearch=hasChildren&&getAllLabels(node.children).some(l=>l.toLowerCase().includes(searchQ.toLowerCase()));
+  if(searchQ&&!matchesSearch&&!childrenMatchSearch)return null;
+
+  const wrap=el('div',{});
+
+  const itemRow=el('div',{className:'tree-item',style:{
+    display:'flex',alignItems:'center',gap:6,
+    padding:`5px 10px 5px ${10+depth*16}px`,cursor:'pointer',
+    background:isSelected?'#EFF6FF':'#fff',
+  }});
+
+  // expand toggle
+  if(hasChildren){
+    const tog=el('span',{style:{fontSize:10,color:'#94A3B8',width:14,flexShrink:0,cursor:'pointer',fontFamily:"'DM Mono',monospace"},
+      onclick:(e)=>{e.stopPropagation();state.treeExpanded[expKey]=!expanded;render();}
+    },expanded?'▾':'▸');
+    itemRow.appendChild(tog);
+  } else {
+    itemRow.appendChild(el('span',{style:{width:14,flexShrink:0}}));
+  }
+
+  // checkbox
+  const cb=el('input',{type:'checkbox',style:{cursor:'pointer',flexShrink:0}});
+  cb.checked=isSelected;
+  cb.addEventListener('change',()=>{
+    if(cb.checked)row.values.push({label:node.label,not:false});
+    else row.values=row.values.filter(v=>v.label!==node.label);
+    render();
+  });
+  itemRow.appendChild(cb);
+
+  // label + synonym match badge
+  const labelWrap=el('span',{style:{display:'inline-flex',alignItems:'center',flex:1}});
+  const isSynMatch=searchQ&&!node.label.toLowerCase().includes(searchQ.toLowerCase())&&node.synonyms&&node.synonyms.some(s=>s.toLowerCase().includes(searchQ.toLowerCase()));
+  labelWrap.appendChild(el('span',{style:{fontSize:12,color:'#1E293B',fontFamily:"'DM Sans',sans-serif",fontWeight:node.canonical?500:400}},node.label));
+  if(isSynMatch){
+    labelWrap.appendChild(el('span',{style:{fontSize:10,background:'#EFF6FF',color:'#1A56DB',border:'1px solid #BFDBFE',borderRadius:4,padding:'1px 5px',marginLeft:5,fontFamily:"'DM Mono',monospace"}},'via synonym'));
+  }
+  if(node.synonyms&&node.synonyms.length)labelWrap.appendChild(synTooltip(node.synonyms));
+  itemRow.appendChild(labelWrap);
+
+  // NOT button
+  itemRow.appendChild(el('span',{
+    style:{fontSize:10,color:'#DC2626',fontFamily:"'DM Mono',monospace",cursor:'pointer',opacity:0.6,flexShrink:0},
+    title:'Add as NOT (exclude)',
+    onclick:(e)=>{e.stopPropagation();row.values.push({label:node.label,not:true});render();}
+  },'NOT'));
+
+  // select subtree
+  if(hasChildren){
+    const allChildLabels=getAllLabels(node.children);
+    const allSelected=allChildLabels.every(l=>selected.some(v=>v.label===l));
+    itemRow.appendChild(el('span',{
+      style:{fontSize:10,color:'#1A56DB',fontFamily:"'DM Mono',monospace",cursor:'pointer',flexShrink:0,marginLeft:2,whiteSpace:'nowrap'},
+      onclick:(e)=>{
+        e.stopPropagation();
+        if(allSelected){row.values=row.values.filter(v=>!allChildLabels.includes(v.label));}
+        else{allChildLabels.forEach(l=>{if(!selected.some(v=>v.label===l))row.values.push({label:l,not:false});});}
+        render();
+      }
+    },allSelected?'deselect subtree':'select subtree'));
+  }
+
+  wrap.appendChild(itemRow);
+
+  if(hasChildren&&(expanded||searchQ)){
+    const children=el('div',{});
+    node.children.forEach(child=>{
+      const cn=treeNode(child,rowId,depth+1,searchQ);
+      if(cn)children.appendChild(cn);
+    });
+    wrap.appendChild(children);
+  }
+  return wrap;
+}
+
+// ── Value picker (search page) ────────────────────────────────────────────
+function valuePicker(rowId,field){
+  const row=state.rows.find(r=>r.id===rowId);
+  const query=state.pickerQuery[rowId]||'';
+  const wrap=el('div',{style:{marginTop:8}});
+
+  // search input
+  wrap.appendChild(el('input',{type:'text',value:query,
+    placeholder:`Search ${field.toLowerCase()}…`,
+    style:{width:'100%',height:30,padding:'0 10px',border:'1px solid #E2E8F0',
+      borderRadius:6,fontSize:12,background:'#F8FAFC',color:'#1E293B',
+      outline:'none',boxSizing:'border-box'},
+    oninput:e=>{state.pickerQuery[rowId]=e.target.value;render();}
+  }));
+
+  const dd=el('div',{style:{border:'1px solid #E2E8F0',borderRadius:6,marginTop:4,
+    background:'#fff',overflow:'hidden',boxShadow:'0 4px 12px rgba(0,0,0,0.08)',
+    maxHeight:280,overflowY:'auto'}});
+
+  if(TREE_FIELDS.has(field)){
+    const tree=field==='Indication'?INDICATION_TREE:MODALITY_TREE;
+    // select all matching
+    if(query){
+      const matchLabels=[];
+      function collectMatches(nodes){nodes.forEach(n=>{
+        const m=n.label.toLowerCase().includes(query.toLowerCase())||(n.synonyms&&n.synonyms.some(s=>s.toLowerCase().includes(query.toLowerCase())));
+        if(m)matchLabels.push(n.label);
+        if(n.children)collectMatches(n.children);
+      });}
+      collectMatches(tree);
+      if(matchLabels.length>0){
+        dd.appendChild(el('div',{
+          style:{padding:'6px 10px',fontSize:11,color:'#1A56DB',cursor:'pointer',
+            borderBottom:'1px solid #F1F5F9',background:'#F8FAFC',
+            fontFamily:"'DM Mono',monospace"},
+          onclick:()=>{matchLabels.forEach(l=>{if(!row.values.some(v=>v.label===l))row.values.push({label:l,not:false});});state.pickerQuery[rowId]='';render();}
+        },`＋ Select all matching "${query}" (${matchLabels.length})`));
+      }
+    }
+    tree.forEach(node=>{
+      const n=treeNode(node,rowId,0,query);
+      if(n)dd.appendChild(n);
+    });
+  } else {
+    const vals=FLAT_VALUES[field]||[];
+    const filtered=vals.filter(v=>v.toLowerCase().includes(query.toLowerCase())&&!row.values.some(s=>s.label===v));
+    if(query&&filtered.length>0){
+      dd.appendChild(el('div',{
+        style:{padding:'6px 10px',fontSize:11,color:'#1A56DB',cursor:'pointer',borderBottom:'1px solid #F1F5F9',background:'#F8FAFC',fontFamily:"'DM Mono',monospace"},
+        onclick:()=>{filtered.forEach(v=>row.values.push({label:v,not:false}));state.pickerQuery[rowId]='';render();}
+      },`＋ Select all containing "${query}" (${filtered.length})`));
+    }
+    filtered.forEach(v=>{
+      const item=el('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'5px 10px',cursor:'pointer',fontSize:12,fontFamily:"'DM Sans',sans-serif",borderBottom:'1px solid #F8FAFC'}});
+      item.addEventListener('mouseenter',()=>item.style.background='#F8FAFC');
+      item.addEventListener('mouseleave',()=>item.style.background='#fff');
+      item.appendChild(el('span',{style:{flex:1,color:'#1E293B'},onclick:()=>{row.values.push({label:v,not:false});state.pickerQuery[rowId]='';render();}},v));
+      item.appendChild(el('span',{style:{fontSize:10,color:'#DC2626',marginLeft:8,fontWeight:600,fontFamily:"'DM Mono',monospace",cursor:'pointer',opacity:0.7},onclick:()=>{row.values.push({label:v,not:true});state.pickerQuery[rowId]='';render();}},'NOT'));
+      dd.appendChild(item);
+    });
+  }
+  wrap.appendChild(dd);
+  return wrap;
+}
+
+// ── Condition row (search page) ───────────────────────────────────────────
+function conditionRow(row,isFirst){
+  const wrap=el('div',{style:{display:'flex',gap:8,alignItems:'flex-start',marginBottom:6}});
+  const connCol=el('div',{style:{width:72,flexShrink:0}});
+  if(isFirst){
+    connCol.appendChild(el('div',{style:{height:32,display:'flex',alignItems:'center',fontSize:11,color:'#94A3B8',fontFamily:"'DM Mono',monospace",fontWeight:600,letterSpacing:'0.05em'}},'WHERE'));
+  } else {
+    connCol.appendChild(logicToggle(row.connector,v=>{row.connector=v;render();}));
+  }
+  wrap.appendChild(connCol);
+
+  const isNot=!isFirst&&row.connector==='NOT';
+  const block=el('div',{style:{flex:1,border:`1px solid ${isNot?'#FCA5A5':'#E2E8F0'}`,borderRadius:8,padding:'10px 12px',background:isNot?'#FFF9F9':'#fff'}});
+
+  const topRow=el('div',{style:{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}});
+  const sel=el('select',{style:{height:28,padding:'0 8px',border:'1px solid #E2E8F0',borderRadius:6,fontSize:12,background:'#F8FAFC',color:'#1E293B'},
+    onchange:e=>{row.field=e.target.value;row.values=[];state.pickerQuery[row.id]='';render();}});
+  ['Indication','Modality','Target','Therapeutic area','Company','Phase'].forEach(f=>{
+    const o=el('option',{},f);if(f===row.field)o.selected=true;sel.appendChild(o);
+  });
+  topRow.appendChild(sel);
+
+  if(row.values.length>1){
+    topRow.appendChild(el('span',{style:{fontSize:11,color:'#94A3B8',fontFamily:"'DM Mono',monospace"}},'values use'));
+    topRow.appendChild(logicToggle(row.withinLogic||'OR',v=>{row.withinLogic=v;render();},['OR','AND']));
+    if(row.withinLogic==='AND'){
+      topRow.appendChild(el('span',{style:{fontSize:10,color:'#92400E',background:'#FEF3C7',border:'1px solid #FDE68A',borderRadius:4,padding:'2px 6px',fontFamily:"'DM Mono',monospace"}},'edge case — asset must satisfy all'));
+    }
+  }
+  topRow.appendChild(el('button',{style:{marginLeft:'auto',background:'none',border:'none',cursor:'pointer',color:'#CBD5E1',fontSize:16},
+    onclick:()=>{state.rows=state.rows.filter(r=>r.id!==row.id);render();}},'×'));
+  block.appendChild(topRow);
+
+  if(row.values.length>0){
+    const tags=el('div',{style:{display:'flex',flexWrap:'wrap',gap:4,marginTop:8}});
+    row.values.forEach((v,i)=>tags.appendChild(tagChip(v.label,v.not,()=>{row.values.splice(i,1);render();})));
+    block.appendChild(tags);
+  }
+
+  const open=state.pickerOpen[row.id];
+  block.appendChild(el('button',{
+    style:{marginTop:6,background:'none',border:'none',color:'#1A56DB',fontSize:11,fontFamily:"'DM Mono',monospace",cursor:'pointer',padding:0},
+    onclick:()=>{state.pickerOpen[row.id]=!open;render();}
+  },open?'▲ close':'＋ add values'));
+  if(open)block.appendChild(valuePicker(row.id,row.field));
+
+  wrap.appendChild(block);
+  return wrap;
+}
+
+// ── Query summary ─────────────────────────────────────────────────────────
+function querySummary(){
+  const parts=[];
+  state.rows.forEach((row,i)=>{
+    if(!row.values.length)return;
+    const valStr=row.values.map(v=>v.not?`NOT ${v.label}`:v.label).join(` ${row.withinLogic||'OR'} `);
+    parts.push({connector:i===0?null:row.connector,part:`${row.field}: (${valStr})`});
+  });
+  if(!parts.length)return null;
+  const wrap=el('div',{style:{marginTop:16,padding:'10px 14px',background:'#F8FAFC',border:'1px solid #E2E8F0',borderRadius:8,fontFamily:"'DM Mono',monospace",fontSize:11,lineHeight:1.8}});
+  wrap.appendChild(el('div',{style:{fontSize:10,fontWeight:700,color:'#94A3B8',letterSpacing:'0.08em',marginBottom:4}},'QUERY PREVIEW'));
+  const txt=el('div',{});
+  parts.forEach(p=>{
+    if(p.connector)txt.appendChild(el('span',{style:{color:CONNECTOR_COLORS[p.connector].text,fontWeight:700}},` ${p.connector} `));
+    txt.appendChild(el('span',{style:{color:'#1E293B'}},p.part));
+  });
+  wrap.appendChild(txt);
+  return wrap;
+}
+
+// ── Filter tree node (results page) ──────────────────────────────────────
+function filterTreeNode(node,field,depth){
+  const activeList=state.filters[field]||[];
+  const act=activeList.find(f=>f.label===node.label);
+  const isNot=act?.not,isChecked=!!act&&!isNot;
+  const expKey=`filter_${field}_${node.id||node.label}`;
+  const expanded=state.filterTreeExpanded[expKey];
+  const hasChildren=node.children&&node.children.length>0;
+
+  const wrap=el('div',{});
+  const row=el('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',
+    padding:`4px 6px 4px ${6+depth*14}px`,borderRadius:6,marginBottom:2,cursor:node.isScope?'default':'pointer',
+    background:isNot?'#FEF2F2':isChecked?'#EFF6FF':'transparent'}});
+  row.addEventListener('mouseenter',()=>{if(!node.isScope&&!isChecked&&!isNot)row.style.background='#F8FAFC';});
+  row.addEventListener('mouseleave',()=>{if(!isChecked&&!isNot)row.style.background='transparent';});
+
+  const left=el('div',{style:{display:'flex',alignItems:'center',gap:6,flex:1}});
+
+  if(hasChildren){
+    left.appendChild(el('span',{style:{fontSize:10,color:'#94A3B8',width:12,flexShrink:0,cursor:'pointer'},
+      onclick:(e)=>{e.stopPropagation();state.filterTreeExpanded[expKey]=!expanded;render();}
+    },expanded?'▾':'▸'));
+  } else {
+    left.appendChild(el('span',{style:{width:12,flexShrink:0}}));
+  }
+
+  const cb=el('input',{type:'checkbox',style:{cursor:node.isScope?'default':'pointer',flexShrink:0}});
+  cb.checked=isChecked;if(node.isScope)cb.disabled=true;
+  cb.addEventListener('change',()=>{
+    const cur=state.filters[field]||[];
+    const ex=cur.find(f=>f.label===node.label);
+    state.filters[field]=ex?cur.filter(f=>f.label!==node.label):[...cur,{label:node.label,not:false}];
+    render();
+  });
+  left.appendChild(cb);
+
+  const nameWrap=el('span',{style:{display:'inline-flex',alignItems:'center'}});
+  nameWrap.appendChild(el('span',{style:{fontSize:12,color:isNot?'#991B1B':'#1E293B',fontWeight:depth===0&&hasChildren?600:400}},node.label));
+  if(node.isScope)nameWrap.appendChild(el('span',{style:{fontSize:10,marginLeft:5,color:'#94A3B8',fontFamily:"'DM Mono',monospace",fontStyle:'italic'}},'scope'));
+  if(node.synonyms&&node.synonyms.length)nameWrap.appendChild(synTooltip(node.synonyms));
+  left.appendChild(nameWrap);
+  row.appendChild(left);
+
+  const right=el('div',{style:{display:'flex',alignItems:'center',gap:6,flexShrink:0}});
+  if(node.count!==undefined)right.appendChild(el('span',{style:{fontSize:11,color:'#94A3B8',fontFamily:"'DM Mono',monospace"}},String(node.count)));
+  if(!node.isScope){
+    right.appendChild(el('button',{
+      title:isNot?'Remove exclusion':'Exclude this value',
+      style:{fontSize:10,fontWeight:700,padding:'1px 5px',borderRadius:4,cursor:'pointer',fontFamily:"'DM Mono',monospace",
+        background:isNot?'#FEE2E2':'#F1F5F9',color:isNot?'#DC2626':'#94A3B8',border:`1px solid ${isNot?'#FCA5A5':'#E2E8F0'}`},
+      onclick:(e)=>{
+        e.stopPropagation();
+        const cur=state.filters[field]||[];
+        const ex=cur.find(f=>f.label===node.label);
+        if(ex?.not)state.filters[field]=cur.filter(f=>f.label!==node.label);
+        else if(ex)state.filters[field]=cur.map(f=>f.label===node.label?{...f,not:true}:f);
+        else state.filters[field]=[...cur,{label:node.label,not:true}];
+        render();
+      }
+    },'NOT'));
+  }
+  row.appendChild(right);
+  wrap.appendChild(row);
+
+  if(hasChildren&&expanded){
+    node.children.forEach(child=>wrap.appendChild(filterTreeNode(child,field,depth+1)));
+  }
+  return wrap;
+}
+
+// ── Flat facet section ────────────────────────────────────────────────────
+function flatFacetSection(field,items){
+  const active=state.filters[field]||[];
+  const open=state.facetOpen[field]!==false;
+  const wrap=el('div',{style:{borderBottom:'1px solid #F1F5F9',paddingBottom:8,marginBottom:8}});
+  const header=el('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'6px 0',cursor:'pointer'},onclick:()=>{state.facetOpen[field]=!open;render();}});
+  header.appendChild(el('span',{style:{fontSize:12,fontWeight:600,color:'#1E293B',display:'flex',alignItems:'center',gap:6}},
+    open?'▾':'▸',' '+field,
+    active.length?el('span',{style:{fontSize:10,background:'#E8F0FE',color:'#1A56DB',borderRadius:10,padding:'1px 6px'}},String(active.length)):null
+  ));
+  wrap.appendChild(header);
+  if(open){
+    items.forEach(item=>{
+      const act=active.find(f=>f.label===item.label);
+      const isNot=act?.not,isChecked=!!act&&!isNot;
+      const row=el('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'4px 6px',borderRadius:6,marginBottom:2,background:isNot?'#FEF2F2':isChecked?'#EFF6FF':'transparent'}});
+      const lbl=el('label',{style:{display:'flex',alignItems:'center',gap:7,cursor:'pointer',flex:1}});
+      const cb=el('input',{type:'checkbox'});cb.checked=isChecked;
+      cb.addEventListener('change',()=>{
+        const cur=state.filters[field]||[];const ex=cur.find(f=>f.label===item.label);
+        state.filters[field]=ex?cur.filter(f=>f.label!==item.label):[...cur,{label:item.label,not:false}];render();
+      });
+      lbl.appendChild(cb);lbl.appendChild(el('span',{style:{fontSize:12,color:isNot?'#991B1B':'#1E293B'}},item.label));
+      row.appendChild(lbl);
+      const right=el('div',{style:{display:'flex',alignItems:'center',gap:6}});
+      right.appendChild(el('span',{style:{fontSize:11,color:'#94A3B8',fontFamily:"'DM Mono',monospace"}},String(item.count)));
+      right.appendChild(el('button',{
+        style:{fontSize:10,fontWeight:700,padding:'1px 5px',borderRadius:4,cursor:'pointer',fontFamily:"'DM Mono',monospace",background:isNot?'#FEE2E2':'#F1F5F9',color:isNot?'#DC2626':'#94A3B8',border:`1px solid ${isNot?'#FCA5A5':'#E2E8F0'}`},
+        onclick:()=>{const cur=state.filters[field]||[];const ex=cur.find(f=>f.label===item.label);if(ex?.not)state.filters[field]=cur.filter(f=>f.label!==item.label);else if(ex)state.filters[field]=cur.map(f=>f.label===item.label?{...f,not:true}:f);else state.filters[field]=[...cur,{label:item.label,not:true}];render();}
+      },'NOT'));
+      row.appendChild(right);wrap.appendChild(row);
+    });
+  }
+  return wrap;
+}
+
+// ── Tree facet section (filter page) ─────────────────────────────────────
+function treeFacetSection(field,treeData){
+  const active=state.filters[field]||[];
+  const open=state.facetOpen[field]!==false;
+  const wrap=el('div',{style:{borderBottom:'1px solid #F1F5F9',paddingBottom:8,marginBottom:8}});
+  const header=el('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'6px 0',cursor:'pointer'},onclick:()=>{state.facetOpen[field]=!open;render();}});
+  header.appendChild(el('span',{style:{fontSize:12,fontWeight:600,color:'#1E293B',display:'flex',alignItems:'center',gap:6}},
+    open?'▾':'▸',' '+field,
+    active.length?el('span',{style:{fontSize:10,background:'#E8F0FE',color:'#1A56DB',borderRadius:10,padding:'1px 6px'}},String(active.length)):null
+  ));
+  wrap.appendChild(header);
+  if(open)treeData.forEach(node=>wrap.appendChild(filterTreeNode(node,field,0)));
+  return wrap;
+}
+
+// ── Main render ───────────────────────────────────────────────────────────
+function render(){
+  const app=document.getElementById('app');app.innerHTML='';
+
+  // Header
+  app.appendChild(el('div',{style:{background:'#0F172A',padding:'14px 24px',display:'flex',alignItems:'center',gap:12}},
+    el('div',{style:{width:26,height:26,background:'linear-gradient(135deg,#3B82F6,#6366F1)',borderRadius:6,display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,color:'#fff'}},'◈'),
+    el('span',{style:{color:'#F8FAFC',fontSize:14,fontWeight:600}},'Market Intelligence'),
+    el('span',{style:{color:'#475569',fontSize:12,marginLeft:4}},'— Search & Filter Logic Prototype')
+  ));
+
+  // Tabs
+  const tabBar=el('div',{style:{borderBottom:'1px solid #E2E8F0',background:'#fff',padding:'0 24px',display:'flex',gap:0}});
+  [{id:'search',label:'① Search page'},{id:'filter',label:'② Results filter page'},{id:'compare',label:'③ Logic summary'}].forEach(tab=>{
+    const a=state.tab===tab.id;
+    tabBar.appendChild(el('button',{
+      style:{padding:'11px 16px',background:'none',border:'none',borderBottom:`2px solid ${a?'#3B82F6':'transparent'}`,
+        color:a?'#1A56DB':'#64748B',fontSize:12,fontWeight:a?600:400,cursor:'pointer',marginBottom:-1,whiteSpace:'nowrap'},
+      onclick:()=>{state.tab=tab.id;render();}
+    },tab.label));
+  });
+  app.appendChild(tabBar);
+
+  const content=el('div',{style:{padding:20,maxWidth:920,margin:'0 auto'}});
+
+  // ── SEARCH TAB ──────────────────────────────────────────────────────────
+  if(state.tab==='search'){
+    content.appendChild(el('div',{style:{marginBottom:14}},
+      el('h2',{style:{fontSize:14,fontWeight:700,color:'#0F172A',marginBottom:3}},'Define search criteria'),
+      el('p',{style:{fontSize:12,color:'#64748B'}},'Build a query to define your landscape. Indication and Modality use a hierarchical ontology tree. Try searching "NSCLC" or "ADC".')
+    ));
+    state.rows.forEach((row,i)=>content.appendChild(conditionRow(row,i===0)));
+    content.appendChild(el('button',{
+      style:{marginTop:8,height:30,padding:'0 12px',border:'1px dashed #CBD5E1',borderRadius:6,background:'#F8FAFC',color:'#64748B',fontSize:11,fontFamily:"'DM Mono',monospace",display:'flex',alignItems:'center',gap:5},
+      onclick:()=>{state.rows.push({id:state.nextId++,field:'Indication',values:[],connector:'AND',withinLogic:'OR'});render();}
+    },'＋ add condition'));
+    const qs=querySummary();if(qs)content.appendChild(qs);
+    content.appendChild(el('div',{style:{marginTop:14,padding:'10px 14px',background:'#fff',border:'1px solid #E2E8F0',borderRadius:8,display:'flex',justifyContent:'space-between',alignItems:'center'}},
+      el('span',{style:{fontSize:12,color:'#64748B'}},'Estimated matches: ',el('strong',{style:{color:'#1A56DB'}},'~284 assets')),
+      el('button',{style:{height:30,padding:'0 14px',background:'#1A56DB',border:'none',borderRadius:6,color:'#fff',fontSize:12,fontWeight:600}},'Generate results →')
+    ));
+    content.appendChild(el('div',{style:{marginTop:16,padding:'10px 14px',background:'#FFFBEB',border:'1px solid #FDE68A',borderRadius:8,fontSize:12,color:'#78350F',lineHeight:1.6}},
+      el('strong',{},'Three operators only: AND / OR / NOT. '),'Because values come from a structured ontology — not free text — an asset either has a value or it doesn\'t. "Contains", "does not contain", "is exactly" and similar operators are redundant.'
+    ));
+  }
+
+  // ── FILTER TAB ─────────────────────────────────────────────────────────
+  if(state.tab==='filter'){
+    const grid=el('div',{style:{display:'grid',gridTemplateColumns:'230px 1fr',gap:20}});
+    const left=el('div',{});
+    const allActive=Object.values(state.filters).flat();
+    const fh=el('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}});
+    fh.appendChild(el('h3',{style:{fontSize:13,fontWeight:700,color:'#0F172A'}},'Filters'));
+    if(allActive.length)fh.appendChild(el('button',{style:{fontSize:11,color:'#DC2626',background:'none',border:'none',cursor:'pointer',fontFamily:"'DM Mono',monospace"},onclick:()=>{state.filters={};render();}},'clear all'));
+    left.appendChild(fh);
+    left.appendChild(treeFacetSection('Indication',FILTER_INDICATION));
+    left.appendChild(treeFacetSection('Modality',FILTER_MODALITY));
+    left.appendChild(flatFacetSection('Company',FILTER_DATA_FLAT.Company));
+    left.appendChild(flatFacetSection('Phase',FILTER_DATA_FLAT.Phase));
+    left.appendChild(el('div',{style:{marginTop:8,padding:8,background:'#FFFBEB',border:'1px solid #FDE68A',borderRadius:6,fontSize:10,color:'#78350F',fontFamily:"'DM Mono',monospace",lineHeight:1.6}},'Defaults: OR within field, AND between fields. NOT per value. Hierarchy: expand ▸ to see subtypes, NOT on parent excludes that value only.'));
+    grid.appendChild(left);
+
+    const right=el('div',{});
+    const totalAssets=284;
+    const filtered=Math.max(14,totalAssets-allActive.filter(f=>!f.not).length*28-allActive.filter(f=>f.not).length*12);
+    const resBar=el('div',{style:{background:'#fff',border:'1px solid #E2E8F0',borderRadius:8,padding:'9px 14px',marginBottom:12,display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:6}});
+    resBar.appendChild(el('span',{style:{fontSize:12,color:'#64748B'}},'Showing ',el('strong',{style:{color:'#1A56DB'}},String(filtered)),' of ',String(totalAssets),' assets'));
+    const chips=el('div',{style:{display:'flex',gap:5,flexWrap:'wrap'}});
+    allActive.forEach(f=>chips.appendChild(el('span',{style:{fontSize:11,padding:'2px 8px',borderRadius:20,fontFamily:"'DM Mono',monospace",background:f.not?'#FEF2F2':'#EFF6FF',color:f.not?'#DC2626':'#1A56DB',border:`1px solid ${f.not?'#FCA5A5':'#BFDBFE'}`}},(f.not?'NOT ':'')+f.label+' ×')));
+    resBar.appendChild(chips);right.appendChild(resBar);
+
+    const table=el('div',{style:{background:'#fff',border:'1px solid #E2E8F0',borderRadius:8,overflow:'hidden'}});
+    const thead=el('div',{style:{display:'grid',gridTemplateColumns:'2fr 1.2fr 1fr 0.8fr',padding:'7px 14px',background:'#F8FAFC',borderBottom:'1px solid #E2E8F0',fontSize:11,fontWeight:600,color:'#64748B',fontFamily:"'DM Mono',monospace",letterSpacing:'0.04em'}});
+    ['ASSET','COMPANY','MODALITY','PHASE'].forEach(h=>thead.appendChild(el('span',{},h)));
+    table.appendChild(thead);
+    [["AMG-551","Amgen","Small molecule","Phase II"],["RGN-774","Regeneron","Monoclonal antibody","Phase III"],["NVS-220","Novartis","Small molecule","Phase II"],["ABV-812","AbbVie","Bispecific antibody","Phase II"],["PFE-339","Pfizer","ADC","Phase III"],["LLY-441","Eli Lilly","CAR-T","Phase I"]].forEach(([name,co,mod,phase],i)=>{
+      const r=el('div',{style:{display:'grid',gridTemplateColumns:'2fr 1.2fr 1fr 0.8fr',padding:'8px 14px',borderBottom:'1px solid #F8FAFC',fontSize:12,background:i%2===0?'#fff':'#FAFBFC'}});
+      r.appendChild(el('span',{style:{fontWeight:500,color:'#0F172A'}},name));
+      r.appendChild(el('span',{style:{color:'#64748B'}},co));
+      r.appendChild(el('span',{style:{color:'#475569'}},mod));
+      r.appendChild(el('span',{style:{fontSize:11,padding:'2px 8px',borderRadius:10,background:'#F1F5F9',color:'#475569',width:'fit-content'}},phase));
+      table.appendChild(r);
+    });
+    table.appendChild(el('div',{style:{padding:'7px 14px',fontSize:11,color:'#94A3B8',fontFamily:"'DM Mono',monospace"}},`+ ${filtered-6} more assets`));
+    right.appendChild(table);grid.appendChild(right);content.appendChild(grid);
+  }
+
+  // ── COMPARE TAB ────────────────────────────────────────────────────────
+  if(state.tab==='compare'){
+    content.appendChild(el('h2',{style:{fontSize:14,fontWeight:700,color:'#0F172A',marginBottom:14}},'The minimum required logic — by surface'));
+    const grid=el('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14,marginBottom:16}});
+    [{surface:'Search page',color:'#EFF6FF',border:'#BFDBFE',lc:'#1A56DB',desc:'Building the landscape. Full operators visible.',
+      rules:[['AND between fields','default — no UI control needed','#E8F0FE','#1A56DB'],['OR within field','default — no UI control needed','#ECFDF5','#059669'],['NOT on a condition','toggle on the connector','#FEF2F2','#DC2626'],['AND within field','edge case — shown only when >1 value','#FFFBEB','#92400E'],['Grouping (brackets)','for (A OR B) AND C logic','#F5F3FF','#7C3AED'],['Hierarchy + subtree select','indication & modality only','#F0FDF4','#059669']]},
+     {surface:'Results filter page',color:'#F0FDF4',border:'#BBF7D0',lc:'#059669',desc:'Narrowing the landscape. Mostly defaults.',
+      rules:[['AND between fields','default — always active','#E8F0FE','#1A56DB'],['OR within field','default — always active','#ECFDF5','#059669'],['NOT on a value','small button on each facet item','#FEF2F2','#DC2626'],['AND within field','edge case note when >1 selected','#FFFBEB','#92400E'],['Hierarchy browsing','expand subtypes, counts shown','#F0FDF4','#059669']]}
+    ].forEach(s=>{
+      const card=el('div',{style:{background:s.color,border:`1px solid ${s.border}`,borderRadius:10,padding:14}});
+      card.appendChild(el('div',{style:{fontSize:13,fontWeight:700,color:s.lc,marginBottom:3,fontFamily:"'DM Sans',sans-serif"}},s.surface));
+      card.appendChild(el('div',{style:{fontSize:11,color:'#64748B',marginBottom:10}},s.desc));
+      s.rules.forEach(([op,note,bg,col])=>{
+        const r=el('div',{style:{display:'flex',alignItems:'flex-start',gap:7,marginBottom:5}});
+        r.appendChild(el('span',{style:{fontSize:11,fontWeight:700,padding:'2px 7px',background:bg,color:col,borderRadius:4,fontFamily:"'DM Mono',monospace",whiteSpace:'nowrap',flexShrink:0}},op));
+        r.appendChild(el('span',{style:{fontSize:11,color:'#64748B',paddingTop:2}},note));
+        card.appendChild(r);
+      });
+      grid.appendChild(card);
+    });
+    content.appendChild(grid);
+
+    const elim=el('div',{style:{background:'#fff',border:'1px solid #E2E8F0',borderRadius:10,padding:14,marginBottom:14}});
+    elim.appendChild(el('div',{style:{fontSize:13,fontWeight:700,color:'#0F172A',marginBottom:10}},'Operators that can be removed — and why'));
+    [['contains','Implies free-text substring matching. Not needed — values are selected from a controlled list.'],['does not contain','This is just NOT. Same meaning, more words.'],['includes','This is OR. A redundant alias.'],['contains only','Extremely rare use case. Expressible as AND + NOT if ever needed.'],['is exactly','Selecting a single canonical value from the dropdown already does this.'],['starts with / ends with','Free-text operators irrelevant to ontology-driven dropdowns.']].forEach(([op,reason])=>{
+      const r=el('div',{style:{display:'flex',gap:10,marginBottom:7,paddingBottom:7,borderBottom:'1px solid #F8FAFC'}});
+      r.appendChild(el('span',{style:{fontSize:11,fontWeight:700,padding:'2px 7px',background:'#FEF2F2',color:'#DC2626',borderRadius:4,fontFamily:"'DM Mono',monospace",whiteSpace:'nowrap',flexShrink:0,textDecoration:'line-through',opacity:0.7}},op));
+      r.appendChild(el('span',{style:{fontSize:11,color:'#64748B',lineHeight:1.5}},reason));
+      elim.appendChild(r);
+    });
+    content.appendChild(elim);
+
+    const pr=el('div',{style:{background:'#F8FAFC',border:'1px solid #E2E8F0',borderRadius:8,padding:12,fontSize:12,color:'#475569',lineHeight:1.7}});
+    pr.innerHTML='<strong style="color:#0F172A">The core principle:</strong> In Market Intelligence, every value is a canonical term from a structured ontology. Users choose from a list — they do not type free text. So the only question is: do you want assets with <em>any</em> of these values (OR), <em>all</em> of them (AND), or <em>none</em> of them (NOT)? All other operators are variations of these three.';
+    content.appendChild(pr);
+  }
+
+  app.appendChild(content);
+}
+
+render();
+</script>
+</body>
+</html>

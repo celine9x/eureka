@@ -2721,11 +2721,30 @@ const ChipInputPage = () => {
 />
 
 <ChipInput
+  label="Keywords"
+  placeholder="Add keywords..."
+  chips={[]}
+  showMiniInfobox
+  miniInfoboxType="info"
+  miniInfoboxMessage="Use this to help users filter quickly"
+/>
+
+<ChipInput
   label="Categories"
   placeholder="Select categories..."
   chips={[]}
-  error
-  helperText="Please select at least one category"
+  showMiniInfobox
+  miniInfoboxType="error"
+  miniInfoboxMessage="Please select at least one category"
+/>
+
+<ChipInput
+  label="Topics"
+  placeholder="Select topics..."
+  chips={[{ id: "1", label: "Design Systems" }]}
+  showMiniInfobox
+  miniInfoboxType="success"
+  miniInfoboxMessage="Looks good!"
 />
 
 <ChipInput
@@ -2749,11 +2768,28 @@ const ChipInputPage = () => {
             chips={[{ id: "1", label: "JavaScript" }]}
           />
           <ChipInput
+            label="Keywords"
+            placeholder="Add keywords..."
+            chips={[]}
+            showMiniInfobox
+            miniInfoboxType="info"
+            miniInfoboxMessage="Use this to help users filter quickly"
+          />
+          <ChipInput
             label="Categories"
             placeholder="Select categories..."
             chips={[]}
-            error
-            helperText="Please select at least one category"
+            showMiniInfobox
+            miniInfoboxType="error"
+            miniInfoboxMessage="Please select at least one category"
+          />
+          <ChipInput
+            label="Topics"
+            placeholder="Select topics..."
+            chips={[{ id: "1", label: "Design Systems" }]}
+            showMiniInfobox
+            miniInfoboxType="success"
+            miniInfoboxMessage="Looks good!"
           />
           <ChipInput
             label="Disabled Input"
@@ -4059,7 +4095,7 @@ const AccessControlModalPage = () => {
   const mockUsers = [
     { name: "John Doe", role: "Owner" },
     { name: "Alice Johnson", role: "Can edit" },
-    { name: "Bob Smith", role: "Can view" },
+    { name: "Bob Smith", role: "Can access" },
   ];
 
   return (

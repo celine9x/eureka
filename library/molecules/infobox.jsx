@@ -44,7 +44,7 @@ const styles = {
     display: "flex",
     alignItems: "center",
     gap: "var(--spacing-sm)",
-    padding: "var(--spacing-lg)",
+    padding: "var(--spacing-md)",
     borderRadius: "var(--radius-md)",
     width: "100%",
     boxSizing: "border-box",

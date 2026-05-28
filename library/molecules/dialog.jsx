@@ -27,16 +27,16 @@ import { Icon } from "../atoms/icon.jsx";
 // ─────────────────────────────────────────────
 
 export const DIALOG_VARIANTS = {
+  information: "information",
   info: "info",
   success: "success",
   warning: "warning",
   error: "error",
+  delete: "delete",
 };
 
 export const DIALOG_SIZES = {
-  sm: "sm",
   md: "md",
-  lg: "lg",
 };
 
 export const DIALOG_ACTIONS_ALIGN = {
@@ -47,10 +47,17 @@ export const DIALOG_ACTIONS_ALIGN = {
 
 /** Icon mapping for variants */
 const VARIANT_ICONS = {
+  information: "InformationCircle",
   info: "InformationCircle",
   success: "CheckCircle",
   warning: "ExclamationTriangle",
   error: "ExclamationCircle",
+  delete: "Trash",
+};
+
+const normalizeDialogVariant = (variant) => {
+  if (variant === DIALOG_VARIANTS.info) return DIALOG_VARIANTS.information;
+  return variant;
 };
 
 // ─────────────────────────────────────────────
@@ -82,12 +89,6 @@ const styles = {
     alignItems: "center",
     gap: "var(--spacing-6)",
     outline: "none",
-  },
-
-  sizes: {
-    sm: { width: 400 },
-    md: { width: 500 },
-    lg: { width: 600 },
   },
 
   close: {
@@ -130,20 +131,28 @@ const styles = {
   },
 
   iconVariants: {
+    information: {
+      background: "transparent",
+      color: "var(--color-content-informative)",
+    },
     info: {
-      background: "var(--color-general-informative)",
-      color: "var(--color-action-fill-primary-enabled)",
+      background: "transparent",
+      color: "var(--color-content-informative)",
     },
     success: {
-      background: "var(--color-general-positive)",
+      background: "transparent",
       color: "var(--color-content-positive)",
     },
     warning: {
-      background: "var(--color-general-warning)",
+      background: "transparent",
       color: "var(--color-content-warning)",
     },
     error: {
-      background: "var(--color-general-negative)",
+      background: "transparent",
+      color: "var(--color-content-negative)",
+    },
+    delete: {
+      background: "transparent",
       color: "var(--color-content-negative)",
     },
   },
@@ -208,7 +217,7 @@ export const Dialog = ({
   onOpenChange,
   open, // Support legacy prop
   onClose, // Support legacy prop
-  variant = DIALOG_VARIANTS.info,
+  variant = DIALOG_VARIANTS.information,
   size = DIALOG_SIZES.md,
   title,
   children,
@@ -244,8 +253,13 @@ export const Dialog = ({
   const resolvedOnSecondaryPress = onSecondaryPress ?? onSecondaryClick;
   const resolvedOnTertiaryPress = onTertiaryPress ?? onTertiaryClick;
 
-  const resolvedIconName = iconName || VARIANT_ICONS[variant];
-  const resolvedPrimaryVariant = primaryVariant || (variant === DIALOG_VARIANTS.error ? "negative" : "primary");
+  const resolvedVariant = normalizeDialogVariant(variant);
+  const resolvedIconName = iconName || VARIANT_ICONS[resolvedVariant] || VARIANT_ICONS.information;
+  const resolvedPrimaryVariant =
+    primaryVariant ||
+    (resolvedVariant === DIALOG_VARIANTS.error || resolvedVariant === DIALOG_VARIANTS.delete
+      ? "negative"
+      : "primary");
 
   const hasLeftActions = tertiaryLabel || secondaryLabel;
   const hasPrimaryAction = primaryLabel || resolvedOnPrimaryPress;
@@ -289,14 +303,13 @@ export const Dialog = ({
   // Compose modal styles
   const modalStyle = {
     ...styles.modal,
-    ...styles.sizes[size],
     ...style,
   };
 
   // Icon styles
   const iconStyle = {
     ...styles.icon,
-    ...styles.iconVariants[variant],
+    ...styles.iconVariants[resolvedVariant],
   };
 
   // Actions styles
@@ -332,7 +345,7 @@ export const Dialog = ({
             onMouseLeave={() => setCloseHovered(false)}
             aria-label="Close dialog"
           >
-            <Icon name="XMark" size="sm" />
+            <Icon name="XMark" size="sm" variant="solid" />
           </button>
         )}
 
@@ -341,7 +354,7 @@ export const Dialog = ({
           {/* Icon */}
           {showIcon && (
             <div style={iconStyle}>
-              {icon || <Icon name={resolvedIconName} size="md" />}
+              {icon || <Icon name={resolvedIconName} size={40} variant="solid" />}
             </div>
           )}
 
@@ -432,7 +445,7 @@ export const ConfirmDialog = ({
   children,
   confirmLabel = "Confirm",
   cancelLabel = "Cancel",
-  variant = "info",
+  variant = "information",
   destructive = false,
   ...props
 }) => {
@@ -446,9 +459,9 @@ export const ConfirmDialog = ({
       variant={resolvedVariant}
       title={title}
       primaryLabel={confirmLabel}
-      secondaryLabel={cancelLabel}
+      tertiaryLabel={cancelLabel}
       onPrimaryPress={onConfirm}
-      onSecondaryPress={onCancel || handleClose}
+      onTertiaryPress={onCancel || handleClose}
       {...props}
     >
       {children}
@@ -473,7 +486,7 @@ export const AlertDialog = ({
   title,
   children,
   buttonLabel = "OK",
-  variant = "info",
+  variant = "information",
   ...props
 }) => {
   const handleClose = () => onOpenChange?.(false);

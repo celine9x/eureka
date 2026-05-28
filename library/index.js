@@ -11,6 +11,7 @@ export * from "./atoms/button.jsx";
 export * from "./atoms/checkbox.jsx";
 export * from "./atoms/chip.jsx";
 export * from "./atoms/icon.jsx";
+export * from "./atoms/initiative-icon.jsx";
 export * from "./atoms/link.jsx";
 export * from "./atoms/radio-button.jsx";
 export * from "./atoms/step.jsx";

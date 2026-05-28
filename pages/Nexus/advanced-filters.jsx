@@ -1,15 +1,14 @@
 import React, { useState, useRef, useLayoutEffect } from "react";
 import { Tabs, Tab } from "../../library/molecules/tabs.jsx";
 import TextInput from "../../library/molecules/text-input.jsx";
-import ChipInput from "../../library/molecules/chip-input.jsx";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuSection,
   DropdownMenuItem,
-  DropdownMenuDivider,
 } from "../../library/molecules/dropdown-menu.jsx";
+import { DropdownList, DropdownListItem, DropdownSection } from "../../library/molecules/dropdown-list.jsx";
 import { Button } from "../../library/atoms/button.jsx";
 import { Icon } from "../../library/atoms/icon.jsx";
 import { Chip } from "../../library/atoms/chip.jsx";
@@ -28,17 +27,8 @@ import {
 
 const CONDITION_SECTIONS = [
   [
-    { id: "is-exactly", label: "is exactly" },
-    { id: "is-exactly-not", label: "is exactly not" },
-  ],
-  [
-    { id: "has-any-of", label: "has any of" },
-    { id: "has-all-of", label: "has all of" },
-    { id: "has-none-of", label: "has none of" },
-  ],
-  [
-    { id: "is-empty", label: "is empty" },
-    { id: "is-not-empty", label: "is not empty" },
+    { id: "has-any-of", label: "is any of" },
+    { id: "has-none-of", label: "Not" },
   ],
 ];
 
@@ -91,6 +81,20 @@ const ontologyMatchesTree = (node, query) => {
   return (node.children || []).some((child) => ontologyMatchesTree(child, query));
 };
 
+const ontologyGetMatchingLeafIds = (nodes, query) => {
+  const normalizedQuery = query.trim().toLowerCase();
+  if (!normalizedQuery) return [];
+
+  const collect = (node) => {
+    const selfMatches = node.label.toLowerCase().includes(normalizedQuery);
+    if (selfMatches) return ontologyGetLeafIds(node);
+    if (!node.children?.length) return [];
+    return node.children.flatMap(collect);
+  };
+
+  return [...new Set(nodes.flatMap(collect))];
+};
+
 const ontologyGetSelectionState = (node, selectedLeafIds) => {
   const leafIds = ontologyGetLeafIds(node);
   const selectedCount = leafIds.filter((id) => selectedLeafIds.has(id)).length;
@@ -119,51 +123,54 @@ const ontologySummarizeSelection = (nodes, selectedLeafIds) => {
 // ─────────────────────────────────────────────
 
 const OntologyTreeRow = ({ node, depth, expandedIds, onToggleExpanded, onToggleSelection, selectedLeafIds, searchQuery }) => {
-  const [hovered, setHovered] = React.useState(false);
   const hasChildren = Boolean(node.children?.length);
   if (!ontologyMatchesTree(node, searchQuery)) return null;
   const isExpanded = expandedIds.has(node.id) || Boolean(searchQuery.trim());
   const selectionState = ontologyGetSelectionState(node, selectedLeafIds);
+  const treeControl = hasChildren ? (
+    <button
+      type="button"
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: 16,
+        height: 16,
+        border: "none",
+        background: "transparent",
+        color: "var(--color-content-secondary)",
+        cursor: "pointer",
+        padding: 0,
+      }}
+      onClick={(e) => {
+        e.stopPropagation();
+        onToggleExpanded(node.id);
+      }}
+      aria-label={isExpanded ? "Collapse" : "Expand"}
+    >
+      <Icon name={isExpanded ? "ChevronDown" : "ChevronRight"} size={12} />
+    </button>
+  ) : (
+    <span style={{ width: 16, height: 16, display: "inline-block" }} aria-hidden="true" />
+  );
+
   return (
     <>
-      <div
+      <DropdownListItem
+        value={node.id}
+        checked={selectionState.checked}
+        isIndeterminate={selectionState.indeterminate}
+        onChange={() => onToggleSelection(node)}
+        icon={treeControl}
+        iconBeforeCheckbox
         style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "var(--spacing-xs)",
-          padding: `var(--spacing-xs) var(--spacing-sm) var(--spacing-xs) calc(var(--spacing-sm) + ${depth} * 16px)`,
-          borderRadius: "var(--radius-sm)",
-          background: hovered ? "var(--color-general-neutral-lighter)" : "transparent",
+          padding: "4px 8px",
+          paddingLeft: `calc(var(--spacing-sm) + ${depth} * 16px)`,
           boxSizing: "border-box",
         }}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
       >
-        {hasChildren ? (
-          <button
-            type="button"
-            style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 16, height: 16, border: "none", background: "transparent", color: "var(--color-content-secondary)", cursor: "pointer", flexShrink: 0, padding: 0 }}
-            onClick={(e) => { e.stopPropagation(); onToggleExpanded(node.id); }}
-          >
-            <Icon name={isExpanded ? "ChevronDown" : "ChevronRight"} size={12} />
-          </button>
-        ) : (
-          <span style={{ width: 16, flexShrink: 0 }} />
-        )}
-        <Checkbox
-          size="sm"
-          isSelected={selectionState.checked}
-          isIndeterminate={selectionState.indeterminate}
-          onChange={() => onToggleSelection(node)}
-        />
-        <button
-          type="button"
-          style={{ display: "flex", flex: 1, minWidth: 0, border: "none", background: "transparent", padding: 0, cursor: "pointer", textAlign: "left", fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-md)", color: "var(--color-content-primary)", lineHeight: "var(--line-height-body-md)" }}
-          onClick={() => onToggleSelection(node)}
-        >
-          <HighlightMatch text={node.label} query={searchQuery} />
-        </button>
-      </div>
+        <HighlightMatch text={node.label} query={searchQuery} />
+      </DropdownListItem>
       {hasChildren && isExpanded && node.children.map((child) => (
         <OntologyTreeRow
           key={child.id}
@@ -196,6 +203,10 @@ const OntologyChipSelectInput = ({ fieldId, value, onChange }) => {
   const tree = ONTOLOGY_FIELD_TREES[fieldId] || [];
   const selectedLeafIds = React.useMemo(() => new Set(value || []), [value]);
   const chips = React.useMemo(() => ontologySummarizeSelection(tree, selectedLeafIds), [tree, selectedLeafIds]);
+  const matchingLeafIds = React.useMemo(() => ontologyGetMatchingLeafIds(tree, search), [tree, search]);
+  const shouldShowSelectAllSearchResults = search.trim().length > 0 && matchingLeafIds.length > 0;
+  const allSearchResultsSelected =
+    matchingLeafIds.length > 0 && matchingLeafIds.every((id) => selectedLeafIds.has(id));
 
   React.useEffect(() => {
     const handler = (e) => {
@@ -244,6 +255,16 @@ const OntologyChipSelectInput = ({ fieldId, value, onChange }) => {
     const leafIds = ontologyGetLeafIds(node);
     const next = new Set(selectedLeafIds);
     leafIds.forEach((id) => next.delete(id));
+    onChange([...next]);
+  };
+
+  const toggleSelectAllSearchResults = () => {
+    const next = new Set(selectedLeafIds);
+    if (allSearchResultsSelected) {
+      matchingLeafIds.forEach((id) => next.delete(id));
+    } else {
+      matchingLeafIds.forEach((id) => next.add(id));
+    }
     onChange([...next]);
   };
 
@@ -304,6 +325,25 @@ const OntologyChipSelectInput = ({ fieldId, value, onChange }) => {
             />
           </div>
           <div style={{ overflowY: "auto", padding: "var(--spacing-xs) var(--spacing-xs)" }}>
+            {shouldShowSelectAllSearchResults && (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "var(--spacing-xs)",
+                  padding: "var(--spacing-xs) var(--spacing-sm)",
+                  borderBottom: "1px solid var(--color-action-outline-secondary-enabled)",
+                  marginBottom: "var(--spacing-xs)",
+                  cursor: "pointer",
+                }}
+                onClick={toggleSelectAllSearchResults}
+              >
+                <Checkbox size="sm" isSelected={allSearchResultsSelected} onChange={toggleSelectAllSearchResults} />
+                <span style={{ fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-md)", color: "var(--color-content-primary)" }}>
+                  Select all
+                </span>
+              </div>
+            )}
             {tree.map((node) => (
               <OntologyTreeRow
                 key={node.id}
@@ -372,7 +412,7 @@ const InputTrigger = React.forwardRef(({ children, style, ...props }, ref) => {
 // LOGIC OPERATOR TOGGLE (Where / And / Or)
 // ─────────────────────────────────────────────
 
-const LOGIC_OPTIONS = ["Where", "And", "Or"];
+const LOGIC_OPTIONS = ["Where", "And", "Or", "Not"];
 
 const LogicDropdown = ({ value, onChange, disabled }) => {
   const [open, setOpen] = useState(false);
@@ -458,8 +498,12 @@ const LogicDropdown = ({ value, onChange, disabled }) => {
 
 const FieldDropdown = ({ value, onChange, usedFields = [] }) => {
   const [open, setOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const selected = SEARCH_FIELDS.find((f) => f.id === value);
   const availableFields = SEARCH_FIELDS.filter((f) => f.id === value || !usedFields.includes(f.id));
+  const visibleFields = availableFields.filter((field) =>
+    field.label.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -473,19 +517,43 @@ const FieldDropdown = ({ value, onChange, usedFields = [] }) => {
         </InputTrigger>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="left" position="bottom" width={220}>
-        <DropdownMenuSection>
-          {availableFields.map((field) => (
-            <DropdownMenuItem
-              key={field.id}
-              label={field.label}
-              iconName={field.icon}
-              active={field.id === value}
-              onClick={() => {
-                onChange(field.id);
-                setOpen(false);
-              }}
-            />
-          ))}
+        <div style={{ minWidth: 220, padding: "var(--spacing-2)", borderBottom: "1px solid var(--color-action-outline-secondary-enabled)" }}>
+          <input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search field"
+            style={{
+              width: "100%",
+              boxSizing: "border-box",
+              padding: "var(--spacing-2) var(--spacing-3)",
+              border: "1px solid var(--color-interaction-outline-enabled)",
+              borderRadius: "var(--radius-md)",
+              fontFamily: "var(--font-family-primary)",
+              fontSize: "var(--text-body-lg)",
+              color: "var(--color-content-primary)",
+              outline: "none",
+            }}
+          />
+        </div>
+        <DropdownMenuSection contentStyle={{ maxHeight: 280, overflowY: "auto" }}>
+          {visibleFields.length === 0 ? (
+            <div style={{ padding: "var(--spacing-sm)", color: "var(--color-content-secondary)", fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-md)" }}>
+              No fields found
+            </div>
+          ) : (
+            visibleFields.map((field) => (
+              <DropdownMenuItem
+                key={field.id}
+                label={field.label}
+                iconName={field.icon}
+                active={field.id === value}
+                onClick={() => {
+                  onChange(field.id);
+                  setOpen(false);
+                }}
+              />
+            ))
+          )}
         </DropdownMenuSection>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -509,24 +577,27 @@ const ConditionDropdown = ({ value, fieldId, onChange }) => {
         </InputTrigger>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="left" position="bottom" width={200}>
-        {CONDITION_SECTIONS.map((section, si) => (
-          <React.Fragment key={si}>
-            {si > 0 && <DropdownMenuDivider />}
-            <DropdownMenuSection style={{ padding: 0 }}>
-              {section.map((opt) => (
-                <DropdownMenuItem
-                  key={opt.id}
-                  label={opt.label}
-                  active={opt.id === selected.id}
-                  onClick={() => {
-                    onChange(opt.id);
-                    setOpen(false);
-                  }}
-                />
-              ))}
-            </DropdownMenuSection>
-          </React.Fragment>
-        ))}
+        <div style={{ maxHeight: 280, overflowY: "auto" }}>
+          {CONDITION_SECTIONS.map((section, si) => {
+            return (
+              <React.Fragment key={si}>
+                <DropdownMenuSection>
+                  {section.map((opt) => (
+                    <DropdownMenuItem
+                      key={opt.id}
+                      label={opt.label}
+                      active={opt.id === selected.id}
+                      onClick={() => {
+                        onChange(opt.id);
+                        setOpen(false);
+                      }}
+                    />
+                  ))}
+                </DropdownMenuSection>
+              </React.Fragment>
+            );
+          })}
+        </div>
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -573,14 +644,37 @@ const ChipSelectInput = ({ fieldId, value, onChange }) => {
   const options = FIELD_OPTIONS[fieldId] || [];
   const selected = value || [];
 
-  const filtered = options.filter(
-    (o) => !selected.includes(o.id) && o.label.toLowerCase().includes(search.toLowerCase())
+  const normalizedSearch = search.trim().toLowerCase();
+  const filtered = options.filter((o) =>
+    o.label.toLowerCase().includes(normalizedSearch)
   );
+  const filteredIds = filtered.map((opt) => opt.id);
+  const isSearchMode = normalizedSearch.length > 0;
+  const shouldShowSelectAllSearchResults = isSearchMode && filteredIds.length > 0;
+  const allSearchResultsSelected =
+    filteredIds.length > 0 && filteredIds.every((id) => selected.includes(id));
 
   const removeChip = (id) => onChange(selected.filter((s) => s !== id));
   const addChip = (id) => {
     onChange([...selected, id]);
     setSearch("");
+  };
+  const toggleChip = (id) => {
+    if (selected.includes(id)) {
+      removeChip(id);
+      return;
+    }
+    addChip(id);
+  };
+
+  const toggleSelectAllSearchResults = () => {
+    const next = new Set(selected);
+    if (allSearchResultsSelected) {
+      filteredIds.forEach((id) => next.delete(id));
+    } else {
+      filteredIds.forEach((id) => next.add(id));
+    }
+    onChange([...next]);
   };
   // free-text entry (when no predefined options match)
   const handleSearchKeyDown = (e) => {
@@ -760,65 +854,62 @@ const ChipSelectInput = ({ fieldId, value, onChange }) => {
             flexDirection: "column",
           }}
         >
-          {/* Search */}
-          <div style={{ padding: "var(--spacing-sm)", borderBottom: "1px solid var(--color-action-outline-secondary-enabled)" }}>
-            <input
-              autoFocus
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onKeyDown={handleSearchKeyDown}
-              placeholder={options.length === 0 ? "Type and press Enter to add..." : "Search..."}
-              onClick={(e) => e.stopPropagation()}
-              style={{
-                width: "100%",
-                border: "1px solid var(--color-interaction-outline-enabled)",
-                borderRadius: "var(--radius-sm)",
-                padding: "4px 8px",
-                fontFamily: "var(--font-family-primary)",
-                fontSize: "var(--text-body-md)",
-                outline: "none",
-                boxSizing: "border-box",
-              }}
-            />
-          </div>
-          {/* Options list */}
-          <div style={{ overflowY: "auto", padding: "var(--spacing-xs) 0" }}>
-            {options.length > 0 && filtered.length === 0 && (
-              <div style={{
-                padding: "var(--spacing-sm) var(--spacing-md)",
-                fontFamily: "var(--font-family-primary)",
-                fontSize: "var(--text-body-sm)",
-                color: "var(--color-content-tertiary)",
-              }}>
-                No options found
-              </div>
-            )}
-            {filtered.map((opt) => (
-              <button
-                key={opt.id}
-                type="button"
-                onClick={(e) => { e.stopPropagation(); addChip(opt.id); }}
+          {options.length === 0 ? (
+            <div style={{ padding: "var(--spacing-sm)", borderBottom: "1px solid var(--color-action-outline-secondary-enabled)" }}>
+              <input
+                autoFocus
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                onKeyDown={handleSearchKeyDown}
+                placeholder="Type and press Enter to add..."
+                onClick={(e) => e.stopPropagation()}
                 style={{
-                  display: "flex",
-                  alignItems: "center",
                   width: "100%",
-                  padding: "var(--spacing-sm) var(--spacing-md)",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
+                  border: "1px solid var(--color-interaction-outline-enabled)",
+                  borderRadius: "var(--radius-sm)",
+                  padding: "4px 8px",
                   fontFamily: "var(--font-family-primary)",
                   fontSize: "var(--text-body-md)",
-                  color: "var(--color-content-primary)",
-                  textAlign: "left",
+                  outline: "none",
                   boxSizing: "border-box",
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.background = "var(--color-general-neutral-lighter)"}
-                onMouseLeave={(e) => e.currentTarget.style.background = "none"}
-              >
-                <HighlightMatch text={opt.label} query={search} />
-              </button>
-            ))}
-          </div>
+              />
+            </div>
+          ) : (
+            <DropdownList
+              noAdd
+              onSearch={setSearch}
+              searchPlaceholder="Search..."
+              style={{
+                outline: "none",
+                boxShadow: "none",
+                borderRadius: 0,
+                background: "transparent",
+                "--dropdown-list-max-height": "260px",
+              }}
+            >
+              {shouldShowSelectAllSearchResults && (
+                <DropdownListItem
+                  value="__select-all-search-results__"
+                  checked={allSearchResultsSelected}
+                  onChange={toggleSelectAllSearchResults}
+                  style={{ borderBottom: "1px solid var(--color-action-outline-secondary-enabled)" }}
+                >
+                  Select all
+                </DropdownListItem>
+              )}
+              {filtered.map((opt) => (
+                <DropdownListItem
+                  key={opt.id}
+                  value={opt.id}
+                  checked={selected.includes(opt.id)}
+                  onChange={() => toggleChip(opt.id)}
+                >
+                  <HighlightMatch text={opt.label} query={search} />
+                </DropdownListItem>
+              ))}
+            </DropdownList>
+          )}
         </div>
       )}
     </div>
@@ -925,19 +1016,6 @@ const CriterionRow = ({ row, index, isFirst, isLogicDisabled, isGrouped, onChang
         value={row.fieldId}
         onChange={(fieldId) => onChange({ ...row, fieldId, value: null })}
         usedFields={usedFields}
-      />
-
-      <ConditionDropdown
-        value={row.conditionId}
-        fieldId={row.fieldId}
-        onChange={(conditionId) => {
-          const textConditions = [];
-          const noValueConditions = ["is-empty", "is-not-empty"];
-          const isChip = (cid) => !textConditions.includes(cid) && !noValueConditions.includes(cid) && !TEXT_FIELDS.includes(row.fieldId);
-          const isText = (cid) => textConditions.includes(cid) || TEXT_FIELDS.includes(row.fieldId);
-          const keepValue = (isChip(row.conditionId) && isChip(conditionId)) || (isText(row.conditionId) && isText(conditionId));
-          onChange({ ...row, conditionId, value: keepValue ? row.value : null });
-        }}
       />
 
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -1082,6 +1160,122 @@ const isRowIncomplete = (row) => {
   return false;
 };
 
+const DEFAULT_FIELD_ID = "therapeutic-area";
+
+const findAvailableFieldId = (usedFields = [], currentFieldId) => {
+  const used = new Set(usedFields.filter(Boolean));
+  if (currentFieldId && !used.has(currentFieldId)) return currentFieldId;
+  const next = SEARCH_FIELDS.find((f) => !used.has(f.id));
+  return next?.id || currentFieldId || DEFAULT_FIELD_ID;
+};
+
+const normalizeRowsAtSameLevel = (rows = []) => {
+  const used = new Set();
+  return rows.map((row) => {
+    let nextFieldId = row.fieldId;
+    if (!nextFieldId || used.has(nextFieldId)) {
+      nextFieldId = findAvailableFieldId([...used], row.fieldId);
+    }
+    used.add(nextFieldId);
+    return { ...row, fieldId: nextFieldId };
+  });
+};
+
+const ensureUniqueItemsAndRowIds = (items = []) => {
+  const usedItemIds = new Set();
+
+  const nextUniqueId = (preferredId, usedSet) => {
+    if (preferredId && !usedSet.has(preferredId)) {
+      usedSet.add(preferredId);
+      return preferredId;
+    }
+
+    let generated = genId();
+    while (usedSet.has(generated)) {
+      generated = genId();
+    }
+    usedSet.add(generated);
+    return generated;
+  };
+
+  return items.map((item) => {
+    const normalizedItemId = nextUniqueId(item.id, usedItemIds);
+
+    if (item.type !== "group") {
+      return { ...item, id: normalizedItemId };
+    }
+
+    const usedRowIds = new Set();
+    const rows = (item.rows || []).map((row) => ({
+      ...row,
+      id: nextUniqueId(row.id, usedRowIds),
+    }));
+
+    return {
+      ...item,
+      id: normalizedItemId,
+      rows,
+    };
+  });
+};
+
+const normalizeItemsByLevel = (items = []) => {
+  const idSafeItems = ensureUniqueItemsAndRowIds(items);
+  const topRows = idSafeItems.filter((item) => item.type === "row");
+  const normalizedTopRows = normalizeRowsAtSameLevel(topRows);
+  let topRowCursor = 0;
+
+  return idSafeItems.map((item) => {
+    if (item.type === "row") {
+      const normalized = normalizedTopRows[topRowCursor] || item;
+      topRowCursor += 1;
+      return { ...item, fieldId: normalized.fieldId };
+    }
+
+    if (item.type === "group") {
+      return {
+        ...item,
+        rows: normalizeRowsAtSameLevel(item.rows || []),
+      };
+    }
+
+    return item;
+  });
+};
+
+const getFieldLabel = (fieldId) => {
+  return SEARCH_FIELDS.find((field) => field.id === fieldId)?.label || "Unknown field";
+};
+
+const getConditionReviewMeta = (conditionId) => {
+  if (conditionId === "has-any-of") {
+    return { label: "is", isNegative: false };
+  }
+
+  if (conditionId === "has-none-of") {
+    return { label: "is not", isNegative: true };
+  }
+
+  return {
+    label: ALL_CONDITIONS.find((condition) => condition.id === conditionId)?.label || "",
+    isNegative: false,
+  };
+};
+
+const getValueLabels = (fieldId, value) => {
+  if (value === null || value === undefined || value === "") return [];
+
+  const values = Array.isArray(value) ? value : [value];
+
+  if (ONTOLOGY_FIELDS.includes(fieldId)) {
+    const lookup = ontologyBuildLookup(ONTOLOGY_FIELD_TREES[fieldId] || []);
+    return values.map((id) => lookup.get(id)?.label || String(id));
+  }
+
+  const optionMap = new Map((FIELD_OPTIONS[fieldId] || []).map((opt) => [opt.id, opt.label]));
+  return values.map((id) => optionMap.get(id) || String(id));
+};
+
 // ─────────────────────────────────────────────
 // ADVANCED SEARCH TAB
 // ─────────────────────────────────────────────
@@ -1100,9 +1294,10 @@ const parseCriteriaFromUrl = () => {
 const AdvancedSearchTab = () => {
   const [items, setItems] = useState(() => {
     const saved = parseCriteriaFromUrl();
-    return saved?.items || [
+    const parsedItems = saved?.items || [
       { type: "row", id: genId(), logic: "Where", fieldId: "therapeutic-area", conditionId: "has-any-of", value: null },
     ];
+    return normalizeItemsByLevel(parsedItems);
   });
   const [searchName, setSearchName] = useState(() => parseCriteriaFromUrl()?.searchName || "");
   const [showValidation, setShowValidation] = useState(false);
@@ -1112,36 +1307,138 @@ const AdvancedSearchTab = () => {
 
   const topLevelLogic = items[1]?.logic || "Or";
 
+  const renderReviewRow = (row, keyPrefix) => {
+    const fieldLabel = getFieldLabel(row.fieldId);
+    const { label: conditionLabel, isNegative } = getConditionReviewMeta(row.conditionId);
+    const valueLabels = getValueLabels(row.fieldId, row.value);
+    const displayedValues = valueLabels.slice(0, 2);
+    if (valueLabels.length > 2) {
+      displayedValues.push(`+${valueLabels.length - 2}`);
+    }
+
+    const valueColor = "var(--color-content-secondary)";
+    const neutralOrColor = "var(--color-content-primary)";
+    const negativeColor = "var(--color-content-negative)";
+
+    return (
+      <div
+        key={keyPrefix}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: "var(--spacing-xs)",
+          padding: "var(--spacing-xs) var(--spacing-sm)",
+          borderRadius: "var(--radius-sm)",
+          background: "var(--color-general-white)",
+          outline: "1px solid var(--color-action-outline-secondary-enabled)",
+          outlineOffset: "-1px",
+        }}
+      >
+        <span
+          style={{
+            fontFamily: "var(--font-family-primary)",
+            fontSize: "var(--text-body-md)",
+            color: "var(--color-content-secondary)",
+          }}
+        >
+          {fieldLabel}
+        </span>
+        <span
+          style={{
+            fontFamily: "var(--font-family-primary)",
+            fontSize: "var(--text-body-md)",
+            color: isNegative ? negativeColor : "var(--color-content-primary)",
+          }}
+        >
+          {conditionLabel}
+        </span>
+        {displayedValues.length > 0 ? (
+          displayedValues.map((label, index) => (
+            <React.Fragment key={`${keyPrefix}-value-${index}`}>
+              {index > 0 && (
+                <span
+                  style={{
+                    fontFamily: "var(--font-family-primary)",
+                    fontSize: "var(--text-body-md)",
+                    color: isNegative ? negativeColor : neutralOrColor,
+                  }}
+                >
+                  or
+                </span>
+              )}
+              <span
+                style={{
+                  fontFamily: "var(--font-family-primary)",
+                  fontSize: "var(--text-body-md)",
+                  color: valueColor,
+                }}
+              >
+                {label}
+              </span>
+            </React.Fragment>
+          ))
+        ) : (
+          <span
+            style={{
+              fontFamily: "var(--font-family-primary)",
+              fontSize: "var(--text-body-md)",
+              color: valueColor,
+            }}
+          >
+            -
+          </span>
+        )}
+      </div>
+    );
+  };
+
   const addRow = () => {
     const usedFields = rows.map((r) => r.fieldId).filter(Boolean);
     const nextField = SEARCH_FIELDS.find((f) => !usedFields.includes(f.id));
-    setItems((prev) => [
-      ...prev,
-      { type: "row", id: genId(), logic: topLevelLogic, fieldId: nextField?.id || "therapeutic-area", conditionId: "has-any-of", value: null },
-    ]);
+    setItems((prev) =>
+      normalizeItemsByLevel([
+        ...prev,
+        { type: "row", id: genId(), logic: topLevelLogic, fieldId: nextField?.id || "therapeutic-area", conditionId: "has-any-of", value: null },
+      ])
+    );
   };
 
   const updateItem = (id, updated) => {
     setItems((prev) => {
       const idx = prev.findIndex((it) => it.id === id);
+      if (idx === -1) return prev;
       const item = prev[idx];
       // Only sync top-level logic across rows (not groups) when a row's logic changes
       if (item?.type === "row" && updated.logic !== undefined && updated.logic !== item.logic) {
-        return prev.map((it, i) => i === 0 ? it : { ...it, logic: updated.logic });
+        const nextItems = prev.map((it, i) => i === 0 ? it : { ...it, logic: updated.logic });
+        return normalizeItemsByLevel(nextItems);
       }
-      return prev.map((it) => (it.id === id ? { ...it, ...updated } : it));
+      const nextItems = prev.map((it, i) => (i === idx ? { ...it, ...updated } : it));
+      return normalizeItemsByLevel(nextItems);
     });
   };
 
   const deleteItem = (id) => {
-    setItems((prev) => prev.filter((it) => it.id !== id));
+    setItems((prev) => {
+      const idx = prev.findIndex((it) => it.id === id);
+      if (idx === -1) return prev;
+      return normalizeItemsByLevel(prev.filter((_, i) => i !== idx));
+    });
   };
 
   const convertRowToGroup = (id) => {
-    setItems((prev) => prev.map((it) => {
-      if (it.id !== id) return it;
-      return { type: "group", id: it.id, logic: it.logic, rowLogic: "And", rows: [{ ...it, type: "row", logic: "Where" }] };
-    }));
+    setItems((prev) => {
+      const idx = prev.findIndex((it) => it.id === id);
+      if (idx === -1) return prev;
+
+      const nextItems = prev.map((it, i) => {
+        if (i !== idx) return it;
+        return { type: "group", id: it.id, logic: it.logic, rowLogic: "And", rows: [{ ...it, type: "row", logic: "Where" }] };
+      });
+
+      return normalizeItemsByLevel(nextItems);
+    });
   };
 
   const hasIncomplete = rows.some(isRowIncomplete) || groups.some((g) => g.rows.some(isRowIncomplete));
@@ -1154,7 +1451,7 @@ const AdvancedSearchTab = () => {
     if (canGenerate) {
       const criteria = JSON.stringify({ searchName, items });
       const encoded = encodeURIComponent(criteria);
-      window.history.pushState({}, "", `/nexus/results?criteria=${encoded}`);
+      window.history.pushState({}, "", `/nexus/results2?criteria=${encoded}`);
       window.dispatchEvent(new PopStateEvent("popstate"));
     }
   };
@@ -1257,6 +1554,101 @@ const AdvancedSearchTab = () => {
         </Tooltip>
       </div>
 
+      <div
+        style={{
+          width: "100%",
+          borderTop: "1px solid var(--color-action-outline-secondary-enabled)",
+        }}
+      />
+
+      <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-xs)" }}>
+        <div
+          style={{
+            fontFamily: "var(--font-family-primary)",
+            fontSize: "var(--text-heading-h3)",
+            fontWeight: "var(--font-weight-semibold)",
+            color: "var(--color-content-primary)",
+          }}
+        >
+          Search logic
+        </div>
+        <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "var(--spacing-xs)" }}>
+          <span
+            style={{
+              fontFamily: "var(--font-family-primary)",
+              fontSize: "var(--text-body-md)",
+              color: "var(--color-content-primary)",
+            }}
+          >
+            Show all assets that have
+          </span>
+          {items.length > 0 ? (
+            items.map((item, index) => (
+              <React.Fragment key={`review-${index}`}>
+                {index > 0 && (
+                  <span
+                    style={{
+                      fontFamily: "var(--font-family-primary)",
+                      fontSize: "var(--text-body-md)",
+                      fontWeight: "var(--font-weight-semibold)",
+                      color: "var(--color-content-primary)",
+                    }}
+                  >
+                    {(items[index].logic || topLevelLogic || "Or").toUpperCase()}
+                  </span>
+                )}
+                {item.type === "group" ? (
+                  <div
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      flexWrap: "wrap",
+                      gap: "var(--spacing-xs)",
+                      padding: "var(--spacing-xs)",
+                      borderRadius: "var(--radius-sm)",
+                      border: "1px dashed var(--color-action-outline-secondary-enabled)",
+                      background: "var(--color-general-neutral-lighter)",
+                    }}
+                  >
+                    {(item.rows || []).map((row, rowIndex) => (
+                      <React.Fragment key={`review-group-${item.id}-${row.id}`}>
+                        {rowIndex > 0 && (
+                          <span
+                            style={{
+                              fontFamily: "var(--font-family-primary)",
+                              fontSize: "var(--text-body-md)",
+                              fontWeight: "var(--font-weight-semibold)",
+                              color: "var(--color-content-primary)",
+                            }}
+                          >
+                            {(item.rowLogic || "And").toUpperCase()}
+                          </span>
+                        )}
+                        {renderReviewRow(row, `review-group-row-${item.id}-${row.id}-${rowIndex}`)}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ display: "inline-flex" }}>
+                    {renderReviewRow(item, `review-row-${item.id}-${index}`)}
+                  </div>
+                )}
+              </React.Fragment>
+            ))
+          ) : (
+            <span
+              style={{
+                fontFamily: "var(--font-family-primary)",
+                fontSize: "var(--text-body-md)",
+                color: "var(--color-content-secondary)",
+              }}
+            >
+              Add at least one criteria
+            </span>
+          )}
+        </div>
+      </div>
+
       {/* Name input + generate */}
       <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-xs)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-md)" }}>
@@ -1290,7 +1682,7 @@ const BASIC_FIELDS = [
   { id: "drug-type", label: "Drug type", placeholder: "Select drug type" },
   { id: "target", label: "Target", placeholder: "Select target" },
   { id: "mechanism", label: "Mechanism", placeholder: "Select mechanisms" },
-  { id: "indication", label: "Indication", placeholder: "Select indications" },
+  { id: "clinical-indication", label: "Indication", placeholder: "Select indications" },
   { id: "development-phase", label: "Development phase", placeholder: "Select development phases" },
   { id: "territories", label: "Territories", placeholder: "Select territories" },
 ];
@@ -1316,14 +1708,30 @@ const BasicSearchTab = () => {
         }}
       >
         {BASIC_FIELDS.map((field) => (
-          <ChipInput
-            key={field.id}
-            label={field.label}
-            placeholder={field.placeholder}
-            chips={values[field.id] || []}
-            onChange={(chips) => setField(field.id, chips)}
-            options={FIELD_OPTIONS[field.id] || []}
-          />
+          <div key={field.id} style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-xs)" }}>
+            <div
+              style={{
+                fontFamily: "var(--font-family-primary)",
+                fontSize: "var(--text-body-md)",
+                color: "var(--color-content-primary)",
+              }}
+            >
+              {field.label}
+            </div>
+            {ONTOLOGY_FIELDS.includes(field.id) ? (
+              <OntologyChipSelectInput
+                fieldId={field.id}
+                value={values[field.id] || []}
+                onChange={(chips) => setField(field.id, chips)}
+              />
+            ) : (
+              <ChipSelectInput
+                fieldId={field.id}
+                value={values[field.id] || []}
+                onChange={(chips) => setField(field.id, chips)}
+              />
+            )}
+          </div>
         ))}
       </div>
 
@@ -1358,7 +1766,7 @@ const BasicSearchTab = () => {
 // PAGE
 // ─────────────────────────────────────────────
 
-export const AdvancedFiltersPage = () => {
+export const AdvancedFilters2Page = () => {
   const [tab, setTab] = useState("advanced");
 
   return (
@@ -1409,4 +1817,4 @@ export const AdvancedFiltersPage = () => {
   );
 };
 
-export default AdvancedFiltersPage;
+export default AdvancedFilters2Page;

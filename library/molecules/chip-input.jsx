@@ -16,10 +16,30 @@
  * />
  */
 
-import React, { useState, useRef, forwardRef } from "react";
+import React, { useState, useRef, useEffect, useLayoutEffect, forwardRef } from "react";
 import { Chip } from "../atoms/chip.jsx";
 import { Icon } from "../atoms/icon.jsx";
 import { XCircleIcon, ChevronDownIcon } from "@heroicons/react/16/solid";
+import { DropdownList, DropdownSection, DropdownListItem } from "./dropdown-list.jsx";
+import MiniInfobox from "./miniinfobox.jsx";
+import { Portal } from "../utils/portal.jsx";
+
+let placeholderStylesInjected = false;
+
+const injectPlaceholderStyles = () => {
+  if (placeholderStylesInjected || typeof document === "undefined") return;
+
+  const styleEl = document.createElement("style");
+  styleEl.setAttribute("data-eureka", "chip-input-placeholder");
+  styleEl.textContent = `
+    .eureka-chip-input::placeholder {
+      color: var(--color-content-tertiary);
+      opacity: 1;
+    }
+  `;
+  document.head.appendChild(styleEl);
+  placeholderStylesInjected = true;
+};
 
 // ─────────────────────────────────────────────
 // CONSTANTS
@@ -36,6 +56,20 @@ export const CHIP_COLORS = {
   pink: "var(--pink-70)",
 };
 
+export const CHIP_INPUT_SIZES = {
+  md: "md",
+  lg: "lg",
+};
+
+export const CHIP_INPUT_MINIINFOBOX_TYPES = {
+  info: "info",
+  success: "success",
+  warning: "warning",
+  error: "error",
+  neutral: "neutral",
+  ai: "ai",
+};
+
 // ─────────────────────────────────────────────
 // STYLES (Token-mapped inline styles)
 // ─────────────────────────────────────────────
@@ -44,7 +78,7 @@ const styles = {
   wrapper: {
     display: "inline-flex",
     flexDirection: "column",
-    gap: "var(--spacing-sm)",
+    gap: "var(--spacing-xs)",
     width: "100%",
   },
 
@@ -62,10 +96,27 @@ const styles = {
   },
 
   labelRequired: {
-    fontFamily: "var(--font-family-primary)",
-    fontSize: "var(--text-body-caption)",
-    fontWeight: "var(--font-weight-regular)",
     color: "var(--color-content-negative)",
+  },
+
+  containerSizes: {
+    md: {
+      minHeight: 40,
+      padding: "var(--spacing-xs) var(--spacing-3)",
+    },
+    lg: {
+      minHeight: 48,
+      padding: "var(--spacing-xs) var(--spacing-3)",
+    },
+  },
+
+  containerEmptySizes: {
+    md: {
+      padding: "0 var(--spacing-3)",
+    },
+    lg: {
+      padding: "0 var(--spacing-3)",
+    },
   },
 
   container: {
@@ -136,6 +187,17 @@ const styles = {
     fontWeight: "var(--font-weight-regular)",
     color: "var(--color-content-primary)",
     padding: 0,
+  },
+
+  inputSizes: {
+    md: {
+      fontSize: "var(--text-body-lg)",
+      lineHeight: "var(--line-height-body-lg)",
+    },
+    lg: {
+      fontSize: "var(--text-body-lg)",
+      lineHeight: "var(--line-height-body-lg)",
+    },
   },
 
   inputDisabled: {
@@ -257,6 +319,7 @@ const ActionButton = ({ onClick, disabled, ariaLabel, isOpen, children }) => {
 export const ChipInput = forwardRef(
   (
     {
+      size = CHIP_INPUT_SIZES.md,
       label,
       required = false,
       placeholder = "Search for tags",
@@ -266,7 +329,11 @@ export const ChipInput = forwardRef(
       inputValue,
       isDisabled = false,
       disabled,
+      showMiniInfobox = false,
+      miniInfoboxType = CHIP_INPUT_MINIINFOBOX_TYPES.info,
+      miniInfoboxMessage,
       error = false,
+      success = false,
       helperText,
       showClear = true,
       showDropdown = true,
@@ -280,6 +347,8 @@ export const ChipInput = forwardRef(
     },
     ref
   ) => {
+    injectPlaceholderStyles();
+
     const inputRef = useRef(null);
     const [internalInputValue, setInternalInputValue] = useState("");
     const [isHovered, setIsHovered] = useState(false);
@@ -289,6 +358,7 @@ export const ChipInput = forwardRef(
     const controlledInput = inputValue !== undefined;
     const currentInputValue = controlledInput ? inputValue : internalInputValue;
     const hasChips = chips.length > 0;
+    const normalizedSize = styles.containerSizes[size] ? size : CHIP_INPUT_SIZES.md;
 
     const handleInputChange = (e) => {
       const value = e.target.value;
@@ -345,24 +415,38 @@ export const ChipInput = forwardRef(
     // Compose container styles
     const containerStyle = {
       ...styles.container,
+      ...styles.containerSizes[normalizedSize],
       ...(isHovered && !isInputDisabled && !isFocused && styles.containerHover),
       ...(isFocused && !isInputDisabled && !error && styles.containerFocus),
       ...(isInputDisabled && styles.containerDisabled),
       ...(error && styles.containerError),
       ...(!hasChips && styles.containerEmpty),
+      ...(!hasChips && styles.containerEmptySizes[normalizedSize]),
     };
 
     // Input styles
     const inputStyle = {
       ...styles.input,
+      ...styles.inputSizes[normalizedSize],
       ...(isInputDisabled && styles.inputDisabled),
     };
 
-    // Helper text styles
-    const helperTextStyle = {
-      ...styles.helperText,
-      ...(error && styles.helperTextError),
-    };
+    const hasError = !!error;
+    const hasSuccess = !!success && !hasError;
+    const normalizedMiniInfoboxType =
+      CHIP_INPUT_MINIINFOBOX_TYPES[miniInfoboxType]
+        ? miniInfoboxType
+        : CHIP_INPUT_MINIINFOBOX_TYPES.info;
+    const legacyMiniInfoboxType = hasError
+      ? CHIP_INPUT_MINIINFOBOX_TYPES.error
+      : hasSuccess
+      ? CHIP_INPUT_MINIINFOBOX_TYPES.success
+      : CHIP_INPUT_MINIINFOBOX_TYPES.info;
+    const shouldShowMiniInfobox = showMiniInfobox || !!helperText;
+    const resolvedMiniInfoboxType = showMiniInfobox
+      ? normalizedMiniInfoboxType
+      : legacyMiniInfoboxType;
+    const resolvedMiniInfoboxMessage = miniInfoboxMessage || helperText;
 
     const wrapperStyle = {
       ...styles.wrapper,
@@ -386,6 +470,7 @@ export const ChipInput = forwardRef(
                   <Chip
                     key={chip.id}
                     color={chip.color}
+                    icon={chip.icon}
                     removable={!isInputDisabled}
                     isDisabled={isInputDisabled}
                     onRemove={() => handleChipRemove(chip.id)}
@@ -400,6 +485,7 @@ export const ChipInput = forwardRef(
               <input
                 ref={inputRef}
                 type="text"
+                className="eureka-chip-input"
                 style={inputStyle}
                 placeholder={!hasChips ? placeholder : ""}
                 value={currentInputValue}
@@ -437,15 +523,8 @@ export const ChipInput = forwardRef(
           </div>
         </div>
 
-        {helperText && (
-          <div style={styles.helper}>
-            {error && (
-              <span style={styles.helperIcon}>
-                <Icon name="ExclamationCircle" variant="solid" size="sm" />
-              </span>
-            )}
-            <span style={helperTextStyle}>{helperText}</span>
-          </div>
+        {shouldShowMiniInfobox && resolvedMiniInfoboxMessage && (
+          <MiniInfobox variant={resolvedMiniInfoboxType} message={resolvedMiniInfoboxMessage} />
         )}
       </div>
     );
@@ -453,6 +532,7 @@ export const ChipInput = forwardRef(
 );
 
 ChipInput.displayName = "ChipInput";
+ChipInput.sizes = CHIP_INPUT_SIZES;
 
 // ─────────────────────────────────────────────
 // CHIP INPUT WITH SUGGESTIONS
@@ -469,10 +549,15 @@ export const ChipInputWithSuggestions = ({
   placeholder = "Search for tags",
   chips = [],
   onChange,
+  onSelectSuggestion,
   suggestions = [],
   isDisabled = false,
   disabled,
+  showMiniInfobox = false,
+  miniInfoboxType = CHIP_INPUT_MINIINFOBOX_TYPES.info,
+  miniInfoboxMessage,
   error = false,
+  success = false,
   helperText,
   allowCreate = false,
   createLabel = "Create",
@@ -481,6 +566,9 @@ export const ChipInputWithSuggestions = ({
 }) => {
   const [inputValue, setInputValue] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+  const [rect, setRect] = useState(null);
+  const wrapperRef = useRef(null);
+  const dropdownRef = useRef(null);
 
   const isInputDisabled = isDisabled || disabled;
 
@@ -492,16 +580,19 @@ export const ChipInputWithSuggestions = ({
 
   const handleInputChange = (value) => {
     setInputValue(value);
-    if (value && !isOpen) {
+    if (!isOpen) {
       setIsOpen(true);
     }
   };
 
   const handleSelectSuggestion = (suggestion) => {
-    const newChips = [...chips, suggestion];
-    onChange?.(newChips);
+    if (onSelectSuggestion) {
+      onSelectSuggestion(suggestion);
+    } else {
+      const newChips = [...chips, suggestion];
+      onChange?.(newChips);
+    }
     setInputValue("");
-    setIsOpen(false);
   };
 
   const handleCreateChip = () => {
@@ -542,8 +633,28 @@ export const ChipInputWithSuggestions = ({
     setIsOpen(!isOpen);
   };
 
+  useLayoutEffect(() => {
+    if (!isOpen || !wrapperRef.current) return;
+    setRect(wrapperRef.current.getBoundingClientRect());
+  }, [isOpen, inputValue, chips]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handler = (e) => {
+      const inWrapper = wrapperRef.current?.contains(e.target);
+      const inDropdown = dropdownRef.current?.contains(e.target);
+      if (!inWrapper && !inDropdown) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [isOpen]);
+
+  const showSuggestions = isOpen && filteredSuggestions.length > 0 && rect;
+
   return (
-    <div style={style}>
+    <div ref={wrapperRef} style={{ ...style, position: "relative" }}>
       <ChipInput
         label={label}
         required={required}
@@ -553,13 +664,55 @@ export const ChipInputWithSuggestions = ({
         inputValue={inputValue}
         onInputChange={handleInputChange}
         isDisabled={isInputDisabled}
+        showMiniInfobox={showMiniInfobox}
+        miniInfoboxType={miniInfoboxType}
+        miniInfoboxMessage={miniInfoboxMessage}
         error={error}
+        success={success}
         helperText={helperText}
         isOpen={isOpen}
         onDropdownClick={handleDropdownClick}
         onKeyDown={handleKeyDown}
+        onFocus={() => setIsOpen(true)}
+        showDropdown={!isInputDisabled}
         {...props}
       />
+
+      {showSuggestions && (
+        <Portal>
+          <div
+            ref={dropdownRef}
+            style={{
+              position: "fixed",
+              top: rect.bottom + 4,
+              left: rect.left,
+              width: rect.width,
+              zIndex: 9999,
+              borderRadius: "var(--radius-md)",
+              overflow: "hidden",
+              boxShadow: "var(--shadow-medium-down)",
+            }}
+          >
+            <DropdownList noSearch noAdd style={{ outline: "none", boxShadow: "none" }}>
+              <DropdownSection style={{ padding: "var(--spacing-2) 0" }}>
+                {filteredSuggestions.map((suggestion) => (
+                  <DropdownListItem
+                    key={suggestion.id}
+                    value={suggestion.id}
+                    noCheckbox
+                    subinfo={suggestion.subinfo}
+                    icon={suggestion.icon}
+                    onMouseDown={(e) => e.preventDefault()}
+                    onChange={() => handleSelectSuggestion(suggestion)}
+                  >
+                    {suggestion.label}
+                  </DropdownListItem>
+                ))}
+              </DropdownSection>
+            </DropdownList>
+          </div>
+        </Portal>
+      )}
     </div>
   );
 };

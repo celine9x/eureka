@@ -681,6 +681,8 @@ export const Hub = ({
   addFiltersLabel = "Add filters",
   onFiltersApply,
   showFilterActions = true,
+  showClearFiltersAction = true,
+  clearFiltersBehavior = "remove-filters",
   showFilterRemove = true,
   filterEditorRenderers = {},
   toolbarTopContent,
@@ -789,7 +791,7 @@ export const Hub = ({
     />
   );
 
-  const shouldShowPagination = showPagination && data.length > 10;
+  const shouldShowPagination = showPagination && (totalPages > 1 || data.length > pageSize);
 
   const handleApplyFilters = (filters) => {
     setActiveFilters(filters);
@@ -807,13 +809,6 @@ export const Hub = ({
       setChipDraftCriteria({});
     }
     onFiltersApply?.(nextFilters);
-  };
-
-  const handleClearFilters = () => {
-    setActiveFilters([]);
-    setOpenChipId(null);
-    setChipDraftCriteria({});
-    onFiltersApply?.([]);
   };
 
   const filterLookup = useMemo(
@@ -837,6 +832,40 @@ export const Hub = ({
       label: lookupMeta?.label || fallbackLabel,
       objectLabel: filter.objectLabel || lookupMeta?.objectLabel || null,
     };
+  };
+
+  const hasAppliedFilters = useMemo(
+    () =>
+      activeFilters.some((filter) => {
+        const meta = resolveFilterMeta(filter);
+        const criteria = normalizeCriteria(filter.criteria, meta.type);
+        return hasActiveCriteria(criteria);
+      }),
+    [activeFilters]
+  );
+
+  const handleClearFilters = () => {
+    if (clearFiltersBehavior === "clear-criteria") {
+      const nextFilters = activeFilters.map((filter) => {
+        const meta = resolveFilterMeta(filter);
+        return {
+          ...filter,
+          value: undefined,
+          badgeCount: undefined,
+          criteria: createDefaultCriteria(meta.type),
+        };
+      });
+      setActiveFilters(nextFilters);
+      setOpenChipId(null);
+      setChipDraftCriteria({});
+      onFiltersApply?.(nextFilters);
+      return;
+    }
+
+    setActiveFilters([]);
+    setOpenChipId(null);
+    setChipDraftCriteria({});
+    onFiltersApply?.([]);
   };
 
   const getDraftCriteria = (filter) => {
@@ -1255,7 +1284,7 @@ export const Hub = ({
                     </Button>
                   )}
                 </div>
-                {showFilterActions && (
+                {showClearFiltersAction && hasAppliedFilters && (
                   <div className="hub__clear-filters-action">
                     <Tooltip content="Remove all" placement="bottom-right">
                       <Button

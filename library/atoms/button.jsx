@@ -111,7 +111,7 @@ const styles = {
       borderRadius: "var(--radius-xs)",         // 4px
     },
     sm: {
-      padding: "0 var(--spacing-sm)",           // 0 8px
+      padding: "var(--spacing-xs)",             // 4px all sides
       fontSize: "var(--text-button-md)",        // 12px
       lineHeight: "var(--line-height-button-md)", // 16px
       height: "var(--size-button-sm)",          // 32px
@@ -334,9 +334,34 @@ const styles = {
   },
 
   destructiveSecondary: {
-    color: "var(--color-action-content-negative-secondary-enabled)",
-    outline: "1px solid var(--color-action-outline-negative-secondary-enabled)",
-    outlineOffset: "-1px",
+    enabled: {
+      background: "var(--color-action-fill-negative-secondary-enabled)",
+      color: "var(--color-action-content-negative-secondary-enabled)",
+      outlineWidth: "1px",
+      outlineStyle: "solid",
+      outlineColor: "var(--color-action-outline-negative-secondary-enabled)",
+      outlineOffset: "-1px",
+      boxShadow: "var(--shadow-button-light)",
+    },
+    hover: {
+      background: "var(--color-action-fill-negative-secondary-hover)",
+      color: "var(--color-action-content-negative-secondary-hover)",
+      outlineWidth: "1px",
+      outlineStyle: "solid",
+      outlineColor: "var(--color-action-outline-negative-secondary-hover)",
+      outlineOffset: "-1px",
+      boxShadow: "var(--shadow-button-enabled)",
+    },
+    active: {
+      background: "var(--color-action-fill-negative-secondary-active)",
+      color: "var(--color-action-content-negative-secondary-active)",
+      outlineWidth: "1px",
+      outlineStyle: "solid",
+      outlineColor: "var(--color-action-outline-negative-secondary-active)",
+      outlineOffset: "-1px",
+      boxShadow: "var(--shadow-button-focus)",
+    },
+    disabled: {},
   },
 
   destructiveTertiary: {
@@ -458,6 +483,13 @@ export const Button = forwardRef(
     };
 
     const stateStyles = getStateStyles();
+    const interactionState = isButtonDisabled
+      ? "disabled"
+      : isActive
+      ? "active"
+      : isHovered
+      ? "hover"
+      : "enabled";
 
     // Compose button styles
     const buttonStyle = {
@@ -471,7 +503,7 @@ export const Button = forwardRef(
         borderRadius: sizeStyles.borderRadius,
       }),
       ...stateStyles,
-      ...(effectiveColor === "secondary-destructive" && styles.destructiveSecondary),
+      ...(effectiveColor === "secondary-destructive" && styles.destructiveSecondary[interactionState]),
       ...(effectiveColor === "tertiary-destructive" && styles.destructiveTertiary),
       ...(effectiveColor === "link-destructive" && styles.destructiveLink),
       ...(block && styles.block),

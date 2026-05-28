@@ -11,108 +11,52 @@
 import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { Modal } from "./modal.jsx";
 import { Infobox } from "../molecules/infobox.jsx";
+import { ConfirmDialog } from "../molecules/dialog.jsx";
 import { Avatar } from "../atoms/avatar.jsx";
-import { Chip } from "../atoms/chip.jsx";
 import { Button } from "../atoms/button.jsx";
 import { Icon } from "../atoms/icon.jsx";
-import { TextInput } from "../molecules/text-input.jsx";
+import { ChipInput } from "../molecules/chip-input.jsx";
 import {
   DropdownMenuContent,
   DropdownMenuSection,
 } from "../molecules/dropdown-menu.jsx";
 import { DropdownMenuItem } from "../molecules/dropdown-menu-item.jsx";
+import { DropdownList, DropdownSection, DropdownListItem } from "../molecules/dropdown-list.jsx";
 import {
   MOCK_SEARCHABLE_PRINCIPALS,
-  DEFAULT_ACCESS_LEVEL,
+  MOCK_GROUP_MEMBERS,
   DEFAULT_OWNER,
   getAccessLevels,
+  getLeastPrivilegeAccessLevel,
 } from "../../pages/access-control/access-control-data.js";
 import { Portal } from "../utils/portal.jsx";
 
-// ─────────────────────────────────────────────
-// PRINCIPAL CHIP FIELD
-// ─────────────────────────────────────────────
+const ACCESS_ROW_ICON_SIZE = "var(--size-icon-md)";
+const ACCESS_LEVEL_SLOT_WIDTH = "6.5rem";
 
-const PrincipalChipField = ({ label, selected, search, onSearchChange, onChipRemove, onFocus }) => {
-  const inputRef = useRef(null);
-  const [isFocused, setIsFocused] = useState(false);
+const ChevronIcon = ({ size = 12, style }) => (
+  <span style={{ display: "inline-flex", alignItems: "center", lineHeight: 0 }}>
+    <Icon name="ChevronDown" size={size} style={style} />
+  </span>
+);
 
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-sm)" }}>
-      {label && (
-        <span style={{ fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-md)", color: "var(--color-content-primary)" }}>
-          {label}
-        </span>
-      )}
-      <div
-        onClick={() => inputRef.current?.focus()}
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          alignItems: "center",
-          gap: "var(--spacing-sm)",
-          padding: selected.length > 0 ? "var(--spacing-xs) var(--spacing-sm)" : "var(--spacing-1-5) var(--spacing-2)",
-          minHeight: 36,
-          background: "var(--color-general-white)",
-          borderRadius: "var(--radius-md)",
-          outline: isFocused
-            ? "1px solid var(--color-interaction-outline-active)"
-            : "1px solid var(--color-interaction-outline-enabled)",
-          outlineOffset: -1,
-          boxShadow: isFocused ? "var(--shadow-focus)" : "var(--shadow-light-down)",
-          cursor: "text",
-          boxSizing: "border-box",
-        }}
-      >
-        {selected.map((p) => (
-          <Chip
-            key={p.id}
-            size="sm"
-            removable
-            onRemove={() => onChipRemove(p.id)}
-            icon={
-              p.type === "group" ? (
-                <Icon name="UserGroup" size={10} />
-              ) : (
-                <Avatar size="xs" name={p.name} />
-              )
-            }
-          >
-            {p.name}
-          </Chip>
-        ))}
-        <input
-          ref={inputRef}
-          type="text"
-          value={search}
-          onChange={(e) => onSearchChange(e.target.value)}
-          onFocus={() => { setIsFocused(true); onFocus?.(); }}
-          onBlur={() => setIsFocused(false)}
-          placeholder={selected.length === 0 ? "Search users or groups" : ""}
-          style={{
-            flex: 1,
-            minWidth: 80,
-            border: "none",
-            outline: "none",
-            background: "transparent",
-            fontFamily: "var(--font-family-primary)",
-            fontSize: "var(--text-body-md)",
-            color: "var(--color-content-primary)",
-            padding: 0,
-          }}
-        />
-      </div>
-    </div>
-  );
+const toSentenceCase = (value) => {
+  if (!value) return "";
+  return value.charAt(0).toUpperCase() + value.slice(1);
 };
 
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // ACCESS LEVEL DROPDOWN
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-const AccessLevelDropdown = ({ value, objectLabel, onChange }) => {
+const AccessLevelDropdown = ({ value, objectLabel, principalType, onChange, onRemove }) => {
   const levels = getAccessLevels(objectLabel);
-  const current = levels.find((l) => l.id === value) || levels[0];
+  const selectableLevels = principalType === "group" ? [] : levels;
+  const current = levels.find((l) => l.id === value) || selectableLevels[0] || levels[0];
+  const canEdit =
+    selectableLevels.length > 1 ||
+    !!onRemove ||
+    (principalType === "group" && value === "owner" && selectableLevels.length > 0);
   const [open, setOpen] = useState(false);
   const [rect, setRect] = useState(null);
   const triggerRef = useRef(null);
@@ -138,12 +82,34 @@ const AccessLevelDropdown = ({ value, objectLabel, onChange }) => {
     return () => document.removeEventListener('mousedown', handler);
   }, [open]);
 
+  if (!canEdit) {
+    return (
+      <span
+        style={{
+          fontFamily: "var(--font-family-primary)",
+          fontSize: "var(--text-body-md)",
+          color: "var(--color-content-secondary)",
+        }}
+      >
+        {current?.label}
+      </span>
+    );
+  }
+
   return (
-    <div ref={triggerRef} style={{ position: "relative", display: "inline-flex" }}>
+    <div
+      ref={triggerRef}
+      style={{
+        position: "relative",
+        display: "inline-flex",
+        width: ACCESS_LEVEL_SLOT_WIDTH,
+        justifyContent: "flex-end",
+      }}
+    >
       <Button
         variant="secondary"
-        size="sm"
-        iconTrailing={<Icon name="ChevronDown" size={14} />}
+        size="xs"
+        iconTrailing={<ChevronIcon size={14} />}
         onClick={toggle}
       >
         {current.label}
@@ -155,22 +121,38 @@ const AccessLevelDropdown = ({ value, objectLabel, onChange }) => {
             style={{
               position: "fixed",
               top: rect.bottom + 4,
-              right: window.innerWidth - rect.right,
+              left: rect.right,
+              transform: "translateX(-100%)",
               zIndex: 9999,
               minWidth: 160,
             }}
           >
             <DropdownMenuContent style={{ position: "static" }}>
-              <DropdownMenuSection>
-                {levels.map((level) => (
+              {selectableLevels.length > 0 && (
+                <DropdownMenuSection>
+                  {selectableLevels.map((level) => (
+                    <DropdownMenuItem
+                      key={level.id}
+                      label={level.label}
+                      active={level.id === value}
+                      onClick={() => { onChange(level.id); setOpen(false); }}
+                    />
+                  ))}
+                </DropdownMenuSection>
+              )}
+              {onRemove && (
+                <DropdownMenuSection showDivider={selectableLevels.length > 0}>
                   <DropdownMenuItem
-                    key={level.id}
-                    label={level.label}
-                    active={level.id === value}
-                    onClick={() => { onChange(level.id); setOpen(false); }}
+                    label="Remove"
+                    icon={<Icon name="Trash" size={14} />}
+                    variant="destructive"
+                    onClick={() => {
+                      onRemove();
+                      setOpen(false);
+                    }}
                   />
-                ))}
-              </DropdownMenuSection>
+                </DropdownMenuSection>
+              )}
             </DropdownMenuContent>
           </div>
         </Portal>
@@ -183,67 +165,135 @@ const AccessLevelDropdown = ({ value, objectLabel, onChange }) => {
 // USER ROW
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-const AccessRow = ({ principal, accessLevelId, objectLabel, onAccessChange, onRemove }) => {
+const AccessRow = ({
+  principal,
+  accessLevelId,
+  objectLabel,
+  onAccessChange,
+  onRemove,
+  isExpanded = false,
+  onToggleMembers,
+}) => {
   const isGroup = principal.type === "group";
+  const isOwner = accessLevelId === "owner";
+  const isProtectedOwner = isOwner && !isGroup;
+  const ownerLabel = getAccessLevels(objectLabel).find((level) => level.id === "owner")?.label || "Owner";
+  const groupMembers = isGroup ? (MOCK_GROUP_MEMBERS[principal.id] || []) : [];
+  const memberCount = groupMembers.length;
+
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        padding: "var(--spacing-sm) 0",
-        gap: "var(--spacing-sm)",
-      }}
-    >
-      <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-sm)", flex: 1, minWidth: 0 }}>
-        {isGroup ? (
+    <>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "var(--spacing-sm) 0",
+          gap: "var(--spacing-sm)",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-sm)", flex: 1, minWidth: 0 }}>
+          {isGroup ? (
+            <Icon
+              name="UserGroup"
+              size="md"
+              style={{ flexShrink: 0, color: "var(--color-content-secondary)" }}
+            />
+          ) : (
+            <Avatar
+              size="xs"
+              name={principal.name}
+              style={{ width: ACCESS_ROW_ICON_SIZE, height: ACCESS_ROW_ICON_SIZE }}
+            />
+          )}
           <span
             style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: "var(--size-avatar-sm)",
-              height: "var(--size-avatar-sm)",
-              borderRadius: "var(--radius-full)",
-              background: "var(--color-general-neutral-light)",
-              flexShrink: 0,
+              fontFamily: "var(--font-family-primary)",
+              fontSize: "var(--text-body-md)",
+              color: "var(--color-content-primary)",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
             }}
           >
-            <Icon name="UserGroup" size={12} />
+            {principal.name}
           </span>
-        ) : (
-          <Avatar size="sm" name={principal.name} />
-        )}
-        <span
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-sm)", flexShrink: 0 }}>
+          {isGroup && memberCount > 0 && (
+            <Button
+              variant="tertiary"
+              size="xs"
+              iconTrailing={<ChevronIcon size={12} style={isExpanded ? { transform: "rotate(180deg)" } : undefined} />}
+              onClick={() => onToggleMembers?.(principal.id)}
+            >
+              {`${memberCount} members`}
+            </Button>
+          )}
+          <div
+            style={
+              isProtectedOwner
+                ? { width: ACCESS_LEVEL_SLOT_WIDTH, display: "flex", justifyContent: "flex-end" }
+                : { display: "flex" }
+            }
+          >
+            {isProtectedOwner ? (
+              <span
+                style={{
+                  fontFamily: "var(--font-family-primary)",
+                  fontSize: "var(--text-body-md)",
+                  color: "var(--color-content-secondary)",
+                }}
+              >
+                {ownerLabel}
+              </span>
+            ) : (
+              <AccessLevelDropdown
+                value={accessLevelId}
+                objectLabel={objectLabel}
+                principalType={principal.type}
+                onChange={(id) => onAccessChange(principal.id, id)}
+                onRemove={() => onRemove(principal)}
+              />
+            )}
+          </div>
+        </div>
+      </div>
+
+      {isGroup && isExpanded && memberCount > 0 && (
+        <div
           style={{
-            fontFamily: "var(--font-family-primary)",
-            fontSize: "var(--text-body-md)",
-            color: "var(--color-content-primary)",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
+            display: "flex",
+            flexDirection: "column",
+            gap: "var(--spacing-xs)",
+            paddingLeft: "calc(var(--size-icon-md) + var(--spacing-sm))",
+            paddingBottom: "var(--spacing-sm)",
           }}
         >
-          {principal.name}
-        </span>
-      </div>
-      <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-xs)", flexShrink: 0 }}>
-        <AccessLevelDropdown
-          value={accessLevelId}
-          objectLabel={objectLabel}
-          onChange={(id) => onAccessChange(principal.id, id)}
-        />
-        <Button
-          variant="tertiary"
-          size="sm"
-          iconOnly
-          onClick={() => onRemove(principal.id)}
-          aria-label="Remove"
-        >
-          <Icon name="XMark" size={14} />
-        </Button>
-      </div>
-    </div>
+          {groupMembers.map((member) => (
+            <div
+              key={`${principal.id}-${member.id}`}
+              style={{ display: "flex", alignItems: "center", gap: "var(--spacing-sm)" }}
+            >
+              <Avatar
+                size="xs"
+                name={member.name}
+                style={{ width: ACCESS_ROW_ICON_SIZE, height: ACCESS_ROW_ICON_SIZE }}
+              />
+              <span
+                style={{
+                  fontFamily: "var(--font-family-primary)",
+                  fontSize: "var(--text-body-md)",
+                  color: "var(--color-content-primary)",
+                }}
+              >
+                {member.name}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </>
   );
 };
 
@@ -251,13 +301,34 @@ const AccessRow = ({ principal, accessLevelId, objectLabel, onAccessChange, onRe
 // SEARCH DROPDOWN
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-const PrincipalSearchDropdown = ({ search, onSelect, addedIds, selectedIds, anchorRef, dropdownRef }) => {
-  const results = MOCK_SEARCHABLE_PRINCIPALS.filter(
+const PrincipalSearchDropdown = ({
+  search,
+  onSelect,
+  onDeselect,
+  addedIds,
+  selectedIds,
+  anchorRef,
+  dropdownRef,
+  searchablePrincipals,
+}) => {
+  const normalizedSearch = search.trim().toLowerCase();
+  const searchResults = searchablePrincipals.filter(
     (p) =>
-      !addedIds.has(p.id) &&
-      (search === "" || p.name.toLowerCase().includes(search.toLowerCase()))
+      (normalizedSearch === "" || p.name.toLowerCase().includes(normalizedSearch))
   );
+  // Hide already-added entries from the default scroll list, but keep them discoverable via search.
+  const results =
+    normalizedSearch === ""
+      ? searchResults.filter((p) => !addedIds.has(p.id))
+      : searchResults;
+  const groupResults = results.filter((p) => p.type === "group");
+  const userResults = results.filter((p) => p.type === "user");
   const [rect, setRect] = useState(null);
+  const [expandedGroups, setExpandedGroups] = useState({});
+
+  const toggleGroupMembers = (groupId) => {
+    setExpandedGroups((prev) => ({ ...prev, [groupId]: !prev[groupId] }));
+  };
 
   useLayoutEffect(() => {
     if (anchorRef?.current) {
@@ -273,7 +344,7 @@ const PrincipalSearchDropdown = ({ search, onSelect, addedIds, selectedIds, anch
       ref={dropdownRef}
       style={{
         position: "fixed",
-        top: rect.bottom + 4,
+        top: rect.bottom,
         left: rect.left,
         width: rect.width,
         zIndex: 9999,
@@ -285,60 +356,160 @@ const PrincipalSearchDropdown = ({ search, onSelect, addedIds, selectedIds, anch
         overflow: "hidden",
       }}
     >
-      <div style={{ padding: "var(--spacing-2) 0" }}>
-        {results.map((p) => {
+      <DropdownList noSearch noAdd style={{ position: "static", outline: "none", boxShadow: "none" }}>
+        {groupResults.length > 0 && (
+          <DropdownSection title="Groups">
+            {groupResults.map((p) => {
               const isSelected = selectedIds?.has(p.id);
+              const isAlreadyAdded = addedIds.has(p.id);
+              const members = MOCK_GROUP_MEMBERS[p.id] || [];
+              const memberCount = members.length;
+              const isExpanded = !!expandedGroups[p.id];
               return (
-              <button
-                key={p.id}
-                type="button"
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => onSelect(p)}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "var(--spacing-sm)",
-                  width: "100%",
-                  padding: "var(--spacing-sm) var(--spacing-3)",
-                  background: isSelected ? "var(--color-general-neutral-light)" : "transparent",
-                  border: "none",
-                  cursor: "pointer",
-                  textAlign: "left",
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "var(--color-general-neutral-light)")}
-                onMouseLeave={(e) => (e.currentTarget.style.background = isSelected ? "var(--color-general-neutral-light)" : "transparent")}
-              >
-                {p.type === "group" ? (
-                  <span
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      width: "var(--size-avatar-sm)",
-                      height: "var(--size-avatar-sm)",
-                      borderRadius: "var(--radius-full)",
-                      background: "var(--color-general-neutral-light)",
-                      flexShrink: 0,
+                <div key={p.id} style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-xs)" }}>
+                  <DropdownListItem
+                    value={p.id}
+                    checked={isAlreadyAdded ? false : isSelected}
+                    icon={<Icon name="UserGroup" size={12} />}
+                    style={
+                      isAlreadyAdded
+                        ? { pointerEvents: "none", cursor: "default" }
+                        : undefined
+                    }
+                    badge={
+                      <span
+                        style={{
+                          fontFamily: "var(--font-family-primary)",
+                          fontSize: "var(--text-body-sm)",
+                          color: "var(--color-content-secondary)",
+                          lineHeight: "1",
+                        }}
+                      >
+                        {memberCount}
+                      </span>
+                    }
+                    action={
+                      <div style={{ display: "inline-flex", alignItems: "center", gap: "var(--spacing-xs)" }}>
+                        {isAlreadyAdded && (
+                          <span
+                            style={{
+                              fontFamily: "var(--font-family-primary)",
+                              fontSize: "var(--text-body-sm)",
+                              color: "var(--color-content-secondary)",
+                            }}
+                          >
+                            Already added
+                          </span>
+                        )}
+                        {!isAlreadyAdded && (
+                          <Button
+                            variant="tertiary"
+                            size="sm"
+                            iconOnly
+                            aria-label={isExpanded ? `Hide ${p.name} members` : `Show ${p.name} members`}
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                            }}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              toggleGroupMembers(p.id);
+                            }}
+                          >
+                            <ChevronIcon size={12} style={!isExpanded ? { transform: "rotate(-90deg)" } : undefined} />
+                          </Button>
+                        )}
+                      </div>
+                    }
+                    onMouseDown={(e) => e.preventDefault()}
+                    onChange={() => {
+                      if (isAlreadyAdded) return;
+                      isSelected ? onDeselect?.(p.id) : onSelect(p);
                     }}
                   >
-                    <Icon name="UserGroup" size={12} />
-                  </span>
-                ) : (
-                  <Avatar size="sm" name={p.name} />
-                )}
-                <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
-                  <span style={{ fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-md)", color: "var(--color-content-primary)" }}>
                     {p.name}
-                  </span>
-                  <span style={{ fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-sm)", color: "var(--color-content-secondary)" }}>
-                    {p.type === "group" ? "Group" : "User"}
-                  </span>
+                  </DropdownListItem>
+
+                  {isExpanded && memberCount > 0 && (
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "var(--spacing-xs)",
+                        paddingLeft: "calc(var(--size-avatar-sm) + var(--spacing-lg))",
+                        paddingBottom: "var(--spacing-xs)",
+                      }}
+                    >
+                      {members.map((member) => (
+                        <div
+                          key={`${p.id}-${member.id}`}
+                          style={{ display: "flex", alignItems: "center", gap: "var(--spacing-sm)" }}
+                        >
+                          <Avatar size="xs" name={member.name} />
+                          <span
+                            style={{
+                              fontFamily: "var(--font-family-primary)",
+                              fontSize: "var(--text-body-md)",
+                              color: "var(--color-content-primary)",
+                            }}
+                          >
+                            {member.name}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                {isSelected && <Icon name="Check" size={14} style={{ color: "var(--color-content-brand)", flexShrink: 0 }} />}
-              </button>
               );
             })}
-      </div>
+          </DropdownSection>
+        )}
+        {userResults.length > 0 && (
+          <DropdownSection title="Users">
+            {userResults.map((p) => {
+              const isSelected = selectedIds?.has(p.id);
+              const isAlreadyAdded = addedIds.has(p.id);
+              return (
+                <DropdownListItem
+                  key={p.id}
+                  value={p.id}
+                  checked={isAlreadyAdded ? false : isSelected}
+                  icon={
+                    p.type === "group" ? (
+                      <Icon name="UserGroup" size={12} />
+                    ) : (
+                      <Avatar size="xs" name={p.name} />
+                    )
+                  }
+                  style={
+                    isAlreadyAdded
+                      ? { pointerEvents: "none", cursor: "default" }
+                      : undefined
+                  }
+                  action={
+                    isAlreadyAdded ? (
+                      <span
+                        style={{
+                          fontFamily: "var(--font-family-primary)",
+                          fontSize: "var(--text-body-sm)",
+                          color: "var(--color-content-secondary)",
+                        }}
+                      >
+                        Already added
+                      </span>
+                    ) : undefined
+                  }
+                  onMouseDown={(e) => e.preventDefault()}
+                  onChange={() => (isSelected ? onDeselect?.(p.id) : onSelect(p))}
+                >
+                  {p.name}
+                </DropdownListItem>
+              );
+            })}
+          </DropdownSection>
+        )}
+      </DropdownList>
     </div>
     </Portal>
   );
@@ -352,21 +523,38 @@ export const AccessControlModal = ({
   open = false,
   onClose,
   objectLabel = "object",
+  objectDisplayLabel = objectLabel,
   initialIsPublic = true,
+  preInfoboxContent = null,
+  infoboxContentResolver = null,
+  confirmationContentResolver = null,
+  onAccessListChange = null,
+  searchablePrincipals = MOCK_SEARCHABLE_PRINCIPALS,
+  accessFieldMiniInfoboxMessage = null,
+  publicAccessAggregateLabel = "All users",
+  inheritedAccessLabel = "All authorized users in the Initiative",
+  inheritedAccessPrincipals = [],
   inline = false,
 }) => {
+  const displayName = toSentenceCase(objectDisplayLabel);
   const [isPublic, setIsPublic] = useState(initialIsPublic);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isRemoveConfirmOpen, setIsRemoveConfirmOpen] = useState(false);
+  const [pendingRemovePrincipal, setPendingRemovePrincipal] = useState(null);
   const [search, setSearch] = useState("");
   const [selectedPrincipals, setSelectedPrincipals] = useState([]); // chips pending add
   const [accessList, setAccessList] = useState(
     initialIsPublic ? [] : [{ principal: DEFAULT_OWNER, accessLevelId: "owner" }]
   );
+  const [isInheritedExpanded, setIsInheritedExpanded] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState({});
   const searchWrapperRef = useRef(null);
   const dropdownRef = useRef(null);
 
   const addedIds = new Set(accessList.map((e) => e.principal.id));
   const selectedIds = new Set(selectedPrincipals.map((p) => p.id));
+  const nextIsPublic = !isPublic;
 
   const handleToggle = () => {
     setIsPublic((prev) => {
@@ -376,6 +564,15 @@ export const AccessControlModal = ({
     });
     setSelectedPrincipals([]);
     setSearch("");
+  };
+
+  const openVisibilityConfirmation = () => {
+    setIsConfirmOpen(true);
+  };
+
+  const confirmVisibilityChange = () => {
+    setIsConfirmOpen(false);
+    handleToggle();
   };
 
   const handleChipSelect = (principal) => {
@@ -392,22 +589,67 @@ export const AccessControlModal = ({
     if (selectedPrincipals.length === 0) return;
     setAccessList((prev) => [
       ...prev,
-      ...selectedPrincipals.map((p) => ({ principal: p, accessLevelId: DEFAULT_ACCESS_LEVEL })),
+      ...selectedPrincipals.map((p) => ({
+        principal: p,
+        accessLevelId: getLeastPrivilegeAccessLevel(objectLabel, p.type),
+      })),
     ]);
     setSelectedPrincipals([]);
     setSearch("");
   };
 
   const handleAccessChange = (principalId, levelId) => {
-    setAccessList((prev) =>
-      prev.map((e) =>
-        e.principal.id === principalId ? { ...e, accessLevelId: levelId } : e
-      )
-    );
+    setAccessList((prev) => {
+      if (levelId !== "owner") {
+        return prev.map((e) =>
+          e.principal.id === principalId ? { ...e, accessLevelId: levelId } : e
+        );
+      }
+
+      const demotedOwnerLevelId =
+        getAccessLevels(objectLabel).find((level) => level.id !== "owner")?.id || "owner";
+
+      return prev.map((e) => {
+        if (e.principal.id === principalId) {
+          return { ...e, accessLevelId: "owner" };
+        }
+        if (e.accessLevelId === "owner") {
+          return { ...e, accessLevelId: demotedOwnerLevelId };
+        }
+        return e;
+      });
+    });
   };
 
   const handleRemove = (principalId) => {
     setAccessList((prev) => prev.filter((e) => e.principal.id !== principalId));
+    setExpandedGroups((prev) => {
+      if (!prev[principalId]) return prev;
+      const next = { ...prev };
+      delete next[principalId];
+      return next;
+    });
+  };
+
+  const openRemoveConfirmation = (principal) => {
+    setPendingRemovePrincipal(principal);
+    setIsRemoveConfirmOpen(true);
+  };
+
+  const closeRemoveConfirmation = () => {
+    setIsRemoveConfirmOpen(false);
+    setPendingRemovePrincipal(null);
+  };
+
+  const confirmRemovePrincipal = () => {
+    if (pendingRemovePrincipal?.id) {
+      handleRemove(pendingRemovePrincipal.id);
+    }
+    closeRemoveConfirmation();
+  };
+
+  const handleToggleGroupMembers = (groupId) => {
+    setExpandedGroups((prev) => ({ ...prev, [groupId]: !prev[groupId] }));
   };
 
   useEffect(() => {
@@ -422,62 +664,326 @@ export const AccessControlModal = ({
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  useEffect(() => {
+    onAccessListChange?.(accessList);
+  }, [accessList, onAccessListChange]);
+
   const showDropdown = searchFocused;
 
+  const sortedAccessList = [...accessList].sort((a, b) => {
+    const levelPriority = new Map(
+      getAccessLevels(objectLabel).map((level, index) => [level.id, index])
+    );
+
+    const rank = (entry) => {
+      if (entry.accessLevelId === "owner") return 0;
+      if (entry.principal.type === "group") return 1;
+      if (entry.principal.type === "user") return 2;
+      return 3;
+    };
+
+    const rankDiff = rank(a) - rank(b);
+    if (rankDiff !== 0) return rankDiff;
+
+    const aLevelRank = levelPriority.get(a.accessLevelId) ?? Number.MAX_SAFE_INTEGER;
+    const bLevelRank = levelPriority.get(b.accessLevelId) ?? Number.MAX_SAFE_INTEGER;
+    if (aLevelRank !== bLevelRank) return aLevelRank - bLevelRank;
+
+    return a.principal.name.localeCompare(b.principal.name);
+  });
+
+  const ownerAccessEntries = sortedAccessList.filter((entry) => entry.accessLevelId === "owner");
+  const nonOwnerAccessEntries = sortedAccessList.filter((entry) => entry.accessLevelId !== "owner");
+
+  const inheritedPrincipals = Array.from(
+    inheritedAccessPrincipals.reduce((map, principal) => {
+      const key = `${principal.type}:${principal.id}`;
+      map.set(key, principal);
+      return map;
+    }, new Map()).values()
+  ).sort((a, b) => {
+    const typeRank = (type) => {
+      if (type === "group") return 0;
+      if (type === "user") return 1;
+      return 2;
+    };
+
+    const diff = typeRank(a.type) - typeRank(b.type);
+    if (diff !== 0) return diff;
+
+    return a.name.localeCompare(b.name);
+  });
+
+  const inheritedPrincipalCount = inheritedPrincipals.length;
+
   const bannerIcon = (
-    <span style={{ display: "flex", alignItems: "center" }}>
-      <Icon name={isPublic ? "LockOpen" : "LockClosed"} size={16} />
+    <span
+      style={{
+        display: "flex",
+        alignItems: "center",
+        color: isPublic ? "var(--color-content-secondary)" : "var(--color-content-negative)",
+      }}
+    >
+      <Icon name={isPublic ? "LockOpen" : "LockClosed"} variant="solid" size={16} />
     </span>
   );
 
+  const defaultInfoboxContent = {
+    title: isPublic ? "Public" : "Private",
+    description: isPublic
+      ? `All users can access this ${displayName}.`
+      : `Only authorized users can access this ${displayName}.`,
+    actionLabel: isPublic ? "Make private" : "Make public",
+  };
+
+  const resolvedInfoboxContent = infoboxContentResolver?.({
+    isPublic,
+    objectLabel,
+    objectDisplayLabel,
+  }) || {};
+
+  const infoboxTitle = resolvedInfoboxContent.title || defaultInfoboxContent.title;
+  const infoboxDescription = resolvedInfoboxContent.description || defaultInfoboxContent.description;
+  const infoboxActionLabel = resolvedInfoboxContent.actionLabel || defaultInfoboxContent.actionLabel;
+
+  const defaultConfirmationContent = {
+    title: `Make ${displayName} ${nextIsPublic ? "public" : "private"}?`,
+    body: nextIsPublic
+      ? `All users will be able to access this ${displayName}.`
+      : `Only authorized users will be able to access this ${displayName}.`,
+    confirmLabel: nextIsPublic ? "Make public" : "Make private",
+    cancelLabel: "Cancel",
+  };
+
+  const resolvedConfirmationContent = confirmationContentResolver?.({
+    isPublic,
+    nextIsPublic,
+    objectLabel,
+    objectDisplayLabel,
+    displayName,
+  }) || {};
+
+  const confirmationTitle = resolvedConfirmationContent.title || defaultConfirmationContent.title;
+  const confirmationBody = resolvedConfirmationContent.body || defaultConfirmationContent.body;
+  const confirmationConfirmLabel = resolvedConfirmationContent.confirmLabel || defaultConfirmationContent.confirmLabel;
+  const confirmationCancelLabel = resolvedConfirmationContent.cancelLabel || defaultConfirmationContent.cancelLabel;
+
   const content = (
     <>
+      {preInfoboxContent}
       <Infobox
         variant="neutral"
         icon={bannerIcon}
-        title={`This ${objectLabel} is ${isPublic ? "public" : "private"}`}
-        description={
-          isPublic
-            ? `All platform users have access to the ${objectLabel} and its content`
-            : `Only authorized users can access this ${objectLabel}.`
-        }
-        actionLabel={isPublic ? "Make private" : "Make public"}
-        onAction={handleToggle}
+        title={infoboxTitle}
+        description={infoboxDescription}
+        actionLabel={infoboxActionLabel}
+        onAction={openVisibilityConfirmation}
       />
 
-      {!isPublic && (
+      {isPublic ? (
+        <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-md)" }}>
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                paddingBottom: "var(--spacing-xs)",
+              }}
+            >
+              <span style={{ fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-sm)", color: "var(--color-content-secondary)" }}>Name</span>
+              <span
+                style={{
+                  fontFamily: "var(--font-family-primary)",
+                  fontSize: "var(--text-body-sm)",
+                  color: "var(--color-content-secondary)",
+                }}
+              >
+                Access level
+              </span>
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "var(--spacing-sm) 0",
+                gap: "var(--spacing-sm)",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-sm)", flex: 1, minWidth: 0 }}>
+                <Avatar
+                  size="xs"
+                  name={DEFAULT_OWNER.name}
+                  style={{ width: ACCESS_ROW_ICON_SIZE, height: ACCESS_ROW_ICON_SIZE }}
+                />
+                <span
+                  style={{
+                    fontFamily: "var(--font-family-primary)",
+                    fontSize: "var(--text-body-md)",
+                    color: "var(--color-content-primary)",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {DEFAULT_OWNER.name}
+                </span>
+              </div>
+              <div style={{ width: ACCESS_LEVEL_SLOT_WIDTH, display: "flex", justifyContent: "flex-end" }}>
+                <span
+                  style={{
+                    fontFamily: "var(--font-family-primary)",
+                    fontSize: "var(--text-body-md)",
+                    color: "var(--color-content-secondary)",
+                  }}
+                >
+                  Owner
+                </span>
+              </div>
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "var(--spacing-sm) 0",
+                gap: "var(--spacing-sm)",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-sm)", flex: 1, minWidth: 0 }}>
+                <span
+                  style={{
+                    fontFamily: "var(--font-family-primary)",
+                    fontSize: "var(--text-body-md)",
+                    color: "var(--color-content-primary)",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {publicAccessAggregateLabel}
+                </span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-sm)", flexShrink: 0 }}>
+                {inheritedPrincipals.length > 0 && (
+                  <Button
+                    variant="tertiary"
+                    size="xs"
+                    iconTrailing={<ChevronIcon size={12} style={isInheritedExpanded ? { transform: "rotate(180deg)" } : undefined} />}
+                    onClick={() => setIsInheritedExpanded((prev) => !prev)}
+                  >
+                    {`${inheritedPrincipalCount} entries`}
+                  </Button>
+                )}
+                <span
+                  style={{
+                    fontFamily: "var(--font-family-primary)",
+                    fontSize: "var(--text-body-md)",
+                    color: "var(--color-content-secondary)",
+                  }}
+                >
+                  Can access
+                </span>
+              </div>
+            </div>
+
+            {inheritedPrincipals.length > 0 && isInheritedExpanded && (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "var(--spacing-xs)",
+                  paddingLeft: "calc(var(--size-icon-md) + var(--spacing-sm))",
+                  paddingBottom: "var(--spacing-sm)",
+                }}
+              >
+                {inheritedPrincipals.map((principal) => (
+                  <div
+                    key={`public-inherited-${principal.type}-${principal.id}`}
+                    style={{ display: "flex", alignItems: "center", gap: "var(--spacing-sm)" }}
+                  >
+                    {principal.type === "group" ? (
+                      <Icon
+                        name="UserGroup"
+                        size="md"
+                        style={{ flexShrink: 0, color: "var(--color-content-secondary)" }}
+                      />
+                    ) : (
+                      <Avatar
+                        size="xs"
+                        name={principal.name}
+                        style={{ width: ACCESS_ROW_ICON_SIZE, height: ACCESS_ROW_ICON_SIZE }}
+                      />
+                    )}
+                    <span
+                      style={{
+                        fontFamily: "var(--font-family-primary)",
+                        fontSize: "var(--text-body-md)",
+                        color: "var(--color-content-primary)",
+                      }}
+                    >
+                      {principal.name}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-md)" }}>
 
           {/* Chip search + Add */}
-          <div style={{ display: "flex", gap: "var(--spacing-sm)", alignItems: "flex-end" }}>
+          <div style={{ display: "flex", gap: "var(--spacing-sm)", alignItems: "flex-start" }}>
             <div ref={searchWrapperRef} style={{ position: "relative", flex: 1 }} onFocus={() => setSearchFocused(true)}>
-              <PrincipalChipField
+              <ChipInput
                 label="Access"
-                selected={selectedPrincipals}
-                search={search}
-                onSearchChange={setSearch}
+                placeholder="Search users or groups"
+                chips={selectedPrincipals.map((p) => ({
+                  id: p.id,
+                  label: p.name,
+                  icon:
+                    p.type === "group" ? (
+                      <Icon name="UserGroup" size={12} />
+                    ) : (
+                      <Avatar size="xs" name={p.name} />
+                    ),
+                }))}
+                inputValue={search}
+                onInputChange={setSearch}
                 onChipRemove={handleChipRemove}
+                showClear={false}
+                showDropdown={false}
+                showMiniInfobox={!!accessFieldMiniInfoboxMessage}
+                miniInfoboxType="info"
+                miniInfoboxMessage={accessFieldMiniInfoboxMessage}
                 onFocus={() => setSearchFocused(true)}
               />
               {showDropdown && (
                 <PrincipalSearchDropdown
                   search={search}
                   onSelect={handleChipSelect}
+                  onDeselect={handleChipRemove}
                   addedIds={addedIds}
                   selectedIds={selectedIds}
                   anchorRef={searchWrapperRef}
                   dropdownRef={dropdownRef}
+                  searchablePrincipals={searchablePrincipals}
                 />
               )}
             </div>
-            <Button
-              variant="primary"
-              size="md"
-              onClick={handleAdd}
-              disabled={selectedPrincipals.length === 0}
-            >
-              Add
-            </Button>
+            <div style={{ paddingTop: 28 }}>
+              <Button
+                variant="primary"
+                size="lg"
+                onClick={handleAdd}
+                disabled={selectedPrincipals.length === 0}
+              >
+                Add
+              </Button>
+            </div>
           </div>
 
           {/* User list */}
@@ -488,20 +994,134 @@ export const AccessControlModal = ({
                   display: "flex",
                   justifyContent: "space-between",
                   paddingBottom: "var(--spacing-xs)",
-                  borderBottom: "1px solid var(--color-action-outline-secondary-enabled)",
                 }}
               >
                 <span style={{ fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-sm)", color: "var(--color-content-secondary)" }}>Name</span>
-                <span style={{ fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-sm)", color: "var(--color-content-secondary)" }}>Access level</span>
+                <span
+                  style={{
+                    fontFamily: "var(--font-family-primary)",
+                    fontSize: "var(--text-body-sm)",
+                    color: "var(--color-content-secondary)",
+                  }}
+                >
+                  Access level
+                </span>
               </div>
-              {accessList.map(({ principal, accessLevelId }) => (
+
+              {ownerAccessEntries.map(({ principal, accessLevelId }) => (
                 <AccessRow
                   key={principal.id}
                   principal={principal}
                   accessLevelId={accessLevelId}
                   objectLabel={objectLabel}
                   onAccessChange={handleAccessChange}
-                  onRemove={handleRemove}
+                  onRemove={openRemoveConfirmation}
+                  isExpanded={!!expandedGroups[principal.id]}
+                  onToggleMembers={handleToggleGroupMembers}
+                />
+              ))}
+
+              {inheritedPrincipals.length > 0 && (
+                <>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      padding: "var(--spacing-sm) 0",
+                      gap: "var(--spacing-sm)",
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-sm)", flex: 1, minWidth: 0 }}>
+                      <span
+                        style={{
+                          fontFamily: "var(--font-family-primary)",
+                          fontSize: "var(--text-body-md)",
+                          color: "var(--color-content-primary)",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {inheritedAccessLabel}
+                      </span>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-sm)", flexShrink: 0 }}>
+                      <Button
+                        variant="tertiary"
+                        size="xs"
+                        iconTrailing={<ChevronIcon size={12} style={isInheritedExpanded ? { transform: "rotate(180deg)" } : undefined} />}
+                        onClick={() => setIsInheritedExpanded((prev) => !prev)}
+                      >
+                        {`${inheritedPrincipalCount} entries`}
+                      </Button>
+                      <span
+                        style={{
+                          fontFamily: "var(--font-family-primary)",
+                          fontSize: "var(--text-body-md)",
+                          color: "var(--color-content-secondary)",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        Can access
+                      </span>
+                    </div>
+                  </div>
+
+                  {isInheritedExpanded && (
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "var(--spacing-xs)",
+                        paddingLeft: "calc(var(--size-icon-md) + var(--spacing-sm))",
+                        paddingBottom: "var(--spacing-sm)",
+                      }}
+                    >
+                      {inheritedPrincipals.map((principal) => (
+                        <div
+                          key={`inherited-${principal.type}-${principal.id}`}
+                          style={{ display: "flex", alignItems: "center", gap: "var(--spacing-sm)" }}
+                        >
+                          {principal.type === "group" ? (
+                            <Icon
+                              name="UserGroup"
+                              size="md"
+                              style={{ flexShrink: 0, color: "var(--color-content-secondary)" }}
+                            />
+                          ) : (
+                            <Avatar
+                              size="xs"
+                              name={principal.name}
+                              style={{ width: ACCESS_ROW_ICON_SIZE, height: ACCESS_ROW_ICON_SIZE }}
+                            />
+                          )}
+                          <span
+                            style={{
+                              fontFamily: "var(--font-family-primary)",
+                              fontSize: "var(--text-body-md)",
+                              color: "var(--color-content-primary)",
+                            }}
+                          >
+                            {principal.name}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+
+              {nonOwnerAccessEntries.map(({ principal, accessLevelId }) => (
+                <AccessRow
+                  key={principal.id}
+                  principal={principal}
+                  accessLevelId={accessLevelId}
+                  objectLabel={objectLabel}
+                  onAccessChange={handleAccessChange}
+                  onRemove={openRemoveConfirmation}
+                  isExpanded={!!expandedGroups[principal.id]}
+                  onToggleMembers={handleToggleGroupMembers}
                 />
               ))}
             </div>
@@ -518,13 +1138,46 @@ export const AccessControlModal = ({
     </>
   );
 
+  const confirmationDialog = (
+    <ConfirmDialog
+      isOpen={isConfirmOpen}
+      onOpenChange={setIsConfirmOpen}
+      variant="warning"
+      title={confirmationTitle}
+      confirmLabel={confirmationConfirmLabel}
+      cancelLabel={confirmationCancelLabel}
+      onConfirm={confirmVisibilityChange}
+    >
+      {confirmationBody}
+    </ConfirmDialog>
+  );
+
+  const removeConfirmationDialog = (
+    <ConfirmDialog
+      isOpen={isRemoveConfirmOpen}
+      onOpenChange={(open) => {
+        if (!open) closeRemoveConfirmation();
+      }}
+      variant="warning"
+      title={`Remove ${pendingRemovePrincipal?.name || "entry"}?`}
+      confirmLabel="Remove"
+      cancelLabel="Cancel"
+      onConfirm={confirmRemovePrincipal}
+      onCancel={closeRemoveConfirmation}
+    >
+      {`This will remove ${pendingRemovePrincipal?.name || "this entry"} from access.`}
+    </ConfirmDialog>
+  );
+
   if (inline) {
     return (
-      <div>
+      <>
+        {confirmationDialog}
+        {removeConfirmationDialog}
+        <div>
         <div
           style={{
             padding: "var(--spacing-4) var(--spacing-6)",
-            borderBottom: "1px solid var(--color-action-outline-secondary-enabled)",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
@@ -538,30 +1191,21 @@ export const AccessControlModal = ({
               color: "var(--color-content-primary)",
             }}
           >
-            Manage {objectLabel} access
+            Manage {displayName} access
           </span>
-          <button
-            type="button"
+          <Button
+            variant="tertiary"
+            size="sm"
+            iconOnly
+            aria-label="Close"
             onClick={onClose}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: 24,
-              height: 24,
-              border: "none",
-              background: "transparent",
-              color: "var(--color-content-secondary)",
-              cursor: "pointer",
-              borderRadius: "var(--radius-sm)",
-            }}
           >
             <Icon name="XMark" size={16} />
-          </button>
+          </Button>
         </div>
         <div
           style={{
-            padding: "var(--spacing-6)",
+            padding: "0 var(--spacing-6) var(--spacing-6)",
             display: "flex",
             flexDirection: "column",
             gap: "var(--spacing-4)",
@@ -569,20 +1213,25 @@ export const AccessControlModal = ({
         >
           {content}
         </div>
-      </div>
+        </div>
+      </>
     );
   }
 
   return (
-    <Modal
-      open={open}
-      onClose={onClose}
-      title={`Manage ${objectLabel} access`}
-      size="md"
-      showFooter={false}
-    >
-      {content}
-    </Modal>
+    <>
+      <Modal
+        open={open}
+        onClose={onClose}
+        title={`Manage ${displayName} access`}
+        size="md"
+        showFooter={false}
+      >
+        {content}
+      </Modal>
+      {confirmationDialog}
+      {removeConfirmationDialog}
+    </>
   );
 };
 

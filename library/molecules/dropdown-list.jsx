@@ -7,7 +7,7 @@
  * Uses inline styles with CSS variables from tokens.css for consistent styling.
  */
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, Children, isValidElement } from "react";
 import { Button } from "../atoms/button.jsx";
 import { Checkbox } from "../atoms/checkbox.jsx";
 import { Icon } from "../atoms/icon.jsx";
@@ -21,8 +21,8 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     alignSelf: "stretch",
-    padding: 8,
-    gap: 4,
+    padding: "var(--spacing-sm)",
+    gap: "var(--spacing-xs)",
   },
 
   sectionHidden: {
@@ -30,13 +30,47 @@ const styles = {
   },
 
   sectionTitle: {
-    padding: 4,
+    padding: "var(--spacing-xs)",
     fontFamily: "var(--font-family-primary)",
-    fontSize: "var(--text-highlight-md)",
-    fontWeight: "var(--font-weight-semibold)",
+    fontSize: "var(--text-body-overline)",
+    fontWeight: "var(--font-weight-regular)",
     textTransform: "uppercase",
     letterSpacing: "0.04em",
-    color: "var(--color-content-tertiary)",
+    color: "var(--color-content-secondary)",
+  },
+
+  sectionHeader: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    width: "100%",
+    background: "transparent",
+    border: "none",
+    cursor: "pointer",
+    padding: 0,
+    textAlign: "left",
+  },
+
+  sectionChevron: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "var(--color-content-secondary)",
+    transition: "transform var(--transition-fast)",
+  },
+
+  sectionChevronCollapsed: {
+    transform: "rotate(-90deg)",
+  },
+
+  sectionContentHidden: {
+    display: "none",
+  },
+
+  sectionItems: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "var(--spacing-xs)",
   },
 
   item: {
@@ -44,11 +78,11 @@ const styles = {
     alignSelf: "stretch",
     width: "100%",
     boxSizing: "border-box",
-    padding: 8,
+    padding: "var(--spacing-sm)",
     justifyContent: "space-between",
     alignItems: "center",
-    gap: 8,
-    borderRadius: "var(--radius-sm)",
+    gap: "var(--spacing-sm)",
+    borderRadius: "var(--radius-md)",
     cursor: "pointer",
     userSelect: "none",
     transition: "all var(--transition-fast)",
@@ -56,14 +90,67 @@ const styles = {
     border: "none",
   },
 
-  itemHover: {
-    background: "var(--color-general-neutral-lighter)",
-    borderRadius: "var(--radius-md)",
-  },
-
-  itemDisabled: {
-    cursor: "not-allowed",
-    opacity: 0.5,
+  itemStates: {
+    enabled: {
+      item: {
+        color: "var(--color-content-secondary)",
+      },
+      icon: {
+        color: "var(--color-content-secondary)",
+      },
+      label: {
+        color: "var(--color-content-primary)",
+      },
+      subinfo: {
+        color: "var(--color-content-secondary)",
+      },
+    },
+    hover: {
+      item: {
+        background: "var(--color-general-neutral-light)",
+        color: "var(--color-content-primary)",
+      },
+      icon: {
+        color: "var(--color-content-primary)",
+      },
+      label: {
+        color: "var(--color-content-primary)",
+      },
+      subinfo: {
+        color: "var(--color-content-primary)",
+      },
+    },
+    active: {
+      item: {
+        background: "var(--color-general-informative)",
+        color: "var(--color-content-primary)",
+      },
+      icon: {
+        color: "var(--color-action-fill-primary-enabled)",
+      },
+      label: {
+        color: "var(--color-content-primary)",
+      },
+      subinfo: {
+        color: "var(--color-content-primary)",
+      },
+    },
+    disabled: {
+      item: {
+        color: "var(--color-content-tertiary)",
+        cursor: "not-allowed",
+        pointerEvents: "none",
+      },
+      icon: {
+        color: "var(--color-content-tertiary)",
+      },
+      label: {
+        color: "var(--color-content-tertiary)",
+      },
+      subinfo: {
+        color: "var(--color-content-tertiary)",
+      },
+    },
   },
 
   itemHidden: {
@@ -73,7 +160,7 @@ const styles = {
   itemLeft: {
     display: "flex",
     alignItems: "center",
-    gap: 8,
+    gap: "var(--spacing-sm)",
     flex: 1,
     minWidth: 0,
   },
@@ -85,19 +172,18 @@ const styles = {
 
   itemIcon: {
     flexShrink: 0,
-    width: 16,
-    height: 16,
+    width: "var(--spacing-4)",
+    height: "var(--spacing-4)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    color: "var(--color-content-secondary)",
     overflow: "hidden",
   },
 
   itemColor: {
     flexShrink: 0,
-    width: 4,
-    height: 16,
+    width: "var(--spacing-xs)",
+    height: "var(--spacing-4)",
     borderRadius: "var(--radius-sm)",
     background: "var(--color-content-secondary)",
   },
@@ -115,14 +201,10 @@ const styles = {
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-body-lg)",
     fontWeight: "var(--font-weight-regular)",
-    color: "var(--color-content-primary)",
+    color: "var(--color-content-secondary)",
     whiteSpace: "nowrap",
     overflow: "hidden",
     textOverflow: "ellipsis",
-  },
-
-  itemLabelDisabled: {
-    color: "var(--color-content-tertiary)",
   },
 
   itemSubinfo: {
@@ -143,14 +225,14 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "flex-end",
-    gap: 8,
+    gap: "var(--spacing-sm)",
     flexShrink: 0,
   },
 
   itemBadge: {
     display: "flex",
     alignItems: "center",
-    padding: 4,
+    padding: "var(--spacing-xs)",
     background: "var(--color-general-neutral-lighter)",
     borderRadius: "var(--radius-sm)",
     outline: "1px solid var(--color-action-outline-secondary-enabled)",
@@ -254,17 +336,63 @@ const styles = {
  * A section within a dropdown list with optional title.
  *
  */
-export const DropdownSection = ({ title, hidden = false, style, children, ...props }) => {
+export const DropdownSection = ({ title, hidden = false, defaultExpanded = true, style, children, ...props }) => {
+  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+
+  const sectionChildren = Children.toArray(children);
+  const getSortMeta = (child, index) => {
+    if (!isValidElement(child)) return { rank: 1, label: "", index };
+    const rawLabel = typeof child.props?.children === "string" ? child.props.children : "";
+    return {
+      rank: rawLabel ? 0 : 1,
+      label: rawLabel.toLowerCase(),
+      index,
+    };
+  };
+
+  const sortedChildren = [...sectionChildren].sort((a, b) => {
+    const aMeta = getSortMeta(a, sectionChildren.indexOf(a));
+    const bMeta = getSortMeta(b, sectionChildren.indexOf(b));
+    if (aMeta.rank !== bMeta.rank) return aMeta.rank - bMeta.rank;
+    const byLabel = aMeta.label.localeCompare(bMeta.label);
+    if (byLabel !== 0) return byLabel;
+    return aMeta.index - bMeta.index;
+  });
+
   const sectionStyle = {
     ...styles.section,
     ...(hidden && styles.sectionHidden),
     ...style,
   };
 
+  const chevronStyle = {
+    ...styles.sectionChevron,
+    ...(!isExpanded && styles.sectionChevronCollapsed),
+  };
+
   return (
     <div style={sectionStyle} {...props}>
-      {title && <div style={styles.sectionTitle}>{title}</div>}
-      {children}
+      {title && (
+        <button
+          type="button"
+          style={styles.sectionHeader}
+          onClick={() => setIsExpanded((prev) => !prev)}
+          aria-expanded={isExpanded}
+        >
+          <div style={styles.sectionTitle}>{title}</div>
+          <span style={chevronStyle}>
+            <Icon name="ChevronDown" size={14} />
+          </span>
+        </button>
+      )}
+      <div
+        style={{
+          ...styles.sectionItems,
+          ...(!isExpanded && title ? styles.sectionContentHidden : null),
+        }}
+      >
+        {sortedChildren}
+      </div>
     </div>
   );
 };
@@ -290,11 +418,14 @@ DropdownSection.displayName = "DropdownSection";
 export const DropdownListItem = ({
   value,
   checked = false,
+  active,
+  isIndeterminate = false,
   isDisabled = false,
   disabled, // Support legacy prop
   subinfo,
   color,
   icon,
+  iconBeforeCheckbox = false,
   badge,
   action,
   hidden = false,
@@ -306,6 +437,7 @@ export const DropdownListItem = ({
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const isItemDisabled = isDisabled || disabled;
+  const isActive = active ?? checked;
 
   const handleToggle = () => {
     if (isItemDisabled) return;
@@ -319,22 +451,35 @@ export const DropdownListItem = ({
     }
   };
 
+  const getStateStyles = () => {
+    if (isItemDisabled) return styles.itemStates.disabled;
+    if (isActive) return styles.itemStates.active;
+    if (isHovered) return styles.itemStates.hover;
+    return styles.itemStates.enabled;
+  };
+
+  const stateStyles = getStateStyles();
+
   const itemStyle = {
     ...styles.item,
-    ...(isHovered && !isItemDisabled && styles.itemHover),
-    ...(isItemDisabled && styles.itemDisabled),
+    ...stateStyles.item,
     ...(hidden && styles.itemHidden),
     ...style,
   };
 
   const labelStyle = {
     ...styles.itemLabel,
-    ...(isItemDisabled && styles.itemLabelDisabled),
+    ...stateStyles.label,
   };
 
   const subinfoStyle = {
     ...styles.itemSubinfo,
-    ...(isItemDisabled && styles.itemSubinfoDisabled),
+    ...stateStyles.subinfo,
+  };
+
+  const iconStyle = {
+    ...styles.itemIcon,
+    ...stateStyles.icon,
   };
 
   const colorStyle = color
@@ -346,7 +491,7 @@ export const DropdownListItem = ({
       style={itemStyle}
       tabIndex={isItemDisabled ? -1 : 0}
       role="checkbox"
-      aria-checked={checked}
+      aria-checked={isIndeterminate ? "mixed" : checked}
       aria-disabled={isItemDisabled}
       onClick={handleToggle}
       onKeyDown={handleKeyDown}
@@ -355,13 +500,21 @@ export const DropdownListItem = ({
       {...props}
     >
       <div style={styles.itemLeft}>
+        {iconBeforeCheckbox && icon && <div style={iconStyle}>{icon}</div>}
+
         {!noCheckbox && (
           <div style={styles.itemCheckbox}>
-            <Checkbox isSelected={checked} isDisabled={isItemDisabled} size="sm" onChange={() => {}} />
+            <Checkbox
+              isSelected={checked}
+              isIndeterminate={isIndeterminate}
+              isDisabled={isItemDisabled}
+              size="sm"
+              onChange={() => {}}
+            />
           </div>
         )}
 
-        {icon && <div style={styles.itemIcon}>{icon}</div>}
+        {!iconBeforeCheckbox && icon && <div style={iconStyle}>{icon}</div>}
 
         {color && <div style={colorStyle} />}
 

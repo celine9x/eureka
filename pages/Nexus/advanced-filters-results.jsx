@@ -16,6 +16,110 @@ import {
 
 // ─── Ontology tree helpers ────────────────────────────────────────────────────
 
+const SearchLogicStrip = ({ items, onEdit }) => {
+  const getFieldLabel = (fieldId) => SEARCH_FIELDS.find((f) => f.id === fieldId)?.label || fieldId;
+
+  const getValueLabels = (fieldId, value) => {
+    if (value === null || value === undefined) return [];
+    const values = Array.isArray(value) ? value : [value];
+    return values.map((id) => OPTION_LABEL_MAP[id] || String(id));
+  };
+
+  const renderReviewRow = (row, keyPrefix) => {
+    const fieldLabel = getFieldLabel(row.fieldId);
+    const isNegative = row.conditionId === "has-none-of";
+    const conditionLabel = isNegative ? "is not" : "is";
+    const valueLabels = getValueLabels(row.fieldId, row.value);
+    const displayed = valueLabels.slice(0, 2);
+    if (valueLabels.length > 2) displayed.push(`+${valueLabels.length - 2}`);
+
+    return (
+      <div
+        key={keyPrefix}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: "var(--spacing-xs)",
+          padding: "var(--spacing-xs) var(--spacing-sm)",
+          borderRadius: "var(--radius-sm)",
+          background: "var(--color-general-white)",
+          outline: "1px solid var(--color-action-outline-secondary-enabled)",
+          outlineOffset: "-1px",
+        }}
+      >
+        <span style={{ fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-md)", color: "var(--color-content-secondary)" }}>{fieldLabel}</span>
+        <span style={{ fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-md)", color: isNegative ? "var(--color-content-negative)" : "var(--color-content-primary)" }}>{conditionLabel}</span>
+        {displayed.length > 0 ? displayed.map((label, i) => (
+          <React.Fragment key={`${keyPrefix}-v-${i}`}>
+            {i > 0 && <span style={{ fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-md)", color: isNegative ? "var(--color-content-negative)" : "var(--color-content-primary)" }}>or</span>}
+            <span style={{ fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-md)", color: "var(--color-content-secondary)" }}>{label}</span>
+          </React.Fragment>
+        )) : (
+          <span style={{ fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-md)", color: "var(--color-content-secondary)" }}>-</span>
+        )}
+      </div>
+    );
+  };
+
+  const topLevelLogic = items[1]?.logic || "Or";
+
+  return (
+    <div
+      style={{
+        background: "var(--color-general-neutral-default)",
+        border: "1px solid var(--color-action-outline-secondary-enabled)",
+        borderRadius: "var(--radius-lg)",
+        padding: "var(--spacing-md)",
+        display: "flex",
+        alignItems: "flex-start",
+        justifyContent: "space-between",
+        gap: "var(--spacing-md)",
+      }}
+    >
+      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "var(--spacing-xs)", minWidth: 0, flex: 1 }}>
+        <span style={{ fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-md)", color: "var(--color-content-primary)", whiteSpace: "nowrap" }}>
+          Show all assets that have
+        </span>
+        {items.map((item, index) => (
+          <React.Fragment key={`logic-${index}`}>
+            {index > 0 && (
+              <span style={{ fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-md)", fontWeight: "var(--font-weight-semibold)", color: "var(--color-content-primary)" }}>
+                {(item.logic || topLevelLogic).toUpperCase()}
+              </span>
+            )}
+            {item.type === "group" ? (
+              <div style={{ display: "inline-flex", alignItems: "center", flexWrap: "wrap", gap: "var(--spacing-xs)", padding: "var(--spacing-xs)", borderRadius: "var(--radius-sm)", border: "1px dashed var(--color-action-outline-secondary-enabled)", background: "var(--color-general-neutral-lighter)" }}>
+                {(item.rows || []).map((row, rowIndex) => (
+                  <React.Fragment key={`logic-group-${item.id}-${row.id}`}>
+                    {rowIndex > 0 && (
+                      <span style={{ fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-md)", fontWeight: "var(--font-weight-semibold)", color: "var(--color-content-primary)" }}>
+                        {(item.rowLogic || "And").toUpperCase()}
+                      </span>
+                    )}
+                    {renderReviewRow(row, `logic-group-row-${item.id}-${row.id}-${rowIndex}`)}
+                  </React.Fragment>
+                ))}
+              </div>
+            ) : (
+              renderReviewRow(item, `logic-row-${item.id}-${index}`)
+            )}
+          </React.Fragment>
+        ))}
+      </div>
+      <Button
+        variant="secondary"
+        size="sm"
+        iconLeading={<Icon name="PencilSquare" size={16} />}
+        onClick={onEdit}
+        style={{ flexShrink: 0 }}
+      >
+        Modify
+      </Button>
+    </div>
+  );
+};
+
 const pruneTree = (nodes, allowedIds) => {
   const allowed = new Set(allowedIds);
   const prune = (list) =>
@@ -403,25 +507,20 @@ export const AdvancedFiltersResultsPage = () => {
       badge={String(tableData.length)}
       menuSections={menuSections}
       menuUser={menuUser}
-      headerActions={
-        <Button
-          variant="secondary"
-          size="sm"
-          iconLeading={<Icon name="PencilSquare" size={16} />}
-          onClick={() => {
+      headerActions={null}
+      toolbarTopContent={
+        <SearchLogicStrip
+          items={items}
+          onEdit={() => {
             const params = new URLSearchParams(window.location.search);
             const criteria = params.get("criteria");
-            const url = criteria
-              ? `/nexus/search?criteria=${criteria}`
-              : "/nexus/search";
+            const url = criteria ? `/nexus/search?criteria=${criteria}` : "/nexus/search";
             window.history.pushState({}, "", url);
             window.dispatchEvent(new PopStateEvent("popstate"));
           }}
-        >
-          Modify search
-        </Button>
+        />
       }
-      initialFilters={initialFilters}
+      initialFilters={[]}
       filterSuggestions={filterSuggestions}
       filterEditorRenderers={filterEditorRenderers}
       onFiltersApply={setAppliedFilters}
