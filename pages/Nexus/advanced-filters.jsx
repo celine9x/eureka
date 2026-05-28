@@ -27,8 +27,8 @@ import {
 
 const CONDITION_SECTIONS = [
   [
-    { id: "has-any-of", label: "is any of" },
-    { id: "has-none-of", label: "Not" },
+    { id: "has-any-of", label: "has any of" },
+    { id: "has-all-of", label: "has all of" },
   ],
 ];
 
@@ -1016,6 +1016,12 @@ const CriterionRow = ({ row, index, isFirst, isLogicDisabled, isGrouped, onChang
         value={row.fieldId}
         onChange={(fieldId) => onChange({ ...row, fieldId, value: null })}
         usedFields={usedFields}
+      />
+
+      <ConditionDropdown
+        value={row.conditionId}
+        fieldId={row.fieldId}
+        onChange={(conditionId) => onChange({ ...row, conditionId })}
       />
 
       <div style={{ flex: 1, minWidth: 0 }}>

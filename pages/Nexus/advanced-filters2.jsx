@@ -27,8 +27,9 @@ import {
 
 const CONDITION_SECTIONS = [
   [
-    { id: "has-any-of", label: "is any of" },
-    { id: "has-none-of", label: "is none of" },
+    { id: "has-any-of", label: "has any of" },
+    { id: "has-all-of", label: "has all of" },
+    { id: "has-none-of", label: "has none of" },
   ],
 ];
 
