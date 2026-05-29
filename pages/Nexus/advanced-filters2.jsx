@@ -599,7 +599,7 @@ const ConditionDropdown = ({ value, fieldId, onChange, isFirst }) => {
                       />
                     );
                     return disabledByFirst ? (
-                      <Tooltip key={opt.id} content="Condition set up in next logics" placement="bottom-left">
+                      <Tooltip key={opt.id} content="Add another criteria row first to use exclusion" placement="bottom-left">
                         <span style={{ display: "block" }}>{item}</span>
                       </Tooltip>
                     ) : item;
