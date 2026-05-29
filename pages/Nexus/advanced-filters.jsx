@@ -15,6 +15,7 @@ import { Chip } from "../../library/atoms/chip.jsx";
 import { Checkbox } from "../../library/atoms/checkbox.jsx";
 import { Tooltip } from "../../library/atoms/tooltip.jsx";
 import MiniInfobox from "../../library/molecules/miniinfobox.jsx";
+import { Infobox } from "../../library/molecules/infobox.jsx";
 import {
   SEARCH_FIELDS,
   FIELD_OPTIONS,
@@ -1274,7 +1275,44 @@ const getValueLabels = (fieldId, value) => {
 };
 
 // ─────────────────────────────────────────────
-// ADVANCED SEARCH TAB
+// CONFLICT DETECTION (Layout A)
+// ─────────────────────────────────────────────
+
+const valuesOverlap = (a, b) => {
+  const setA = new Set(Array.isArray(a) ? a : []);
+  return (Array.isArray(b) ? b : []).some((v) => setA.has(v));
+};
+
+const detectConflictsA = (items) => {
+  // Flatten all rows with their effective polarity (positive = included, negative = excluded)
+  // For Layout A: Not logic means the row is a negative
+  const positiveRows = [];
+  const negativeRows = [];
+
+  items.forEach((item) => {
+    if (item.type === "row") {
+      const isNeg = item.logic === "Not";
+      (isNeg ? negativeRows : positiveRows).push(item);
+    } else if (item.type === "group") {
+      const groupIsNeg = item.logic === "Not";
+      (item.rows || []).forEach((row, i) => {
+        const rowIsNeg = groupIsNeg || (i > 0 && item.rowLogic === "Not");
+        (rowIsNeg ? negativeRows : positiveRows).push(row);
+      });
+    }
+  });
+
+  for (const neg of negativeRows) {
+    for (const pos of positiveRows) {
+      if (neg.fieldId && pos.fieldId && neg.fieldId === pos.fieldId) {
+        if (valuesOverlap(neg.value, pos.value)) return true;
+      }
+    }
+  }
+  return false;
+};
+
+// ─────────────────────────────────────────────
 // ─────────────────────────────────────────────
 
 const parseCriteriaFromUrl = () => {
@@ -1308,7 +1346,7 @@ const AdvancedSearchTab = () => {
     const fieldLabel = getFieldLabel(row.fieldId);
     const meta = getConditionReviewMeta(row.conditionId);
     const isNegative = forceNegative || meta.isNegative;
-    const conditionLabel = forceNegative ? "is not" : meta.label;
+    const conditionLabel = isNegative ? "is none of" : meta.label;
     const joinWord = meta.joinWord;
     const valueLabels = getValueLabels(row.fieldId, row.value);
     const MAX_SHOWN = 3;
@@ -1320,11 +1358,11 @@ const AdvancedSearchTab = () => {
     return (
       <span key={keyPrefix} style={{ fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-lg)", color: "var(--color-content-primary)" }}>
         <span>{fieldLabel}</span>{" "}
-        <span style={{ color: isNegative ? negativeColor : "var(--color-content-primary)" }}>{conditionLabel}</span>{" "}
+        <span style={{ color: isNegative ? negativeColor : "var(--color-content-secondary)" }}>{conditionLabel}</span>{" "}
         {shownValues.length > 0 ? (
           shownValues.map((label, i) => (
             <React.Fragment key={`${keyPrefix}-v-${i}`}>
-              {i > 0 && <span style={{ color: isNegative ? negativeColor : "var(--color-content-secondary)" }}> {joinWord} </span>}
+              {i > 0 && <span style={{ color: isNegative ? negativeColor : "var(--color-content-secondary)" }}>, </span>}
               <span style={{ color: valueColor }}>{label}</span>
             </React.Fragment>
           ))
@@ -1332,7 +1370,7 @@ const AdvancedSearchTab = () => {
           <span style={{ color: "var(--color-content-secondary)"}}>—</span>
         )}
         {overflowCount > 0 && (
-          <span style={{ color: isNegative ? negativeColor : "var(--color-content-secondary)" }}> {joinWord} +{overflowCount}</span>
+          <span style={{ color: isNegative ? negativeColor : "var(--color-content-secondary)" }}> and {overflowCount} others</span>
         )}
       </span>
     );
@@ -1517,53 +1555,87 @@ const AdvancedSearchTab = () => {
         >
           Search summary
         </div>
-        <div style={{ display: "flex", alignItems: "baseline", flexWrap: "wrap", gap: "var(--spacing-xs)", fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-lg)", color: "var(--color-content-primary)" }}>
-          <span>Show all assets where</span>
-          {items.length > 0 ? (
-            items.map((item, index) => (
-              <React.Fragment key={`review-${index}`}>
-                {index > 0 && (
-                  <strong style={{ color: "var(--color-content-primary)" }}>
-                    {(items[index].logic === "Not" ? "And" : (items[index].logic || topLevelLogic || "Or")).toUpperCase()}
-                  </strong>
-                )}
-                {item.type === "group" ? (
-                  <span
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "baseline",
-                      flexWrap: "wrap",
-                      gap: "var(--spacing-xs)",
-                      padding: "var(--spacing-xs)",
-                      borderRadius: "var(--radius-sm)",
-                      border: "1px dashed var(--color-action-outline-secondary-enabled)",
-                      background: "var(--color-general-neutral-lighter)",
-                    }}
-                  >
-                    {(item.rows || []).map((row, rowIndex) => (
-                      <React.Fragment key={`review-group-${item.id}-${row.id}`}>
-                        {rowIndex > 0 && (
-                          <strong style={{ color: "var(--color-content-primary)" }}>
-                            {(item.rowLogic || "And").toUpperCase()}
-                          </strong>
-                        )}
-                        <span style={{ display: "inline-flex", alignItems: "baseline", padding: "2px var(--spacing-sm)", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-action-outline-secondary-enabled)", background: "var(--color-general-white)" }}>
-                          {renderReviewRow(row, `review-group-row-${item.id}-${row.id}-${rowIndex}`)}
-                        </span>
-                      </React.Fragment>
-                    ))}
-                  </span>
-                ) : (
+        {(() => {
+          if (items.length === 0) {
+            return (
+              <div style={{ fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-lg)", color: "var(--color-content-secondary)" }}>
+                Add at least one criteria
+              </div>
+            );
+          }
+
+          const renderGroupContent = (item) => (
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "baseline",
+                flexWrap: "wrap",
+                gap: "var(--spacing-xs)",
+                padding: "var(--spacing-xs)",
+                borderRadius: "var(--radius-sm)",
+                border: "1px dashed var(--color-action-outline-secondary-enabled)",
+                background: "var(--color-general-neutral-lighter)",
+              }}
+            >
+              {(item.rows || []).map((row, rowIndex) => (
+                <React.Fragment key={`review-group-${item.id}-${row.id}`}>
+                  {rowIndex > 0 && (
+                    <strong style={{ color: "var(--color-content-primary)" }}>
+                      {(item.rowLogic === "Not" ? "And" : (item.rowLogic || "And")).toUpperCase()}
+                    </strong>
+                  )}
                   <span style={{ display: "inline-flex", alignItems: "baseline", padding: "2px var(--spacing-sm)", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-action-outline-secondary-enabled)", background: "var(--color-general-white)" }}>
-                    {renderReviewRow(item, `review-row-${item.id}-${index}`, item.logic === "Not")}
+                    {renderReviewRow(row, `review-group-row-${item.id}-${row.id}-${rowIndex}`, item.rowLogic === "Not" && rowIndex > 0)}
                   </span>
-                )}
-              </React.Fragment>
-            ))
-          ) : (
-            <span style={{ color: "var(--color-content-secondary)" }}>Add at least one criteria</span>
-          )}
-        </div>
+                </React.Fragment>
+              ))}
+            </span>
+          );
+
+          // Separate positive items from Not-group exclusions
+          const positiveItems = items.filter((it) => !(it.type === "group" && it.logic === "Not"));
+          const exclusionGroups = items.filter((it) => it.type === "group" && it.logic === "Not");
+
+          return (
+            <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-xs)", fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-lg)", color: "var(--color-content-primary)" }}>
+              {/* Positive row */}
+              <div style={{ display: "flex", alignItems: "baseline", flexWrap: "wrap", gap: "var(--spacing-xs)" }}>
+                <span>Show all assets where</span>
+                {positiveItems.map((item, index) => (
+                  <React.Fragment key={`review-pos-${item.id}`}>
+                    {index > 0 && (
+                      <strong style={{ color: "var(--color-content-primary)" }}>
+                        {(item.type === "row" && item.logic === "Not" ? "And" : (item.logic || topLevelLogic || "Or")).toUpperCase()}
+                      </strong>
+                    )}
+                    {item.type === "group" ? renderGroupContent(item) : (
+                      <span style={{ display: "inline-flex", alignItems: "baseline", padding: "2px var(--spacing-sm)", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-action-outline-secondary-enabled)", background: "var(--color-general-white)" }}>
+                        {renderReviewRow(item, `review-row-${item.id}`, item.logic === "Not")}
+                      </span>
+                    )}
+                  </React.Fragment>
+                ))}
+              </div>
+
+              {/* Exclusion groups */}
+              {exclusionGroups.length > 0 && (
+                <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-xs)" }}>
+                  <span style={{ color: "var(--color-content-secondary)", fontStyle: "italic" }}>
+                    excluding those where:
+                  </span>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-xs)" }}>
+                    {exclusionGroups.map((item) => (
+                      <div key={`review-excl-${item.id}`} style={{ display: "flex", alignItems: "baseline", flexWrap: "wrap", gap: "var(--spacing-xs)" }}>
+                        <span style={{ color: "var(--color-content-secondary)", flexShrink: 0 }}>•</span>
+                        {renderGroupContent(item)}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })()}
       </div>
 
       {/* Name input + generate */}

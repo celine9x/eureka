@@ -15,6 +15,7 @@ import { Chip } from "../../library/atoms/chip.jsx";
 import { Checkbox } from "../../library/atoms/checkbox.jsx";
 import { Tooltip } from "../../library/atoms/tooltip.jsx";
 import MiniInfobox from "../../library/molecules/miniinfobox.jsx";
+import { Infobox } from "../../library/molecules/infobox.jsx";
 import {
   SEARCH_FIELDS,
   FIELD_OPTIONS,
@@ -978,7 +979,7 @@ const RowActionsMenu = ({ onConvertToGroup, onDelete, isGrouped }) => {
 let nextId = 1;
 const genId = () => `row-${nextId++}`;
 
-const CriterionRow = ({ row, index, isFirst, isLogicDisabled, isGrouped, onChange, onDelete, onConvertToGroup, usedFields = [], groupLogic, onGroupLogicChange }) => {
+const CriterionRow = ({ row, index, isFirst, isLogicDisabled, isGrouped, onChange, onDelete, onConvertToGroup, usedFields = [], groupLogic, onGroupLogicChange, disableNoneOf = false }) => {
   return (
     <div
       style={{
@@ -1032,7 +1033,7 @@ const CriterionRow = ({ row, index, isFirst, isLogicDisabled, isGrouped, onChang
       <ConditionDropdown
         value={row.conditionId}
         fieldId={row.fieldId}
-        isFirst={isFirst}
+        isFirst={disableNoneOf}
         onChange={(conditionId) => {
           const textConditions = [];
           const noValueConditions = ["is-empty", "is-not-empty"];
@@ -1071,7 +1072,7 @@ const CriterionRow = ({ row, index, isFirst, isLogicDisabled, isGrouped, onChang
 // GROUP
 // ─────────────────────────────────────────────
 
-const CriteriaGroup = ({ group, groupIndex, onChange, onDeleteGroup }) => {
+const CriteriaGroup = ({ group, groupIndex, onChange, onDeleteGroup, isAbsoluteFirst = false }) => {
   const usedFields = group.rows.map((r) => r.fieldId).filter(Boolean);
   const groupLogic = group.rowLogic || "And";
 
@@ -1140,6 +1141,7 @@ const CriteriaGroup = ({ group, groupIndex, onChange, onDeleteGroup }) => {
           usedFields={usedFields}
           groupLogic={groupLogic}
           onGroupLogicChange={setGroupLogic}
+          disableNoneOf={isAbsoluteFirst && i === 0}
         />
       ))}
 
@@ -1294,7 +1296,40 @@ const getValueLabels = (fieldId, value) => {
 };
 
 // ─────────────────────────────────────────────
-// ADVANCED SEARCH TAB
+// CONFLICT DETECTION (Layout B)
+// ─────────────────────────────────────────────
+
+const valuesOverlapB = (a, b) => {
+  const setA = new Set(Array.isArray(a) ? a : []);
+  return (Array.isArray(b) ? b : []).some((v) => setA.has(v));
+};
+
+const detectConflictsB = (items) => {
+  // For Layout B: negation comes from has-none-of condition
+  const positiveRows = []; // has-any-of or has-all-of
+  const negativeRows = []; // has-none-of
+
+  items.forEach((item) => {
+    if (item.type === "row") {
+      (item.conditionId === "has-none-of" ? negativeRows : positiveRows).push(item);
+    } else if (item.type === "group") {
+      (item.rows || []).forEach((row) => {
+        (row.conditionId === "has-none-of" ? negativeRows : positiveRows).push(row);
+      });
+    }
+  });
+
+  for (const neg of negativeRows) {
+    for (const pos of positiveRows) {
+      if (neg.fieldId && pos.fieldId && neg.fieldId === pos.fieldId) {
+        if (valuesOverlapB(neg.value, pos.value)) return true;
+      }
+    }
+  }
+  return false;
+};
+
+// ─────────────────────────────────────────────
 // ─────────────────────────────────────────────
 
 const parseCriteriaFromUrl = () => {
@@ -1337,7 +1372,7 @@ const AdvancedSearchTab = () => {
     return (
       <span key={keyPrefix} style={{ fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-lg)", color: "var(--color-content-primary)" }}>
         <span>{fieldLabel}</span>{" "}
-        <span style={{ color: isNegative ? negativeColor : "var(--color-content-primary)" }}>{conditionLabel}</span>{" "}
+        <span style={{ color: isNegative ? negativeColor : "var(--color-content-secondary)" }}>{conditionLabel}</span>{" "}
         {shownValues.length > 0 ? (
           shownValues.map((label, i) => (
             <React.Fragment key={`${keyPrefix}-v-${i}`}>
@@ -1447,6 +1482,7 @@ const AdvancedSearchTab = () => {
                 onDelete={() => deleteItem(item.id)}
                 onConvertToGroup={() => convertRowToGroup(item.id)}
                 usedFields={usedFields}
+                disableNoneOf={isFirst}
               />
             );
           }
@@ -1468,6 +1504,7 @@ const AdvancedSearchTab = () => {
                   groupIndex={groups.indexOf(item)}
                   onChange={(updated) => updateItem(item.id, updated)}
                   onDeleteGroup={() => deleteItem(item.id)}
+                  isAbsoluteFirst={isFirst}
                 />
               </div>
             </div>
