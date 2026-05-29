@@ -565,7 +565,7 @@ const FieldDropdown = ({ value, onChange, usedFields = [] }) => {
 // CONDITION SELECTOR DROPDOWN
 // ─────────────────────────────────────────────
 
-const ConditionDropdown = ({ value, fieldId, onChange }) => {
+const ConditionDropdown = ({ value, fieldId, onChange, isFirst }) => {
   const [open, setOpen] = useState(false);
   const selected = ALL_CONDITIONS.find((o) => o.id === value) || ALL_CONDITIONS.find((o) => o.id === "has-any-of");
 
@@ -583,17 +583,27 @@ const ConditionDropdown = ({ value, fieldId, onChange }) => {
             return (
               <React.Fragment key={si}>
                 <DropdownMenuSection>
-                  {section.map((opt) => (
-                    <DropdownMenuItem
-                      key={opt.id}
-                      label={opt.label}
-                      active={opt.id === selected.id}
-                      onClick={() => {
-                        onChange(opt.id);
-                        setOpen(false);
-                      }}
-                    />
-                  ))}
+                  {section.map((opt) => {
+                    const disabledByFirst = isFirst && opt.id === "has-none-of";
+                    const item = (
+                      <DropdownMenuItem
+                        key={opt.id}
+                        label={opt.label}
+                        active={opt.id === selected.id}
+                        isDisabled={disabledByFirst}
+                        onClick={() => {
+                          if (disabledByFirst) return;
+                          onChange(opt.id);
+                          setOpen(false);
+                        }}
+                      />
+                    );
+                    return disabledByFirst ? (
+                      <Tooltip key={opt.id} content="Condition set up in next logics" placement="bottom-left">
+                        <span style={{ display: "block" }}>{item}</span>
+                      </Tooltip>
+                    ) : item;
+                  })}
                 </DropdownMenuSection>
               </React.Fragment>
             );
@@ -1022,6 +1032,7 @@ const CriterionRow = ({ row, index, isFirst, isLogicDisabled, isGrouped, onChang
       <ConditionDropdown
         value={row.conditionId}
         fieldId={row.fieldId}
+        isFirst={isFirst}
         onChange={(conditionId) => {
           const textConditions = [];
           const noValueConditions = ["is-empty", "is-not-empty"];
@@ -1521,7 +1532,7 @@ const AdvancedSearchTab = () => {
             color: "var(--color-content-primary)",
           }}
         >
-          Search logic
+          Search summary
         </div>
         <div style={{ display: "flex", alignItems: "baseline", flexWrap: "wrap", gap: "var(--spacing-xs)", fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-lg)", color: "var(--color-content-primary)" }}>
           <span>Show all assets where</span>

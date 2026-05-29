@@ -1256,7 +1256,6 @@ const getFieldLabel = (fieldId) => {
 const getConditionReviewMeta = (conditionId) => {
   if (conditionId === "has-any-of") return { label: "is", isNegative: false, joinWord: "or" };
   if (conditionId === "has-all-of") return { label: "is", isNegative: false, joinWord: "and" };
-  if (conditionId === "has-none-of") return { label: "is not", isNegative: true, joinWord: "or" };
   return { label: "", isNegative: false, joinWord: "or" };
 };
 
@@ -1305,9 +1304,12 @@ const AdvancedSearchTab = () => {
 
   const topLevelLogic = items[1]?.logic || "Or";
 
-  const renderReviewRow = (row, keyPrefix) => {
+  const renderReviewRow = (row, keyPrefix, forceNegative = false) => {
     const fieldLabel = getFieldLabel(row.fieldId);
-    const { label: conditionLabel, isNegative, joinWord } = getConditionReviewMeta(row.conditionId);
+    const meta = getConditionReviewMeta(row.conditionId);
+    const isNegative = forceNegative || meta.isNegative;
+    const conditionLabel = forceNegative ? "is not" : meta.label;
+    const joinWord = meta.joinWord;
     const valueLabels = getValueLabels(row.fieldId, row.value);
     const MAX_SHOWN = 3;
     const shownValues = valueLabels.slice(0, MAX_SHOWN);
@@ -1513,7 +1515,7 @@ const AdvancedSearchTab = () => {
             color: "var(--color-content-primary)",
           }}
         >
-          Search logic
+          Search summary
         </div>
         <div style={{ display: "flex", alignItems: "baseline", flexWrap: "wrap", gap: "var(--spacing-xs)", fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-lg)", color: "var(--color-content-primary)" }}>
           <span>Show all assets where</span>
@@ -1522,7 +1524,7 @@ const AdvancedSearchTab = () => {
               <React.Fragment key={`review-${index}`}>
                 {index > 0 && (
                   <strong style={{ color: "var(--color-content-primary)" }}>
-                    {(items[index].logic || topLevelLogic || "Or").toUpperCase()}
+                    {(items[index].logic === "Not" ? "And" : (items[index].logic || topLevelLogic || "Or")).toUpperCase()}
                   </strong>
                 )}
                 {item.type === "group" ? (
@@ -1553,7 +1555,7 @@ const AdvancedSearchTab = () => {
                   </span>
                 ) : (
                   <span style={{ display: "inline-flex", alignItems: "baseline", padding: "2px var(--spacing-sm)", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-action-outline-secondary-enabled)", background: "var(--color-general-white)" }}>
-                    {renderReviewRow(item, `review-row-${item.id}-${index}`)}
+                    {renderReviewRow(item, `review-row-${item.id}-${index}`, item.logic === "Not")}
                   </span>
                 )}
               </React.Fragment>
