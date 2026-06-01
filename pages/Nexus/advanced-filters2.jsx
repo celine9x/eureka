@@ -1441,7 +1441,16 @@ const AdvancedSearchTab = () => {
   const hasIncomplete = rows.some(isRowIncomplete) || groups.some((g) => g.rows.some(isRowIncomplete));
   const isEmpty = items.length === 0;
   const hasAtLeastOneComplete = rows.some((r) => !isRowIncomplete(r)) || groups.some((g) => g.rows.some((r) => !isRowIncomplete(r)));
-  const canGenerate = hasAtLeastOneComplete && searchName.trim();
+
+  // Warn (and block generate) when the only condition is "has none of"
+  const allConditions = [
+    ...rows,
+    ...groups.flatMap((g) => g.rows || []),
+  ];
+  const completeConditions = allConditions.filter((r) => !isRowIncomplete(r));
+  const onlyNoneOf = completeConditions.length === 1 && completeConditions[0].conditionId === "has-none-of";
+
+  const canGenerate = hasAtLeastOneComplete && searchName.trim() && !onlyNoneOf;
 
   const handleGenerate = () => {
     setShowValidation(true);
@@ -1482,7 +1491,7 @@ const AdvancedSearchTab = () => {
                 onDelete={() => deleteItem(item.id)}
                 onConvertToGroup={() => convertRowToGroup(item.id)}
                 usedFields={usedFields}
-                disableNoneOf={isFirst}
+                disableNoneOf={false}
               />
             );
           }
@@ -1619,6 +1628,11 @@ const AdvancedSearchTab = () => {
           )}
         </div>
       </div>
+
+      {/* Warning: only has-none-of condition */}
+      {onlyNoneOf && (
+      <Infobox variant="warning" title="Too many results to generate" description="Narrow your criteria to run this search. Add at least one more filter to continue." />
+      )}
 
       {/* Name input + generate */}
       <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-xs)" }}>
