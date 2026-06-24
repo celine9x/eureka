@@ -42,7 +42,10 @@ const ChevronIcon = ({ size = 12, style }) => (
 
 const toSentenceCase = (value) => {
   if (!value) return "";
-  return value.charAt(0).toUpperCase() + value.slice(1);
+  return value
+    .split("/")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join("/");
 };
 
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -733,7 +736,7 @@ export const AccessControlModal = ({
     description: isPublic
       ? `All users can access this ${displayName}.`
       : `Only authorized users can access this ${displayName}.`,
-    actionLabel: isPublic ? "Make private" : "Make public",
+    actionLabel: isPublic ? "Restrict access" : "Remove restriction",
   };
 
   const resolvedInfoboxContent = infoboxContentResolver?.({
@@ -751,7 +754,7 @@ export const AccessControlModal = ({
     body: nextIsPublic
       ? `All users will be able to access this ${displayName}.`
       : `Only authorized users will be able to access this ${displayName}.`,
-    confirmLabel: nextIsPublic ? "Make public" : "Make private",
+    confirmLabel: nextIsPublic ? "Remove restriction" : "Restrict access",
     cancelLabel: "Cancel",
   };
 
