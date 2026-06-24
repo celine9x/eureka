@@ -11,6 +11,7 @@ import { Modal } from "../../library/organisms/modal.jsx";
 import { RadioButton, RadioGroup } from "../../library/atoms/radio-button.jsx";
 import { Toggle } from "../../library/atoms/toggle.jsx";
 import { Label } from "../../library/molecules/text-input.jsx";
+import { Tooltip } from "../../library/atoms/tooltip.jsx";
 
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // MOCK DATA
@@ -998,7 +999,14 @@ function EditValidityDatesModal({ sourceState, onSave }) {
           <>
             <div style={t.row}>
               <Label>Effective date</Label>
-              <DateTrigger value={milestoneEffective} placeholder="Defined by the milestone date" isDisabled />
+              <Tooltip
+                content="This date is linked to the milestone. Unlink it to set a custom date"
+                placement="bottom-left"
+                maxWidth={240}
+                style={{ width: "100%" }}
+              >
+                <DateTrigger value={milestoneEffective} placeholder="Defined by the milestone date" isDisabled />
+              </Tooltip>
             </div>
             {(() => {
               const milestoneMinDate = milestoneEffective ? new Date(milestoneEffective.getTime() + 86400000) : undefined;
