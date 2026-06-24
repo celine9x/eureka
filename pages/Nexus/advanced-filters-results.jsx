@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+﻿import React, { useMemo, useState } from "react";
 import { Hub } from "../../library/templates/hub.jsx";
 import { Icon } from "../../library/atoms/icon.jsx";
 import { Button } from "../../library/atoms/button.jsx";
@@ -14,7 +14,7 @@ import {
   OPTION_LABEL_MAP,
 } from "./nexus-search-data.js";
 
-// ─── Ontology tree helpers ────────────────────────────────────────────────────
+// â”€â”€â”€ Ontology tree helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const SearchLogicStrip = ({ items, onEdit }) => {
   const getFieldLabel = (fieldId) => SEARCH_FIELDS.find((f) => f.id === fieldId)?.label || fieldId;
@@ -181,7 +181,7 @@ const OntologyTreeRow = ({ node, depth, expandedIds, onToggleExpanded, selectedS
 
 const ONTOLOGY_FIELD_IDS = new Set(["drug-type", "target", "clinical-indication"]);
 
-// ─── Grouped filter editor ────────────────────────────────────────────────────
+// â”€â”€â”€ Grouped filter editor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const GroupedFilterEditor = ({ fieldId, draft, updateDraft, searchIds, extraIds }) => {
   const [expandedIds, setExpandedIds] = useState(() => new Set());
@@ -327,7 +327,7 @@ const criteriaColumns = SEARCH_FIELDS.map((field) => ({
   type: "short-text",
   renderCell: (val) => {
     const ids = Array.isArray(val) ? val : val != null ? [val] : [];
-    if (ids.length === 0) return <span style={{ color: "var(--color-content-tertiary)", fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-md)" }}>—</span>;
+    if (ids.length === 0) return <span style={{ color: "var(--color-content-tertiary)", fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-md)" }}>â€”</span>;
     return (
       <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
         {ids.map((id) => (
@@ -537,3 +537,4 @@ export const AdvancedFiltersResultsPage = () => {
 };
 
 export default AdvancedFiltersResultsPage;
+

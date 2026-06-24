@@ -1,6 +1,6 @@
-// ─────────────────────────────────────────────
+﻿// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // SEARCH FIELDS
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export const SEARCH_FIELDS = [
   { id: "therapeutic-area", label: "Therapeutic area", icon: "Squares2X2" },
@@ -12,9 +12,9 @@ export const SEARCH_FIELDS = [
   { id: "territories", label: "Territories", icon: "GlobeAlt" },
 ];
 
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // FLAT FIELD OPTIONS (10X EXPANDED)
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export const FIELD_OPTIONS = {
   "therapeutic-area": [
@@ -137,9 +137,9 @@ export const FIELD_OPTIONS = {
   ],
 };
 
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // ONTOLOGY TREES (10X EXPANDED)
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export const DRUG_TYPE_TREE = [
   {
@@ -413,9 +413,9 @@ export const FIELD_TOTAL_COUNTS = {
   "territories": FIELD_OPTIONS["territories"].length,
 };
 
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // CONDITION LABELS
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export const CONDITION_LABELS = {
   "is-exactly": "is exactly",
@@ -430,9 +430,9 @@ export const CONDITION_LABELS = {
   "is-not-empty": "is not empty",
 };
 
-// ─────────────────────────────────────────────
-// OPTION LABEL LOOKUP  (id → label across all fields)
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// OPTION LABEL LOOKUP  (id â†’ label across all fields)
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const flattenOptions = (options) =>
   Object.values(options).flat().reduce((map, o) => { map[o.id] = o.label; return map; }, {});
@@ -455,9 +455,9 @@ export const OPTION_LABEL_MAP = {
 export const getOptionLabel = (fieldId, valueId) =>
   OPTION_LABEL_MAP[valueId] ?? valueId;
 
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // MOCK RESULT ASSETS (110 ASSETS - 10X EXPANDED)
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const generateAssets = () => {
   const companies = [
@@ -492,7 +492,7 @@ const generateAssets = () => {
     "PARP Inhibitor Alliance",
     "PD-L1 Bispecific Antibody",
     "RA mRNA Immunomodulator",
-    "ALK Inhibitor — 3rd Gen",
+    "ALK Inhibitor â€” 3rd Gen",
     "CD38 Naked Antibody",
     "CAR-T / Gene Therapy Combo",
     "KRAS G12C Inhibitor",
@@ -601,9 +601,9 @@ const getAllLeafIds = (tree) => {
 
 export const RESULT_ASSETS = generateAssets();
 
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // ASSET FILTERING
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Filters RESULT_ASSETS against the search criteria items from the advanced filters page.
@@ -656,9 +656,9 @@ export const filterAssets = (assets, items = []) => {
   });
 };
 
-// ─────────────────────────────────────────────
-// FILTER BUILDER  (criteria → Hub initialFilters)
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// FILTER BUILDER  (criteria â†’ Hub initialFilters)
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Builds the full list of initialFilters for the Hub results page.
@@ -765,7 +765,7 @@ export const buildInitialFilters = (items = []) => {
 
       // For ontology fields keep raw IDs; for flat fields resolve to labels.
       // For negative conditions (is-exactly-not, has-none-of), the dropdown
-      // should show ALL options EXCEPT the excluded ones — all checked.
+      // should show ALL options EXCEPT the excluded ones â€” all checked.
       const NEGATIVE_CONDITIONS = new Set(["is-exactly-not", "has-none-of"]);
       const isNegative = NEGATIVE_CONDITIONS.has(criteria.conditionId);
       const isOntologyField = ["drug-type", "target", "clinical-indication"].includes(field.id);
@@ -780,7 +780,7 @@ export const buildInitialFilters = (items = []) => {
       } else if (isNegative) {
         // Negative conditions (has-none-of, is-exactly-not) are already handled by
         // filterAssets on the base results. The chip filter is for further narrowing,
-        // so start with no pre-selection — nothing checked by default.
+        // so start with no pre-selection â€” nothing checked by default.
         selectedOptions = [];
       } else {
         // Always store IDs
@@ -808,7 +808,7 @@ export const buildInitialFilters = (items = []) => {
       };
     }
 
-    // Not configured — all options selected by default (show everything), always store IDs
+    // Not configured â€” all options selected by default (show everything), always store IDs
     const isOntologyField = ["drug-type", "target", "clinical-indication"].includes(field.id);
     const flattenTreeIds = (nodes) => {
       const ids = [];
@@ -841,3 +841,4 @@ export const buildInitialFilters = (items = []) => {
     };
   });
 };
+

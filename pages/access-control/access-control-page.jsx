@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { AccessControlModal } from "../../library/organisms/access-control-modal.jsx";
 import { Link } from "../../library/atoms/link.jsx";
 import { Tooltip } from "../../library/atoms/tooltip.jsx";
@@ -352,3 +352,4 @@ const InlineAccessControlModal = ({
 );
 
 export default AccessControlPage;
+

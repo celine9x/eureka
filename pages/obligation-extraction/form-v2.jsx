@@ -1,12 +1,12 @@
-"use client";
+﻿"use client";
 
 /**
- * Obligation Form — V2
+ * Obligation Form â€” V2
  *
  * AI-populated fields show an inline "AI" badge inside the field.
- * - Hover the field wrapper → a "Verify" button appears next to it
- * - Click "Verify"          → brief check flash, then badge disappears
- * - Edit the field          → badge disappears immediately (user took ownership)
+ * - Hover the field wrapper â†’ a "Verify" button appears next to it
+ * - Click "Verify"          â†’ brief check flash, then badge disappears
+ * - Edit the field          â†’ badge disappears immediately (user took ownership)
  */
 
 import { useState, useRef, useEffect } from "react";
@@ -23,9 +23,9 @@ import { Label } from "../../library/molecules/text-input.jsx";
 import { Badge } from "../../library/atoms/badge.jsx";
 import {MiniInfobox} from "../../library/molecules/miniinfobox.jsx";
 
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // CONSTANTS
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const AI_FIELDS = ["title", "type", "estimatedAmount", "description", "responsibility", "fromTo"];
 
@@ -43,15 +43,15 @@ const FROM_TO_OPTIONS = ["LICENSEE", "LICENSOR", "BOTH PARTIES", "THIRD PARTY"];
 const DAYS_OPTIONS = ["Days", "Weeks", "Months"];
 const PAGE_OPTIONS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
 
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // AI BADGE (inline, inside field)
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Three states:
- *   "ai"       — purple AI badge (default for populated fields)
- *   "checking" — brief green check flash
- *   "hidden"   — nothing (after validate or user edit)
+ *   "ai"       â€” purple AI badge (default for populated fields)
+ *   "checking" â€” brief green check flash
+ *   "hidden"   â€” nothing (after validate or user edit)
  */
 function AiBadge({ state, onValidate }) {
   const [hovered, setHovered] = useState(false);
@@ -61,7 +61,7 @@ function AiBadge({ state, onValidate }) {
   if (state === "checking") {
     return (
       <span style={{ flexShrink: 0, pointerEvents: "none" }}>
-        <Badge color="positive" size="sm">✓</Badge>
+        <Badge color="positive" size="sm">âœ“</Badge>
       </span>
     );
   }
@@ -91,9 +91,9 @@ function AiBadge({ state, onValidate }) {
   );
 }
 
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // SHARED SUB-COMPONENTS
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /** Functional dropdown with optional AI badge inside */
 function SelectFieldV2({ fieldKey, value, onChange, options, placeholder, badgeState, onValidate, onUserChange, error }) {
@@ -314,14 +314,14 @@ function ResponsibilityTab({ label, active, onClick }) {
   );
 }
 
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // BADGE STATE HOOK
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Manages badge state per field.
- * "ai" → hover/click → "checking" (300ms) → "hidden"
- * If user edits field → immediately "hidden"
+ * "ai" â†’ hover/click â†’ "checking" (300ms) â†’ "hidden"
+ * If user edits field â†’ immediately "hidden"
  */
 function useBadgeStates(initialFields) {
   // initialFields: array of field keys that start as "ai"
@@ -363,9 +363,9 @@ function useBadgeStates(initialFields) {
   return { states, validate, userEdited, validateAll, allHidden };
 }
 
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // MAIN COMPONENT
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default function ObligationFormV2() {
   const [title, setTitle] = useState("Subsequent Shares Issuance (Series B Financing)");
@@ -425,7 +425,7 @@ export default function ObligationFormV2() {
         overflow: "hidden",
       }}
     >
-      {/* ── HEADER ── */}
+      {/* â”€â”€ HEADER â”€â”€ */}
       <div
         style={{
           display: "flex",
@@ -448,11 +448,11 @@ export default function ObligationFormV2() {
         </div>
       </div>
 
-      {/* ── AI INACCURACY NOTICE ── */}
+      {/* â”€â”€ AI INACCURACY NOTICE â”€â”€ */}
       <div style={{ padding: "8px 24px 0", flexShrink: 0 }}>
     <MiniInfobox variant="info" message="Inaccuracies may occur with AI. Please review carefully." /> </div>
 
-      {/* ── NAV BAR ── */}
+      {/* â”€â”€ NAV BAR â”€â”€ */}
       <div
         style={{
           display: "flex",
@@ -476,7 +476,7 @@ export default function ObligationFormV2() {
         </div>
       </div>
 
-      {/* ── SOURCE SECTION ── */}
+      {/* â”€â”€ SOURCE SECTION â”€â”€ */}
       <div
         style={{
           display: "flex",
@@ -491,10 +491,10 @@ export default function ObligationFormV2() {
         <Badge color="teal" label="5.11" />
       </div>
 
-      {/* ── SCROLLABLE BODY ── */}
+      {/* â”€â”€ SCROLLABLE BODY â”€â”€ */}
       <div style={{ flex: 1, overflowY: "auto" }}>
 
-        {/* ── VERIFY ALL CARD ── */}
+        {/* â”€â”€ VERIFY ALL CARD â”€â”€ */}
         <Section>
           <Infobox
             variant={
@@ -525,7 +525,7 @@ export default function ObligationFormV2() {
 
         <Divider />
 
-        {/* ── TITLE ── */}
+        {/* â”€â”€ TITLE â”€â”€ */}
         <Section>
           <Label htmlFor="title-v2" required>Title</Label>
           <TextInputV2
@@ -542,7 +542,7 @@ export default function ObligationFormV2() {
 
         <Divider />
 
-        {/* ── TYPE ── */}
+        {/* â”€â”€ TYPE â”€â”€ */}
         <Section>
           <Label required>Type</Label>
           <SelectFieldV2
@@ -560,7 +560,7 @@ export default function ObligationFormV2() {
 
         <Divider />
 
-        {/* ── FORECASTED DATE ── */}
+        {/* â”€â”€ FORECASTED DATE â”€â”€ */}
         <Section>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <FormSectionTitle>Forecasted date</FormSectionTitle>
@@ -611,7 +611,7 @@ export default function ObligationFormV2() {
 
         <Divider />
 
-        {/* ── FINANCIAL DETAILS ── */}
+        {/* â”€â”€ FINANCIAL DETAILS â”€â”€ */}
         <Section>
           <FormSectionTitle>Financial details</FormSectionTitle>
           <Label required>Estimated amount</Label>
@@ -629,11 +629,11 @@ export default function ObligationFormV2() {
 
         <Divider />
 
-        {/* ── DETAILS ── */}
+        {/* â”€â”€ DETAILS â”€â”€ */}
         <Section>
           <FormSectionTitle>Details</FormSectionTitle>
 
-          {/* Owner — empty, no badge */}
+          {/* Owner â€” empty, no badge */}
           <div>
             <Label required>Owner</Label>
             <SelectFieldV2
@@ -646,7 +646,7 @@ export default function ObligationFormV2() {
             {errors.owner && <FieldError message={errors.owner} />}
           </div>
 
-          {/* Description — AI badge inside textarea */}
+          {/* Description â€” AI badge inside textarea */}
           <div>
             <Label required>
               Obligation description
@@ -726,7 +726,7 @@ export default function ObligationFormV2() {
 
         <Divider />
 
-        {/* ── RESPONSIBILITY ── */}
+        {/* â”€â”€ RESPONSIBILITY â”€â”€ */}
         <Section>
           <div
             style={{
@@ -800,7 +800,7 @@ export default function ObligationFormV2() {
 
         <Divider />
 
-        {/* ── PAGE NUMBER ── */}
+        {/* â”€â”€ PAGE NUMBER â”€â”€ */}
         <Section>
           <Label>Page number</Label>
           <SelectFieldV2
@@ -813,7 +813,7 @@ export default function ObligationFormV2() {
 
         <Divider />
 
-        {/* ── NOTIFICATIONS ── */}
+        {/* â”€â”€ NOTIFICATIONS â”€â”€ */}
         <Section>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <FormSectionTitle>Notifications</FormSectionTitle>
@@ -855,7 +855,7 @@ export default function ObligationFormV2() {
 
         <Divider />
 
-        {/* ── TERMINATION ── */}
+        {/* â”€â”€ TERMINATION â”€â”€ */}
         <Section style={{ paddingBottom: 32 }}>
           <FormSectionTitle>Termination</FormSectionTitle>
           <Checkbox isSelected={terminateWithAgreement} onChange={setTerminateWithAgreement} size="sm">
@@ -864,7 +864,7 @@ export default function ObligationFormV2() {
         </Section>
       </div>
 
-      {/* ── FOOTER ── */}
+      {/* â”€â”€ FOOTER â”€â”€ */}
       <div
         style={{
           display: "flex",
@@ -882,3 +882,4 @@ export default function ObligationFormV2() {
     </div>
   );
 }
+

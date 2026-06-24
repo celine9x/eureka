@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { Hub } from "../../library/templates/hub.jsx";
 import { DocumentViewerPage } from "../../library/templates/document-viewer-page.jsx";
 import { Button } from "../../library/atoms/button.jsx";
@@ -1107,7 +1107,7 @@ const PotentialDuplicatesSection = ({ currentOpportunity, allOpportunities }) =>
                     </p>
                     <div style={styles.duplicateCardMeta}>
                       <span>{opportunity.form.asset}</span>
-                      <span style={{ fontSize: 2 }}>•</span>
+                      <span style={{ fontSize: 2 }}>â€¢</span>
                       <Badge size="xs" variant={
                         opportunity.form.status === "Active"
                           ? "default"
@@ -1141,7 +1141,7 @@ const PotentialDuplicatesSection = ({ currentOpportunity, allOpportunities }) =>
                     </p>
                     <div style={styles.duplicateCardMeta}>
                       <span>{opportunity.form.asset}</span>
-                      <span style={{ fontSize: 2 }}>•</span>
+                      <span style={{ fontSize: 2 }}>â€¢</span>
                       <Badge size="xs" variant={
                         opportunity.form.status === "Active"
                           ? "default"
@@ -1689,3 +1689,4 @@ export const AiOpportunityExtractionPageV2 = () => {
 };
 
 export default AiOpportunityExtractionPage;
+

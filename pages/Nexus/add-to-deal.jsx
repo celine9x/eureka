@@ -315,9 +315,9 @@ function CompanyField({ label, isRequired, companies, value, onSelect, onCreate,
   );
 }
 
-// ─────────────────────────────────────────────
+// ---------------------------------------------
 // INLINE MODAL CARD (no fixed overlay)
-// ─────────────────────────────────────────────
+// ---------------------------------------------
 
 function ModalCard({ title, children, primaryLabel, primaryDisabled, onPrimary, onSecondary }) {
   return (
@@ -356,9 +356,9 @@ function ModalCard({ title, children, primaryLabel, primaryDisabled, onPrimary, 
   );
 }
 
-// ─────────────────────────────────────────────
+// ---------------------------------------------
 // ADD TO DEAL FORM
-// ─────────────────────────────────────────────
+// ---------------------------------------------
 
 function AddToDealModal({ forcedCompanies }) {
   const [dataSource, setDataSource] = useState(null);
@@ -477,9 +477,9 @@ function AddToDealModal({ forcedCompanies }) {
   );
 }
 
-// ─────────────────────────────────────────────
+// ---------------------------------------------
 // PAGE — both cases side by side
-// ─────────────────────────────────────────────
+// ---------------------------------------------
 
 export default function AddToDealPage() {
   return (
@@ -507,3 +507,4 @@ export default function AddToDealPage() {
     </div>
   );
 }
+

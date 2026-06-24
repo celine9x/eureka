@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { XCircleIcon } from "@heroicons/react/16/solid";
 import { SparklesIcon } from "@heroicons/react/24/outline";
@@ -1784,7 +1784,7 @@ export const OpportunityExtractionViewerPage = () => {
           );
         })()}
 
-        {/* Additional fields — kept for future use */}
+        {/* Additional fields â€” kept for future use */}
         {false && (
           <>
         <CreationFormPanel.Divider />

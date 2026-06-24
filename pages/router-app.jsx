@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { ComponentLibraryDemo } from "../eureka.jsx";
 
 import { OntologyRouterPrototypePage } from "./Nexus/ontology-router-prototype.jsx";
@@ -14,12 +14,12 @@ import OpportunityExtractionViewerPage from "./opportunity-extraction/opportunit
 import ObligationForm from "./obligation-extraction/form.jsx";
 import ObligationFormsCompare from "./obligation-extraction/forms-compare.jsx";
 import AddToDeal from "./Nexus/add-to-deal.jsx";
-import ValidityDatesPage from "./clause/validity-dates-page.jsx";
+import ValidityDatesPage from "./clause/validity-dates.jsx";
 
 const LIBRARY_PATH = "/library";
-const VALIDITY_DATES_PATH = "/clause/validity-dates";
 
 const ADD_TO_DEAL_PATH = "/nexus/add-to-deal";
+const CLAUSE_VALIDITY_PATH = "/clause/validity-dates";
 const ONTOLOGY_ROUTER_PROTOTYPE_PATH = "/nexus/ontology";
 const SEARCH_PATH = "/nexus/search";
 const SEARCH2_PATH = "/nexus/search2";
@@ -36,26 +36,26 @@ const OBLIGATION_FORM_PATH = "/obligation-extraction/form";
 const OBLIGATION_FORMS_COMPARE_PATH = "/obligation-extraction/compare";
 
 const PAGE_TITLES = {
-  [LIBRARY_PATH]: "Component Library — Eureka",
-  [ACCESS_CONTROL_PATH]: "Access Control — Eureka",
-  [AI_HOMEPAGE_PATH]: "AI Homepage — Eureka",
-  [AI_HOMEPAGE_DEMO_PATH]: "AI Homepage Demo — Eureka",
-  [AI_OPPORTUNITY_EXTRACTION_PATH]: "Opportunity Extraction — Eureka",
-  [OPPORTUNITY_EXTRACTION_VIEWER_PATH]: "Extraction Viewer — Eureka",
-  [OBLIGATION_FORM_PATH]: "Obligation Form — Eureka",
-  [OBLIGATION_FORMS_COMPARE_PATH]: "Obligation Forms Compare — Eureka",
-  [SEARCH_PATH]: "Advanced Filters — Eureka",
-  [RESULTS_PATH]: "Search Results — Eureka",
-  [SEARCH2_PATH]: "Advanced Filters 2 — Eureka",
-  [RESULTS2_PATH]: "Search Results 2 — Eureka",
-  [ONTOLOGY_ROUTER_PROTOTYPE_PATH]: "Ontology Router — Eureka",
-  [ADD_TO_DEAL_PATH]: "Add to Deal — Eureka",
-  [VALIDITY_DATES_PATH]: "Validity Dates — Eureka",
+  [LIBRARY_PATH]: "Component Library â€” Eureka",
+  [ACCESS_CONTROL_PATH]: "Access Control â€” Eureka",
+  [AI_HOMEPAGE_PATH]: "AI Homepage â€” Eureka",
+  [AI_HOMEPAGE_DEMO_PATH]: "AI Homepage Demo â€” Eureka",
+  [AI_OPPORTUNITY_EXTRACTION_PATH]: "Opportunity Extraction â€” Eureka",
+  [OPPORTUNITY_EXTRACTION_VIEWER_PATH]: "Extraction Viewer â€” Eureka",
+  [OBLIGATION_FORM_PATH]: "Obligation Form â€” Eureka",
+  [OBLIGATION_FORMS_COMPARE_PATH]: "Obligation Forms Compare â€” Eureka",
+  [SEARCH_PATH]: "Advanced Filters â€” Eureka",
+  [RESULTS_PATH]: "Search Results â€” Eureka",
+  [SEARCH2_PATH]: "Advanced Filters 2 â€” Eureka",
+  [RESULTS2_PATH]: "Search Results 2 â€” Eureka",
+  [ONTOLOGY_ROUTER_PROTOTYPE_PATH]: "Ontology Router â€” Eureka",
+  [ADD_TO_DEAL_PATH]: "Add to Deal â€” Eureka",
+  [CLAUSE_VALIDITY_PATH]: "Validity Date Scenarios â€” Eureka",
 };
 
 const ROUTE_COMPONENTS = {
   [ADD_TO_DEAL_PATH]: <AddToDeal open onClose={() => window.history.back()} />,
-  [VALIDITY_DATES_PATH]: <ValidityDatesPage />,
+  [CLAUSE_VALIDITY_PATH]: <ValidityDatesPage />,
 
   [ACCESS_CONTROL_PATH]: <AccessControlPage />,
   [AI_HOMEPAGE_PATH]: <AiHomepagePage />,

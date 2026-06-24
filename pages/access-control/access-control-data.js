@@ -1,7 +1,7 @@
-// ─────────────────────────────────────────────
+﻿// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // ACCESS CONTROL DATA
 // Backend-style data definitions for access control per object type.
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Access levels per object type.
@@ -109,3 +109,4 @@ export const getLeastPrivilegeAccessLevel = (objectLabel, principalType = "user"
 
   return allowedLevels[allowedLevels.length - 1]?.id || "owner";
 };
+

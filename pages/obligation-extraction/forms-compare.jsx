@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 /**
  * Side-by-side comparison of both obligation form versions.
@@ -60,3 +60,4 @@ export default function ObligationFormsCompare() {
     </div>
   );
 }
+

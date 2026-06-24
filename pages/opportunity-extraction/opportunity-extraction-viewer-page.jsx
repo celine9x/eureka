@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef } from "react";
 import { RadioCard, RadioCardGroup } from "../../library/molecules/radio-card.jsx";
 import { FormSectionTitle } from "../../library/organisms/section/form-section-title.jsx";
 import { DocumentViewerPage } from "../../library/templates/document-viewer-page.jsx";
@@ -75,8 +75,8 @@ const INITIAL_OPPORTUNITIES = [
         matchStatus: "matches_found",
         selectedMatchId: "mc1",
         matchCandidates: [
-          { id: "mc1", name: "Joan Liu", score: "High", subtitle: "OncoNexa Therapeutics · Manager" },
-          { id: "mc2", name: "Joan Lius", score: "Low", subtitle: "OncoNexa · Manager" },
+          { id: "mc1", name: "Joan Liu", score: "High", subtitle: "OncoNexa Therapeutics Â· Manager" },
+          { id: "mc2", name: "Joan Lius", score: "Low", subtitle: "OncoNexa Â· Manager" },
         ],
       },
       {
@@ -96,7 +96,7 @@ const INITIAL_OPPORTUNITIES = [
       matchStatus: "matches_found",
       selectedMatchId: "mcomp1",
       matchCandidates: [
-        { id: "mcomp1", name: "Biopharma", score: "High", subtitle: "Pharma · Paris" },
+        { id: "mcomp1", name: "Biopharma", score: "High", subtitle: "Pharma Â· Paris" },
       ],
     },
     linkedMeetings: [
@@ -106,7 +106,7 @@ const INITIAL_OPPORTUNITIES = [
         matchStatus: "exact_match",
         selectedMatchId: "mlm1",
         matchCandidates: [
-          { id: "mlm1", name: "OncoNova Biotech", score: "High", subtitle: "Discovery meeting · July 12, 2026" },
+          { id: "mlm1", name: "OncoNova Biotech", score: "High", subtitle: "Discovery meeting Â· July 12, 2026" },
         ],
       },
     ],

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+﻿import React, { useEffect, useMemo, useState } from "react";
 import { Hub } from "../../library/templates/hub.jsx";
 import { Icon } from "../../library/atoms/icon.jsx";
 import { Chip } from "../../library/atoms/chip.jsx";
@@ -17,9 +17,9 @@ import {
 import Button from "../../library/atoms/button.jsx";
 import csvInputRaw from "./2026-05-21T07-32-53-150Z.csv?raw";
 
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // ONTOLOGY HELPERS
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const ONTOLOGY_FIELDS = ["drug-type", "target", "clinical-indication"];
 
@@ -694,7 +694,7 @@ const criteriaColumns = SEARCH_FIELDS.map((field) => ({
   type: "short-text",
   renderCell: (val) => {
     const ids = Array.isArray(val) ? val : val != null ? [val] : [];
-    if (ids.length === 0) return <span style={{ color: "var(--color-content-tertiary)", fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-md)" }}>—</span>;
+    if (ids.length === 0) return <span style={{ color: "var(--color-content-tertiary)", fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-md)" }}>â€”</span>;
     return (
       <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
         {ids.map((id) => (
@@ -1185,3 +1185,4 @@ export const AdvancedFiltersResults2Page = () => {
 };
 
 export default AdvancedFiltersResults2Page;
+

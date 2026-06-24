@@ -1,4 +1,4 @@
-export const HUB_TEST_DATA = [
+﻿export const HUB_TEST_DATA = [
   {
     id: 1,
     name: { label: "Acme Corp", href: "#", iconLeadingName: "BuildingOffice2" },
@@ -128,3 +128,4 @@ export const ASSET_TYPES = [
     iconName: "Heart",
   },
 ];
+

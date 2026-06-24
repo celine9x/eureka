@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useRef, useEffect } from "react";
 import { CheckCircleIcon as CheckCircleOutline } from "@heroicons/react/24/outline";
@@ -15,9 +15,9 @@ import { Label } from "../../library/molecules/text-input.jsx";
 import { Badge } from "../../library/atoms/badge.jsx";
 import {MiniInfobox} from "../../library/molecules/miniinfobox.jsx";
 
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // CONSTANTS
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 // All fields that are AI-populated and need verification
 const AI_FIELDS = ["forecastedDate", "estimatedAmount"];
@@ -71,9 +71,9 @@ const DAYS_OPTIONS = ["Days", "Weeks", "Months"];
 
 const PAGE_OPTIONS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
 
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // SUB-COMPONENTS
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /** Verify icon button next to AI-populated fields */
 function VerifyButton({ isVerified, onVerify, hasError }) {
@@ -357,9 +357,9 @@ function ResponsibilityTab({ label, active, onClick }) {
   );
 }
 
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // MAIN FORM
-// ─────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default function ObligationForm() {
   // Form field values
@@ -503,7 +503,7 @@ export default function ObligationForm() {
         overflow: "hidden",
       }}
     >
-      {/* ── HEADER ── */}
+      {/* â”€â”€ HEADER â”€â”€ */}
       <div
         style={{
           display: "flex",
@@ -537,7 +537,7 @@ export default function ObligationForm() {
  <div style={{ padding: "8px 24px 0", flexShrink: 0 }}>
     <MiniInfobox variant="info" message="Inaccuracies may occur with AI. Please review carefully." /> </div>
 
-      {/* ── NAVIGATION BAR ── */}
+      {/* â”€â”€ NAVIGATION BAR â”€â”€ */}
       <div
         style={{
           display: "flex",
@@ -612,7 +612,7 @@ export default function ObligationForm() {
         </div>
       </div>
 
-      {/* ── SOURCE SECTION ── */}
+      {/* â”€â”€ SOURCE SECTION â”€â”€ */}
       <div
         style={{
           display: "flex",
@@ -635,14 +635,14 @@ export default function ObligationForm() {
         <Badge color="teal" label="5.11" />
       </div>
 
-      {/* ── SCROLLABLE BODY ── */}
+      {/* â”€â”€ SCROLLABLE BODY â”€â”€ */}
       <div style={{ flex: 1, overflowY: "auto" }}>
 
        
 
         <Divider />
 
-        {/* ── TITLE ── */}
+        {/* â”€â”€ TITLE â”€â”€ */}
         <Section>
           <div>
             <Label htmlFor="title" required>
@@ -659,7 +659,7 @@ export default function ObligationForm() {
 
         <Divider />
 
-        {/* ── TYPE ── */}
+        {/* â”€â”€ TYPE â”€â”€ */}
         <Section>
           <div>
             <Label htmlFor="type" required>
@@ -677,7 +677,7 @@ export default function ObligationForm() {
 
         <Divider />
 
-        {/* ── ROYALTY DETAILS (only for Royalty type) ── */}
+        {/* â”€â”€ ROYALTY DETAILS (only for Royalty type) â”€â”€ */}
         {type === "Royalty" && (
           <>
             <Section>
@@ -888,7 +888,7 @@ export default function ObligationForm() {
           </>
         )}
 
-        {/* ── FORECASTED DATE ── */}
+        {/* â”€â”€ FORECASTED DATE â”€â”€ */}
         <Section>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <FormSectionTitle>Forecasted date</FormSectionTitle>
@@ -1212,7 +1212,7 @@ export default function ObligationForm() {
 
         <Divider />
 
-        {/* ── FINANCIAL DETAILS (hidden for Meeting and Royalty types) ── */}
+        {/* â”€â”€ FINANCIAL DETAILS (hidden for Meeting and Royalty types) â”€â”€ */}
         {TYPES_WITH_FINANCIAL_DETAILS.includes(type) && type !== "Royalty" && (
           <Section>
             <FormSectionTitle>Financial details</FormSectionTitle>
@@ -1236,7 +1236,7 @@ export default function ObligationForm() {
         <Section>
           <FormSectionTitle>Details</FormSectionTitle>
 
-          {/* Owner — empty (AI couldn't fill) */}
+          {/* Owner â€” empty (AI couldn't fill) */}
           <div>
             <Label htmlFor="owner" required>
               Owner
@@ -1301,7 +1301,7 @@ export default function ObligationForm() {
                   </button>
                 ))}
                 <div style={{ width: 1, height: 20, background: "var(--color-action-outline-secondary-enabled)", margin: "0 4px" }} />
-                {["≡", "≔"].map((f, i) => (
+                {["â‰¡", "â‰”"].map((f, i) => (
                   <button
                     key={i}
                     type="button"
@@ -1346,7 +1346,7 @@ export default function ObligationForm() {
 
         <Divider />
 
-        {/* ── RESPONSIBILITY ── */}
+        {/* â”€â”€ RESPONSIBILITY â”€â”€ */}
         <Section>
           <div
             style={{
@@ -1424,7 +1424,7 @@ export default function ObligationForm() {
 
         <Divider />
 
-        {/* ── PAGE NUMBER ── */}
+        {/* â”€â”€ PAGE NUMBER â”€â”€ */}
         <Section>
           <div>
             <Label htmlFor="page-number">Page number</Label>
@@ -1439,7 +1439,7 @@ export default function ObligationForm() {
 
         <Divider />
 
-        {/* ── TERRITORIES (Meeting type only) ── */}
+        {/* â”€â”€ TERRITORIES (Meeting type only) â”€â”€ */}
         {type === "Meeting" && (
           <>
             <Section>
@@ -1509,7 +1509,7 @@ export default function ObligationForm() {
           </>
         )}
 
-        {/* ── NOTIFICATIONS ── */}
+        {/* â”€â”€ NOTIFICATIONS â”€â”€ */}
         <Section>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <FormSectionTitle>Notifications</FormSectionTitle>
@@ -1580,7 +1580,7 @@ export default function ObligationForm() {
 
         <Divider />
 
-        {/* ── TERMINATION ── */}
+        {/* â”€â”€ TERMINATION â”€â”€ */}
         <Section style={{ paddingBottom: 32 }}>
           <FormSectionTitle>Termination</FormSectionTitle>
           <Checkbox
@@ -1593,7 +1593,7 @@ export default function ObligationForm() {
         </Section>
       </div>
 
-      {/* ── FOOTER ── */}
+      {/* â”€â”€ FOOTER â”€â”€ */}
       <div
         style={{
           display: "flex",
@@ -1615,3 +1615,4 @@ export default function ObligationForm() {
     </div>
   );
 }
+
