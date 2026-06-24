@@ -14,8 +14,10 @@ import OpportunityExtractionViewerPage from "./opportunity-extraction/opportunit
 import ObligationForm from "./obligation-extraction/form.jsx";
 import ObligationFormsCompare from "./obligation-extraction/forms-compare.jsx";
 import AddToDeal from "./Nexus/add-to-deal.jsx";
+import ValidityDatesPage from "./clause/validity-dates-page.jsx";
 
 const LIBRARY_PATH = "/library";
+const VALIDITY_DATES_PATH = "/clause/validity-dates";
 
 const ADD_TO_DEAL_PATH = "/nexus/add-to-deal";
 const ONTOLOGY_ROUTER_PROTOTYPE_PATH = "/nexus/ontology";
@@ -48,10 +50,12 @@ const PAGE_TITLES = {
   [RESULTS2_PATH]: "Search Results 2 — Eureka",
   [ONTOLOGY_ROUTER_PROTOTYPE_PATH]: "Ontology Router — Eureka",
   [ADD_TO_DEAL_PATH]: "Add to Deal — Eureka",
+  [VALIDITY_DATES_PATH]: "Validity Dates — Eureka",
 };
 
 const ROUTE_COMPONENTS = {
   [ADD_TO_DEAL_PATH]: <AddToDeal open onClose={() => window.history.back()} />,
+  [VALIDITY_DATES_PATH]: <ValidityDatesPage />,
 
   [ACCESS_CONTROL_PATH]: <AccessControlPage />,
   [AI_HOMEPAGE_PATH]: <AiHomepagePage />,
