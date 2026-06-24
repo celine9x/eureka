@@ -197,6 +197,9 @@ function InlineDatePicker({ value, onChange, minDate, maxDate, isOpen, onOpen, i
   const setOpen = (val) => onOpen(val);
   const [viewYear, setViewYear] = useState((value || new Date()).getFullYear());
   const [viewMonth, setViewMonth] = useState((value || new Date()).getMonth());
+  // "day" | "month" | "year"
+  const [pickerView, setPickerView] = useState("day");
+  const [yearRangeStart, setYearRangeStart] = useState(() => Math.floor((value || new Date()).getFullYear() / 12) * 12);
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -204,30 +207,35 @@ function InlineDatePicker({ value, onChange, minDate, maxDate, isOpen, onOpen, i
     const handleClickOutside = (e) => {
       if (containerRef.current && !containerRef.current.contains(e.target)) {
         setOpen(false);
+        setPickerView("day");
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    // Jump to minDate month if current view is entirely before minDate
     if (minDate) {
       const viewEnd = new Date(viewYear, viewMonth + 1, 0);
-      if (viewEnd < minDate) {
-        setViewYear(minDate.getFullYear());
-        setViewMonth(minDate.getMonth());
-      }
+      if (viewEnd < minDate) { setViewYear(minDate.getFullYear()); setViewMonth(minDate.getMonth()); }
     }
-    // Jump to maxDate month if current view is entirely after maxDate
     if (maxDate) {
       const viewStart = new Date(viewYear, viewMonth, 1);
-      if (viewStart > maxDate) {
-        setViewYear(maxDate.getFullYear());
-        setViewMonth(maxDate.getMonth());
-      }
+      if (viewStart > maxDate) { setViewYear(maxDate.getFullYear()); setViewMonth(maxDate.getMonth()); }
     }
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [open]);
 
-  const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const FULL_MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const MONTHS_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const MONTHS_FULL = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+  const navBtn = (onClick, icon) => (
+    <button type="button" onClick={onClick} style={{ background: "none", border: "none", cursor: "pointer", padding: 4, display: "flex", alignItems: "center", color: "var(--color-content-secondary)" }}>
+      <Icon name={icon} size="sm" />
+    </button>
+  );
+
+  const headerBtn = (label, onClick) => (
+    <button type="button" onClick={onClick} style={{ background: "none", border: "none", cursor: "pointer", padding: "2px 6px", borderRadius: "var(--radius-sm)", fontSize: "var(--text-body-sm)", fontWeight: "var(--font-weight-medium)", fontFamily: "var(--font-family-primary)", color: "var(--color-content-primary)" }}>
+      {label}
+    </button>
+  );
 
   const getDays = () => {
     const firstDay = new Date(viewYear, viewMonth, 1).getDay();
@@ -236,98 +244,116 @@ function InlineDatePicker({ value, onChange, minDate, maxDate, isOpen, onOpen, i
     const cells = [];
     for (let i = firstDay - 1; i >= 0; i--) cells.push({ day: prevDays - i, outside: true });
     for (let i = 1; i <= daysInMonth; i++) cells.push({ day: i, outside: false });
-    while (cells.length % 7 !== 0) { cells.push({ day: cells.length - daysInMonth - firstDay + 2, outside: true }); }
+    while (cells.length % 7 !== 0) cells.push({ day: cells.length - daysInMonth - firstDay + 2, outside: true });
     return cells;
   };
 
-  const prevMonth = () => {
-    if (viewMonth === 0) { setViewMonth(11); setViewYear(y => y - 1); }
-    else setViewMonth(m => m - 1);
+  const isDaySelected = (cell) => {
+    if (!value || cell.outside) return false;
+    return value.getFullYear() === viewYear && value.getMonth() === viewMonth && value.getDate() === cell.day;
   };
-  const nextMonth = () => {
-    if (viewMonth === 11) { setViewMonth(0); setViewYear(y => y + 1); }
-    else setViewMonth(m => m + 1);
-  };
-
-  const isSelected = (day) => {
-    if (!value || day.outside) return false;
-    return value.getFullYear() === viewYear && value.getMonth() === viewMonth && value.getDate() === day.day;
-  };
-
-  const isDisabled = (day) => {
-    if (day.outside) return false;
-    const d = new Date(viewYear, viewMonth, day.day);
+  const isDayDisabled = (cell) => {
+    if (cell.outside) return true;
+    const d = new Date(viewYear, viewMonth, cell.day);
     if (minDate && d < minDate) return true;
     if (maxDate && d > maxDate) return true;
     return false;
   };
 
+  const popoverStyle = {
+    position: "absolute", top: "calc(100% + 4px)", left: 0, zIndex: 100,
+    background: "var(--color-general-white)",
+    border: "1px solid var(--color-action-outline-secondary-enabled)",
+    borderRadius: "var(--radius-md)", padding: 12,
+    boxShadow: "var(--shadow-light-down)", width: 224,
+  };
+
+  const cellBase = { border: "none", cursor: "pointer", fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-sm)", borderRadius: "var(--radius-sm)" };
+
   return (
     <div style={{ position: "relative", display: "block" }} ref={containerRef}>
-      <DateTrigger
-        value={value}
-        isError={isError}
-        onClear={() => onChange(null)}
-        onClick={() => setOpen(o => !o)}
-      />
+      <DateTrigger value={value} isError={isError} onClear={() => onChange(null)} onClick={() => { setOpen(o => !o); setPickerView("day"); }} />
+
       {open && (
-        <div
-          style={{
-            position: "absolute",
-            top: "calc(100% + 4px)",
-            left: 0,
-            zIndex: 100,
-            background: "var(--color-general-white)",
-            border: "1px solid var(--color-action-outline-secondary-enabled)",
-            borderRadius: "var(--radius-md)",
-            padding: 12,
-            boxShadow: "var(--shadow-light-down)",
-            width: "fit-content",
-          }}
-        >
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-            <button type="button" onClick={prevMonth} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}>
-              <Icon name="ChevronLeft" size="sm" />
-            </button>
-            <span style={{ fontSize: "var(--text-body-sm)", fontWeight: "var(--font-weight-medium)", fontFamily: "var(--font-family-primary)" }}>
-              {FULL_MONTHS[viewMonth]} {viewYear}
-            </span>
-            <button type="button" onClick={nextMonth} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}>
-              <Icon name="ChevronRight" size="sm" />
-            </button>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 28px)", gap: 2 }}>
-            {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map(d => (
-              <div key={d} style={{ textAlign: "center", fontSize: "var(--text-body-caption)", color: "var(--color-content-tertiary)", padding: "2px 0" }}>{d}</div>
-            ))}
-            {getDays().map((cell, i) => {
-              const disabled = isDisabled(cell);
-              const selected = isSelected(cell);
-              return (
-                <button
-                  key={i}
-                  type="button"
-                  disabled={disabled || cell.outside}
-                  onClick={() => {
-                    if (!cell.outside && !disabled) {
-                      onChange(new Date(viewYear, viewMonth, cell.day));
-                      setOpen(false);
-                    }
-                  }}
-                  style={{
-                    width: 28, height: 28, borderRadius: "var(--radius-full)",
-                    border: "none", cursor: disabled || cell.outside ? "not-allowed" : "pointer",
-                    background: selected ? "var(--color-action-fill-primary-enabled)" : "transparent",
-                    color: selected ? "white" : cell.outside || disabled ? "var(--color-content-tertiary)" : "var(--color-content-primary)",
-                    fontSize: "var(--text-body-sm)",
-                    fontFamily: "var(--font-family-primary)",
-                  }}
-                >
-                  {cell.day}
-                </button>
-              );
-            })}
-          </div>
+        <div style={popoverStyle}>
+
+          {/* ── DAY VIEW ── */}
+          {pickerView === "day" && (
+            <>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                {navBtn(() => { if (viewMonth === 0) { setViewMonth(11); setViewYear(y => y - 1); } else setViewMonth(m => m - 1); }, "ChevronLeft")}
+                <div style={{ display: "flex", gap: 2 }}>
+                  {headerBtn(MONTHS_SHORT[viewMonth], () => setPickerView("month"))}
+                  {headerBtn(String(viewYear), () => { setYearRangeStart(Math.floor(viewYear / 12) * 12); setPickerView("year"); })}
+                </div>
+                {navBtn(() => { if (viewMonth === 11) { setViewMonth(0); setViewYear(y => y + 1); } else setViewMonth(m => m + 1); }, "ChevronRight")}
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2 }}>
+                {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map(d => (
+                  <div key={d} style={{ textAlign: "center", fontSize: "var(--text-body-caption)", color: "var(--color-content-tertiary)", padding: "2px 0" }}>{d}</div>
+                ))}
+                {getDays().map((cell, i) => {
+                  const disabled = isDayDisabled(cell);
+                  const selected = isDaySelected(cell);
+                  return (
+                    <button key={i} type="button" disabled={disabled}
+                      onClick={() => { if (!disabled) { onChange(new Date(viewYear, viewMonth, cell.day)); setOpen(false); setPickerView("day"); } }}
+                      style={{ ...cellBase, width: 28, height: 28, borderRadius: "var(--radius-full)", background: selected ? "var(--color-action-fill-primary-enabled)" : "transparent", color: selected ? "white" : cell.outside || disabled ? "var(--color-content-tertiary)" : "var(--color-content-primary)", cursor: disabled ? "default" : "pointer" }}
+                    >{cell.day}</button>
+                  );
+                })}
+              </div>
+            </>
+          )}
+
+          {/* ── MONTH VIEW ── */}
+          {pickerView === "month" && (
+            <>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                {navBtn(() => setViewYear(y => y - 1), "ChevronLeft")}
+                {headerBtn(String(viewYear), () => { setYearRangeStart(Math.floor(viewYear / 12) * 12); setPickerView("year"); })}
+                {navBtn(() => setViewYear(y => y + 1), "ChevronRight")}
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 4 }}>
+                {MONTHS_SHORT.map((m, i) => {
+                  const selected = value && value.getFullYear() === viewYear && value.getMonth() === i;
+                  const isCurrentMonth = new Date().getFullYear() === viewYear && new Date().getMonth() === i;
+                  return (
+                    <button key={m} type="button"
+                      onClick={() => { setViewMonth(i); setPickerView("day"); }}
+                      style={{ ...cellBase, padding: "6px 4px", textAlign: "center", background: selected ? "var(--color-action-fill-primary-enabled)" : "transparent", color: selected ? "white" : isCurrentMonth ? "var(--color-action-fill-primary-enabled)" : "var(--color-content-primary)", fontWeight: isCurrentMonth && !selected ? "var(--font-weight-medium)" : "var(--font-weight-regular)" }}
+                    >{m}</button>
+                  );
+                })}
+              </div>
+            </>
+          )}
+
+          {/* ── YEAR VIEW ── */}
+          {pickerView === "year" && (
+            <>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                {navBtn(() => setYearRangeStart(s => s - 12), "ChevronLeft")}
+                <span style={{ fontSize: "var(--text-body-sm)", fontWeight: "var(--font-weight-medium)", fontFamily: "var(--font-family-primary)", color: "var(--color-content-primary)" }}>
+                  {yearRangeStart} – {yearRangeStart + 11}
+                </span>
+                {navBtn(() => setYearRangeStart(s => s + 12), "ChevronRight")}
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 4 }}>
+                {Array.from({ length: 12 }, (_, i) => yearRangeStart + i).map(yr => {
+                  const selected = value && value.getFullYear() === yr;
+                  const isCurrent = new Date().getFullYear() === yr;
+                  return (
+                    <button key={yr} type="button"
+                      onClick={() => { setViewYear(yr); setPickerView("month"); }}
+                      style={{ ...cellBase, padding: "6px 4px", textAlign: "center", background: selected ? "var(--color-action-fill-primary-enabled)" : "transparent", color: selected ? "white" : isCurrent ? "var(--color-action-fill-primary-enabled)" : "var(--color-content-primary)", fontWeight: isCurrent && !selected ? "var(--font-weight-medium)" : "var(--font-weight-regular)" }}
+                    >{yr}</button>
+                  );
+                })}
+              </div>
+            </>
+          )}
+
         </div>
       )}
     </div>
@@ -1000,39 +1026,41 @@ function EditValidityDatesModal({ sourceState, onSave }) {
             })()}
           </>
         ) : (
-          <>
-            <div style={t.row}>
-              <Label>Effective date</Label>
-              {draft.effectiveAligned ? (
-                <DateTrigger value={draft.effectiveDate} isDisabled />
-              ) : (
-                <InlineDatePicker value={draft.effectiveDate} onChange={setEffectiveDate} {...makePicker("modal-effective")} />
-              )}
-              <AlignmentToggle isOn={draft.effectiveAligned} agreementDate={AGREEMENT.effectiveDate} onChange={handleEffectiveAlignToggle} type="effective" />
-            </div>
-
+            <>
             {(() => {
               const modalMinDate = displayEffective ? new Date(displayEffective.getTime() + 86400000) : undefined;
               const modalExpError = !draft.expirationAligned && modalMinDate && draft.expirationDate && draft.expirationDate < modalMinDate;
               return (
-                <div style={t.row}>
-                  <Label>Expiration date</Label>
-                  {draft.expirationAligned ? (
-                    <DateTrigger value={draft.expirationDate} isDisabled />
-                  ) : (
-                    <InlineDatePicker
-                      value={draft.expirationDate}
-                      onChange={setExpirationDate}
-                      minDate={modalMinDate}
-                      isError={modalExpError}
-                      {...makePicker("modal-expiration")}
-                    />
-                  )}
-                  {modalExpError && (
-                    <MiniInfobox variant="error" message="Expiration date must be after the effective date" />
-                  )}
-                  <AlignmentToggle isOn={draft.expirationAligned} agreementDate={AGREEMENT.expirationDate} onChange={handleExpirationAlignToggle} type="expiration" />
-                </div>
+                <>
+                  <div style={t.row}>
+                    <Label>Effective date</Label>
+                    {draft.effectiveAligned ? (
+                      <DateTrigger value={draft.effectiveDate} isDisabled />
+                    ) : (
+                      <InlineDatePicker value={draft.effectiveDate} onChange={setEffectiveDate} {...makePicker("modal-effective")} />
+                    )}
+                    <AlignmentToggle isOn={draft.effectiveAligned} agreementDate={AGREEMENT.effectiveDate} onChange={handleEffectiveAlignToggle} type="effective" />
+                  </div>
+
+                  <div style={t.row}>
+                    <Label>Expiration date</Label>
+                    {draft.expirationAligned ? (
+                      <DateTrigger value={draft.expirationDate} isDisabled />
+                    ) : (
+                      <InlineDatePicker
+                        value={draft.expirationDate}
+                        onChange={setExpirationDate}
+                        minDate={modalMinDate}
+                        isError={modalExpError}
+                        {...makePicker("modal-expiration")}
+                      />
+                    )}
+                    {modalExpError && (
+                      <MiniInfobox variant="error" message="Expiration date must be after the effective date" />
+                    )}
+                    <AlignmentToggle isOn={draft.expirationAligned} agreementDate={AGREEMENT.expirationDate} onChange={handleExpirationAlignToggle} type="expiration" />
+                  </div>
+                </>
               );
             })()}
           </>
@@ -1067,10 +1095,10 @@ function EditValidityDatesModal({ sourceState, onSave }) {
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const INITIAL_STATE = {
-  effectiveDate: null,
-  effectiveAligned: false,
-  expirationDate: null,
-  expirationAligned: false,
+  effectiveDate: AGREEMENT.effectiveDate,
+  effectiveAligned: true,
+  expirationDate: AGREEMENT.expirationDate,
+  expirationAligned: true,
   milestoneMode: false,
   milestoneState: {
     milestoneTab: "existing",
