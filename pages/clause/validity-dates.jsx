@@ -11,7 +11,6 @@ import { Modal } from "../../library/organisms/modal.jsx";
 import { RadioButton, RadioGroup } from "../../library/atoms/radio-button.jsx";
 import { Toggle } from "../../library/atoms/toggle.jsx";
 import { Label } from "../../library/molecules/text-input.jsx";
-import { Tooltip } from "../../library/atoms/tooltip.jsx";
 
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // MOCK DATA
@@ -846,13 +845,14 @@ function ValidityDatesForm({ state, onChange, onCreate, onCancel }) {
           </div>
 
           {(() => {
+            const effectiveError = !effectiveAligned && effectiveDate && expirationDate && effectiveDate >= expirationDate;
             const expMinDate = effectiveDate ? new Date(effectiveDate.getTime() + 86400000) : undefined;
-            const expError = !expirationAligned && expMinDate && expirationDate && expirationDate < expMinDate;
+            const expError = (!expirationAligned && expMinDate && expirationDate && expirationDate < expMinDate) || effectiveError;
             return (
               <div style={t.row}>
                 <Label>Expiration date</Label>
                 {expirationAligned ? (
-                  <DateTrigger value={expirationDate} isDisabled />
+                  <DateTrigger value={expirationDate} isDisabled isError={effectiveError} />
                 ) : (
                   <InlineDatePicker
                     value={expirationDate}
@@ -1009,14 +1009,8 @@ function EditValidityDatesModal({ sourceState, onSave }) {
 
             <div style={t.row}>
               <Label>Effective date</Label>
-              <Tooltip
-                content="This date is linked to the milestone. Unlink it to set a custom date"
-                placement="bottom-left"
-                maxWidth={240}
-                style={{ width: "100%" }}
-              >
-                <DateTrigger value={milestoneEffective} placeholder="Defined by the milestone date" isDisabled />
-              </Tooltip>
+              <DateTrigger value={milestoneEffective} placeholder="Defined by the milestone date" isDisabled />
+              <MiniInfobox variant="info" message="This date is linked to the milestone. Unlink it to set a custom date" />
             </div>
             {(() => {
               const milestoneMinDate = milestoneEffective ? new Date(milestoneEffective.getTime() + 86400000) : undefined;
@@ -1046,8 +1040,9 @@ function EditValidityDatesModal({ sourceState, onSave }) {
         ) : (
             <>
             {(() => {
+              const modalEffectiveError = !draft.effectiveAligned && draft.effectiveDate && draft.expirationDate && draft.effectiveDate >= draft.expirationDate;
               const modalMinDate = displayEffective ? new Date(displayEffective.getTime() + 86400000) : undefined;
-              const modalExpError = !draft.expirationAligned && modalMinDate && draft.expirationDate && draft.expirationDate < modalMinDate;
+              const modalExpError = (!draft.expirationAligned && modalMinDate && draft.expirationDate && draft.expirationDate < modalMinDate) || modalEffectiveError;
               return (
                 <>
                   <div style={t.row}>
@@ -1063,7 +1058,7 @@ function EditValidityDatesModal({ sourceState, onSave }) {
                   <div style={t.row}>
                     <Label>Expiration date</Label>
                     {draft.expirationAligned ? (
-                      <DateTrigger value={draft.expirationDate} isDisabled />
+                      <DateTrigger value={draft.expirationDate} isDisabled isError={modalEffectiveError} />
                     ) : (
                       <InlineDatePicker
                         value={draft.expirationDate}
@@ -1100,8 +1095,8 @@ function EditValidityDatesModal({ sourceState, onSave }) {
 
       <div style={t.divider} />
 
-      <div style={{ display: "flex", justifyContent: "flex-end", gap: "var(--spacing-sm)" }}>
-        <Button variant="secondary" onClick={handleCancel}>Cancel</Button>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <Button variant="tertiary" onClick={handleCancel}>Cancel</Button>
         <Button variant="primary" onClick={handleConfirm}>Confirm</Button>
       </div>
     </div>
