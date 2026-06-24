@@ -998,6 +998,16 @@ function EditValidityDatesModal({ sourceState, onSave }) {
         {draft.milestoneMode ? (
           <>
             <div style={t.row}>
+              <Label>Contractual clause active</Label>
+              <DelayInput
+                delay={draft.milestoneState.delay}
+                unit={draft.milestoneState.delayUnit}
+                onDelayChange={(val) => setDraft(d => ({ ...d, milestoneState: { ...d.milestoneState, delay: val } }))}
+                onUnitChange={(val) => setDraft(d => ({ ...d, milestoneState: { ...d.milestoneState, delayUnit: val } }))}
+              />
+            </div>
+
+            <div style={t.row}>
               <Label>Effective date</Label>
               <Tooltip
                 content="This date is linked to the milestone. Unlink it to set a custom date"
