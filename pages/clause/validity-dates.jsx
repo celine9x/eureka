@@ -1226,16 +1226,14 @@ function EditValidityDatesModal({ sourceState, onSave }) {
 
         <div style={t.divider} />
 
-        <AgreementTerminationSection
-          terminateWithAgreement={draft.terminateWithAgreement}
-          onTerminateChange={(val) => setDraft(d => ({ ...d, terminateWithAgreement: val }))}
-          activePeriod={draft.activePeriod}
-          onActivePeriodChange={(val) => setDraft(d => ({ ...d, activePeriod: val }))}
-          activeDuration={draft.activeDuration}
-          onActiveDurationChange={(val) => setDraft(d => ({ ...d, activeDuration: val }))}
-          activeDurationUnit={draft.activeDurationUnit}
-          onActiveDurationUnitChange={(val) => setDraft(d => ({ ...d, activeDurationUnit: val }))}
-        />
+        <div style={t.row}>
+          <span style={{ ...t.label, color: "var(--color-content-secondary)", fontSize: "var(--text-body-overline)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+            Agreement termination
+          </span>
+          <Checkbox isSelected={draft.terminateWithAgreement} onChange={(val) => setDraft(d => ({ ...d, terminateWithAgreement: val }))} size="sm">
+            Terminate clause when agreement is terminated
+          </Checkbox>
+        </div>
       </div>
 
       <div style={t.divider} />
@@ -1275,7 +1273,6 @@ const INITIAL_STATE = {
 
 export default function ValidityDatesPage() {
   const [formState, setFormState] = useState(INITIAL_STATE);
-  const [formStateV2, setFormStateV2] = useState(INITIAL_STATE);
   const [savedState, setSavedState] = useState(null);
 
   const handleCreate = () => setSavedState(formState);
@@ -1310,16 +1307,6 @@ export default function ValidityDatesPage() {
           />
         </div>
 
-
-        <div>
-          <p style={{ ...t.caption, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.04em" }}>Creation form v2 (always editable)</p>
-          <ValidityDatesFormV2
-            state={formStateV2}
-            onChange={setFormStateV2}
-            onCreate={() => {}}
-            onCancel={() => setFormStateV2(INITIAL_STATE)}
-          />
-        </div>
         <div>
           <p style={{ ...t.caption, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.04em" }}>Edit modal</p>
           {savedState ? (
