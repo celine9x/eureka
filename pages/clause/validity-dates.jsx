@@ -890,7 +890,152 @@ function ValidityDatesForm({ state, onChange, onCreate, onCancel }) {
     </div>
   );
 }
+// ─────────────────────────────────────────────
+// VALIDITY DATES FORM V2 (fields always enabled)
+// ─────────────────────────────────────────────
 
+function ValidityDatesFormV2({ state, onChange, onCreate, onCancel }) {
+  const {
+    effectiveDate, effectiveAligned,
+    expirationDate, expirationAligned,
+    milestoneMode, milestoneState,
+    terminateWithAgreement,
+  } = state;
+
+  const [openPicker, setOpenPicker] = useState(null);
+  const makePicker = (id) => ({
+    isOpen: openPicker === id,
+    onOpen: (val) => setOpenPicker(val ? id : null),
+  });
+
+  const set = (key) => (val) => onChange({ ...state, [key]: val });
+
+  const setEffectiveDate = (date) => {
+    onChange({ ...state, effectiveDate: date, effectiveAligned: false });
+  };
+  const setExpirationDate = (date) => {
+    onChange({ ...state, expirationDate: date, expirationAligned: false });
+  };
+  const handleEffectiveAlignToggle = (val) => {
+    onChange({ ...state, effectiveAligned: val, effectiveDate: val ? AGREEMENT.effectiveDate : effectiveDate });
+  };
+  const handleExpirationAlignToggle = (val) => {
+    onChange({ ...state, expirationAligned: val, expirationDate: val ? AGREEMENT.expirationDate : expirationDate });
+  };
+
+  const getMilestoneEffective = () => {
+    const { milestoneTab, existingMilestone, newMilestoneDate, delay, delayUnit } = milestoneState;
+    const forecastedDate = milestoneTab === "existing" ? existingMilestone?.date : newMilestoneDate;
+    return computeEffectiveFromMilestone(forecastedDate, delay, delayUnit);
+  };
+
+  const displayEffective = milestoneMode ? getMilestoneEffective() : effectiveDate;
+
+  return (
+    <div style={{ ...t.card, width: 480 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span style={{ ...t.label, fontSize: "var(--text-body-md)", fontWeight: "var(--font-weight-semibold)" }}>
+          Validity dates
+        </span>
+        <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-sm)" }}>
+          <Toggle size="sm" isSelected={milestoneMode} onChange={set("milestoneMode")} />
+          <span style={t.sublabel}>Milestone</span>
+        </div>
+      </div>
+
+      <div style={t.divider} />
+
+      {milestoneMode ? (
+        <div style={{
+          border: "1px solid var(--color-action-outline-secondary-enabled)",
+          borderRadius: "var(--radius-md)",
+          padding: "var(--spacing-4)",
+          display: "flex",
+          flexDirection: "column",
+          gap: "var(--spacing-4)",
+        }}>
+          <div>
+            <span style={{ ...t.label, fontSize: "var(--text-body-sm)", fontWeight: "var(--font-weight-semibold)" }}>
+              Milestone and obligations
+            </span>
+            <p style={{ ...t.caption, marginTop: 4, lineHeight: 1.4 }}>
+              The contractual clause status and dates will be linked to the milestone automatically
+            </p>
+          </div>
+          <MilestonePanel state={milestoneState} onChange={set("milestoneState")} />
+
+          <div style={{ height: 1, background: "var(--color-action-outline-secondary-enabled)" }} />
+          {(() => {
+            const milestoneMinDate = displayEffective ? new Date(displayEffective.getTime() + 86400000) : undefined;
+            const milestoneExpError = milestoneMinDate && expirationDate && expirationDate < milestoneMinDate;
+            return (
+              <div style={t.row}>
+                <Label>Expiration date</Label>
+                <InlineDatePicker
+                  value={expirationDate}
+                  onChange={setExpirationDate}
+                  minDate={milestoneMinDate}
+                  isError={milestoneExpError}
+                  {...makePicker("v2-milestone-expiration")}
+                />
+                {milestoneExpError && (
+                  <MiniInfobox variant="error" message="Expiration date must be after the effective date" />
+                )}
+                <AlignmentToggle isOn={expirationAligned} agreementDate={AGREEMENT.expirationDate} onChange={handleExpirationAlignToggle} type="expiration" />
+              </div>
+            );
+          })()}
+        </div>
+      ) : (
+        <>
+          <div style={t.row}>
+            <Label>Effective date</Label>
+            <InlineDatePicker value={effectiveDate} onChange={setEffectiveDate} {...makePicker("v2-effective")} />
+            <AlignmentToggle isOn={effectiveAligned} agreementDate={AGREEMENT.effectiveDate} onChange={handleEffectiveAlignToggle} type="effective" />
+          </div>
+
+          {(() => {
+            const effectiveError = effectiveDate && expirationDate && effectiveDate >= expirationDate;
+            const expMinDate = effectiveDate ? new Date(effectiveDate.getTime() + 86400000) : undefined;
+            const expError = (expMinDate && expirationDate && expirationDate < expMinDate) || effectiveError;
+            return (
+              <div style={t.row}>
+                <Label>Expiration date</Label>
+                <InlineDatePicker
+                  value={expirationDate}
+                  onChange={setExpirationDate}
+                  minDate={expMinDate}
+                  isError={expError}
+                  {...makePicker("v2-expiration")}
+                />
+                {expError && (
+                  <MiniInfobox variant="error" message="Expiration date must be after the effective date" />
+                )}
+                <AlignmentToggle isOn={expirationAligned} agreementDate={AGREEMENT.expirationDate} onChange={handleExpirationAlignToggle} type="expiration" />
+              </div>
+            );
+          })()}
+        </>
+      )}
+
+      <div style={t.row}>
+        <span style={{ ...t.label, color: "var(--color-content-secondary)", fontSize: "var(--text-body-overline)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+          Termination
+        </span>
+        <Checkbox isSelected={terminateWithAgreement} onChange={set("terminateWithAgreement")} size="sm">
+          Terminate clause when agreement is terminated
+        </Checkbox>
+      </div>
+
+      <div style={t.divider} />
+
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <Button variant="tertiary" onClick={onCancel}>Cancel</Button>
+        <Button variant="primary" onClick={onCreate}>Create</Button>
+      </div>
+    </div>
+  );
+}
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // AGREEMENT TERMINATION SECTION
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -1130,6 +1275,7 @@ const INITIAL_STATE = {
 
 export default function ValidityDatesPage() {
   const [formState, setFormState] = useState(INITIAL_STATE);
+  const [formStateV2, setFormStateV2] = useState(INITIAL_STATE);
   const [savedState, setSavedState] = useState(null);
 
   const handleCreate = () => setSavedState(formState);
@@ -1164,6 +1310,16 @@ export default function ValidityDatesPage() {
           />
         </div>
 
+
+        <div>
+          <p style={{ ...t.caption, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.04em" }}>Creation form v2 (always editable)</p>
+          <ValidityDatesFormV2
+            state={formStateV2}
+            onChange={setFormStateV2}
+            onCreate={() => {}}
+            onCancel={() => setFormStateV2(INITIAL_STATE)}
+          />
+        </div>
         <div>
           <p style={{ ...t.caption, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.04em" }}>Edit modal</p>
           {savedState ? (
@@ -1184,6 +1340,7 @@ export default function ValidityDatesPage() {
     </div>
   );
 }
+
 
 
 
