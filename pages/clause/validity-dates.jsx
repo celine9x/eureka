@@ -845,9 +845,10 @@ function ValidityDatesForm({ state, onChange, onCreate, onCancel }) {
           </div>
 
           {(() => {
-            const effectiveError = !effectiveAligned && effectiveDate && expirationDate && effectiveDate >= expirationDate;
+            const effectiveError = effectiveDate && expirationDate && effectiveDate >= expirationDate;
             const expMinDate = effectiveDate ? new Date(effectiveDate.getTime() + 86400000) : undefined;
             const expError = (!expirationAligned && expMinDate && expirationDate && expirationDate < expMinDate) || effectiveError;
+            console.log("DEBUG", { effectiveDate, expirationDate, effectiveAligned, expirationAligned, effectiveError, expError });
             return (
               <div style={t.row}>
                 <Label>Expiration date</Label>
@@ -862,7 +863,7 @@ function ValidityDatesForm({ state, onChange, onCreate, onCancel }) {
                     {...makePicker("expiration")}
                   />
                 )}
-                {expError && (
+                {(expError || effectiveError) && (
                   <MiniInfobox variant="error" message="Expiration date must be after the effective date" />
                 )}
                 <AlignmentToggle isOn={expirationAligned} agreementDate={AGREEMENT.expirationDate} onChange={handleExpirationAlignToggle} type="expiration" />
