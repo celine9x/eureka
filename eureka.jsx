@@ -62,10 +62,11 @@ import { SideMenu } from "./library/organisms/side-menu/side-menu.jsx";
 import { SideMenuItem, SIDE_MENU_ITEM_STATES } from "./library/organisms/side-menu/side-menu-item.jsx";
 import { UserButton, USER_BUTTON_STATES } from "./library/organisms/side-menu/user-button.jsx";
 import { TableCell, TABLECELL_VARIANTS, TableCellLinkRow, TableCellLinkedName, TableCellTwoLevel, TableCellTags } from "./library/organisms/table/tablecell.jsx";
+import { TextCellInlineEdit, ButtonCellInlineEdit, LinkCellInlineEdit, ChipCellInlineEdit, LongTextCellInlineEdit, NumberCellInlineEdit, TextMultipleCellInlineEdit } from "./library/organisms/table/table-cell-inline-edit.jsx";
 
 import { Modal } from "./library/organisms/modal.jsx";
 import { AccessControlModal } from "./library/organisms/access-control-modal.jsx";
-import { Table, TableColumns, TableColumn } from "./library/organisms/table/table.jsx";
+import { Table, TableColumns, TableColumn, TableRow, TableCard, TableCellHeader } from "./library/organisms/table/table.jsx";
 import {
   ObjectHeader,
   ObjectHeaderTopBar,
@@ -5833,6 +5834,651 @@ const AiHomepageTemplatePage = () => (
 );
 
 // ─────────────────────────────────────────────
+// TABLE CELL INLINE EDIT PAGE
+// ─────────────────────────────────────────────
+
+const TEXT_CELL_OPTIONS = [
+  { id: "opt1", label: "Option Alpha" },
+  { id: "opt2", label: "Option Beta" },
+  { id: "opt3", label: "Option Gamma" },
+];
+
+const LINK_CELL_OPTIONS = [
+  { id: "lnk1", label: "Homepage" },
+  { id: "lnk2", label: "Documentation" },
+  { id: "lnk3", label: "Repository" },
+  { id: "lnk4", label: "Changelog" },
+];
+
+const CHIP_CELL_OPTIONS = [
+  { id: "c1", label: "Research collaboration" },
+  { id: "c2", label: "Licensing" },
+  { id: "c3", label: "Partnership" },
+  { id: "c4", label: "Supply chain" },
+  { id: "c5", label: "Joint venture" },
+];
+
+const BTN_CELL_OPTIONS = [
+  { id: "s1", label: "Active" },
+  { id: "s2", label: "Pending" },
+  { id: "s3", label: "In review" },
+  { id: "s4", label: "Closed" },
+];
+
+function TableCellInlineEditStateRows({ label, children }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+      <span style={{ fontSize: 11, fontWeight: 600, color: "var(--color-content-secondary)", textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</span>
+      <div style={{ display: "flex", flexDirection: "column", gap: 0, border: "1px solid var(--color-action-outline-secondary-enabled)", borderRadius: "var(--radius-md)", overflow: "hidden" }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function StateRow({ state, children }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 16, padding: "var(--spacing-sm) var(--spacing-3)", borderBottom: "1px solid var(--color-action-outline-secondary-enabled)", background: "var(--color-general-white)" }}>
+      <span style={{ width: 120, flexShrink: 0, fontSize: 12, color: "var(--color-content-secondary)", fontFamily: "var(--font-family-primary)" }}>{state}</span>
+      <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
+    </div>
+  );
+}
+
+const TableCellInlineEditPage = () => {
+  // Text cell state
+  const [textEmpty, setTextEmpty] = useState("");
+  const [textFilled, setTextFilled] = useState("This is a filled value");
+  const [textLeadingIcon, setTextLeadingIcon] = useState("Icon + text value");
+  const [textTrailingIcon, setTextTrailingIcon] = useState("Value with trailing");
+  const [textError, setTextError] = useState("Invalid input value");
+
+  // Button cell state
+  const [btnFilled, setBtnFilled] = useState(BTN_CELL_OPTIONS[0]);
+  const [btnError, setBtnError] = useState(BTN_CELL_OPTIONS[1]);
+
+  // Link cell state (single)
+  const [linkSingleEmpty, setLinkSingleEmpty] = useState(null);
+  const [linkSingleFilled, setLinkSingleFilled] = useState(LINK_CELL_OPTIONS[0]);
+  const [linkSingleError, setLinkSingleError] = useState(LINK_CELL_OPTIONS[1]);
+
+  // Link cell state (multiple)
+  const [linkMultiEmpty, setLinkMultiEmpty] = useState([]);
+  const [linkMultiFilled, setLinkMultiFilled] = useState([LINK_CELL_OPTIONS[0], LINK_CELL_OPTIONS[2]]);
+  const [linkMultiError, setLinkMultiError] = useState([LINK_CELL_OPTIONS[0]]);
+
+  // Chip cell state (multiple)
+  const [chipMultiEmpty, setChipMultiEmpty] = useState([]);
+  const [chipMultiFilled, setChipMultiFilled] = useState([CHIP_CELL_OPTIONS[0], CHIP_CELL_OPTIONS[1]]);
+  const [chipMultiError, setChipMultiError] = useState([CHIP_CELL_OPTIONS[0]]);
+
+  // Chip cell state (single)
+  const [chipSingleEmpty, setChipSingleEmpty] = useState([]);
+  const [chipSingleFilled, setChipSingleFilled] = useState([CHIP_CELL_OPTIONS[2]]);
+
+  return (
+    <Section
+      title="TableCell — Inline Edit"
+      description="Inline-editable table cell components for Text, Button, Link, and Chip types. Each cell supports Empty, Filled, Active (editing/dropdown open), Hover, Error, and Read-only states."
+    >
+      {/* ── TEXT ── */}
+      <PreviewComponent
+        title="Text — Left / Right Icon"
+        code={`import { TextCellInlineEdit } from "@/library/organisms/table/table-cell-inline-edit";
+
+// Empty
+<TextCellInlineEdit value="" onChange={setValue} placeholder="Add text" />
+// Filled
+<TextCellInlineEdit value="This is a filled value" onChange={setValue} />
+// With leading icon
+<TextCellInlineEdit value={val} onChange={setVal} iconLeading={<Icon name="UserIcon" size={14} />} />
+// With trailing icon
+<TextCellInlineEdit value={val} onChange={setVal} iconTrailing={<Icon name="LinkIcon" size={14} />} />
+// Error
+<TextCellInlineEdit value={val} onChange={setVal} error="This field contains an error" />
+// Read-only
+<TextCellInlineEdit value={val} readOnly />`}
+      >
+        <TableCellInlineEditStateRows label="Text cell">
+          <StateRow state="Empty">
+            <TextCellInlineEdit value={textEmpty} onChange={setTextEmpty} placeholder="Add text" />
+          </StateRow>
+          <StateRow state="Filled">
+            <TextCellInlineEdit value={textFilled} onChange={setTextFilled} />
+          </StateRow>
+          <StateRow state="Empty-Hover">
+            <TextCellInlineEdit value="" onChange={() => {}} placeholder="Hover over to see hover state" />
+          </StateRow>
+          <StateRow state="Active (click to edit)">
+            <TextCellInlineEdit value={textEmpty} onChange={setTextEmpty} placeholder="Click to activate" />
+          </StateRow>
+          <StateRow state="Left icon + Empty">
+            <TextCellInlineEdit
+              value=""
+              onChange={() => {}}
+              placeholder="Add text"
+              iconLeading={<Icon name="UserIcon" size={14} />}
+            />
+          </StateRow>
+          <StateRow state="Left icon + Filled">
+            <TextCellInlineEdit
+              value={textLeadingIcon}
+              onChange={setTextLeadingIcon}
+              iconLeading={<Icon name="UserIcon" size={14} />}
+            />
+          </StateRow>
+          <StateRow state="Right icon + Filled">
+            <TextCellInlineEdit
+              value={textTrailingIcon}
+              onChange={setTextTrailingIcon}
+              iconTrailing={<Icon name="LinkIcon" size={14} />}
+            />
+          </StateRow>
+          <StateRow state="Filled-Error">
+            <TextCellInlineEdit
+              value={textError}
+              onChange={setTextError}
+              error="This field contains an error"
+            />
+          </StateRow>
+          <StateRow state="Read-only">
+            <TextCellInlineEdit value="Read-only value" onChange={() => {}} readOnly />
+          </StateRow>
+          <StateRow state="Read-only Empty">
+            <TextCellInlineEdit value="" onChange={() => {}} placeholder="Read-only placeholder" readOnly />
+          </StateRow>
+        </TableCellInlineEditStateRows>
+      </PreviewComponent>
+
+      {/* ── BUTTON ── */}
+      <PreviewComponent
+        title="Button — Single Select via Dropdown"
+        code={`import { ButtonCellInlineEdit } from "@/library/organisms/table/table-cell-inline-edit";
+
+const options = [{ id: "s1", label: "Active" }, { id: "s2", label: "Pending" }];
+
+// Filled
+<ButtonCellInlineEdit value={options[0]} onChange={setVal} options={options} />
+// Active (dropdown open — click to trigger)
+<ButtonCellInlineEdit value={options[0]} onChange={setVal} options={options} />
+// Error
+<ButtonCellInlineEdit value={options[1]} onChange={setVal} options={options} error="Selection required" />
+// Read-only
+<ButtonCellInlineEdit value={options[0]} onChange={setVal} options={options} readOnly />`}
+      >
+        <TableCellInlineEditStateRows label="Button cell">
+          <StateRow state="Filled">
+            <ButtonCellInlineEdit value={btnFilled} onChange={setBtnFilled} options={BTN_CELL_OPTIONS} />
+          </StateRow>
+          <StateRow state="Filled-Hover">
+            <ButtonCellInlineEdit value={btnFilled} onChange={setBtnFilled} options={BTN_CELL_OPTIONS} />
+          </StateRow>
+          <StateRow state="Active (click to open)">
+            <ButtonCellInlineEdit value={btnFilled} onChange={setBtnFilled} options={BTN_CELL_OPTIONS} />
+          </StateRow>
+          <StateRow state="Filled-Error">
+            <ButtonCellInlineEdit value={btnError} onChange={setBtnError} options={BTN_CELL_OPTIONS} error="Invalid selection" />
+          </StateRow>
+          <StateRow state="Read-only">
+            <ButtonCellInlineEdit value={BTN_CELL_OPTIONS[0]} onChange={() => {}} options={BTN_CELL_OPTIONS} readOnly />
+          </StateRow>
+        </TableCellInlineEditStateRows>
+      </PreviewComponent>
+
+      {/* ── LINK — SINGLE ── */}
+      <PreviewComponent
+        title="Link — Single Select via Dropdown"
+        code={`import { LinkCellInlineEdit } from "@/library/organisms/table/table-cell-inline-edit";
+
+const options = [{ id: "lnk1", label: "Homepage" }, { id: "lnk2", label: "Docs" }];
+
+// Single
+<LinkCellInlineEdit value={null} onChange={setVal} options={options} placeholder="Add link" />
+// Filled
+<LinkCellInlineEdit value={options[0]} onChange={setVal} options={options} />
+// Icon + Text
+<LinkCellInlineEdit value={options[0]} onChange={setVal} options={options} iconLeading={<Icon name="LinkIcon" size={14} />} />
+// Error
+<LinkCellInlineEdit value={options[0]} onChange={setVal} options={options} error="Broken link" />
+// Read-only
+<LinkCellInlineEdit value={options[0]} onChange={setVal} options={options} readOnly />`}
+      >
+        <TableCellInlineEditStateRows label="Link — Single">
+          <StateRow state="Empty">
+            <LinkCellInlineEdit value={linkSingleEmpty} onChange={setLinkSingleEmpty} options={LINK_CELL_OPTIONS} placeholder="Add link" />
+          </StateRow>
+          <StateRow state="Filled">
+            <LinkCellInlineEdit value={linkSingleFilled} onChange={setLinkSingleFilled} options={LINK_CELL_OPTIONS} />
+          </StateRow>
+          <StateRow state="Empty-Hover">
+            <LinkCellInlineEdit value={null} onChange={() => {}} options={LINK_CELL_OPTIONS} placeholder="Hover me" />
+          </StateRow>
+          <StateRow state="Active (click to open)">
+            <LinkCellInlineEdit value={linkSingleEmpty} onChange={setLinkSingleEmpty} options={LINK_CELL_OPTIONS} placeholder="Click to open" />
+          </StateRow>
+          <StateRow state="Filled-Hover">
+            <LinkCellInlineEdit value={linkSingleFilled} onChange={setLinkSingleFilled} options={LINK_CELL_OPTIONS} />
+          </StateRow>
+          <StateRow state="Icon + Text">
+            <LinkCellInlineEdit
+              value={linkSingleFilled}
+              onChange={setLinkSingleFilled}
+              options={LINK_CELL_OPTIONS}
+              iconLeading={<Icon name="LinkIcon" size={14} />}
+            />
+          </StateRow>
+          <StateRow state="Filled-Error">
+            <LinkCellInlineEdit value={linkSingleError} onChange={setLinkSingleError} options={LINK_CELL_OPTIONS} error="Broken link detected" />
+          </StateRow>
+          <StateRow state="Read-only">
+            <LinkCellInlineEdit value={LINK_CELL_OPTIONS[0]} onChange={() => {}} options={LINK_CELL_OPTIONS} readOnly />
+          </StateRow>
+          <StateRow state="Read-only Empty">
+            <LinkCellInlineEdit value={null} onChange={() => {}} options={LINK_CELL_OPTIONS} placeholder="No link" readOnly />
+          </StateRow>
+        </TableCellInlineEditStateRows>
+      </PreviewComponent>
+
+      {/* ── LINK — MULTIPLE ── */}
+      <PreviewComponent
+        title="Link — Multiple Select via Dropdown"
+        code={`// Multiple
+<LinkCellInlineEdit value={[options[0], options[2]]} onChange={setVal} options={options} multiple placeholder="Add links" />`}
+      >
+        <TableCellInlineEditStateRows label="Link — Multiple">
+          <StateRow state="Empty">
+            <LinkCellInlineEdit value={linkMultiEmpty} onChange={setLinkMultiEmpty} options={LINK_CELL_OPTIONS} multiple placeholder="Add links" />
+          </StateRow>
+          <StateRow state="Filled">
+            <LinkCellInlineEdit value={linkMultiFilled} onChange={setLinkMultiFilled} options={LINK_CELL_OPTIONS} multiple />
+          </StateRow>
+          <StateRow state="Active (click to open)">
+            <LinkCellInlineEdit value={linkMultiEmpty} onChange={setLinkMultiEmpty} options={LINK_CELL_OPTIONS} multiple placeholder="Click to open" />
+          </StateRow>
+          <StateRow state="Filled-Error">
+            <LinkCellInlineEdit value={linkMultiError} onChange={setLinkMultiError} options={LINK_CELL_OPTIONS} multiple error="One or more links are invalid" />
+          </StateRow>
+          <StateRow state="Read-only">
+            <LinkCellInlineEdit value={[LINK_CELL_OPTIONS[0], LINK_CELL_OPTIONS[2]]} onChange={() => {}} options={LINK_CELL_OPTIONS} multiple readOnly />
+          </StateRow>
+        </TableCellInlineEditStateRows>
+      </PreviewComponent>
+
+      {/* ── CHIP — MULTIPLE ── */}
+      <PreviewComponent
+        title="Chip — Multiple Select via Dropdown"
+        code={`import { ChipCellInlineEdit } from "@/library/organisms/table/table-cell-inline-edit";
+
+const opts = [{ id: "c1", label: "Research", variant: "primary" }, ...];
+
+// Multiple (default)
+<ChipCellInlineEdit value={[]} onChange={setVal} options={opts} placeholder="Add tags" />
+<ChipCellInlineEdit value={[opts[0], opts[1]]} onChange={setVal} options={opts} multiple />
+// Error
+<ChipCellInlineEdit value={[opts[0]]} onChange={setVal} options={opts} error="Invalid tag" />
+// Read-only
+<ChipCellInlineEdit value={[opts[0]]} readOnly />`}
+      >
+        <TableCellInlineEditStateRows label="Chip — Multiple">
+          <StateRow state="Empty">
+            <ChipCellInlineEdit value={chipMultiEmpty} onChange={setChipMultiEmpty} options={CHIP_CELL_OPTIONS} placeholder="Add tags" />
+          </StateRow>
+          <StateRow state="Filled">
+            <ChipCellInlineEdit value={chipMultiFilled} onChange={setChipMultiFilled} options={CHIP_CELL_OPTIONS} />
+          </StateRow>
+          <StateRow state="Empty-Hover">
+            <ChipCellInlineEdit value={[]} onChange={() => {}} options={CHIP_CELL_OPTIONS} placeholder="Hover me" />
+          </StateRow>
+          <StateRow state="Active (click to open)">
+            <ChipCellInlineEdit value={chipMultiEmpty} onChange={setChipMultiEmpty} options={CHIP_CELL_OPTIONS} placeholder="Click to open" />
+          </StateRow>
+          <StateRow state="Filled-Hover">
+            <ChipCellInlineEdit value={chipMultiFilled} onChange={setChipMultiFilled} options={CHIP_CELL_OPTIONS} />
+          </StateRow>
+          <StateRow state="Filled-Error">
+            <ChipCellInlineEdit value={chipMultiError} onChange={setChipMultiError} options={CHIP_CELL_OPTIONS} error="Contains an invalid tag" />
+          </StateRow>
+          <StateRow state="Read-only">
+            <ChipCellInlineEdit value={[CHIP_CELL_OPTIONS[0], CHIP_CELL_OPTIONS[1]]} onChange={() => {}} options={CHIP_CELL_OPTIONS} readOnly />
+          </StateRow>
+          <StateRow state="Read-only Empty">
+            <ChipCellInlineEdit value={[]} onChange={() => {}} options={CHIP_CELL_OPTIONS} placeholder="No tags" readOnly />
+          </StateRow>
+        </TableCellInlineEditStateRows>
+      </PreviewComponent>
+
+      {/* ── CHIP — SINGLE ── */}
+      <PreviewComponent
+        title="Chip — Single Select via Dropdown"
+        code={`// Single selection — only one chip at a time
+<ChipCellInlineEdit value={[]} onChange={setVal} options={opts} multiple={false} placeholder="Select one tag" />`}
+      >
+        <TableCellInlineEditStateRows label="Chip — Single">
+          <StateRow state="Empty">
+            <ChipCellInlineEdit value={chipSingleEmpty} onChange={setChipSingleEmpty} options={CHIP_CELL_OPTIONS} multiple={false} placeholder="Select one tag" />
+          </StateRow>
+          <StateRow state="Filled">
+            <ChipCellInlineEdit value={chipSingleFilled} onChange={setChipSingleFilled} options={CHIP_CELL_OPTIONS} multiple={false} />
+          </StateRow>
+          <StateRow state="Active (click to open)">
+            <ChipCellInlineEdit value={chipSingleEmpty} onChange={setChipSingleEmpty} options={CHIP_CELL_OPTIONS} multiple={false} placeholder="Click to open" />
+          </StateRow>
+          <StateRow state="Read-only">
+            <ChipCellInlineEdit value={[CHIP_CELL_OPTIONS[2]]} onChange={() => {}} options={CHIP_CELL_OPTIONS} multiple={false} readOnly />
+          </StateRow>
+        </TableCellInlineEditStateRows>
+      </PreviewComponent>
+    </Section>
+  );
+};
+
+// ─────────────────────────────────────────────
+// TABLE CELL INLINE EDIT — FULL TABLE PAGE
+// ─────────────────────────────────────────────
+
+const INLINE_TABLE_BTN_OPTIONS = [
+  { id: "active",  label: "Active" },
+  { id: "pending", label: "Pending" },
+  { id: "review",  label: "In review" },
+  { id: "closed",  label: "Closed" },
+];
+
+const INLINE_TABLE_LINK_OPTIONS = [
+  { id: "hp",   label: "Homepage" },
+  { id: "docs", label: "Documentation" },
+  { id: "repo", label: "Repository" },
+  { id: "cl",   label: "Changelog" },
+];
+
+const INLINE_TABLE_CHIP_OPTIONS = [
+  { id: "c1", label: "Research" },
+  { id: "c2", label: "Licensing" },
+  { id: "c3", label: "Partnership" },
+  { id: "c4", label: "Supply chain" },
+  { id: "c5", label: "Joint venture" },
+];
+
+const INLINE_TABLE_INITIAL_ROWS = [
+  { id: "ir1", longText: "",                                                                         text: "",                                 status: null,                          linkSingle: null,                      linkMulti: [],                         chips: [],                                          chipsingle: [],                            number: null, textMulti: [] },
+  { id: "ir2", longText: "",                                                                         text: "",                                 status: null,                          linkSingle: null,                      linkMulti: [],                         chips: [],                                          chipsingle: [],                            number: null, textMulti: [] },
+  { id: "ir3", longText: "This is a long description that explains the partnership in detail and may overflow into multiple lines depending on the column width.", text: "Partnership outreach Q3",          status: INLINE_TABLE_BTN_OPTIONS[0],   linkSingle: INLINE_TABLE_LINK_OPTIONS[0], linkMulti: [INLINE_TABLE_LINK_OPTIONS[0], INLINE_TABLE_LINK_OPTIONS[2]], chips: [INLINE_TABLE_CHIP_OPTIONS[0], INLINE_TABLE_CHIP_OPTIONS[1]], chipsingle: [INLINE_TABLE_CHIP_OPTIONS[0]], number: 125000,  textMulti: [{ id: "tm1", label: "180 rue Grand Luar, Lyon" }, { id: "tm2", label: "14 Av. des Champs-Élysées" }, { id: "tm3", label: "Quai de la Gare" }, { id: "tm4", label: "Place Bellecour" }] },
+  { id: "ir4", longText: "Licensing terms covering exclusivity windows, royalty rates, and sublicensing rights across three jurisdictions.",                       text: "Licensing agreement final review", status: INLINE_TABLE_BTN_OPTIONS[1],   linkSingle: INLINE_TABLE_LINK_OPTIONS[1], linkMulti: [INLINE_TABLE_LINK_OPTIONS[1]], chips: [INLINE_TABLE_CHIP_OPTIONS[1], INLINE_TABLE_CHIP_OPTIONS[2]], chipsingle: [INLINE_TABLE_CHIP_OPTIONS[2]], number: 48750.5, textMulti: [{ id: "tm5", label: "12 Rue de Rivoli" }] },
+  { id: "ir5", longText: "Short note.",                                                               text: "Supply chain co-development MOU",  status: INLINE_TABLE_BTN_OPTIONS[2],   linkSingle: INLINE_TABLE_LINK_OPTIONS[2], linkMulti: [INLINE_TABLE_LINK_OPTIONS[0], INLINE_TABLE_LINK_OPTIONS[3]], chips: [INLINE_TABLE_CHIP_OPTIONS[3], INLINE_TABLE_CHIP_OPTIONS[4]], chipsingle: [INLINE_TABLE_CHIP_OPTIONS[3]], number: null,    textMulti: [] },
+  { id: "ir6", longText: "",                                                                         text: "Joint venture term sheet",         status: INLINE_TABLE_BTN_OPTIONS[3],   linkSingle: INLINE_TABLE_LINK_OPTIONS[3], linkMulti: [INLINE_TABLE_LINK_OPTIONS[2], INLINE_TABLE_LINK_OPTIONS[3]], chips: [INLINE_TABLE_CHIP_OPTIONS[0], INLINE_TABLE_CHIP_OPTIONS[4]], chipsingle: [INLINE_TABLE_CHIP_OPTIONS[1]], number: 2300000, textMulti: [{ id: "tm6", label: "8 Place de la Comédie" }, { id: "tm7", label: "Gare Saint-Charles" }] },
+];
+
+const inlineTablePageStyles = {
+  page: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "var(--spacing-6)",
+  },
+  tableWrap: {
+    display: "flex",
+    flexDirection: "column",
+  },
+  bodyWrap: {
+    borderRadius: "var(--radius-lg)",
+    outline: "1px solid var(--color-action-outline-secondary-enabled)",
+    background: "var(--color-general-white)",
+    overflow: "hidden",
+    width: "max-content",
+    minWidth: "100%",
+  },
+  scrollOuter: {
+    overflowX: "auto",
+    width: "100%",
+  },
+  tableInner: {
+    display: "table",
+    width: 2000,
+    minWidth: "100%",
+    tableLayout: "fixed",
+    borderCollapse: "collapse",
+  },
+};
+
+function InlineTableHeaderRow() {
+  const colStyle = (w) => ({
+    display: "table-cell",
+    width: w,
+    padding: "var(--spacing-sm) var(--spacing-3)",
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-sm)",
+    fontWeight: "var(--font-weight-semibold)",
+    color: "var(--color-content-secondary)",
+    background: "var(--color-general-neutral-25)",
+    whiteSpace: "nowrap",
+    verticalAlign: "middle",
+  });
+  return (
+    <div style={{ display: "table-row" }}>
+      <div style={colStyle(280)}>Long Text</div>
+      <div style={colStyle(240)}>Text</div>
+      <div style={colStyle(160)}>Button</div>
+      <div style={colStyle(200)}>Link — Single</div>
+      <div style={colStyle(260)}>Link — Multiple</div>
+      <div style={colStyle(280)}>Chip — Multiple</div>
+      <div style={colStyle(200)}>Chip — Single</div>
+      <div style={colStyle(160)}>Number</div>
+      <div style={colStyle(220)}>Text Multiple</div>
+    </div>
+  );
+}
+
+function InlineTableBodyRow({ row, onUpdate, index = 0 }) {
+  const zebraColor = index % 2 === 0
+    ? "var(--color-general-white)"
+    : "var(--color-general-neutral-lighter)";
+  const cellStyle = {
+    display: "table-cell",
+    padding: 0,
+    height: "1px", // enables height:100% on child components
+    borderBottom: "1px solid var(--color-action-outline-secondary-enabled)",
+    verticalAlign: "middle",
+    position: "relative",
+    background: zebraColor,
+  };
+  return (
+    <div style={{ display: "table-row", height: 56 }}>
+      <div style={cellStyle}>
+        <LongTextCellInlineEdit
+          value={row.longText}
+          onChange={(v) => onUpdate({ longText: v })}
+          placeholder="Add description"
+        />
+      </div>
+      <div style={cellStyle}>
+        <TextCellInlineEdit
+          value={row.text}
+          onChange={(v) => onUpdate({ text: v })}
+          placeholder="Add text"
+          iconLeading={<Icon name="DocumentTextIcon" size={14} />}
+        />
+      </div>
+      <div style={cellStyle}>
+        <ButtonCellInlineEdit
+          value={row.status}
+          onChange={(v) => onUpdate({ status: v })}
+          options={INLINE_TABLE_BTN_OPTIONS}
+          placeholder="Select"
+        />
+      </div>
+      <div style={cellStyle}>
+        <LinkCellInlineEdit
+          value={row.linkSingle}
+          onChange={(v) => onUpdate({ linkSingle: v })}
+          options={INLINE_TABLE_LINK_OPTIONS}
+          placeholder="Add link"
+          iconLeading={<Icon name="LinkIcon" size={14} />}
+        />
+      </div>
+      <div style={cellStyle}>
+        <LinkCellInlineEdit
+          value={row.linkMulti}
+          onChange={(v) => onUpdate({ linkMulti: v })}
+          options={INLINE_TABLE_LINK_OPTIONS}
+          multiple
+          placeholder="Add links"
+        />
+      </div>
+      <div style={cellStyle}>
+        <ChipCellInlineEdit
+          value={row.chips}
+          onChange={(v) => onUpdate({ chips: v })}
+          options={INLINE_TABLE_CHIP_OPTIONS}
+          placeholder="Add tags"
+        />
+      </div>
+      <div style={cellStyle}>
+        <ChipCellInlineEdit
+          value={row.chipsingle}
+          onChange={(v) => onUpdate({ chipsingle: v })}
+          options={INLINE_TABLE_CHIP_OPTIONS}
+          multiple={false}
+          placeholder="Select tag"
+        />
+      </div>
+      <div style={cellStyle}>
+        <NumberCellInlineEdit
+          value={row.number}
+          onChange={(v) => onUpdate({ number: v })}
+          currency="USD"
+        />
+      </div>
+      <div style={cellStyle}>
+        <TextMultipleCellInlineEdit
+          value={row.textMulti}
+          onChange={(v) => onUpdate({ textMulti: v })}
+          placeholder="Add address"
+          iconLeading={<Icon name="MapPinIcon" size={14} />}
+        />
+      </div>
+    </div>
+  );
+}
+
+const TableCellInlineEditTablePage = () => {
+  const [rows, setRows] = useState(INLINE_TABLE_INITIAL_ROWS);
+
+  const updateRow = (id, patch) =>
+    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));
+
+  const addRow = () =>
+    setRows((prev) => [
+      ...prev,
+      { id: `ir${Date.now()}`, longText: "", text: "", status: null, linkSingle: null, linkMulti: [], chips: [], chipsingle: [], number: null, textMulti: [] },
+    ]);
+
+  return (
+    <Section
+      title="TableCell — Inline Edit Table"
+      description="A full table demonstrating all four inline-edit cell types (Text, Button, Link, Chip) working together with live state. Click any cell to edit."
+    >
+      <PreviewComponent
+        title="Live Inline Edit Table"
+        code={`import { TextCellInlineEdit, ButtonCellInlineEdit, LinkCellInlineEdit, ChipCellInlineEdit } from "@/library/organisms/table/table-cell-inline-edit";
+
+<TextCellInlineEdit value={row.text} onChange={(v) => update({ text: v })} iconLeading={<Icon name="DocumentTextIcon" size={14} />} />
+<ButtonCellInlineEdit value={row.status} onChange={(v) => update({ status: v })} options={BTN_OPTIONS} />
+<LinkCellInlineEdit value={row.link} onChange={(v) => update({ link: v })} options={LINK_OPTIONS} />
+<LinkCellInlineEdit value={row.links} onChange={(v) => update({ links: v })} options={LINK_OPTIONS} multiple />
+<ChipCellInlineEdit value={row.chips} onChange={(v) => update({ chips: v })} options={CHIP_OPTIONS} />
+<ChipCellInlineEdit value={row.chip} onChange={(v) => update({ chip: v })} options={CHIP_OPTIONS} multiple={false} />`}
+      >
+        <div style={inlineTablePageStyles.tableWrap}>
+          <div style={inlineTablePageStyles.scrollOuter}>
+            {/* Header table — outside the outlined card */}
+            <div style={{ ...inlineTablePageStyles.tableInner, marginBottom: 4 }}>
+              <InlineTableHeaderRow />
+            </div>
+            {/* Body table — inside the outlined card */}
+            <div style={inlineTablePageStyles.bodyWrap}>
+              <div style={inlineTablePageStyles.tableInner}>
+                {rows.map((row, index) => (
+                  <InlineTableBodyRow
+                    key={row.id}
+                    row={row}
+                    index={index}
+                    onUpdate={(patch) => updateRow(row.id, patch)}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </PreviewComponent>
+
+      {/* Read-only variant */}
+      <PreviewComponent
+        title="Read-only Rows"
+        code={`<TextCellInlineEdit value="Read-only text" readOnly />
+<ButtonCellInlineEdit value={option} options={opts} readOnly />
+<LinkCellInlineEdit value={link} options={opts} readOnly />
+<ChipCellInlineEdit value={chips} options={opts} readOnly />`}
+      >
+        <div style={inlineTablePageStyles.tableWrap}>
+          <div style={inlineTablePageStyles.scrollOuter}>
+            <div style={inlineTablePageStyles.tableInner}>
+              <InlineTableHeaderRow />
+              {[INLINE_TABLE_INITIAL_ROWS[2], INLINE_TABLE_INITIAL_ROWS[3]].map((row, index) => (
+                <div key={row.id} style={{ display: "table-row" }}>
+                  {[
+                    <TextCellInlineEdit key="t" value={row.text} onChange={() => {}} readOnly iconLeading={<Icon name="DocumentTextIcon" size={14} />} />,
+                    <ButtonCellInlineEdit key="b" value={row.status} onChange={() => {}} options={INLINE_TABLE_BTN_OPTIONS} readOnly />,
+                    <LinkCellInlineEdit key="ls" value={row.linkSingle} onChange={() => {}} options={INLINE_TABLE_LINK_OPTIONS} readOnly />,
+                    <LinkCellInlineEdit key="lm" value={row.linkMulti} onChange={() => {}} options={INLINE_TABLE_LINK_OPTIONS} multiple readOnly />,
+                    <ChipCellInlineEdit key="cm" value={row.chips} onChange={() => {}} options={INLINE_TABLE_CHIP_OPTIONS} readOnly />,
+                    <ChipCellInlineEdit key="cs" value={row.chipsingle} onChange={() => {}} options={INLINE_TABLE_CHIP_OPTIONS} multiple={false} readOnly />,
+                  ].map((cell, i) => (
+                    <div key={i} style={{ display: "table-cell", padding: "var(--spacing-sm) var(--spacing-3)", borderBottom: "1px solid var(--color-action-outline-secondary-enabled)", verticalAlign: "middle", background: index % 2 === 0 ? "var(--color-general-white)" : "var(--color-general-neutral-lighter)" }}>
+                      {cell}
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </PreviewComponent>
+
+      {/* Error state rows */}
+      <PreviewComponent
+        title="Error State Rows"
+        code={`<TextCellInlineEdit value="Bad value" error="This field is invalid" />
+<ButtonCellInlineEdit value={option} options={opts} error="Selection not allowed" />
+<LinkCellInlineEdit value={link} options={opts} error="Broken link" />
+<ChipCellInlineEdit value={chips} options={opts} error="Invalid tag" />`}
+      >
+        <div style={inlineTablePageStyles.tableWrap}>
+          <div style={inlineTablePageStyles.scrollOuter}>
+            <div style={inlineTablePageStyles.tableInner}>
+              <InlineTableHeaderRow />
+              {[INLINE_TABLE_INITIAL_ROWS[4], INLINE_TABLE_INITIAL_ROWS[5]].map((row, index) => (
+                <div key={row.id} style={{ display: "table-row" }}>
+                  {[
+                    <TextCellInlineEdit key="t" value={row.text} onChange={() => {}} error="This field is invalid" />,
+                    <ButtonCellInlineEdit key="b" value={row.status} onChange={() => {}} options={INLINE_TABLE_BTN_OPTIONS} error="Selection required" />,
+                    <LinkCellInlineEdit key="ls" value={row.linkSingle} onChange={() => {}} options={INLINE_TABLE_LINK_OPTIONS} error="Broken link" />,
+                    <LinkCellInlineEdit key="lm" value={row.linkMulti} onChange={() => {}} options={INLINE_TABLE_LINK_OPTIONS} multiple error="One or more links are invalid" />,
+                    <ChipCellInlineEdit key="cm" value={row.chips} onChange={() => {}} options={INLINE_TABLE_CHIP_OPTIONS} error="Contains invalid tag" />,
+                    <ChipCellInlineEdit key="cs" value={row.chipsingle} onChange={() => {}} options={INLINE_TABLE_CHIP_OPTIONS} multiple={false} error="Invalid tag" />,
+                  ].map((cell, i) => (
+                    <div key={i} style={{ display: "table-cell", padding: "var(--spacing-sm) var(--spacing-3)", borderBottom: "1px solid var(--color-action-outline-secondary-enabled)", verticalAlign: "middle", background: index % 2 === 0 ? "var(--color-general-white)" : "var(--color-general-neutral-lighter)" }}>
+                      {cell}
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </PreviewComponent>
+    </Section>
+  );
+};
+
+// ─────────────────────────────────────────────
 // PAGE CONFIG
 // ─────────────────────────────────────────────
 
@@ -5892,6 +6538,8 @@ const PAGES = {
   filterPanel: { title: "FilterPanel", component: FilterPanelPage, category: "organisms" },
   documentViewer: { title: "DocumentViewer", component: DocumentViewerOrganismPage, category: "organisms" },
   paginationOrganism: { title: "Pagination (Organism)", component: PaginationOrganismPage, category: "organisms" },
+  tableCellInlineEdit: { title: "TableCell — Inline Edit", component: TableCellInlineEditPage, category: "organisms" },
+  tableCellInlineEditTable: { title: "TableCell — Inline Edit Table", component: TableCellInlineEditTablePage, category: "organisms" },
   // Templates
   hubTemplate: { title: "Hub", component: HubTemplatePage, category: "templates" },
   objectPageTemplate: { title: "ObjectPage", component: ObjectPageTemplatePage, category: "templates" },
@@ -6069,6 +6717,8 @@ function getIconForPage(pageKey) {
     sideMenuItem: "Bars3",
     userButton: "UserCircle",
     tableCell: "TableCells",
+    tableCellInlineEdit: "PencilSquare",
+    tableCellInlineEditTable: "TableCells",
   };
   return iconMap[pageKey] || "DocumentText";
 }

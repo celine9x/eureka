@@ -15,11 +15,15 @@ import ObligationForm from "./obligation-extraction/form.jsx";
 import ObligationFormsCompare from "./obligation-extraction/forms-compare.jsx";
 import AddToDeal from "./Nexus/add-to-deal.jsx";
 import ValidityDatesPage from "./clause/validity-dates.jsx";
+import InlineEditPage from "./inline-edit/inline-edit-page.jsx";
+import InlineEditTablePage from "./inline-edit/inline-edit-table.jsx";
 
 const LIBRARY_PATH = "/library";
 
 const ADD_TO_DEAL_PATH = "/nexus/add-to-deal";
 const CLAUSE_VALIDITY_PATH = "/clause/validity-dates";
+const INLINE_EDIT_PATH = "/inline-edit";
+const INLINE_EDIT_TABLE_PATH = "/inline-edit/table";
 const ONTOLOGY_ROUTER_PROTOTYPE_PATH = "/nexus/ontology";
 const SEARCH_PATH = "/nexus/search";
 const SEARCH2_PATH = "/nexus/search2";
@@ -36,7 +40,9 @@ const OBLIGATION_FORM_PATH = "/obligation-extraction/form";
 const OBLIGATION_FORMS_COMPARE_PATH = "/obligation-extraction/compare";
 
 const PAGE_TITLES = {
-  [LIBRARY_PATH]: "Component Library â€” Eureka",
+  [INLINE_EDIT_PATH]: "Inline Edit — Eureka",
+  [INLINE_EDIT_TABLE_PATH]: "Inline Edit Table — Eureka",
+  [LIBRARY_PATH]: "Component Library — Eureka",
   [ACCESS_CONTROL_PATH]: "Access Control â€” Eureka",
   [AI_HOMEPAGE_PATH]: "AI Homepage â€” Eureka",
   [AI_HOMEPAGE_DEMO_PATH]: "AI Homepage Demo â€” Eureka",
@@ -56,6 +62,8 @@ const PAGE_TITLES = {
 const ROUTE_COMPONENTS = {
   [ADD_TO_DEAL_PATH]: <AddToDeal open onClose={() => window.history.back()} />,
   [CLAUSE_VALIDITY_PATH]: <ValidityDatesPage />,
+  [INLINE_EDIT_PATH]: <InlineEditPage />,
+  [INLINE_EDIT_TABLE_PATH]: <InlineEditTablePage />,
 
   [ACCESS_CONTROL_PATH]: <AccessControlPage />,
   [AI_HOMEPAGE_PATH]: <AiHomepagePage />,
