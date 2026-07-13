@@ -23,7 +23,13 @@ export const createStyleInjector = (componentName) => {
   let injected = false;
 
   return (css) => {
-    if (injected || typeof document === "undefined") return;
+    if (typeof document === "undefined") return;
+
+    // Remove any existing style tag for this component (stale HMR tags)
+    const existing = document.querySelector(`style[data-eureka="${componentName}"]`);
+    if (existing) existing.remove();
+
+    if (injected) { injected = false; }
 
     const el = document.createElement("style");
     el.setAttribute("data-eureka", componentName);

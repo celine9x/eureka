@@ -439,6 +439,7 @@ export const Button = forwardRef(
       href,
       iconLeading,
       iconTrailing,
+      iconOnly = false,
       noTextPadding = false,
       showTextWhileLoading = false,
       onClick,
@@ -509,6 +510,12 @@ export const Button = forwardRef(
       ...(block && styles.block),
       ...(effectiveLoading && styles.loading),
       ...(isButtonDisabled && styles.disabled),
+      // iconOnly: make button square (width = height, no padding)
+      ...(iconOnly && {
+        width: sizeStyles.height,
+        padding: 0,
+        aspectRatio: "1 / 1",
+      }),
       ...style,
     };
 

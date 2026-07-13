@@ -231,9 +231,9 @@ export const Pagination = ({
               <div
                 style={{
                   position: "absolute",
-                  top: "100%",
+                  bottom: "100%",
                   left: 0,
-                  marginTop: 4,
+                  marginBottom: 4,
                   background: "var(--color-neutral-0)",
                   borderRadius: "var(--radius-md)",
                   boxShadow: "var(--shadow-md)",

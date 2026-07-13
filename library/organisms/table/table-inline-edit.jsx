@@ -3,19 +3,17 @@
 /**
  * TableInlineEdit Component (Organism)
  *
- * A config-driven table built from the inline-edit cell primitives
- * (TextCellInlineEdit, ChipCellInlineEdit, LinkCellInlineEdit) plus a
- * couple of small read/edit cells (status, owner, two-level) commonly
- * needed on hub/list pages.
- *
+ * A config-driven table built from inline-edit cell primitives.
  * Pass `columns` describing each cell's `type`, and `rows` of data keyed
  * by each column's `key`. Edits are reported via `onRowChange(id, patch)`.
  */
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+
 import { Avatar } from "../../atoms/avatar.jsx";
 import { Button } from "../../atoms/button.jsx";
+import { Checkbox } from "../../atoms/checkbox.jsx";
 import { Icon } from "../../atoms/icon.jsx";
 import {
   DropdownList,
@@ -31,6 +29,10 @@ import {
   injectCellStyles,
 } from "./table-cell-inline-edit.jsx";
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Constants
+// ─────────────────────────────────────────────────────────────────────────────
+
 export const TABLE_INLINE_EDIT_CELL_TYPES = {
   text: "text",
   longText: "longText",
@@ -41,31 +43,38 @@ export const TABLE_INLINE_EDIT_CELL_TYPES = {
   twoLevel: "twoLevel",
 };
 
-// ─────────────────────────────────────────────
-// ROW/CELL CHROME (flex-based — table-cell display can't do `gap`)
-// ─────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// CSS Injection
+// ─────────────────────────────────────────────────────────────────────────────
 
 let _rowStylesInjected = false;
 
 function injectRowStyles() {
-  if (_rowStylesInjected || typeof document === "undefined") return;
-  _rowStylesInjected = true;
-  const el = document.createElement("style");
-  el.setAttribute("data-eureka", "table-inline-edit-row");
-  el.textContent = `
-    .table-scroll-container {
+  if (typeof document === "undefined") return;
+  const existing = document.querySelector('style[data-eureka="table-inline-edit-row"]');
+  if (existing) existing.remove();
+
+  const style = document.createElement("style");
+  style.setAttribute("data-eureka", "table-inline-edit-row");
+  style.textContent = `
+    /* Scroll container */
+    .tie-scroll-container {
       width: 100%;
       overflow-x: auto;
       overflow-y: hidden;
       -webkit-overflow-scrolling: touch;
     }
-    .table-body-wrapper {
+
+    /* Body wrapper with border */
+    .tie-body-wrapper {
       border: 1px solid var(--color-outline-neutral);
       border-radius: 8px;
       overflow: hidden;
       background: var(--color-general-white);
       box-sizing: border-box;
     }
+
+    /* Row base */
     .tie-row {
       display: flex;
       align-items: stretch;
@@ -73,30 +82,40 @@ function injectRowStyles() {
       padding-left: var(--spacing-xs);
       box-sizing: border-box;
     }
+
+    /* Body row */
     .tie-row--body {
       cursor: pointer;
       padding-top: var(--spacing-xs);
       padding-bottom: var(--spacing-xs);
       transition: background 150ms ease;
     }
+
     .tie-row--body:nth-child(odd) {
       background: var(--color-general-neutral-lighter);
     }
+
     .tie-row--body:nth-child(even) {
       background: var(--color-general-white);
     }
+
     .tie-row--body:not(:last-child) {
       border-bottom: 1px solid var(--color-action-outline-secondary-enabled);
     }
+
     .tie-row--body:hover {
       background: var(--color-general-neutral-light);
     }
+
+    /* Cell base */
     .tie-cell {
       flex-shrink: 0;
       min-width: 0;
       display: flex;
       align-items: center;
     }
+
+    /* Header cell */
     .tie-header-cell {
       flex-shrink: 0;
       min-width: 0;
@@ -108,179 +127,239 @@ function injectRowStyles() {
       padding: var(--spacing-sm) 0;
       box-sizing: border-box;
     }
+
+    /* Open button (shows on hover) */
     .tie-open-btn {
       opacity: 0;
       flex-shrink: 0;
       transition: opacity 120ms ease;
     }
+
     .eureka-cie:hover .tie-open-btn {
       opacity: 1;
     }
+
     .eureka-cie.eureka-cie--active .tie-open-btn {
       opacity: 0;
     }
+
+    /* Cell container */
+    .tie-cell-container {
+      position: relative;
+      width: 100%;
+    }
+
+    /* Owner name */
+    .tie-owner-name {
+      font-family: var(--font-family-primary);
+      font-size: var(--text-body-md);
+      color: var(--color-content-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Placeholder */
+    .tie-placeholder {
+      color: var(--color-content-tertiary);
+      font-family: var(--font-family-primary);
+      font-size: var(--text-body-md);
+    }
+
+    /* Two-level cell */
+    .tie-two-level {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-width: 0;
+      width: 100%;
+    }
+
+    .tie-two-level-primary {
+      font-family: var(--font-family-primary);
+      font-size: var(--text-body-md);
+      color: var(--color-content-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .tie-two-level-secondary {
+      font-family: var(--font-family-primary);
+      font-size: var(--text-body-sm);
+      color: var(--color-content-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Popover */
+    .tie-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+    }
+
+    .tie-popover {
+      position: fixed;
+      z-index: 101;
+      border: none;
+      background: none;
+      box-shadow: none;
+      min-width: 200px;
+    }
   `;
-  document.head.appendChild(el);
+  document.head.appendChild(style);
 }
 
-const s = {
-  popoverOverlay: { position: "fixed", inset: 0, zIndex: 100 },
-  popover: {
-    position: "fixed",
-    zIndex: 101,
-    background: "var(--color-general-white)",
-    borderRadius: "var(--radius-md)",
-    border: "1px solid var(--color-action-outline-secondary-enabled)",
-    boxShadow: "var(--shadow-medium-down)",
-    minWidth: 200,
-  },
-  cell: { position: "relative", width: "100%" },
-  ownerName: {
-    fontFamily: "var(--font-family-primary)",
-    fontSize: "var(--text-body-md)",
-    color: "var(--color-content-primary)",
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-  },
-  placeholder: {
-    color: "var(--color-content-tertiary)",
-    fontFamily: "var(--font-family-primary)",
-    fontSize: "var(--text-body-md)",
-  },
-  twoLevel: {
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    minWidth: 0,
-    width: "100%",
-  },
-  twoLevelPrimary: {
-    fontFamily: "var(--font-family-primary)",
-    fontSize: "var(--text-body-md)",
-    color: "var(--color-content-primary)",
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-  },
-  twoLevelSecondary: {
-    fontFamily: "var(--font-family-primary)",
-    fontSize: "var(--text-body-sm)",
-    color: "var(--color-content-secondary)",
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-  },
-};
+// ─────────────────────────────────────────────────────────────────────────────
+// StatusCellInlineEdit
+// ─────────────────────────────────────────────────────────────────────────────
 
-/** Status pill cell — a library Button (md) that opens a popover picker. The Button is the real interactive element, so it owns its own hover/active states rather than a wrapping cie box. */
 function StatusCellInlineEdit({ value, onChange, options = [], readOnly = false }) {
+  const ref = useRef(null);
   const [open, setOpen] = useState(false);
   const [popPos, setPopPos] = useState(null);
-  const ref = useRef(null);
+
+  const handleClick = () => {
+    if (!open) {
+      const rect = ref.current?.getBoundingClientRect();
+      if (rect) {
+        setPopPos({ top: rect.bottom + 4, left: rect.left });
+      }
+    }
+    setOpen((prev) => !prev);
+  };
+
+  const handleSelect = (opt) => {
+    onChange?.(opt);
+    setOpen(false);
+  };
 
   return (
-    <div ref={ref} style={{ ...s.cell, justifyContent: "center" }}>
+    <div ref={ref} className="tie-cell-container" style={{ justifyContent: "center" }}>
       <Button
         variant={value?.variant ?? "secondary"}
         size="md"
         iconTrailing={!readOnly ? <Icon name="ChevronDown" size="sm" /> : undefined}
         isDisabled={readOnly}
         style={{ flexShrink: 0, alignSelf: "flex-start" }}
-        onClick={() => {
-          if (!open) {
-            const rect = ref.current?.getBoundingClientRect();
-            if (rect) setPopPos({ top: rect.bottom + 4, left: rect.left });
-          }
-          setOpen((o) => !o);
-        }}
+        onClick={handleClick}
       >
         {value?.label ?? "Select"}
       </Button>
 
-      {open && popPos && createPortal(
-        <>
-          <div style={s.popoverOverlay} onClick={() => setOpen(false)} />
-          <div style={{ ...s.popover, top: popPos.top, left: popPos.left }} onClick={(e) => e.stopPropagation()}>
-            <DropdownList>
-              <DropdownSection>
-                {options.map((opt) => (
-                  <DropdownListItem
-                    key={opt.id}
-                    checked={value?.id === opt.id}
-                    noCheckbox
-                    onClick={() => { onChange?.(opt); setOpen(false); }}
-                  >
-                    {opt.label}
-                  </DropdownListItem>
-                ))}
-              </DropdownSection>
-            </DropdownList>
-          </div>
-        </>,
-        document.body
-      )}
+      {open &&
+        popPos &&
+        createPortal(
+          <>
+            <div className="tie-overlay" onClick={() => setOpen(false)} />
+            <div
+              className="tie-popover"
+              style={{ top: popPos.top, left: popPos.left }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <DropdownList>
+                <DropdownSection>
+                  {options.map((opt) => (
+                    <DropdownListItem
+                      key={opt.id}
+                      checked={value?.id === opt.id}
+                      noCheckbox
+                      onClick={() => handleSelect(opt)}
+                    >
+                      {opt.label}
+                    </DropdownListItem>
+                  ))}
+                </DropdownSection>
+              </DropdownList>
+            </div>
+          </>,
+          document.body
+        )}
     </div>
   );
 }
 
-/** Avatar + name cell (e.g. Owner) — click opens a popover picker. Shares the same hover/active box as Text/Link/Chip cells. */
-function OwnerCellInlineEdit({ value, onChange, options = [], readOnly = false }) {
-  useEffect(() => { injectCellStyles(); }, []);
+// ─────────────────────────────────────────────────────────────────────────────
+// OwnerCellInlineEdit
+// ─────────────────────────────────────────────────────────────────────────────
 
+function OwnerCellInlineEdit({ value, onChange, options = [], readOnly = false }) {
+  useEffect(() => injectCellStyles(), []);
+
+  const ref = useRef(null);
   const [open, setOpen] = useState(false);
   const [popPos, setPopPos] = useState(null);
-  const ref = useRef(null);
+
+  const handleClick = () => {
+    if (readOnly) return;
+    if (!open) {
+      const rect = ref.current?.getBoundingClientRect();
+      if (rect) {
+        setPopPos({ top: rect.bottom + 4, left: rect.left });
+      }
+    }
+    setOpen((prev) => !prev);
+  };
+
+  const handleSelect = (opt) => {
+    onChange?.(opt);
+    setOpen(false);
+  };
 
   return (
-    <div ref={ref} style={s.cell}>
+    <div ref={ref} className="tie-cell-container">
       <div
         className={cie(open && "active", readOnly && "readonly")}
-        onClick={() => {
-          if (readOnly) return;
-          if (!open) {
-            const rect = ref.current?.getBoundingClientRect();
-            if (rect) setPopPos({ top: rect.bottom + 4, left: rect.left });
-          }
-          setOpen((o) => !o);
-        }}
+        onClick={handleClick}
       >
         {value ? (
           <>
             <Avatar size="xs" initials={value.initials} />
-            <span style={s.ownerName}>{value.name}</span>
+            <span className="tie-owner-name">{value.name}</span>
           </>
         ) : (
-          <span style={s.placeholder}>Add owner</span>
+          <span className="tie-placeholder">Add owner</span>
         )}
       </div>
 
-      {open && popPos && createPortal(
-        <>
-          <div style={s.popoverOverlay} onClick={() => setOpen(false)} />
-          <div style={{ ...s.popover, top: popPos.top, left: popPos.left }} onClick={(e) => e.stopPropagation()}>
-            <DropdownList>
-              <DropdownSection>
-                {options.map((opt) => (
-                  <DropdownListItem
-                    key={opt.id}
-                    checked={value?.id === opt.id}
-                    noCheckbox
-                    icon={<Avatar size="xs" initials={opt.initials} />}
-                    onClick={() => { onChange?.(opt); setOpen(false); }}
-                  >
-                    {opt.name}
-                  </DropdownListItem>
-                ))}
-              </DropdownSection>
-            </DropdownList>
-          </div>
-        </>,
-        document.body
-      )}
+      {open &&
+        popPos &&
+        createPortal(
+          <>
+            <div className="tie-overlay" onClick={() => setOpen(false)} />
+            <div
+              className="tie-popover"
+              style={{ top: popPos.top, left: popPos.left }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <DropdownList>
+                <DropdownSection>
+                  {options.map((opt) => (
+                    <DropdownListItem
+                      key={opt.id}
+                      checked={value?.id === opt.id}
+                      noCheckbox
+                      icon={<Avatar size="xs" initials={opt.initials} />}
+                      onClick={() => handleSelect(opt)}
+                    >
+                      {opt.name}
+                    </DropdownListItem>
+                  ))}
+                </DropdownSection>
+              </DropdownList>
+            </div>
+          </>,
+          document.body
+        )}
     </div>
   );
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Cell Renderer
+// ─────────────────────────────────────────────────────────────────────────────
 
 function renderCell(column, row, onRowChange, onOpenRow) {
   const value = row[column.key];
@@ -293,7 +372,10 @@ function renderCell(column, row, onRowChange, onOpenRow) {
           <Button
             variant="secondary"
             size="sm"
-            onClick={(e) => { e.stopPropagation(); onOpenRow?.(row); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenRow?.(row);
+            }}
           >
             Open
           </Button>
@@ -328,8 +410,6 @@ function renderCell(column, row, onRowChange, onOpenRow) {
           options={column.options ?? []}
           multiple={column.multiple}
           placeholder={column.placeholder ?? "Add link"}
-          iconLeading={column.icon}
-          hideIconWhenEmpty={column.hideIconWhenEmpty}
         />
       );
 
@@ -363,9 +443,11 @@ function renderCell(column, row, onRowChange, onOpenRow) {
 
     case TABLE_INLINE_EDIT_CELL_TYPES.twoLevel:
       return (
-        <div style={s.twoLevel}>
-          <span style={s.twoLevelPrimary}>{value?.primary}</span>
-          {value?.secondary && <span style={s.twoLevelSecondary}>{value.secondary}</span>}
+        <div className="tie-two-level">
+          <span className="tie-two-level-primary">{value?.primary}</span>
+          {value?.secondary && (
+            <span className="tie-two-level-secondary">{value.secondary}</span>
+          )}
         </div>
       );
 
@@ -374,9 +456,11 @@ function renderCell(column, row, onRowChange, onOpenRow) {
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// TableInlineEdit
+// ─────────────────────────────────────────────────────────────────────────────
+
 /**
- * TableInlineEdit
- *
  * @example
  * <TableInlineEdit
  *   columns={[
@@ -386,47 +470,130 @@ function renderCell(column, row, onRowChange, onOpenRow) {
  *   rows={rows}
  *   onRowChange={(id, patch) => updateRow(id, patch)}
  *   trailingColumn={{ width: 48, render: (row) => <RowMenu row={row} /> }}
+ *   selectable
+ *   selectedRows={selectedIds}
+ *   onSelectionChange={setSelectedIds}
  * />
  */
-export function TableInlineEdit({ columns = [], rows = [], onRowChange, trailingColumn, onOpenRow }) {
+export function TableInlineEdit({
+  columns = [],
+  rows = [],
+  onRowChange,
+  trailingColumn,
+  onOpenRow,
+  selectable = false,
+  selectedRows = [],
+  onSelectionChange,
+}) {
   injectRowStyles();
 
+  const allSelected = rows.length > 0 && selectedRows.length === rows.length;
+  const someSelected = selectedRows.length > 0 && selectedRows.length < rows.length;
+
+  const handleSelectAll = () => {
+    if (allSelected) {
+      onSelectionChange?.([]);
+    } else {
+      onSelectionChange?.(rows.map((r) => r.id));
+    }
+  };
+
+  const handleSelectRow = (rowId) => {
+    if (selectedRows.includes(rowId)) {
+      onSelectionChange?.(selectedRows.filter((id) => id !== rowId));
+    } else {
+      onSelectionChange?.([...selectedRows, rowId]);
+    }
+  };
+
   return (
-    <div className="table-wrapper" style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-xxs)" }}>
-      {/* Single scroll container — header and body scroll together, one scrollbar at the bottom. */}
-      <div className="table-scroll-container">
+    <div
+      className="tie-wrapper"
+      style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-xxs)" }}
+    >
+      <div className="tie-scroll-container">
         <div style={{ width: "max-content", minWidth: "100%" }}>
-          {/* Header sits directly on the page — no card background behind it. */}
-          <div className="table-header-wrapper" style={{ marginBottom: 0 }}>
+          {/* Header */}
+          <div className="tie-header-wrapper" style={{ marginBottom: 0 }}>
             <div className="tie-row">
+              {selectable && (
+                <div
+                  className="tie-header-cell"
+                  style={{ width: 48, display: "flex", alignItems: "center", justifyContent: "center" }}
+                >
+                  <Checkbox
+                    size="sm"
+                    isSelected={allSelected}
+                    isIndeterminate={someSelected}
+                    onChange={handleSelectAll}
+                  />
+                </div>
+              )}
+
               {columns.map((column) => (
                 <div
                   key={column.key}
                   className="tie-header-cell"
-                  style={{ width: column.width, fontWeight: column.headerBold === false ? "var(--font-weight-regular)" : undefined }}
+                  style={{
+                    width: column.width,
+                    fontWeight:
+                      column.headerBold === false
+                        ? "var(--font-weight-regular)"
+                        : undefined,
+                  }}
                 >
                   {column.header}
                 </div>
               ))}
-              {trailingColumn && <div className="tie-header-cell" style={{ width: trailingColumn.width ?? 48 }} />}
+
+              {trailingColumn && (
+                <div
+                  className="tie-header-cell"
+                  style={{ width: trailingColumn.width ?? 48 }}
+                />
+              )}
             </div>
           </div>
 
-          {/* Only the data rows get the white, outlined, rounded card treatment. */}
-          <div className="table-body-wrapper">
-            {rows.map((row, index) => (
+          {/* Body */}
+          <div className="tie-body-wrapper">
+            {rows.map((row) => (
               <div
                 key={row.id}
                 className="tie-row tie-row--body"
                 onClick={() => onOpenRow?.(row)}
               >
+                {selectable && (
+                  <div
+                    className="tie-cell"
+                    style={{ width: 48, display: "flex", alignItems: "center", justifyContent: "center" }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Checkbox
+                      size="sm"
+                      isSelected={selectedRows.includes(row.id)}
+                      onChange={() => handleSelectRow(row.id)}
+                    />
+                  </div>
+                )}
+
                 {columns.map((column) => (
-                  <div key={column.key} className="tie-cell" style={{ width: column.width }} onClick={(e) => e.stopPropagation()}>
+                  <div
+                    key={column.key}
+                    className="tie-cell"
+                    style={{ width: column.width }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     {renderCell(column, row, onRowChange, onOpenRow)}
                   </div>
                 ))}
+
                 {trailingColumn && (
-                  <div className="tie-cell" style={{ width: trailingColumn.width ?? 48 }} onClick={(e) => e.stopPropagation()}>
+                  <div
+                    className="tie-cell"
+                    style={{ width: trailingColumn.width ?? 48 }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     {trailingColumn.render(row)}
                   </div>
                 )}
