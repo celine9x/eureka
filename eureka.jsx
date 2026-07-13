@@ -104,6 +104,7 @@ import { ObjectPage } from "./library/templates/object-page.jsx";
 import { SidePanel } from "./library/templates/side-panel.jsx";
 import { DocumentViewerPage } from "./library/templates/document-viewer-page.jsx";
 import { AiHomepage } from "./library/templates/ai-homepage.jsx";
+import HubPage from "./pages/hub/hub-page.jsx";
 
 // ─────────────────────────────────────────────
 // SHARED PROPS
@@ -5504,104 +5505,7 @@ const [selectedRow, setSelectedRow] = useState(null);
   );
 };
 
-const HubTemplatePage = () => {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [selectedRows, setSelectedRows] = useState([]);
-
-  const sampleData = [
-    { id: 1, name: "Acme Corp", status: "Active", revenue: "$1.2M", employees: 150 },
-    { id: 2, name: "Tech Inc", status: "Pending", revenue: "$800K", employees: 85 },
-    { id: 3, name: "Global Ltd", status: "Active", revenue: "$2.5M", employees: 320 },
-  ];
-
-  const columns = [
-    { key: "name", label: "Company Name", sortable: true },
-    { key: "status", label: "Status", render: (val) => <Badge color={val === "Active" ? "positive" : "warning"}>{val}</Badge> },
-    { key: "revenue", label: "Revenue", sortable: true },
-    { key: "employees", label: "Employees", sortable: true },
-  ];
-
-  return (
-    <Section title="Hub Template" description="A complete page layout template for list/hub pages.">
-      <PreviewComponent
-        title="Hub Template Preview"
-        code={`import { Hub } from "@/library/templates/hub";
-
-<Hub
-  title="Companies"
-  columns={columns}
-  data={data}
-  currentPage={1}
-  totalPages={10}
-/>`}
-      >
-        <p style={{ marginBottom: 16, color: "var(--color-content-secondary)", fontSize: 14 }}>
-          The Hub template combines SideMenu, HubHeader, Table, and Pagination into a complete page layout.
-          Below is a scaled-down preview.
-        </p>
-        <div style={{ height: 500, border: "1px solid var(--color-neutral-200)", borderRadius: 8, overflow: "hidden" }}>
-          <div style={{ display: "flex", height: "100%", background: "var(--color-general-neutral-light)" }}>
-            {/* Mini Sidebar Preview */}
-            <div style={{ width: 200, borderRight: "1px solid var(--color-action-outline-secondary-enabled)", overflow: "hidden" }}>
-              <div style={{ fontSize: 16, fontWeight: 700, color: "var(--color-content-brand)", marginBottom: 24 }}>Eureka</div>
-              <div style={{ fontSize: 12, color: "var(--color-content-secondary)" }}>Side Menu Preview</div>
-            </div>
-
-            {/* Main Content Preview */}
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-              {/* Header */}
-              <div style={{ padding: 16, background: "var(--color-general-white)", borderBottom: "1px solid var(--color-action-outline-secondary-enabled)" }}>
-                <HubHeader
-                  title="Companies"
-                  badge="124"
-                  showBorder={false}
-                  rightContent={
-                    <HubHeaderActions>
-                      <Button variant="primary" size="sm">Add Company</Button>
-                    </HubHeaderActions>
-                  }
-                />
-              </div>
-
-              {/* Table Area */}
-              <div style={{ flex: 1, padding: 16, overflow: "auto" }}>
-                <Table
-                  columns={[
-                    { key: "name", header: "Company Name", variant: "short-text", sortable: true, width: "300px" },
-                    { key: "status", header: "Status", variant: "badge", sortable: false, width: "300px" },
-                    { key: "revenue", header: "Revenue", variant: "short-text", sortable: true, width: "300px" },
-                    { key: "employees", header: "Employees", variant: "short-text", sortable: true, width: "300px" },
-                  ]}
-                  rows={sampleData.map((row) => ({
-                    id: row.id,
-                    name: row.name,
-                    status: <Badge color={row.status === "Active" ? "positive" : "warning"}>{row.status}</Badge>,
-                    revenue: row.revenue,
-                    employees: row.employees,
-                  }))}
-                />
-              </div>
-
-              {/* Footer with Pagination */}
-              <div style={{ padding: 16, background: "var(--color-general-white)", borderTop: "1px solid var(--color-action-outline-secondary-enabled)" }}>
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={10}
-                  perPage={pageSize}
-                  onPageChange={setCurrentPage}
-                  onPerPageChange={setPageSize}
-                  showPerPage
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </PreviewComponent>
-
-    </Section>
-  );
-};
+const HubTemplatePage = () => <HubPage />;
 
 const ObjectPageTemplatePage = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -6541,7 +6445,7 @@ const PAGES = {
   tableCellInlineEdit: { title: "TableCell — Inline Edit", component: TableCellInlineEditPage, category: "organisms" },
   tableCellInlineEditTable: { title: "TableCell — Inline Edit Table", component: TableCellInlineEditTablePage, category: "organisms" },
   // Templates
-  hubTemplate: { title: "Hub", component: HubTemplatePage, category: "templates" },
+  hubTemplate: { title: "Hub", component: HubTemplatePage, category: "templates", fullBleed: true },
   objectPageTemplate: { title: "ObjectPage", component: ObjectPageTemplatePage, category: "templates" },
   documentViewerPageTemplate: { title: "DocumentViewerPage", component: DocumentViewerPageTemplatePage, category: "templates" },
   sidePanelTemplate: { title: "SidePanel", component: SidePanelPage, category: "templates" },
@@ -6625,6 +6529,7 @@ export const ComponentLibraryDemo = () => {
   ].filter(section => section.items.length > 0);
 
   const CurrentPage = PAGES[activePage]?.component || ButtonPage;
+  const fullBleed = Boolean(PAGES[activePage]?.fullBleed);
 
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "var(--color-general-neutral-light)" }}>
@@ -6650,11 +6555,14 @@ export const ComponentLibraryDemo = () => {
       />
 
       {/* Main Content */}
-      <main style={{ flex: 1, padding: 48, marginLeft: 80, overflow: "auto" }}>
-        <div style={{ maxWidth: 1000, margin: "0 auto" }}>
-          {/* Page Content */}
+      <main style={{ flex: 1, marginLeft: 80, overflow: "auto", padding: fullBleed ? 0 : 48 }}>
+        {fullBleed ? (
           <CurrentPage />
-        </div>
+        ) : (
+          <div style={{ maxWidth: 1000, margin: "0 auto" }}>
+            <CurrentPage />
+          </div>
+        )}
       </main>
     </div>
   );

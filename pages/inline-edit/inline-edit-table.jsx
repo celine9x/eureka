@@ -559,18 +559,17 @@ function AssigneeCell({ assignee, onChange }) {
 }
 
 // ─────────────────────────────────────────────
-// MAIN PAGE
+// INLINE EDIT TABLE (reusable, no page wrapper)
 // ─────────────────────────────────────────────
 
-export default function InlineEditTablePage() {
+export function InlineEditTable() {
   const [rows, setRows] = useState(INITIAL_ROWS);
 
   const updateRow = (id, patch) =>
     setRows((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));
 
   return (
-    <div style={s.page}>
-      <TableCard.Root>
+    <TableCard.Root>
         <TableCard.Header
           title="Table"
           badge={`${rows.length} rows`}
@@ -702,6 +701,17 @@ export default function InlineEditTablePage() {
           </div>
         </div>
       </TableCard.Root>
+  );
+}
+
+// ─────────────────────────────────────────────
+// MAIN PAGE
+// ─────────────────────────────────────────────
+
+export default function InlineEditTablePage() {
+  return (
+    <div style={s.page}>
+      <InlineEditTable />
     </div>
   );
 }

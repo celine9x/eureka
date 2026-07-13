@@ -81,11 +81,11 @@ const styles = {
       border-bottom: none !important;
     }
     .table-body-wrapper {
-      outline: 1px solid var(--color-action-outline-secondary-enabled);
-      outline-offset: -1px;
+      border: 1px solid var(--color-outline-neutral);
       border-radius: 8px;
       overflow: hidden;
       background: var(--color-general-white);
+      box-sizing: border-box;
     }
     .table-body-wrapper .table-scroll-container {
       width: 100%;
@@ -120,6 +120,7 @@ const styles = {
     }
     .table-row-body {
       cursor: pointer;
+      height: 68px;
       transition: background var(--transition-fast);
     }
     .table-row-body:nth-child(odd) {

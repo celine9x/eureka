@@ -19,7 +19,7 @@ import {
 
 let _cellStylesInjected = false;
 
-function injectCellStyles() {
+export function injectCellStyles() {
   if (_cellStylesInjected || typeof document === "undefined") return;
   _cellStylesInjected = true;
   const el = document.createElement("style");
@@ -29,11 +29,12 @@ function injectCellStyles() {
       cursor: pointer;
       border-radius: var(--radius-sm);
       border: 1px solid transparent;
-      padding: var(--spacing-sm) var(--spacing-3);
+      padding: var(--spacing-sm);
       display: flex;
       align-items: center;
       gap: var(--spacing-xs);
-      min-height: 40px;
+      flex: 0 0 auto;
+      height: 64px;
       min-width: 0;
       overflow: hidden;
       width: 100%;
@@ -59,7 +60,8 @@ function injectCellStyles() {
       pointer-events: none;
     }
     .eureka-cie.eureka-cie--wrap {
-      align-items: flex-start;
+      align-items: center;
+      align-content: center;
       flex-wrap: wrap;
     }
     .eureka-cie-tooltip {
@@ -82,7 +84,7 @@ function injectCellStyles() {
   document.head.appendChild(el);
 }
 
-function cie(...modifiers) {
+export function cie(...modifiers) {
   return ["eureka-cie", ...modifiers.filter(Boolean).map((m) => `eureka-cie--${m}`)].join(" ");
 }
 
@@ -94,8 +96,12 @@ const s = {
   cell: {
     position: "relative",
     width: "100%",
+    height: "100%",
     boxSizing: "border-box",
     minWidth: 0,
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
   },
 
   placeholder: {
@@ -124,7 +130,7 @@ const s = {
     width: "100%",
     overflow: "hidden",
     display: "-webkit-box",
-    WebkitLineClamp: 2,
+    WebkitLineClamp: 3,
     WebkitBoxOrient: "vertical",
     minWidth: 0,
     wordBreak: "break-word",
@@ -135,6 +141,26 @@ const s = {
     fontSize: "var(--text-body-md)",
     fontFamily: "var(--font-family-primary)",
     marginTop: 2,
+  },
+
+  // Floats under the input, inside the cell's own footprint, instead of
+  // pushing the row taller like a normal-flow sibling would.
+  errorTextFloating: {
+    position: "absolute",
+    top: "100%",
+    left: 0,
+    right: 0,
+    marginTop: 2,
+    padding: "0 var(--spacing-sm)",
+    color: "var(--color-content-negative)",
+    fontSize: "var(--text-body-sm)",
+    fontFamily: "var(--font-family-primary)",
+    background: "var(--color-general-white)",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    zIndex: 5,
+    pointerEvents: "none",
   },
 
   iconSlot: {
@@ -247,9 +273,11 @@ export function TextCellInlineEdit({
 }) {
   useEffect(() => { injectCellStyles(); }, []);
 
+  const cellRef = useRef(null);
+  const valueRef = useRef(null);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
-  const valueRef = useRef(null);
+  const [cellRect, setCellRect] = useState(null);
   const { showTooltip, hideTooltip, tooltipPortal } = useTruncationTooltip(valueRef, value);
 
   const discard = () => { setDraft(value); setEditing(false); };
@@ -260,59 +288,20 @@ export function TextCellInlineEdit({
 
   useEffect(() => { if (!editing) setDraft(value); }, [value, editing]);
 
+  const startEdit = () => {
+    if (readOnly || !cellRef.current) return;
+    setCellRect(cellRef.current.getBoundingClientRect());
+    setDraft(value);
+    setEditing(true);
+  };
+
   const charError = draft.length > 100 ? `${draft.length}/100 characters` : null;
 
-  if (editing && !readOnly) {
-    return (
-      <div style={s.cell}>
-        <div
-          className={cie("active", charError && "error")}
-          style={{ position: "relative" }}
-        >
-          {iconLeading && (
-            <span style={{ ...s.iconSlot, position: "absolute", left: 12, zIndex: 1 }}>
-              {iconLeading}
-            </span>
-          )}
-          <input
-            autoFocus
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onBlur={commit}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") { e.preventDefault(); commit(); }
-              if (e.key === "Escape") discard();
-            }}
-            style={{
-              ...s.input,
-              border: "none",
-              borderRadius: 0,
-              background: "transparent",
-              height: "auto",
-              flex: 1,
-              width: "100%",
-              paddingLeft: iconLeading ? 28 : 0,
-              paddingRight: iconTrailing ? 28 : 0,
-              padding: 0,
-              paddingLeft: iconLeading ? 28 : 0,
-            }}
-          />
-          {iconTrailing && (
-            <span style={{ ...s.iconSlot, position: "absolute", right: 12 }}>
-              {iconTrailing}
-            </span>
-          )}
-        </div>
-        {charError && <div style={s.errorText}>{charError}</div>}
-      </div>
-    );
-  }
-
   return (
-    <div style={s.cell}>
+    <div ref={cellRef} style={s.cell}>
       <div
         className={cie(error && "error", readOnly && "readonly")}
-        onClick={() => { if (!readOnly) { setDraft(value); setEditing(true); } }}
+        onClick={startEdit}
         onMouseEnter={showTooltip}
         onMouseLeave={hideTooltip}
       >
@@ -332,7 +321,59 @@ export function TextCellInlineEdit({
         )}
       </div>
       {tooltipPortal}
-      {(error || value.length > 100) && <div style={s.errorText}>{error ?? `${value.length}/100 characters`}</div>}
+      {(error || value.length > 100) && <div style={s.errorTextFloating}>{error ?? `${value.length}/100 characters`}</div>}
+
+      {editing && !readOnly && cellRect && createPortal(
+        <>
+          <div style={{ position: "fixed", inset: 0, zIndex: 298 }} onClick={commit} />
+          <div
+            style={{
+              position: "fixed",
+              top: cellRect.top,
+              left: cellRect.left,
+              width: cellRect.width,
+              minHeight: cellRect.height,
+              zIndex: 299,
+              background: "var(--color-interaction-fill-active)",
+              border: `1px solid ${charError ? "var(--color-interaction-outline-negative)" : "var(--color-interaction-outline-active)"}`,
+              borderRadius: "var(--radius-sm)",
+              boxShadow: "var(--shadow-dark-down)",
+              display: "flex",
+              flexDirection: "column",
+              boxSizing: "border-box",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-xs)", padding: "var(--spacing-sm)", flex: 1 }}>
+              {iconLeading && <span style={s.iconSlot}>{iconLeading}</span>}
+              <input
+                autoFocus
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") { e.preventDefault(); commit(); }
+                  if (e.key === "Escape") { e.preventDefault(); discard(); }
+                }}
+                style={{
+                  border: "none",
+                  background: "transparent",
+                  outline: "none",
+                  flex: 1,
+                  minWidth: 0,
+                  padding: 0,
+                  fontFamily: "var(--font-family-primary)",
+                  fontSize: "var(--text-body-md)",
+                  color: "var(--color-content-primary)",
+                }}
+              />
+            </div>
+            {charError && (
+              <div style={{ ...s.errorText, padding: "0 var(--spacing-sm) var(--spacing-xs)", marginTop: 0 }}>{charError}</div>
+            )}
+          </div>
+        </>,
+        document.body
+      )}
     </div>
   );
 }
@@ -419,6 +460,8 @@ export function ButtonCellInlineEdit({
 // LINK CELL INLINE EDIT
 // ─────────────────────────────────────────────
 
+const LINK_MULTI_VISIBLE = 3;
+
 export function LinkCellInlineEdit({
   value = null,
   onChange,
@@ -428,12 +471,12 @@ export function LinkCellInlineEdit({
   error,
   readOnly = false,
   iconLeading,
+  hideIconWhenEmpty = false,
 }) {
   useEffect(() => { injectCellStyles(); }, []);
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [overflowOpen, setOverflowOpen] = useState(false);
-  const [draft, setDraft] = useState([]);
   const [popPos, setPopPos] = useState(null);
   const ref = useRef(null);
   const badgeRef = useRef(null);
@@ -444,34 +487,33 @@ export function LinkCellInlineEdit({
 
   const isFilled = selectedItems.length > 0;
   const firstItem = selectedItems[0];
-  const overflowCount = selectedItems.length - 1;
-  const hasOverflow = multiple && overflowCount > 0;
+  const visibleItems = multiple ? selectedItems.slice(0, LINK_MULTI_VISIBLE) : selectedItems;
+  const overflowItems = multiple ? selectedItems.slice(LINK_MULTI_VISIBLE) : [];
+  const hasOverflow = overflowItems.length > 0;
 
   const openDropdown = () => {
     const rect = ref.current?.getBoundingClientRect();
     if (rect) setPopPos({ top: rect.bottom + 4, left: rect.left, width: rect.width });
-    setDraft(Array.isArray(value) ? [...value] : []);
     setDropdownOpen(true);
   };
-  const handleSave = () => { onChange?.(draft); setDropdownOpen(false); };
-  const handleCancel = () => setDropdownOpen(false);
+  const closeDropdown = () => setDropdownOpen(false);
 
   const toggle = (opt) => {
     if (multiple) {
-      const exists = draft.find((i) => i.id === opt.id);
-      setDraft(exists ? draft.filter((i) => i.id !== opt.id) : [...draft, opt]);
+      const exists = selectedItems.find((i) => i.id === opt.id);
+      onChange?.(exists ? selectedItems.filter((i) => i.id !== opt.id) : [...selectedItems, opt]);
     } else {
       onChange?.(opt);
       setDropdownOpen(false);
     }
   };
 
-  const isSelected = (opt) => multiple ? draft.some((i) => i.id === opt.id) : selectedItems.some((i) => i.id === opt.id);
+  const isSelected = (opt) => selectedItems.some((i) => i.id === opt.id);
 
   const handleCellClick = (e) => {
     if (readOnly) return;
     if (badgeRef.current && badgeRef.current.contains(e.target)) return;
-    if (dropdownOpen) { handleCancel(); } else { openDropdown(); }
+    if (dropdownOpen) { closeDropdown(); } else { openDropdown(); }
   };
 
   const handleBadgeClick = (e) => {
@@ -484,50 +526,67 @@ export function LinkCellInlineEdit({
     <div ref={ref} style={s.cell}>
       <div
         className={cie(dropdownOpen && "active", error && "error", readOnly && "readonly")}
+        style={multiple && isFilled ? { alignItems: "flex-start" } : undefined}
         onClick={handleCellClick}
       >
-        {iconLeading && <span style={s.iconSlot}>{iconLeading}</span>}
+        {iconLeading && (isFilled || !hideIconWhenEmpty) && <span style={s.iconSlot}>{iconLeading}</span>}
 
         {isFilled ? (
-          <div style={s.linkRow}>
-            <Link
-              size="md"
-              href={firstItem.href ?? "#"}
-              iconLeading={multiple ? (firstItem.icon ?? <Icon name="LinkIcon" size={12} />) : undefined}
-              onClick={(e) => { if (!firstItem.href || firstItem.href === "#") e.preventDefault(); e.stopPropagation(); }}
-            >
-              {firstItem.label}
-            </Link>
+          multiple ? (
+            <div style={{ display: "flex", flexDirection: "column", width: "100%", minWidth: 0 }}>
+              {visibleItems.map((item) => (
+                <Link
+                  key={item.id}
+                  size="md"
+                  href={item.href ?? "#"}
+                  iconLeading={item.icon ?? <Icon name="LinkIcon" size={12} />}
+                  onClick={(e) => { if (!item.href || item.href === "#") e.preventDefault(); e.stopPropagation(); }}
+                  style={{ display: "block" }}
+                >
+                  {item.label}
+                </Link>
+              ))}
 
-            {hasOverflow && (
-              <span ref={badgeRef} style={{ position: "relative", flexShrink: 0 }}>
-                <span onClick={handleBadgeClick} style={{ cursor: "pointer" }}>
-                  <Badge color={BADGE_COLORS.neutral} size="sm">+{overflowCount}</Badge>
-                </span>
-                {overflowOpen && (
-                  <>
-                    <div style={s.popoverOverlay} onClick={(e) => { e.stopPropagation(); setOverflowOpen(false); }} />
-                    <div style={{ ...s.popover, minWidth: 180 }} onClick={(e) => e.stopPropagation()}>
-                      <div style={{ padding: "var(--spacing-sm)", display: "flex", flexDirection: "column", gap: "var(--spacing-xs)" }}>
-                        {selectedItems.slice(1).map((item) => (
-                          <Link
-                            key={item.id}
-                            size="md"
-                            href={item.href ?? "#"}
-                            iconLeading={item.icon ?? <Icon name="LinkIcon" size={12} />}
-                            onClick={(e) => { if (!item.href || item.href === "#") e.preventDefault(); }}
-                            style={{ display: "block" }}
-                          >
-                            {item.label}
-                          </Link>
-                        ))}
+              {hasOverflow && (
+                <span ref={badgeRef} style={{ position: "relative", flexShrink: 0 }}>
+                  <span onClick={handleBadgeClick} style={{ cursor: "pointer" }}>
+                    <Badge color={BADGE_COLORS.neutral} size="sm">+{overflowItems.length}</Badge>
+                  </span>
+                  {overflowOpen && (
+                    <>
+                      <div style={s.popoverOverlay} onClick={(e) => { e.stopPropagation(); setOverflowOpen(false); }} />
+                      <div style={{ ...s.popover, minWidth: 180 }} onClick={(e) => e.stopPropagation()}>
+                        <div style={{ padding: "var(--spacing-sm)", display: "flex", flexDirection: "column", gap: "var(--spacing-xs)" }}>
+                          {overflowItems.map((item) => (
+                            <Link
+                              key={item.id}
+                              size="md"
+                              href={item.href ?? "#"}
+                              iconLeading={item.icon ?? <Icon name="LinkIcon" size={12} />}
+                              onClick={(e) => { if (!item.href || item.href === "#") e.preventDefault(); }}
+                              style={{ display: "block" }}
+                            >
+                              {item.label}
+                            </Link>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  </>
-                )}
-              </span>
-            )}
-          </div>
+                    </>
+                  )}
+                </span>
+              )}
+            </div>
+          ) : (
+            <div style={s.linkRow}>
+              <Link
+                size="md"
+                href={firstItem.href ?? "#"}
+                onClick={(e) => { if (!firstItem.href || firstItem.href === "#") e.preventDefault(); e.stopPropagation(); }}
+              >
+                {firstItem.label}
+              </Link>
+            </div>
+          )
         ) : (
           <span style={s.placeholder}>{placeholder}</span>
         )}
@@ -541,7 +600,7 @@ export function LinkCellInlineEdit({
 
       {dropdownOpen && popPos && createPortal(
         <>
-          <div style={s.popoverOverlay} onClick={handleCancel} />
+          <div style={s.popoverOverlay} onClick={closeDropdown} />
           <div style={{ ...s.popover, position: "fixed", top: popPos.top, left: popPos.left, minWidth: popPos.width }} onClick={(e) => e.stopPropagation()}>
             <DropdownList>
               <DropdownSection>
@@ -659,7 +718,7 @@ export function ChipCellInlineEdit({
       {/* Hidden measurement layer */}
       <div ref={chipContainerRef} style={measureStyle} aria-hidden="true">
         {value.map((chip) => (
-          <Chip key={chip.id} variant="neutral" size="md">{chip.label}</Chip>
+          <Chip key={chip.id} variant="neutral" size="sm">{chip.label}</Chip>
         ))}
       </div>
 
@@ -934,7 +993,7 @@ export function TextMultipleCellInlineEdit({
               background: "var(--color-interaction-fill-active)",
               border: "1px solid var(--color-interaction-outline-active)",
               borderRadius: "var(--radius-sm)",
-              padding: "var(--spacing-sm) var(--spacing-3)",
+              padding: "var(--spacing-sm) 0",
               display: "flex",
               alignItems: "center",
               gap: "var(--spacing-xs)",
@@ -999,7 +1058,6 @@ export function NumberCellInlineEdit({
   onChange,
   currency = "USD",
   placeholder = "—",
-  error,
   readOnly = false,
 }) {
   useEffect(() => { injectCellStyles(); }, []);
@@ -1007,7 +1065,6 @@ export function NumberCellInlineEdit({
   const { symbol, decimals } = CURRENCY_CONFIG[currency] ?? { symbol: "$", decimals: 2 };
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value !== null ? String(value) : "");
-  const [inputError, setInputError] = useState(null);
 
   useEffect(() => {
     if (!editing) setDraft(value !== null ? String(value) : "");
@@ -1017,16 +1074,10 @@ export function NumberCellInlineEdit({
 
   const handleChange = (e) => {
     const raw = e.target.value;
-    if (raw === "" || raw === "-" || numericPattern.test(raw)) {
-      setDraft(raw);
-      setInputError(null);
-    } else {
-      setInputError("Numbers only");
-    }
+    if (raw === "" || raw === "-" || numericPattern.test(raw)) setDraft(raw);
   };
 
   const commit = () => {
-    if (inputError) { discard(); return; }
     if (draft === "" || draft === "-") {
       onChange?.(null);
     } else {
@@ -1039,20 +1090,15 @@ export function NumberCellInlineEdit({
 
   const discard = () => {
     setDraft(value !== null ? String(value) : "");
-    setInputError(null);
     setEditing(false);
   };
 
-  const displayError = error || inputError;
   const hasValue = value !== null && value !== undefined && value !== "";
 
   if (editing && !readOnly) {
     return (
       <div style={s.cell}>
-        <div
-          className={cie("active", displayError && "error")}
-          style={{ position: "relative" }}
-        >
+        <div className={cie("active")} style={{ position: "relative" }}>
           <span style={{ ...s.iconSlot, flexShrink: 0, paddingRight: 4, color: "var(--color-content-secondary)", fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-md)" }}>
             {symbol}
           </span>
@@ -1079,7 +1125,6 @@ export function NumberCellInlineEdit({
             }}
           />
         </div>
-        {displayError && <div style={s.errorText}>{typeof displayError === "string" ? displayError : inputError}</div>}
       </div>
     );
   }
@@ -1087,8 +1132,8 @@ export function NumberCellInlineEdit({
   return (
     <div style={s.cell}>
       <div
-        className={cie(displayError && "error", readOnly && "readonly")}
-        onClick={() => { if (!readOnly) { setDraft(value !== null ? String(value) : ""); setInputError(null); setEditing(true); } }}
+        className={cie(readOnly && "readonly")}
+        onClick={() => { if (!readOnly) { setDraft(value !== null ? String(value) : ""); setEditing(true); } }}
       >
         <span style={{ ...s.iconSlot, flexShrink: 0, paddingRight: 4, color: "var(--color-content-secondary)", fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-md)" }}>
           {symbol}
@@ -1104,7 +1149,6 @@ export function NumberCellInlineEdit({
           </span>
         )}
       </div>
-      {displayError && typeof displayError === "string" && <div style={s.errorText}>{displayError}</div>}
     </div>
   );
 }
@@ -1144,36 +1188,46 @@ export function LongTextCellInlineEdit({
     setEditing(true);
   };
 
+  const LONG_TEXT_MAX_HEIGHT = 360;
+
   const autoResize = (el) => {
     if (!el) return;
     el.style.height = "auto";
-    el.style.height = `${el.scrollHeight}px`;
+    el.style.height = `${Math.min(el.scrollHeight, LONG_TEXT_MAX_HEIGHT)}px`;
   };
+
+  const hasError = error || value.length > 500;
 
   return (
     <div ref={cellRef} style={s.cell}>
       <div
-        className={cie(editing && "active", (error || value.length > 500) && "error", readOnly && "readonly")}
-        style={{ alignItems: "flex-start" }}
+        className={cie(editing && "active", hasError && "error", readOnly && "readonly")}
+        style={{ flexDirection: "column", alignItems: "flex-start", justifyContent: "center" }}
         onClick={startEdit}
         onMouseEnter={showTooltip}
         onMouseLeave={hideTooltip}
       >
-        {value ? (
-          <span ref={valueRef} style={{ ...s.longValue, color: error ? "var(--color-content-negative)" : "var(--color-content-primary)" }}>
-            {value}
-          </span>
-        ) : (
-          <span style={s.placeholder}>{placeholder}</span>
-        )}
-        {readOnly && (
-          <span style={{ ...s.iconSlot, marginLeft: "auto", alignSelf: "flex-start", paddingTop: 2 }}>
-            <Icon name="LockClosedIcon" size={12} />
-          </span>
+        <div style={{ display: "flex", alignItems: "flex-start", width: "100%" }}>
+          {value ? (
+            <span ref={valueRef} style={{ ...s.longValue, color: error ? "var(--color-content-negative)" : "var(--color-content-primary)" }}>
+              {value}
+            </span>
+          ) : (
+            <span style={s.placeholder}>{placeholder}</span>
+          )}
+          {readOnly && (
+            <span style={{ ...s.iconSlot, marginLeft: "auto", flexShrink: 0 }}>
+              <Icon name="LockClosedIcon" size={12} />
+            </span>
+          )}
+        </div>
+        {hasError && (
+          <div style={{ ...s.errorText, marginTop: "var(--spacing-xs)" }}>
+            {error ?? `${value.length}/500 characters`}
+          </div>
         )}
       </div>
       {tooltipPortal}
-      {(error || value.length > 500) && <div style={s.errorText}>{error ?? `${value.length}/500 characters`}</div>}
 
       {editing && cellRect && createPortal(
         <>
@@ -1187,7 +1241,7 @@ export function LongTextCellInlineEdit({
               minHeight: cellRect.height,
               zIndex: 299,
               background: "var(--color-interaction-fill-active)",
-              border: "1px solid var(--color-interaction-outline-active)",
+              border: `1px solid ${draft.length > 500 ? "var(--color-interaction-outline-negative)" : "var(--color-interaction-outline-active)"}`,
               borderRadius: "var(--radius-sm)",
               boxShadow: "var(--shadow-dark-down)",
               display: "flex",
@@ -1210,19 +1264,21 @@ export function LongTextCellInlineEdit({
                 border: "none",
                 outline: "none",
                 resize: "none",
-                overflow: "hidden",
-                padding: "var(--spacing-sm) var(--spacing-3)",
+                overflowY: "auto",
+                overflowX: "hidden",
+                maxHeight: LONG_TEXT_MAX_HEIGHT,
+                padding: "var(--spacing-sm)",
+                boxSizing: "border-box",
                 fontFamily: "var(--font-family-primary)",
                 fontSize: "var(--text-body-md)",
                 lineHeight: "var(--line-height-body-md)",
                 color: "var(--color-content-primary)",
                 background: "transparent",
-                boxSizing: "border-box",
                 minHeight: cellRect.height,
               }}
             />
             {draft.length > 500 && (
-              <div style={{ ...s.errorText, padding: "0 var(--spacing-3) var(--spacing-xs)", marginTop: 0 }}>
+              <div style={{ ...s.errorText, padding: "0 0 var(--spacing-xs)", marginTop: 0 }}>
                 {draft.length}/500 characters
               </div>
             )}

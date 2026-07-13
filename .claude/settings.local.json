@@ -1,7 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "WebSearch"
+      "WebSearch",
+      "Bash(xargs grep -l \"hub-template\\\\|hub\\\\.jsx\\\\|Hub Template\")",
+      "Skill(run)",
+      "Bash(ls .claude/skills)",
+      "Bash(grep -Hm1 '^description:' .claude/skills/*/SKILL.md)",
+      "Bash(node \"/c/Users/lnguyen/AppData/Local/Temp/claude/C--Users-lnguyen-OneDrive---Inpart-Documents-Code-eureka/e9b311a9-8e0c-4c1b-9efd-550dcebe3896/scratchpad/screenshot-hub.js\")"
     ]
   }
 }
