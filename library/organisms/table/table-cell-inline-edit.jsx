@@ -54,8 +54,6 @@ export function injectCellStyles() {
 
     /* Hover state */
     .eureka-cie:not(.eureka-cie--readonly):not(.eureka-cie--active):hover {
-      background: var(--color-general-white);
-      border-color: var(--color-outline-neutral);
     }
 
     /* Active/editing state */

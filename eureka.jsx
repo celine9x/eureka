@@ -1646,74 +1646,79 @@ const [rangeEnd, setRangeEnd] = useState(null);
 
 const RichTextInputPage = () => {
   const [value, setValue] = React.useState("");
-  const [editableValue, setEditableValue] = React.useState("");
+  const [editableValue, setEditableValue] = React.useState("Project got endorsed by Deal Flow (11/27/2023) to pursue further.");
+  const [lastSubmitted, setLastSubmitted] = React.useState(null);
 
   return (
-    <Section title="RichTextInput" description="A rich text editor with formatting toolbar and optional submit action.">
+    <Section title="RichTextInput" description="An inline rich text editor. Click to focus — toolbar and Save button appear on active state.">
+
       <PreviewComponent
-        title="Default RichTextInput"
+        title="Interactive — Empty"
         code={`import { RichTextInput } from "@/library/molecules/rich-text-input";
 import { useState } from "react";
 
 const [value, setValue] = useState("");
 
 <RichTextInput
-  placeholder="Write a comment..."
+  placeholder="Write description..."
   value={value}
   onChange={setValue}
-  onSubmit={(v) => console.log(v)}
+  onSubmit={(v) => console.log("saved:", v)}
 />`}
       >
-        <RichTextInput
-          placeholder="Write a comment..."
-          value={value}
-          onChange={setValue}
-          onSubmit={(v) => alert(`Submitted: ${v}`)}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <RichTextInput
+            placeholder="Write description..."
+            value={value}
+            onChange={setValue}
+            onSubmit={(v) => setLastSubmitted(v)}
+          />
+          {lastSubmitted !== null && (
+            <span style={{ fontSize: 12, color: "var(--Grey50, #5371AC)" }}>
+              Saved: {lastSubmitted}
+            </span>
+          )}
+        </div>
+      </PreviewComponent>
+
+      <PreviewComponent
+        title="Interactive — Pre-filled (click to edit)"
+        code={`import { RichTextInputEditable } from "@/library/molecules/rich-text-input";
+import { useState } from "react";
+
+const [value, setValue] = useState("Project got endorsed...");
+
+<RichTextInputEditable
+  placeholder="Write description..."
+  value={value}
+  onChange={setValue}
+  onSubmit={(html) => console.log("saved:", html)}
+/>`}
+      >
+        <RichTextInputEditable
+          placeholder="Write description..."
+          value={editableValue}
+          onChange={setEditableValue}
+          onSubmit={(html) => setLastSubmitted(html)}
         />
       </PreviewComponent>
 
       <PreviewComponent
-        title="Without Toolbar"
-        code={`<RichTextInput showToolbar={false} placeholder="No toolbar..." />`}
+        title="Disabled"
+        code={`<RichTextInput disabled placeholder="Write description..." />`}
       >
-        <RichTextInput showToolbar={false} placeholder="No toolbar..." />
+        <RichTextInput disabled placeholder="Write description..." />
       </PreviewComponent>
 
       <PreviewComponent
-        title="Without Footer"
-        code={`<RichTextInput showFooter={false} placeholder="No footer/submit..." />`}
+        title="With helper text"
+        code={`<RichTextInput helperText="Maximum 500 characters" placeholder="Write description..." />`}
       >
-        <RichTextInput showFooter={false} placeholder="No footer/submit..." />
-      </PreviewComponent>
-
-      <PreviewComponent
-        title="Disabled State"
-        code={`<RichTextInput disabled placeholder="Disabled editor" />`}
-      >
-        <RichTextInput disabled placeholder="Disabled editor" />
-      </PreviewComponent>
-
-      <PreviewComponent
-        title="Error State"
-        code={`<RichTextInput error helperText="This field is required" placeholder="Error state" />`}
-      >
-        <RichTextInput error helperText="This field is required" placeholder="Error state" />
-      </PreviewComponent>
-
-      <PreviewComponent
-        title="Editable Inline Variant"
-        code={`import { RichTextInputEditable } from "@/library/molecules/rich-text-input";
-
-<RichTextInputEditable
-  placeholder="Click to edit..."
-  value={editableValue}
-  onChange={setEditableValue}
-/>`}
-      >
-        <RichTextInputEditable
-          placeholder="Click to edit..."
-          value={editableValue}
-          onChange={setEditableValue}
+        <RichTextInput
+          helperText="Maximum 500 characters"
+          placeholder="Write description..."
+          value={value}
+          onChange={setValue}
         />
       </PreviewComponent>
     </Section>

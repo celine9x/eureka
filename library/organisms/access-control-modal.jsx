@@ -10,8 +10,6 @@
 
 import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { Modal } from "./modal.jsx";
-import { Infobox } from "../molecules/infobox.jsx";
-import { ConfirmDialog } from "../molecules/dialog.jsx";
 import { Avatar } from "../atoms/avatar.jsx";
 import { Button } from "../atoms/button.jsx";
 import { Icon } from "../atoms/icon.jsx";
@@ -46,6 +44,97 @@ const toSentenceCase = (value) => {
     .split("/")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join("/");
+};
+
+
+// ─────────────────────────────────────────────
+// VISIBILITY DROPDOWN
+// ─────────────────────────────────────────────
+
+const VisibilityDropdown = ({ isPublic, labels, onSelect }) => {
+  const [open, setOpen] = useState(false);
+  const [rect, setRect] = useState(null);
+  const triggerRef = useRef(null);
+  const menuRef = useRef(null);
+
+  const toggle = () => {
+    if (!open && triggerRef.current) {
+      setRect(triggerRef.current.getBoundingClientRect());
+    }
+    setOpen((v) => !v);
+  };
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e) => {
+      if (!triggerRef.current?.contains(e.target) && !menuRef.current?.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  const currentLabel = isPublic ? labels.public : labels.private;
+  const lockColor = isPublic ? 'var(--color-content-secondary)' : 'var(--color-content-negative)';
+
+  return (
+    <div ref={triggerRef} style={{ position: 'relative' }}>
+      <button
+        onClick={toggle}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 'var(--spacing-sm)',
+          width: '100%',
+          padding: 'var(--spacing-sm) var(--spacing-md)',
+          background: 'var(--color-general-white)',
+          border: '1px solid var(--color-action-outline-secondary-enabled)',
+          borderRadius: 'var(--radius-md)',
+          cursor: 'pointer',
+          fontFamily: 'var(--font-family-primary)',
+          fontSize: 'var(--text-body-md)',
+          color: 'var(--color-content-primary)',
+          textAlign: 'left',
+        }}
+      >
+        <Icon name={isPublic ? 'LockOpen' : 'LockClosed'} variant="solid" size={16} style={{ flexShrink: 0, color: lockColor }} />
+        <span style={{ flex: 1 }}>{currentLabel}</span>
+        <ChevronIcon size={14} style={open ? { transform: 'rotate(180deg)' } : undefined} />
+      </button>
+      {open && rect && (
+        <Portal>
+          <div
+            ref={menuRef}
+            style={{
+              position: 'fixed',
+              top: rect.bottom + 4,
+              left: rect.left,
+              width: rect.width,
+              zIndex: 9999,
+            }}
+          >
+            <DropdownMenuContent style={{ position: 'static' }}>
+              <DropdownMenuSection>
+                <DropdownMenuItem
+                  label={labels.public}
+                  active={isPublic}
+                  icon={<Icon name="LockOpen" variant="solid" size={14} />}
+                  onClick={() => { onSelect(true); setOpen(false); }}
+                />
+                <DropdownMenuItem
+                  label={labels.private}
+                  active={!isPublic}
+                  icon={<Icon name="LockClosed" variant="solid" size={14} />}
+                  onClick={() => { onSelect(false); setOpen(false); }}
+                />
+              </DropdownMenuSection>
+            </DropdownMenuContent>
+          </div>
+        </Portal>
+      )}
+    </div>
+  );
 };
 
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -531,7 +620,9 @@ export const AccessControlModal = ({
   preInfoboxContent = null,
   infoboxContentResolver = null,
   confirmationContentResolver = null,
+  visibilityToggleLabels = { public: "All users can access", private: "Only authorised users can access" },
   onAccessListChange = null,
+  onSave = null,
   searchablePrincipals = MOCK_SEARCHABLE_PRINCIPALS,
   accessFieldMiniInfoboxMessage = null,
   publicAccessAggregateLabel = "All users",
@@ -541,9 +632,6 @@ export const AccessControlModal = ({
 }) => {
   const displayName = toSentenceCase(objectDisplayLabel);
   const [isPublic, setIsPublic] = useState(initialIsPublic);
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [isRemoveConfirmOpen, setIsRemoveConfirmOpen] = useState(false);
-  const [pendingRemovePrincipal, setPendingRemovePrincipal] = useState(null);
   const [search, setSearch] = useState("");
   const [selectedPrincipals, setSelectedPrincipals] = useState([]); // chips pending add
   const [accessList, setAccessList] = useState(
@@ -557,24 +645,24 @@ export const AccessControlModal = ({
 
   const addedIds = new Set(accessList.map((e) => e.principal.id));
   const selectedIds = new Set(selectedPrincipals.map((p) => p.id));
-  const nextIsPublic = !isPublic;
 
   const handleToggle = () => {
     setIsPublic((prev) => {
       const nextIsPublic = !prev;
-      setAccessList(nextIsPublic ? [] : [{ principal: DEFAULT_OWNER, accessLevelId: "owner" }]);
+      if (!nextIsPublic) {
+        // Switching to private: ensure at least the owner entry exists
+        setAccessList((list) =>
+          list.length === 0 ? [{ principal: DEFAULT_OWNER, accessLevelId: "owner" }] : list
+        );
+      }
       return nextIsPublic;
     });
     setSelectedPrincipals([]);
     setSearch("");
   };
 
-  const openVisibilityConfirmation = () => {
-    setIsConfirmOpen(true);
-  };
-
-  const confirmVisibilityChange = () => {
-    setIsConfirmOpen(false);
+  const handleVisibilitySelect = (nextPublic) => {
+    if (nextPublic === isPublic) return;
     handleToggle();
   };
 
@@ -632,23 +720,6 @@ export const AccessControlModal = ({
       delete next[principalId];
       return next;
     });
-  };
-
-  const openRemoveConfirmation = (principal) => {
-    setPendingRemovePrincipal(principal);
-    setIsRemoveConfirmOpen(true);
-  };
-
-  const closeRemoveConfirmation = () => {
-    setIsRemoveConfirmOpen(false);
-    setPendingRemovePrincipal(null);
-  };
-
-  const confirmRemovePrincipal = () => {
-    if (pendingRemovePrincipal?.id) {
-      handleRemove(pendingRemovePrincipal.id);
-    }
-    closeRemoveConfirmation();
   };
 
   const handleToggleGroupMembers = (groupId) => {
@@ -719,68 +790,32 @@ export const AccessControlModal = ({
 
   const inheritedPrincipalCount = inheritedPrincipals.length;
 
-  const bannerIcon = (
-    <span
-      style={{
-        display: "flex",
-        alignItems: "center",
-        color: isPublic ? "var(--color-content-secondary)" : "var(--color-content-negative)",
-      }}
-    >
-      <Icon name={isPublic ? "LockOpen" : "LockClosed"} variant="solid" size={16} />
-    </span>
-  );
-
-  const defaultInfoboxContent = {
-    title: isPublic ? "Public" : "Private",
-    description: isPublic
-      ? `All users can access this ${displayName}.`
-      : `Only authorized users can access this ${displayName}.`,
-    actionLabel: isPublic ? "Restrict access" : "Remove restriction",
-  };
-
   const resolvedInfoboxContent = infoboxContentResolver?.({
     isPublic,
     objectLabel,
     objectDisplayLabel,
   }) || {};
 
-  const infoboxTitle = resolvedInfoboxContent.title || defaultInfoboxContent.title;
-  const infoboxDescription = resolvedInfoboxContent.description || defaultInfoboxContent.description;
-  const infoboxActionLabel = resolvedInfoboxContent.actionLabel || defaultInfoboxContent.actionLabel;
-
-  const defaultConfirmationContent = {
-    title: `Make ${displayName} ${nextIsPublic ? "public" : "private"}?`,
-    body: nextIsPublic
-      ? `All users will be able to access this ${displayName}.`
-      : `Only authorized users will be able to access this ${displayName}.`,
-    confirmLabel: nextIsPublic ? "Remove restriction" : "Restrict access",
-    cancelLabel: "Cancel",
-  };
-
-  const resolvedConfirmationContent = confirmationContentResolver?.({
-    isPublic,
-    nextIsPublic,
-    objectLabel,
-    objectDisplayLabel,
-    displayName,
-  }) || {};
-
-  const confirmationTitle = resolvedConfirmationContent.title || defaultConfirmationContent.title;
-  const confirmationBody = resolvedConfirmationContent.body || defaultConfirmationContent.body;
-  const confirmationConfirmLabel = resolvedConfirmationContent.confirmLabel || defaultConfirmationContent.confirmLabel;
-  const confirmationCancelLabel = resolvedConfirmationContent.cancelLabel || defaultConfirmationContent.cancelLabel;
+  const infoboxTitle = resolvedInfoboxContent.title;
 
   const content = (
     <>
       {preInfoboxContent}
-      <Infobox
-        variant="neutral"
-        icon={bannerIcon}
-        title={infoboxTitle}
-        description={infoboxDescription}
-        actionLabel={infoboxActionLabel}
-        onAction={openVisibilityConfirmation}
+      {infoboxContentResolver && (
+        <div
+          style={{
+            fontFamily: 'var(--font-family-primary)',
+            fontSize: 'var(--text-body-sm)',
+            color: 'var(--color-content-secondary)',
+          }}
+        >
+          {infoboxTitle}
+        </div>
+      )}
+      <VisibilityDropdown
+        isPublic={isPublic}
+        labels={visibilityToggleLabels}
+        onSelect={handleVisibilitySelect}
       />
 
       {isPublic ? (
@@ -942,7 +977,7 @@ export const AccessControlModal = ({
           <div style={{ display: "flex", gap: "var(--spacing-sm)", alignItems: "flex-start" }}>
             <div ref={searchWrapperRef} style={{ position: "relative", flex: 1 }} onFocus={() => setSearchFocused(true)}>
               <ChipInput
-                label="Access"
+                label="Authorized users"
                 placeholder="Search users or groups"
                 chips={selectedPrincipals.map((p) => ({
                   id: p.id,
@@ -1018,7 +1053,7 @@ export const AccessControlModal = ({
                   accessLevelId={accessLevelId}
                   objectLabel={objectLabel}
                   onAccessChange={handleAccessChange}
-                  onRemove={openRemoveConfirmation}
+                  onRemove={(p) => handleRemove(p.id)}
                   isExpanded={!!expandedGroups[principal.id]}
                   onToggleMembers={handleToggleGroupMembers}
                 />
@@ -1122,7 +1157,7 @@ export const AccessControlModal = ({
                   accessLevelId={accessLevelId}
                   objectLabel={objectLabel}
                   onAccessChange={handleAccessChange}
-                  onRemove={openRemoveConfirmation}
+                  onRemove={(p) => handleRemove(p.id)}
                   isExpanded={!!expandedGroups[principal.id]}
                   onToggleMembers={handleToggleGroupMembers}
                 />
@@ -1141,42 +1176,9 @@ export const AccessControlModal = ({
     </>
   );
 
-  const confirmationDialog = (
-    <ConfirmDialog
-      isOpen={isConfirmOpen}
-      onOpenChange={setIsConfirmOpen}
-      variant="warning"
-      title={confirmationTitle}
-      confirmLabel={confirmationConfirmLabel}
-      cancelLabel={confirmationCancelLabel}
-      onConfirm={confirmVisibilityChange}
-    >
-      {confirmationBody}
-    </ConfirmDialog>
-  );
-
-  const removeConfirmationDialog = (
-    <ConfirmDialog
-      isOpen={isRemoveConfirmOpen}
-      onOpenChange={(open) => {
-        if (!open) closeRemoveConfirmation();
-      }}
-      variant="warning"
-      title={`Remove ${pendingRemovePrincipal?.name || "entry"}?`}
-      confirmLabel="Remove"
-      cancelLabel="Cancel"
-      onConfirm={confirmRemovePrincipal}
-      onCancel={closeRemoveConfirmation}
-    >
-      {`This will remove ${pendingRemovePrincipal?.name || "this entry"} from access.`}
-    </ConfirmDialog>
-  );
-
   if (inline) {
     return (
       <>
-        {confirmationDialog}
-        {removeConfirmationDialog}
         <div>
         <div
           style={{
@@ -1216,6 +1218,18 @@ export const AccessControlModal = ({
         >
           {content}
         </div>
+        <div
+          style={{
+            padding: "var(--spacing-4) var(--spacing-6)",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            borderTop: "1px solid var(--color-action-outline-secondary-enabled)",
+          }}
+        >
+          <Button variant="tertiary" size="lg" onClick={onClose}>Cancel</Button>
+          <Button variant="primary" size="lg" onClick={() => onSave ? onSave() : onClose?.()}>Save</Button>
+        </div>
         </div>
       </>
     );
@@ -1228,12 +1242,14 @@ export const AccessControlModal = ({
         onClose={onClose}
         title={`Manage ${displayName} access`}
         size="md"
-        showFooter={false}
+        showFooter={true}
+        secondaryLabel="Cancel"
+        primaryLabel="Save"
+        onSecondaryClick={onClose}
+        onPrimaryClick={() => onSave ? onSave() : onClose?.()}
       >
         {content}
       </Modal>
-      {confirmationDialog}
-      {removeConfirmationDialog}
     </>
   );
 };

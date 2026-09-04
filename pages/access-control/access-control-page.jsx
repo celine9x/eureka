@@ -120,6 +120,13 @@ const AccessControlPage = () => {
             initialIsPublic={initialIsPublic}
             initiativeVisibility={initiativeVisibility}
             allianceVisibility={allianceVisibility}
+            visibilityToggleLabels={
+              (displayLabel === "opportunity" || label === "opportunity1" || label === "opportunity2") && initiativeVisibility === "private"
+                ? { public: "Anyone with access to the initiative can access", private: "Only authorised users can access" }
+                : (displayLabel === "issue/risk") && allianceVisibility === "private"
+                ? { public: "Anyone with access to the alliance can access", private: "Only authorised users can access" }
+                : undefined
+            }
             onAccessListChange={
               label === "initiative"
                 ? setInitiativeAccessEntries
@@ -157,13 +164,14 @@ const AccessControlPage = () => {
 
 const createOpportunityInfoboxResolver = (initiativeVisibility) => ({ isPublic }) => {
   const isInPrivateInitiative = initiativeVisibility === "private";
-  const initiativeLabel = isInPrivateInitiative ? "private initiative" : "public initiative";
   const title = (
     <>
-      {`${isPublic ? "Public" : "Private"} in `}
+      {"In "}
+      <strong>{isInPrivateInitiative ? "private" : "public"}</strong>
+      {" "}
       <Tooltip content="Open Initiative">
         <Link href="#" size="md">
-          {initiativeLabel}
+          initiative
         </Link>
       </Tooltip>
     </>
@@ -214,13 +222,14 @@ const createOpportunityConfirmationResolver = (initiativeVisibility) => ({ nextI
 
 const createIssueInfoboxResolver = (allianceVisibility) => ({ isPublic }) => {
   const isInPrivateAlliance = allianceVisibility === "private";
-  const allianceLabel = isInPrivateAlliance ? "private alliance" : "public alliance";
   const title = (
     <>
-      {`${isPublic ? "Public" : "Private"} in `}
+      {"In "}
+      <strong>{isInPrivateAlliance ? "private" : "public"}</strong>
+      {" "}
       <Tooltip content="Open Alliance">
         <Link href="#" size="md">
-          {allianceLabel}
+          alliance
         </Link>
       </Tooltip>
     </>
@@ -284,6 +293,7 @@ const InlineAccessControlModal = ({
   inheritedAccessPrincipals,
   searchablePrincipals,
   accessFieldMiniInfoboxMessage,
+  visibilityToggleLabels,
 }) => (
   <div
     style={{
@@ -315,6 +325,7 @@ const InlineAccessControlModal = ({
           ? createIssueConfirmationResolver(allianceVisibility)
           : undefined
       }
+      visibilityToggleLabels={visibilityToggleLabels}
       onAccessListChange={onAccessListChange}
       inheritedAccessPrincipals={
         (objectDisplayLabel === "opportunity" && initiativeVisibility === "private") ||

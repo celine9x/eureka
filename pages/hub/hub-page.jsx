@@ -11,7 +11,6 @@ import {
   HubHeaderActions,
   HubHeaderContextButton,
   HubHeaderViewToggle,
-  HubHeaderSearch,
   HubHeaderSmartFilterButton,
   HubHeaderSettingsButton,
   HubHeaderExportButton,
@@ -22,6 +21,7 @@ import { TableInlineEdit } from "../../library/organisms/table/table-inline-edit
 import { Pagination } from "../../library/organisms/pagination.jsx";
 import { SidePanel } from "../../library/templates/side-panel.jsx";
 import { BulkActionBar } from "../../library/molecules/bulk-action-bar.jsx";
+import { TextInput } from "../../library/molecules/text-input.jsx";
 
 // ─────────────────────────────────────────────
 // SEED DATA
@@ -163,7 +163,7 @@ const s = {
     display: "grid",
     gridTemplateColumns: "repeat(12, 1fr)",
     columnGap: "var(--spacing-6)",
-    padding: "var(--spacing-6)",
+    padding: "var(--spacing-6) var(--spacing-6) var(--spacing-md)",
     alignContent: "start",
     position: "relative",
   },
@@ -221,6 +221,14 @@ export default function HubPage() {
   const updateRow = (id, patch) =>
     setRows((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));
 
+  const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
+  const pagedRows = rows.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+  const handlePageSizeChange = (size) => {
+    setPageSize(size);
+    setCurrentPage(1);
+  };
+
   return (
     <div style={s.root}>
       <div style={s.headerWrap}>
@@ -234,7 +242,7 @@ export default function HubPage() {
               </HubHeaderLeft>
               <HubHeaderRight>
                 <HubHeaderControls>
-                  <HubHeaderSearch value={search} onChange={setSearch} />
+                  <TextInput value={search} onChange={(v) => setSearch(v)} placeholder="Search" iconLeading={<Icon name="MagnifyingGlass" size="sm" />} size="sm" />
                 </HubHeaderControls>
                 <HubHeaderActions>
                   <HubHeaderSmartFilterButton />
@@ -258,7 +266,7 @@ export default function HubPage() {
 
           <TableInlineEdit
             columns={COLUMNS}
-            rows={rows}
+            rows={pagedRows}
             onRowChange={updateRow}
             onOpenRow={setOpenRow}
             selectable
@@ -272,72 +280,80 @@ export default function HubPage() {
             }}
           />
 
-          <BulkActionBar
-            selectedCount={selectedRows.length}
-            position="sticky"
-            onClear={() => setSelectedRows([])}
-            actions={[
-              {
-                id: "status",
-                label: "Status",
-                icon: "CircleStack",
-                options: STATUS_OPTIONS.map((st) => ({ id: st.id, label: st.label })),
-                showSearch: false,
-              },
-              {
-                id: "owner",
-                label: "Owner",
-                icon: "User",
-                options: OWNER_OPTIONS.map((o) => ({ id: o.id, label: o.name })),
-              },
-              {
-                id: "tags",
-                label: "Tags",
-                icon: "Tag",
-                options: TAG_OPTIONS.map((t) => ({ id: t.id, label: t.label })),
-              },
-              {
-                id: "company",
-                label: "Company",
-                icon: "BuildingOffice2",
-                options: COMPANY_OPTIONS.map((c) => ({ id: c.id, label: c.label })),
-              },
-              {
-                id: "delete",
-                label: "Delete",
-                icon: "Trash",
-                iconOnly: true,
-                destructive: true,
-              },
-            ]}
-            onAction={(actionId, value) => {
-              if (actionId === "delete") {
-                setRows((prev) => prev.filter((r) => !selectedRows.includes(r.id)));
-                setSelectedRows([]);
-              } else if (actionId === "status" && value) {
-                const statusOption = STATUS_OPTIONS.find((st) => st.id === value.id);
-                setRows((prev) =>
-                  prev.map((r) =>
-                    selectedRows.includes(r.id) ? { ...r, status: statusOption } : r
-                  )
-                );
-              } else if (actionId === "owner" && value) {
-                const ownerOption = OWNER_OPTIONS.find((o) => o.id === value.id);
-                setRows((prev) =>
-                  prev.map((r) =>
-                    selectedRows.includes(r.id) ? { ...r, owner: ownerOption } : r
-                  )
-                );
-              } else if (actionId === "company" && value) {
-                const companyOption = COMPANY_OPTIONS.find((c) => c.id === value.id);
-                setRows((prev) =>
-                  prev.map((r) =>
-                    selectedRows.includes(r.id) ? { ...r, company: companyOption } : r
-                  )
-                );
-              }
-            }}
-          />
+        </div>
+
+        <div style={{ gridColumn: "2 / span 10", position: "sticky", bottom: "var(--spacing-md)", zIndex: 10, display: "flex", justifyContent: "center", pointerEvents: "none" }}>
+          <div style={{ pointerEvents: "auto" }}>
+            <BulkActionBar
+              selectedCount={selectedRows.length}
+              totalCount={rows.length}
+              itemLabel="opportunities"
+              onSelectAll={() => setSelectedRows(rows.map((r) => r.id))}
+              position="sticky"
+              onClear={() => setSelectedRows([])}
+              actions={[
+                {
+                  id: "status",
+                  label: "Status",
+                  icon: "CircleStack",
+                  options: STATUS_OPTIONS.map((st) => ({ id: st.id, label: st.label })),
+                  showSearch: false,
+                },
+                {
+                  id: "owner",
+                  label: "Owner",
+                  icon: "User",
+                  options: OWNER_OPTIONS.map((o) => ({ id: o.id, label: o.name })),
+                },
+                {
+                  id: "tags",
+                  label: "Tags",
+                  icon: "Tag",
+                  options: TAG_OPTIONS.map((t) => ({ id: t.id, label: t.label })),
+                },
+                {
+                  id: "company",
+                  label: "Company",
+                  icon: "BuildingOffice2",
+                  options: COMPANY_OPTIONS.map((c) => ({ id: c.id, label: c.label })),
+                },
+                {
+                  id: "delete",
+                  label: "Delete",
+                  icon: "Trash",
+                  iconOnly: true,
+                  destructive: true,
+                },
+              ]}
+              onAction={(actionId, value) => {
+                if (actionId === "delete") {
+                  setRows((prev) => prev.filter((r) => !selectedRows.includes(r.id)));
+                  setSelectedRows([]);
+                } else if (actionId === "status" && value) {
+                  const statusOption = STATUS_OPTIONS.find((st) => st.id === value.id);
+                  setRows((prev) =>
+                    prev.map((r) =>
+                      selectedRows.includes(r.id) ? { ...r, status: statusOption } : r
+                    )
+                  );
+                } else if (actionId === "owner" && value) {
+                  const ownerOption = OWNER_OPTIONS.find((o) => o.id === value.id);
+                  setRows((prev) =>
+                    prev.map((r) =>
+                      selectedRows.includes(r.id) ? { ...r, owner: ownerOption } : r
+                    )
+                  );
+                } else if (actionId === "company" && value) {
+                  const companyOption = COMPANY_OPTIONS.find((c) => c.id === value.id);
+                  setRows((prev) =>
+                    prev.map((r) =>
+                      selectedRows.includes(r.id) ? { ...r, company: companyOption } : r
+                    )
+                  );
+                }
+              }}
+            />
+          </div>
         </div>
       </div>
 
@@ -352,10 +368,10 @@ export default function HubPage() {
           <div style={{ flexShrink: 0 }}>
             <Pagination
               currentPage={currentPage}
-              totalPages={57}
+              totalPages={totalPages}
               pageSize={pageSize}
               onPageChange={setCurrentPage}
-              onPageSizeChange={setPageSize}
+              onPageSizeChange={handlePageSizeChange}
               showPerPage
               actionButton={<Button variant="secondary" size="md" iconOnly ariaLabel="Refresh" iconLeading={<Icon name="ArrowPath" size="sm" />} />}
             />

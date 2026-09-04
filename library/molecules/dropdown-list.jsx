@@ -429,7 +429,7 @@ export const DropdownListItem = ({
   badge,
   action,
   hidden = false,
-  noCheckbox = false,
+  noCheckbox = true,
   onChange,
   style,
   children,

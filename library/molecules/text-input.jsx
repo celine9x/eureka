@@ -262,6 +262,7 @@ export const Input = forwardRef(
       isReadOnly = false,
       readOnly,
       iconLeading,
+      iconTrailing,
       style,
       ...props
     },
@@ -280,6 +281,7 @@ export const Input = forwardRef(
       ...styles.input,
       ...styles.inputSizes[size] || styles.inputSizes.md,
       ...(iconLeading && { paddingLeft: 36 }),
+      ...(iconTrailing && { paddingRight: 36 }),
       ...(isHovered && !isInputDisabled && !isFocused && styles.inputHover),
       ...(isFocused && !isInputDisabled && state === INPUT_STATES.default && styles.inputFocus),
       ...(state === INPUT_STATES.error && !isFocused && styles.inputError),
@@ -291,19 +293,21 @@ export const Input = forwardRef(
       ...style,
     };
 
-    if (iconLeading) {
+    if (iconLeading || iconTrailing) {
       return (
         <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
-          <span style={{
-            position: "absolute",
-            left: 10,
-            display: "flex",
-            alignItems: "center",
-            color: "var(--color-content-tertiary)",
-            pointerEvents: "none",
-          }}>
-            {iconLeading}
-          </span>
+          {iconLeading && (
+            <span style={{
+              position: "absolute",
+              left: 10,
+              display: "flex",
+              alignItems: "center",
+              color: "var(--color-content-tertiary)",
+              pointerEvents: "none",
+            }}>
+              {iconLeading}
+            </span>
+          )}
           <input
             ref={ref}
             type={type}
@@ -317,6 +321,18 @@ export const Input = forwardRef(
             onBlur={() => setIsFocused(false)}
             {...props}
           />
+          {iconTrailing && (
+            <span style={{
+              position: "absolute",
+              right: 10,
+              display: "flex",
+              alignItems: "center",
+              color: "var(--color-content-tertiary)",
+              pointerEvents: "none",
+            }}>
+              {iconTrailing}
+            </span>
+          )}
         </div>
       );
     }
@@ -373,7 +389,9 @@ export const TextInput = forwardRef(
       onChange,
       onFocus,
       onBlur,
+      onClick,
       iconLeading,
+      iconTrailing,
       style,
       multiline: _multiline,
       rows: _rows,
@@ -431,9 +449,11 @@ export const TextInput = forwardRef(
           isDisabled={fieldDisabled}
           isReadOnly={fieldReadOnly}
           iconLeading={iconLeading}
+          iconTrailing={iconTrailing}
           onChange={onChange}
           onFocus={onFocus}
           onBlur={onBlur}
+          onClick={onClick}
         />
 
         {helperMessage && (

@@ -183,26 +183,18 @@ function injectStyles() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function ActionButton({ icon, label, onClick, iconOnly = false, destructive = false }) {
-  const handleClick = (e) => {
-    e.stopPropagation();
-    e.preventDefault();
-    onClick?.(e);
-  };
-
-  const handleMouseDown = (e) => {
-    e.stopPropagation();
-  };
-
   return (
-    <button
-      type="button"
-      className={`bulk-action-bar-btn ${iconOnly ? "bulk-action-bar-btn--icon-only" : ""} ${destructive ? "bulk-action-bar-btn--destructive" : ""}`}
-      onClick={handleClick}
-      onMouseDown={handleMouseDown}
+    <Button
+      variant="tertiary"
+      color={destructive ? "tertiary-destructive" : "tertiary"}
+      size="sm"
+      iconLeading={icon ? <Icon name={icon} size={16} /> : undefined}
+      iconOnly={iconOnly}
+      aria-label={iconOnly ? label : undefined}
+      onClick={(e) => { e.stopPropagation(); e.preventDefault(); onClick?.(e); }}
     >
-      {icon && <Icon name={icon} size={16} />}
       {!iconOnly && label}
-    </button>
+    </Button>
   );
 }
 
@@ -334,6 +326,8 @@ function ActionPopover({
 export function BulkActionBar({
   selectedCount = 0,
   itemLabel = "Tasks",
+  totalCount,
+  onSelectAll,
   onClear,
   actions = [],
   onAction,
@@ -389,6 +383,17 @@ export function BulkActionBar({
           <Icon name="XMarkIcon" size={16} />
         </span>
       </div>
+
+      {/* Select all */}
+      {onSelectAll && totalCount && selectedCount < totalCount && (
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={(e) => { e.stopPropagation(); onSelectAll(); }}
+        >
+          Select all {totalCount} {itemLabel.toLowerCase()}
+        </Button>
+      )}
 
       {/* Actions */}
       <div className="bulk-action-bar-actions">

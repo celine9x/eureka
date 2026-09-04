@@ -1,168 +1,195 @@
-"use client";
+﻿"use client";
 
-/**
- * RichTextInput Component
- *
- * A rich text editor with formatting toolbar, content area, and submit footer.
- * Uses inline styles with CSS variables from tokens.css for consistent styling.
- */
-
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "../atoms/button.jsx";
 import { Icon } from "../atoms/icon.jsx";
 
 // ─────────────────────────────────────────────
-// STYLES (Token-mapped inline styles)
+// STYLES
 // ─────────────────────────────────────────────
 
 const styles = {
   wrapper: {
     display: "flex",
     flexDirection: "column",
-    gap: 8,
+    gap: "var(--spacing-xs, 4px)",
   },
 
-  base: {
-    display: "flex",
+  container: {
+    width: "100%",
+    minHeight: 40,
+    borderRadius: "var(--radius-sm, 8px)",
+    boxSizing: "border-box",
+    transition: "border-color 120ms, background 120ms",
+    border: "1px solid transparent",
+  },
+
+  containerHover: {
+    background: "var(--Grey98, #F8F9FC)",
+    border: "1px solid var(--Grey90, #D9E0ED)",
+  },
+
+  containerActive: {
+    background: "var(--Grey100, white)",
+    border: "1px solid var(--Blue50, #383ACC)",
+  },
+
+  inner: {
+    width: "100%",
     flexDirection: "column",
-    background: "var(--color-general-white)",
-    borderRadius: "var(--radius-md)",
-    outline: "1px solid var(--color-action-outline-secondary-enabled)",
-    outlineOffset: -1,
+    justifyContent: "center",
+    alignItems: "flex-start",
+    gap: "var(--spacing-md, 16px)",
+    display: "flex",
+    overflowX: "hidden",
+    overflowY: "hidden",
+    borderRadius: "calc(var(--radius-sm, 8px) - 1px)",
+  },
+
+  innerActive: {
+    justifyContent: "flex-start",
+    maxHeight: 598,
+    overflowY: "auto",
+  },
+
+  textRow: {
+    alignSelf: "stretch",
+    padding: "var(--spacing-sm, 8px)",
     overflow: "hidden",
-    maxHeight: 500,
-    transition: "outline-color var(--transition-fast)",
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
+    gap: "var(--spacing-sm, 8px)",
+    display: "inline-flex",
   },
 
-  baseHover: {
-    outlineColor: "var(--color-general-neutral-dark)",
+  textRowActive: {
+    padding: "var(--spacing-sm, 8px)",
   },
 
-  baseFocus: {
-    outlineColor: "var(--color-interaction-outline-active)",
+  placeholder: {
+    flex: "1 1 0",
+    color: "var(--Grey70, #93A6CB)",
+    fontSize: "var(--text-body-md, 14px)",
+    fontFamily: "var(--font-family-primary, Sora, sans-serif)",
+    fontWeight: "var(--font-weight-regular, 400)",
+    lineHeight: "var(--line-height-body-md, 20px)",
+    wordWrap: "break-word",
+    pointerEvents: "none",
+    userSelect: "none",
   },
 
-  baseDisabled: {
-    background: "var(--color-general-neutral-light)",
-    outlineColor: "var(--color-action-outline-secondary-enabled)",
-  },
-
-  baseError: {
-    outlineColor: "var(--color-content-negative)",
+  filledText: {
+    flex: "1 1 0",
+    color: "var(--Blue20, #15154C)",
+    fontSize: "var(--text-body-md, 14px)",
+    fontFamily: "var(--font-family-primary, Sora, sans-serif)",
+    fontWeight: "var(--font-weight-regular, 400)",
+    lineHeight: "var(--line-height-body-md, 20px)",
+    wordWrap: "break-word",
   },
 
   toolbar: {
+    alignSelf: "stretch",
+    paddingLeft: "var(--spacing-sm, 8px)",
+    paddingRight: "var(--spacing-sm, 8px)",
+    paddingTop: "var(--spacing-xs, 4px)",
+    paddingBottom: "var(--spacing-xs, 4px)",
+    background: "var(--Grey98, #F8F9FC)",
+    borderBottom: "1px solid var(--Grey90, #D9E0ED)",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "flex-start",
+    gap: "var(--spacing-xs, 4px)",
     display: "flex",
-    alignItems: "center",
-    gap: "var(--spacing-1)",
-    padding: "var(--spacing-1) var(--spacing-4)",
-    background: "var(--color-general-neutral-light)",
-    borderBottom: "1px solid var(--color-action-outline-secondary-enabled)",
+    position: "sticky",
+    top: 0,
+    zIndex: 1,
+    flexShrink: 0,
   },
 
-  toolbarGroup: {
-    display: "flex",
+  toolbarRow: {
+    justifyContent: "flex-start",
     alignItems: "center",
-    gap: "var(--spacing-1)",
+    gap: 0,
+    display: "inline-flex",
   },
 
   divider: {
     width: 1,
     height: 24,
-    background: "var(--color-action-outline-secondary-enabled)",
-    margin: "0 var(--spacing-1)",
-  },
-
-  toolbarBtn: {
-    width: 32,
-    height: 32,
-    padding: 8,
-    background: "transparent",
-    border: "none",
-    borderRadius: "var(--radius-md)",
-    cursor: "pointer",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    color: "var(--color-content-secondary)",
-    transition: "all var(--transition-fast)",
-  },
-
-  toolbarBtnHover: {
-    background: "var(--color-action-fill-tertiary-hover)",
-    color: "var(--color-action-content-tertiary-hover)",
-  },
-
-  toolbarBtnActive: {
-    background: "var(--color-action-fill-tertiary-active)",
-    color: "var(--color-action-content-tertiary-active)",
-  },
-
-  toolbarBtnDisabled: {
-    color: "var(--color-content-tertiary)",
-    cursor: "not-allowed",
-  },
-
-  content: {
-    flex: 1,
-    padding: "var(--spacing-4)",
-    minHeight: 80,
-    overflowY: "auto",
+    background: "var(--Grey90, #D9E0ED)",
+    flexShrink: 0,
+    margin: "0 var(--spacing-xs, 4px)",
   },
 
   editor: {
+    flex: "1 1 0",
+    color: "var(--Blue20, #15154C)",
+    fontSize: "var(--text-body-md, 14px)",
+    fontFamily: "var(--font-family-primary, Sora, sans-serif)",
+    fontWeight: "var(--font-weight-regular, 400)",
+    lineHeight: "var(--line-height-body-md, 20px)",
+    wordWrap: "break-word",
     width: "100%",
-    minHeight: "100%",
     border: "none",
     outline: "none",
     resize: "none",
-    fontFamily: "var(--font-family-primary)",
-    fontSize: "var(--text-body-md)",
-    lineHeight: "var(--line-height-body-md)",
-    color: "var(--color-content-primary)",
     background: "transparent",
-  },
-
-  editorDisabled: {
-    color: "var(--color-content-tertiary)",
-    cursor: "not-allowed",
+    minHeight: 60,
+    padding: 0,
   },
 
   footer: {
-    display: "flex",
+    alignSelf: "stretch",
+    paddingBottom: "var(--spacing-sm, 8px)",
+    paddingLeft: "var(--spacing-sm, 8px)",
+    paddingRight: "var(--spacing-sm, 8px)",
     justifyContent: "flex-end",
-    alignItems: "center",
-    gap: "var(--spacing-2)",
-    padding: "0 var(--spacing-4) var(--spacing-4)",
-  },
-
-  helper: {
-    display: "flex",
     alignItems: "flex-start",
-    gap: "var(--spacing-1)",
-  },
-
-  helperIcon: {
-    flexShrink: 0,
-    width: 16,
-    height: 16,
-    color: "var(--color-content-negative)",
+    gap: "var(--spacing-md, 16px)",
+    display: "inline-flex",
   },
 
   helperText: {
-    fontFamily: "var(--font-family-primary)",
-    fontSize: "var(--text-body-caption)",
-    lineHeight: "var(--line-height-body-caption)",
-    color: "var(--color-content-secondary)",
+    fontSize: "var(--text-body-caption, 12px)",
+    fontFamily: "var(--font-family-primary, Sora, sans-serif)",
+    color: "var(--Grey50, #5371AC)",
+    lineHeight: "var(--line-height-body-caption, 16px)",
   },
 
-  helperTextError: {
-    color: "var(--color-content-negative)",
+  containerDisabled: {
+    cursor: "not-allowed",
+    background: "var(--color-general-neutral-light, #F8F9FC)",
+    border: "1px solid transparent",
+  },
+
+  textDisabled: {
+    color: "var(--color-content-tertiary, #93A6CB)",
+    pointerEvents: "none",
   },
 };
 
 // ─────────────────────────────────────────────
-// TOOLBAR ICONS
+// SHOW MORE BUTTON
+// ─────────────────────────────────────────────
+
+const LINE_HEIGHT = 20; // px, matches --line-height-body-md
+const MAX_LINES = 8;
+const MAX_HEIGHT = LINE_HEIGHT * MAX_LINES; // 160px
+
+const ShowMoreButton = ({ expanded, onClick }) => (
+  <Button
+    variant="secondary"
+    size="xs"
+    iconTrailing={<Icon name={expanded ? "ChevronUp" : "ChevronDown"} size="sm" />}
+    onClick={onClick}
+  >
+    {expanded ? "Show less" : "Show more"}
+  </Button>
+);
+
+// ─────────────────────────────────────────────
+// CUSTOM TEXT FORMAT ICONS (not in heroicons)
 // ─────────────────────────────────────────────
 
 const BoldIcon = () => (
@@ -183,123 +210,108 @@ const UnderlineIcon = () => (
   </svg>
 );
 
-const BulletListIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-    <path d="M2 4a1 1 0 112 0 1 1 0 01-2 0zm4-1h8v2H6V3zm-4 5a1 1 0 112 0 1 1 0 01-2 0zm4-1h8v2H6V7zm-4 5a1 1 0 112 0 1 1 0 01-2 0zm4-1h8v2H6v-2z" />
-  </svg>
-);
+// ─────────────────────────────────────────────
+// TOOLBAR BUTTON
+// ─────────────────────────────────────────────
 
-const NumberListIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-    <path d="M2 2h2v4H3V3H2V2zm4 1h8v2H6V3zM2 8h2l-1.5 2H4v1H2v-1l1.5-2H2V8zm4 0h8v2H6V8zM3 14v-1H2v-1h2v3H2v-1h1zm3-1h8v2H6v-2z" />
-  </svg>
-);
-
-const AlignLeftIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-    <path d="M1 2h14v2H1V2zm0 4h10v2H1V6zm0 4h14v2H1v-2zm0 4h10v2H1v-2z" />
-  </svg>
-);
-
-const AlignCenterIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-    <path d="M1 2h14v2H1V2zm2 4h10v2H3V6zM1 10h14v2H1v-2zm2 4h10v2H3v-2z" />
-  </svg>
-);
-
-const AlignRightIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-    <path d="M1 2h14v2H1V2zm4 4h10v2H5V6zM1 10h14v2H1v-2zm4 4h10v2H5v-2z" />
-  </svg>
-);
-
-const LinkIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-    <path d="M6.5 9.5a1 1 0 010-1.41l3-3a3 3 0 114.24 4.24l-1 1a1 1 0 01-1.42-1.42l1-1a1 1 0 10-1.41-1.41l-3 3a1 1 0 01-1.41 0zm3-3a1 1 0 010 1.41l-3 3a3 3 0 11-4.24-4.24l1-1a1 1 0 011.42 1.42l-1 1a1 1 0 001.41 1.41l3-3a1 1 0 011.41 0z" />
-  </svg>
-);
-
-const UndoIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-    <path d="M3.41 6H10a4 4 0 110 8H8v-2h2a2 2 0 000-4H3.41l1.3 1.29-1.42 1.42L0 7.41l3.29-3.29 1.42 1.42L3.41 6z" />
-  </svg>
-);
-
-const RedoIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-    <path d="M12.59 6H6a4 4 0 100 8h2v-2H6a2 2 0 010-4h6.59l-1.3 1.29 1.42 1.42L16 7.41l-3.29-3.29-1.42 1.42L12.59 6z" />
-  </svg>
+const ToolbarButton = ({ icon, active = false, onClick, title }) => (
+  <Button
+    variant="tertiary"
+    size="sm"
+    iconLeading={icon}
+    onClick={onClick}
+    title={title}
+    aria-pressed={active}
+    onMouseDown={(e) => e.preventDefault()}
+    style={active ? { background: "var(--color-action-fill-tertiary-active)" } : undefined}
+  />
 );
 
 // ─────────────────────────────────────────────
-// TOOLBAR BUTTON COMPONENT
+// TOOLBAR GROUPS
 // ─────────────────────────────────────────────
 
-const ToolbarButton = ({
-  icon: IconComponent,
-  active = false,
-  disabled = false,
-  onClick,
-  title,
-  ...props
-}) => {
-  const [isHovered, setIsHovered] = useState(false);
+// Groups: text-style | lists | media | history
+// Icons: bold/italic/underline use custom SVG; rest use heroicons via Icon atom
+const TOOLBAR_GROUPS = [
+  {
+    id: "text-style",
+    buttons: [
+      { format: "bold",      icon: <BoldIcon />,                                     title: "Bold" },
+      { format: "italic",    icon: <ItalicIcon />,                                   title: "Italic" },
+      { format: "underline", icon: <UnderlineIcon />,                                title: "Underline" },
+    ],
+  },
+  {
+    id: "lists",
+    buttons: [
+      { format: "numberList", icon: <Icon name="ListBullet" size="sm" />,            title: "Numbered list" },
+      { format: "bulletList", icon: <Icon name="Bars3BottomLeft" size="sm" />,       title: "Bullet list" },
+    ],
+  },
+  {
+    id: "media",
+    buttons: [
+      { format: "table",      icon: <Icon name="TableCells" size="sm" />,            title: "Insert table" },
+      { format: "image",      icon: <Icon name="Photo" size="sm" />,                 title: "Insert image" },
+      { format: "attachment", icon: <Icon name="PaperClip" size="sm" />,             title: "Attach file" },
+      { format: "mention",    icon: <Icon name="AtSymbol" size="sm" />,              title: "Mention" },
+    ],
+  },
+  {
+    id: "history",
+    buttons: [
+      { format: "undo", icon: <Icon name="ArrowUturnLeft" size="sm" />,              title: "Undo" },
+      { format: "redo", icon: <Icon name="ArrowUturnRight" size="sm" />,             title: "Redo" },
+    ],
+  },
+];
 
-  const btnStyle = {
-    ...styles.toolbarBtn,
-    ...(isHovered && !disabled && !active && styles.toolbarBtnHover),
-    ...(active && styles.toolbarBtnActive),
-    ...(disabled && styles.toolbarBtnDisabled),
-  };
-
-  return (
-    <button
-      type="button"
-      style={btnStyle}
-      disabled={disabled}
-      onClick={onClick}
-      title={title}
-      aria-pressed={active}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      {...props}
-    >
-      <IconComponent />
-    </button>
-  );
-};
+const Toolbar = ({ activeFormats = {}, onFormat }) => (
+  <div style={styles.toolbar}>
+    <div style={styles.toolbarRow}>
+      {TOOLBAR_GROUPS.map((group, i) => (
+        <div key={group.id} style={{ display: "contents" }}>
+          {i > 0 && <div style={styles.divider} />}
+          {group.buttons.map((btn) => (
+            <ToolbarButton
+              key={btn.format}
+              icon={btn.icon}
+              title={btn.title}
+              active={!!activeFormats[btn.format]}
+              onClick={() => onFormat && onFormat(btn.format)}
+            />
+          ))}
+        </div>
+      ))}
+    </div>
+  </div>
+);
 
 // ─────────────────────────────────────────────
-// DIVIDER COMPONENT
-// ─────────────────────────────────────────────
-
-const ToolbarDivider = () => <div style={styles.divider} />;
-
-// ─────────────────────────────────────────────
-// RICH TEXT INPUT COMPONENT
+// RICH TEXT INPUT (textarea-based)
 // ─────────────────────────────────────────────
 
 /**
  * RichTextInput
  *
+ * Inline rich text input. Click to expand — shows toolbar and Save button when focused.
  *
  * @example
  * <RichTextInput
- *   placeholder="Write a comment"
+ *   placeholder="Write description..."
  *   onSubmit={(value) => console.log(value)}
  * />
  */
 export const RichTextInput = ({
-  placeholder = "Write a comment",
-  value,
+  placeholder = "Write description...",
+  value = "",
   onChange,
-  disabled = false,
-  error = false,
-  helperText,
-  submitLabel = "Submit",
   onSubmit,
-  showToolbar = true,
-  showFooter = true,
+  disabled = false,
+  readOnly = false,
+  helperText,
+  submitLabel = "Save",
   activeFormats = {},
   onFormat,
   style,
@@ -307,368 +319,309 @@ export const RichTextInput = ({
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const [overflows, setOverflows] = useState(false);
   const textareaRef = useRef(null);
+  const contentRef = useRef(null);
 
-  const handleFormat = (format) => {
-    if (onFormat) {
-      onFormat(format);
-    }
-  };
+  const hasValue = value && value.length > 0;
+  const isActive = isFocused && !disabled && !readOnly;
+  const isInteractive = !disabled && !readOnly;
 
-  const handleSubmit = () => {
-    if (onSubmit) {
-      onSubmit(value);
-    }
-  };
+  // Detect when filled content exceeds MAX_LINES
+  useEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+    const check = () => setOverflows(el.scrollHeight > MAX_HEIGHT);
+    check();
+    const ro = new ResizeObserver(check);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [value, isActive]);
 
-  // Default toolbar configuration
-  const defaultToolbarGroups = [
-    {
-      id: "text-style",
-      buttons: [
-        { format: "bold", icon: BoldIcon, title: "Bold" },
-        { format: "italic", icon: ItalicIcon, title: "Italic" },
-        { format: "underline", icon: UnderlineIcon, title: "Underline" },
-      ],
-    },
-    {
-      id: "lists",
-      buttons: [
-        { format: "bulletList", icon: BulletListIcon, title: "Bullet list" },
-        { format: "numberList", icon: NumberListIcon, title: "Numbered list" },
-      ],
-    },
-    {
-      id: "alignment",
-      buttons: [
-        { format: "alignLeft", icon: AlignLeftIcon, title: "Align left" },
-        { format: "alignCenter", icon: AlignCenterIcon, title: "Align center" },
-        { format: "alignRight", icon: AlignRightIcon, title: "Align right" },
-      ],
-    },
-    {
-      id: "link",
-      buttons: [{ format: "link", icon: LinkIcon, title: "Insert link" }],
-    },
-    {
-      id: "history",
-      buttons: [
-        { format: "undo", icon: UndoIcon, title: "Undo" },
-        { format: "redo", icon: RedoIcon, title: "Redo" },
-      ],
-    },
-  ];
-
-  // Compose container styles
   const containerStyle = {
-    ...styles.base,
-    ...(isHovered && !disabled && !isFocused && !error && styles.baseHover),
-    ...(isFocused && !disabled && !error && styles.baseFocus),
-    ...(disabled && styles.baseDisabled),
-    ...(error && styles.baseError),
+    ...styles.container,
+    ...(isHovered && !isActive && !disabled && styles.containerHover),
+    ...(isActive && styles.containerActive),
+    ...(disabled && styles.containerDisabled),
     ...style,
   };
 
-  // Editor styles
-  const editorStyle = {
-    ...styles.editor,
-    ...(disabled && styles.editorDisabled),
+  const innerStyle = {
+    ...styles.inner,
+    ...(isActive && styles.innerActive),
   };
 
-  // Helper text styles
-  const helperTextStyle = {
-    ...styles.helperText,
-    ...(error && styles.helperTextError),
+  const textRowStyle = {
+    ...styles.textRow,
+    ...(isActive && styles.textRowActive),
+  };
+
+  const handleSubmit = () => {
+    onSubmit && onSubmit(value);
+    setIsHovered(false);
+    textareaRef.current?.blur();
   };
 
   return (
     <div style={styles.wrapper}>
       <div
         style={containerStyle}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        onMouseEnter={() => !disabled && setIsHovered(true)}
+        onMouseLeave={() => !disabled && setIsHovered(false)}
         {...props}
       >
-        {showToolbar && (
-          <div style={styles.toolbar}>
-            {defaultToolbarGroups.map((group, groupIndex) => (
-              <div key={group.id} style={{ display: "contents" }}>
-                {groupIndex > 0 && <ToolbarDivider />}
-                <div style={styles.toolbarGroup}>
-                  {group.buttons.map((btn) => (
-                    <ToolbarButton
-                      key={btn.format}
-                      icon={btn.icon}
-                      title={btn.title}
-                      active={activeFormats[btn.format]}
-                      disabled={disabled}
-                      onClick={() => handleFormat(btn.format)}
-                    />
-                  ))}
-                </div>
+        <div style={innerStyle}>
+          {isActive && (
+            <Toolbar activeFormats={activeFormats} onFormat={onFormat} />
+          )}
+
+          <div style={textRowStyle}>
+            {isActive ? (
+              <textarea
+                ref={textareaRef}
+                style={styles.editor}
+                placeholder={placeholder}
+                value={value}
+                onChange={(e) => onChange && onChange(e.target.value)}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
+                disabled={disabled}
+                autoFocus
+              />
+            ) : (
+              <div
+                ref={contentRef}
+                style={{
+                  ...(hasValue ? styles.filledText : styles.placeholder),
+                  ...(disabled && styles.textDisabled),
+                  ...(!expanded && overflows && {
+                    maxHeight: MAX_HEIGHT,
+                    overflow: "hidden",
+                  }),
+                }}
+                onClick={() => isInteractive && setIsFocused(true)}
+              >
+                {hasValue ? value : placeholder}
               </div>
-            ))}
+            )}
           </div>
-        )}
 
-        <div style={styles.content}>
-          <textarea
-            ref={textareaRef}
-            style={editorStyle}
-            placeholder={placeholder}
-            value={value}
-            onChange={(e) => onChange && onChange(e.target.value)}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
-            disabled={disabled}
-            aria-invalid={error || undefined}
-          />
+          {isActive && (
+            <div style={styles.footer}>
+              <Button variant="primary" size="sm" onClick={handleSubmit}>
+                {submitLabel}
+              </Button>
+            </div>
+          )}
         </div>
-
-        {showFooter && (
-          <div style={styles.footer}>
-            <Button
-              variant="primary"
-              size="md"
-              disabled={disabled}
-              onClick={handleSubmit}
-            >
-              {submitLabel}
-            </Button>
-          </div>
-        )}
       </div>
 
-      {helperText && (
-        <div style={styles.helper}>
-          {error && (
-            <span style={styles.helperIcon}>
-              <Icon name="ExclamationCircle" variant="solid" size="sm" />
-            </span>
-          )}
-          <span style={helperTextStyle}>{helperText}</span>
+      {!isActive && overflows && (
+        <div style={{ paddingLeft: "var(--spacing-sm, 8px)" }}>
+          <ShowMoreButton expanded={expanded} onClick={() => setExpanded((e) => !e)} />
         </div>
       )}
+
+      {helperText && <span style={styles.helperText}>{helperText}</span>}
     </div>
   );
 };
 
 // ─────────────────────────────────────────────
-// CONTENTEDITABLE VARIANT
+// RICH TEXT INPUT EDITABLE (contentEditable-based)
 // ─────────────────────────────────────────────
 
-// Inject placeholder styles for contentEditable
-const injectContentEditableStyles = () => {
+const injectPlaceholderStyles = () => {
   if (typeof document === "undefined") return;
-  const styleId = "rich-text-contenteditable-styles";
-  if (document.getElementById(styleId)) return;
-
-  const styleEl = document.createElement("style");
-  styleEl.id = styleId;
-  styleEl.textContent = `
-    .rich-text-editor-contenteditable:empty::before {
+  const id = "rte-placeholder-styles";
+  if (document.getElementById(id)) return;
+  const el = document.createElement("style");
+  el.id = id;
+  el.textContent = `
+    .rte-editor:empty::before {
       content: attr(data-placeholder);
-      color: var(--color-content-tertiary);
+      color: var(--Grey70, #93A6CB);
       pointer-events: none;
     }
   `;
-  document.head.appendChild(styleEl);
+  document.head.appendChild(el);
 };
 
 /**
  * RichTextInputEditable
  *
- * Alternative version using contentEditable for actual rich text editing.
- * Use this when you need true rich text formatting.
+ * ContentEditable variant for true rich text formatting.
+ * Toolbar buttons execute real browser formatting commands.
+ *
+ * @example
+ * <RichTextInputEditable
+ *   placeholder="Write description..."
+ *   onSubmit={(html) => console.log(html)}
+ * />
  */
 export const RichTextInputEditable = ({
-  placeholder = "Write a comment",
-  value,
+  placeholder = "Write description...",
+  value = "",
   onChange,
-  disabled = false,
-  error = false,
-  helperText,
-  submitLabel = "Submit",
   onSubmit,
-  showToolbar = true,
-  showFooter = true,
+  disabled = false,
+  readOnly = false,
+  helperText,
+  submitLabel = "Save",
   activeFormats = {},
   onFormat,
   style,
   ...props
 }) => {
+  injectPlaceholderStyles();
+
   const [isHovered, setIsHovered] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const [overflows, setOverflows] = useState(false);
+  const editorRef = useRef(null);
+  const contentRef = useRef(null);
 
-  // Inject styles for placeholder
-  injectContentEditableStyles();
+  const hasValue = value && value.length > 0;
+  const isActive = isFocused && !disabled && !readOnly;
+  const isInteractive = !disabled && !readOnly;
+  const seedRef = useRef(false);
+
+  // Seed innerHTML on first mount into active editor (avoid dangerouslySetInnerHTML conflict)
+  useEffect(() => {
+    if (isActive && editorRef.current && !seedRef.current) {
+      editorRef.current.innerHTML = value || "";
+      seedRef.current = true;
+      // Move cursor to end
+      const range = document.createRange();
+      const sel = window.getSelection();
+      range.selectNodeContents(editorRef.current);
+      range.collapse(false);
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
+    if (!isActive) {
+      seedRef.current = false;
+    }
+  }, [isActive]);
+
+  useEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+    const check = () => setOverflows(el.scrollHeight > MAX_HEIGHT);
+    check();
+    const ro = new ResizeObserver(check);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [value, isActive]);
+
+  const containerStyle = {
+    ...styles.container,
+    ...(isHovered && !isActive && !disabled && styles.containerHover),
+    ...(isActive && styles.containerActive),
+    ...(disabled && styles.containerDisabled),
+    ...style,
+  };
+
+  const innerStyle = {
+    ...styles.inner,
+    ...(isActive && styles.innerActive),
+  };
+
+  const textRowStyle = {
+    ...styles.textRow,
+    ...(isActive && styles.textRowActive),
+  };
 
   const handleFormat = (format) => {
-    // Execute document commands for contentEditable
     const commands = {
       bold: () => document.execCommand("bold", false),
       italic: () => document.execCommand("italic", false),
       underline: () => document.execCommand("underline", false),
       bulletList: () => document.execCommand("insertUnorderedList", false),
       numberList: () => document.execCommand("insertOrderedList", false),
-      alignLeft: () => document.execCommand("justifyLeft", false),
-      alignCenter: () => document.execCommand("justifyCenter", false),
-      alignRight: () => document.execCommand("justifyRight", false),
       undo: () => document.execCommand("undo", false),
       redo: () => document.execCommand("redo", false),
     };
-
-    if (commands[format]) {
-      commands[format]();
-    }
-
-    if (onFormat) {
-      onFormat(format);
-    }
+    commands[format]?.();
+    onFormat && onFormat(format);
   };
 
   const handleSubmit = () => {
-    if (onSubmit) {
-      onSubmit(value);
-    }
-  };
-
-  const handleInput = (e) => {
-    if (onChange) {
-      onChange(e.currentTarget.innerHTML);
-    }
-  };
-
-  const defaultToolbarGroups = [
-    {
-      id: "text-style",
-      buttons: [
-        { format: "bold", icon: BoldIcon, title: "Bold" },
-        { format: "italic", icon: ItalicIcon, title: "Italic" },
-        { format: "underline", icon: UnderlineIcon, title: "Underline" },
-      ],
-    },
-    {
-      id: "lists",
-      buttons: [
-        { format: "bulletList", icon: BulletListIcon, title: "Bullet list" },
-        { format: "numberList", icon: NumberListIcon, title: "Numbered list" },
-      ],
-    },
-    {
-      id: "alignment",
-      buttons: [
-        { format: "alignLeft", icon: AlignLeftIcon, title: "Align left" },
-        { format: "alignCenter", icon: AlignCenterIcon, title: "Align center" },
-        { format: "alignRight", icon: AlignRightIcon, title: "Align right" },
-      ],
-    },
-    {
-      id: "link",
-      buttons: [{ format: "link", icon: LinkIcon, title: "Insert link" }],
-    },
-    {
-      id: "history",
-      buttons: [
-        { format: "undo", icon: UndoIcon, title: "Undo" },
-        { format: "redo", icon: RedoIcon, title: "Redo" },
-      ],
-    },
-  ];
-
-  // Compose container styles
-  const containerStyle = {
-    ...styles.base,
-    ...(isHovered && !disabled && !isFocused && !error && styles.baseHover),
-    ...(isFocused && !disabled && !error && styles.baseFocus),
-    ...(disabled && styles.baseDisabled),
-    ...(error && styles.baseError),
-    ...style,
-  };
-
-  // Editor styles for contentEditable
-  const editorStyle = {
-    ...styles.editor,
-    minHeight: "100%",
-    ...(disabled && styles.editorDisabled),
-  };
-
-  // Helper text styles
-  const helperTextStyle = {
-    ...styles.helperText,
-    ...(error && styles.helperTextError),
+    const html = editorRef.current?.innerHTML ?? "";
+    onSubmit && onSubmit(html);
+    setIsHovered(false);
+    editorRef.current?.blur();
   };
 
   return (
     <div style={styles.wrapper}>
       <div
         style={containerStyle}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        onMouseEnter={() => !disabled && setIsHovered(true)}
+        onMouseLeave={() => !disabled && setIsHovered(false)}
         {...props}
       >
-        {showToolbar && (
-          <div style={styles.toolbar}>
-            {defaultToolbarGroups.map((group, groupIndex) => (
-              <div key={group.id} style={{ display: "contents" }}>
-                {groupIndex > 0 && <ToolbarDivider />}
-                <div style={styles.toolbarGroup}>
-                  {group.buttons.map((btn) => (
-                    <ToolbarButton
-                      key={btn.format}
-                      icon={btn.icon}
-                      title={btn.title}
-                      active={activeFormats[btn.format]}
-                      disabled={disabled}
-                      onClick={() => handleFormat(btn.format)}
-                    />
-                  ))}
-                </div>
+        <div style={innerStyle}>
+          {isActive && (
+            <Toolbar activeFormats={activeFormats} onFormat={handleFormat} />
+          )}
+
+          <div style={textRowStyle}>
+            {isActive ? (
+              <div
+                ref={editorRef}
+                className="rte-editor"
+                style={styles.editor}
+                contentEditable={!disabled}
+                data-placeholder={placeholder}
+                onInput={(e) => onChange && onChange(e.currentTarget.innerHTML)}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
+                role="textbox"
+                aria-multiline="true"
+                suppressContentEditableWarning
+              />
+            ) : (
+              <div
+                ref={contentRef}
+                style={{
+                  ...(hasValue ? styles.filledText : styles.placeholder),
+                  ...(disabled && styles.textDisabled),
+                  ...(!expanded && overflows && {
+                    maxHeight: MAX_HEIGHT,
+                    overflow: "hidden",
+                  }),
+                }}
+                onClick={() => isInteractive && setIsFocused(true)}
+              >
+                {hasValue ? (
+                  <span dangerouslySetInnerHTML={{ __html: value }} />
+                ) : (
+                  placeholder
+                )}
               </div>
-            ))}
+            )}
           </div>
-        )}
 
-        <div style={styles.content}>
-          <div
-            className="rich-text-editor-contenteditable"
-            style={editorStyle}
-            contentEditable={!disabled}
-            data-placeholder={placeholder}
-            onInput={handleInput}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
-            dangerouslySetInnerHTML={value ? { __html: value } : undefined}
-            aria-invalid={error || undefined}
-            role="textbox"
-            aria-multiline="true"
-          />
+          {isActive && (
+            <div style={styles.footer}>
+              <Button variant="primary" size="sm" onClick={handleSubmit}>
+                {submitLabel}
+              </Button>
+            </div>
+          )}
         </div>
-
-        {showFooter && (
-          <div style={styles.footer}>
-            <Button
-              variant="primary"
-              size="md"
-              disabled={disabled}
-              onClick={handleSubmit}
-            >
-              {submitLabel}
-            </Button>
-          </div>
-        )}
       </div>
 
-      {helperText && (
-        <div style={styles.helper}>
-          {error && (
-            <span style={styles.helperIcon}>
-              <Icon name="ExclamationCircle" variant="solid" size="sm" />
-            </span>
-          )}
-          <span style={helperTextStyle}>{helperText}</span>
+      {!isActive && overflows && (
+        <div style={{ paddingLeft: "var(--spacing-sm, 8px)" }}>
+          <ShowMoreButton expanded={expanded} onClick={() => setExpanded((e) => !e)} />
         </div>
       )}
+
+      {helperText && <span style={styles.helperText}>{helperText}</span>}
     </div>
   );
 };
@@ -676,7 +629,5 @@ export const RichTextInputEditable = ({
 RichTextInput.displayName = "RichTextInput";
 RichTextInputEditable.displayName = "RichTextInputEditable";
 RichTextInput.Editable = RichTextInputEditable;
-RichTextInput.Button = Button;
-RichTextInput.Icon = Icon;
 
 export default RichTextInput;

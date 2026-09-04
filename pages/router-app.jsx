@@ -18,6 +18,7 @@ import ValidityDatesPage from "./clause/validity-dates.jsx";
 import InlineEditPage from "./inline-edit/inline-edit-page.jsx";
 import InlineEditTablePage from "./inline-edit/inline-edit-table.jsx";
 import HubPage from "./hub/hub-page.jsx";
+import OutlookAddinPage from "./outlook-addin/outlook-addin-page.jsx";
 
 const LIBRARY_PATH = "/library";
 
@@ -26,6 +27,7 @@ const CLAUSE_VALIDITY_PATH = "/clause/validity-dates";
 const INLINE_EDIT_PATH = "/inline-edit";
 const INLINE_EDIT_TABLE_PATH = "/inline-edit/table";
 const HUB_PATH = "/hub";
+const OUTLOOK_ADDIN_PATH = "/outlook-addin";
 const ONTOLOGY_ROUTER_PROTOTYPE_PATH = "/nexus/ontology";
 const SEARCH_PATH = "/nexus/search";
 const SEARCH2_PATH = "/nexus/search2";
@@ -45,6 +47,7 @@ const PAGE_TITLES = {
   [INLINE_EDIT_PATH]: "Inline Edit — Eureka",
   [INLINE_EDIT_TABLE_PATH]: "Inline Edit Table — Eureka",
   [HUB_PATH]: "Hub — Eureka",
+  [OUTLOOK_ADDIN_PATH]: "Outlook Add-in — Eureka",
   [LIBRARY_PATH]: "Component Library — Eureka",
   [ACCESS_CONTROL_PATH]: "Access Control â€” Eureka",
   [AI_HOMEPAGE_PATH]: "AI Homepage â€” Eureka",
@@ -68,6 +71,7 @@ const ROUTE_COMPONENTS = {
   [INLINE_EDIT_PATH]: <InlineEditPage />,
   [INLINE_EDIT_TABLE_PATH]: <InlineEditTablePage />,
   [HUB_PATH]: <HubPage />,
+  [OUTLOOK_ADDIN_PATH]: <OutlookAddinPage />,
 
   [ACCESS_CONTROL_PATH]: <AccessControlPage />,
   [AI_HOMEPAGE_PATH]: <AiHomepagePage />,

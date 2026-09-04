@@ -135,7 +135,7 @@ function injectRowStyles() {
       transition: opacity 120ms ease;
     }
 
-    .eureka-cie:hover .tie-open-btn {
+    .tie-row--body:hover .tie-open-btn {
       opacity: 1;
     }
 

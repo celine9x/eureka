@@ -979,16 +979,38 @@ const RowActionsMenu = ({ onConvertToGroup, onDelete, isGrouped }) => {
 let nextId = 1;
 const genId = () => `row-${nextId++}`;
 
-const CriterionRow = ({ row, index, isFirst, isLogicDisabled, isGrouped, onChange, onDelete, onConvertToGroup, usedFields = [], groupLogic, onGroupLogicChange, disableNoneOf = false }) => {
+const CriterionRow = ({ row, index, isFirst, isLogicDisabled, isGrouped, onChange, onDelete, onConvertToGroup, usedFields = [], groupLogic, onGroupLogicChange, disableNoneOf = false, onDragStart, onDragOver, onDrop, onDragLeave, isDragOver }) => {
   return (
     <div
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+      onDragLeave={onDragLeave}
       style={{
         display: "flex",
         alignItems: "center",
         gap: "var(--spacing-sm)",
         flexWrap: "nowrap",
+        outline: isDragOver ? "2px solid var(--color-action-outline-primary-enabled)" : "none",
+        borderRadius: "var(--radius-md)",
+        transition: "outline 0.1s",
       }}
     >
+      <div
+        title="Drag to reorder"
+        draggable
+        onDragStart={onDragStart}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          width: 20,
+          flexShrink: 0,
+          cursor: "grab",
+          color: "var(--color-content-tertiary)",
+        }}
+      >
+        <Icon name="Bars3" size={16} />
+      </div>
       {!isGrouped && (
         <LogicDropdown
           value={isFirst ? "Where" : row.logic}
@@ -1072,7 +1094,7 @@ const CriterionRow = ({ row, index, isFirst, isLogicDisabled, isGrouped, onChang
 // GROUP
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-const CriteriaGroup = ({ group, groupIndex, onChange, onDeleteGroup, isAbsoluteFirst = false }) => {
+const CriteriaGroup = ({ group, groupIndex, onChange, onDeleteGroup, isAbsoluteFirst = false, onRowDragStart, onGroupDrop, onGroupDragOver, onGroupDragLeave, isGroupDragOver, onRowDrop, onRowDragOver, onRowDragLeave, dragOverRowId }) => {
   const usedFields = group.rows.map((r) => r.fieldId).filter(Boolean);
   const groupLogic = group.rowLogic || "And";
 
@@ -1102,14 +1124,20 @@ const CriteriaGroup = ({ group, groupIndex, onChange, onDeleteGroup, isAbsoluteF
 
   return (
     <div
+      onDragOver={onGroupDragOver}
+      onDrop={onGroupDrop}
+      onDragLeave={onGroupDragLeave}
       style={{
         background: "var(--color-general-neutral-light)",
-        border: "1px solid var(--color-action-outline-secondary-enabled)",
+        border: isGroupDragOver
+          ? "2px solid var(--color-action-outline-primary-enabled)"
+          : "1px solid var(--color-action-outline-secondary-enabled)",
         borderRadius: "var(--radius-md)",
         padding: "var(--spacing-md)",
         display: "flex",
         flexDirection: "column",
         gap: "var(--spacing-sm)",
+        transition: "border 0.1s",
       }}
     >
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -1142,6 +1170,11 @@ const CriteriaGroup = ({ group, groupIndex, onChange, onDeleteGroup, isAbsoluteF
           groupLogic={groupLogic}
           onGroupLogicChange={setGroupLogic}
           disableNoneOf={isAbsoluteFirst && i === 0}
+          onDragStart={onRowDragStart ? (e) => onRowDragStart(e, group.id, row.id) : undefined}
+          onDragOver={onRowDragOver ? (e) => onRowDragOver(e, group.id, row.id) : undefined}
+          onDrop={onRowDrop ? (e) => onRowDrop(e, group.id, row.id) : undefined}
+          onDragLeave={onRowDragLeave}
+          isDragOver={dragOverRowId === row.id}
         />
       ))}
 
@@ -1354,6 +1387,156 @@ const AdvancedSearchTab = () => {
   const [searchName, setSearchName] = useState(() => parseCriteriaFromUrl()?.searchName || "");
   const [showValidation, setShowValidation] = useState(false);
 
+  // ── Drag & drop state ──────────────────────────────────────
+  const dragSrc = React.useRef(null); // { itemId, groupId?, rowId? }
+  const [dragOverTarget, setDragOverTarget] = useState(null); // { itemId?, groupId?, rowId? }
+
+  const handleDragStart = (e, itemId, groupId = null, rowId = null) => {
+    dragSrc.current = { itemId, groupId, rowId };
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragEnd = () => {
+    dragSrc.current = null;
+    setDragOverTarget(null);
+  };
+
+  // Drop a row onto a top-level CriterionRow target
+  const handleTopRowDrop = (e, targetItemId) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOverTarget(null);
+    const src = dragSrc.current;
+    if (!src) return;
+
+    setItems((prev) => {
+      let next = [...prev];
+
+      // Extract the dragged row
+      let draggedRow;
+      if (src.groupId) {
+        // From inside a group → extract from group
+        const gi = next.findIndex((it) => it.id === src.groupId);
+        if (gi === -1) return prev;
+        const group = next[gi];
+        const ri = group.rows.findIndex((r) => r.id === src.rowId);
+        if (ri === -1) return prev;
+        draggedRow = group.rows[ri];
+        const newRows = group.rows.filter((_, i) => i !== ri);
+        if (newRows.length === 0) {
+          next = next.filter((_, i) => i !== gi);
+        } else {
+          next[gi] = { ...group, rows: newRows };
+        }
+      } else {
+        // From top level
+        const si = next.findIndex((it) => it.id === src.itemId);
+        if (si === -1) return prev;
+        draggedRow = next[si];
+        next = next.filter((_, i) => i !== si);
+      }
+
+      // Insert before target
+      const ti = next.findIndex((it) => it.id === targetItemId);
+      if (ti === -1) {
+        next.push({ ...draggedRow, type: "row" });
+      } else {
+        next.splice(ti, 0, { ...draggedRow, type: "row" });
+      }
+
+      return normalizeItemsByLevel(next);
+    });
+    dragSrc.current = null;
+  };
+
+  // Drop a row onto a group's CriterionRow target
+  const handleGroupRowDrop = (e, targetGroupId, targetRowId) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOverTarget(null);
+    const src = dragSrc.current;
+    if (!src) return;
+
+    setItems((prev) => {
+      let next = prev.map((it) => it.type === "group" ? { ...it, rows: [...it.rows] } : { ...it });
+
+      // Extract dragged row
+      let draggedRow;
+      if (src.groupId) {
+        const gi = next.findIndex((it) => it.id === src.groupId);
+        if (gi === -1) return prev;
+        const ri = next[gi].rows.findIndex((r) => r.id === src.rowId);
+        if (ri === -1) return prev;
+        draggedRow = next[gi].rows[ri];
+        const newRows = next[gi].rows.filter((_, i) => i !== ri);
+        if (newRows.length === 0 && src.groupId !== targetGroupId) {
+          next = next.filter((it) => it.id !== src.groupId);
+        } else {
+          next = next.map((it) => it.id === src.groupId ? { ...it, rows: newRows } : it);
+        }
+      } else {
+        const si = next.findIndex((it) => it.id === src.itemId);
+        if (si === -1) return prev;
+        draggedRow = next[si];
+        next = next.filter((it) => it.id !== src.itemId);
+      }
+
+      // Insert before target row in target group
+      const tgi = next.findIndex((it) => it.id === targetGroupId);
+      if (tgi === -1) return prev;
+      const tri = next[tgi].rows.findIndex((r) => r.id === targetRowId);
+      const insertAt = tri === -1 ? next[tgi].rows.length : tri;
+      const newGroupRows = [...next[tgi].rows];
+      newGroupRows.splice(insertAt, 0, { ...draggedRow, type: "row" });
+      next[tgi] = { ...next[tgi], rows: newGroupRows };
+
+      return normalizeItemsByLevel(next);
+    });
+    dragSrc.current = null;
+  };
+
+  // Drop onto a group (append to group rows)
+  const handleGroupDrop = (e, targetGroupId) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOverTarget(null);
+    const src = dragSrc.current;
+    if (!src) return;
+
+    setItems((prev) => {
+      let next = prev.map((it) => it.type === "group" ? { ...it, rows: [...it.rows] } : { ...it });
+
+      let draggedRow;
+      if (src.groupId) {
+        if (src.groupId === targetGroupId) return prev; // same group, no-op at group level
+        const gi = next.findIndex((it) => it.id === src.groupId);
+        if (gi === -1) return prev;
+        const ri = next[gi].rows.findIndex((r) => r.id === src.rowId);
+        if (ri === -1) return prev;
+        draggedRow = next[gi].rows[ri];
+        const newRows = next[gi].rows.filter((_, i) => i !== ri);
+        if (newRows.length === 0) {
+          next = next.filter((it) => it.id !== src.groupId);
+        } else {
+          next = next.map((it) => it.id === src.groupId ? { ...it, rows: newRows } : it);
+        }
+      } else {
+        const si = next.findIndex((it) => it.id === src.itemId);
+        if (si === -1) return prev;
+        draggedRow = next[si];
+        next = next.filter((it) => it.id !== src.itemId);
+      }
+
+      const tgi = next.findIndex((it) => it.id === targetGroupId);
+      if (tgi === -1) return prev;
+      next[tgi] = { ...next[tgi], rows: [...next[tgi].rows, { ...draggedRow, type: "row" }] };
+
+      return normalizeItemsByLevel(next);
+    });
+    dragSrc.current = null;
+  };
+
+  // ── end drag state ─────────────────────────────────────────
   const rows = items.filter((it) => it.type === "row");
   const groups = items.filter((it) => it.type === "group");
 
@@ -1492,6 +1675,11 @@ const AdvancedSearchTab = () => {
                 onConvertToGroup={() => convertRowToGroup(item.id)}
                 usedFields={usedFields}
                 disableNoneOf={false}
+                onDragStart={(e) => handleDragStart(e, item.id)}
+                onDragOver={(e) => { e.preventDefault(); setDragOverTarget({ itemId: item.id }); }}
+                onDrop={(e) => handleTopRowDrop(e, item.id)}
+                onDragLeave={() => setDragOverTarget(null)}
+                isDragOver={dragOverTarget?.itemId === item.id}
               />
             );
           }
@@ -1514,6 +1702,15 @@ const AdvancedSearchTab = () => {
                   onChange={(updated) => updateItem(item.id, updated)}
                   onDeleteGroup={() => deleteItem(item.id)}
                   isAbsoluteFirst={isFirst}
+                  onRowDragStart={(e, groupId, rowId) => handleDragStart(e, item.id, groupId, rowId)}
+                  onGroupDragOver={(e) => { e.preventDefault(); setDragOverTarget({ groupId: item.id }); }}
+                  onGroupDrop={(e) => handleGroupDrop(e, item.id)}
+                  onGroupDragLeave={() => setDragOverTarget(null)}
+                  isGroupDragOver={dragOverTarget?.groupId === item.id && !dragOverTarget?.rowId}
+                  onRowDragOver={(e, groupId, rowId) => { e.preventDefault(); e.stopPropagation(); setDragOverTarget({ groupId, rowId }); }}
+                  onRowDrop={(e, groupId, rowId) => handleGroupRowDrop(e, groupId, rowId)}
+                  onRowDragLeave={() => setDragOverTarget(null)}
+                  dragOverRowId={dragOverTarget?.groupId === item.id ? dragOverTarget?.rowId : null}
                 />
               </div>
             </div>
