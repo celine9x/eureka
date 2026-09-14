@@ -7,10 +7,26 @@
  * Uses inline styles with CSS variables from tokens.css for consistent styling.
  */
 
-import { useState, useCallback, Children, isValidElement } from "react";
+import { useState, useCallback, useEffect, Children, isValidElement } from "react";
 import { Button } from "../atoms/button.jsx";
 import { Checkbox } from "../atoms/checkbox.jsx";
 import { Icon } from "../atoms/icon.jsx";
+
+const getElementTypeName = (element) => element?.type?.displayName ?? element?.type?.name ?? "";
+
+const isDropdownSectionElement = (element) => isValidElement(element) && getElementTypeName(element) === "DropdownSection";
+
+const isDropdownListItemElement = (element) => isValidElement(element) && getElementTypeName(element) === "DropdownListItem";
+
+const countDropdownListItems = (nodes) =>
+  Children.toArray(nodes).reduce((count, child) => {
+    if (!isValidElement(child)) return count;
+    if (isDropdownListItemElement(child)) return count + 1;
+    if (isDropdownSectionElement(child)) {
+      return count + countDropdownListItems(child.props?.children);
+    }
+    return count + countDropdownListItems(child.props?.children);
+  }, 0);
 
 // ─────────────────────────────────────────────
 // STYLES (Token-mapped inline styles)
@@ -23,6 +39,8 @@ const styles = {
     alignSelf: "stretch",
     padding: "var(--spacing-sm)",
     gap: "var(--spacing-xs)",
+    contentVisibility: "auto",
+    containIntrinsicSize: "auto 224px",
   },
 
   sectionHidden: {
@@ -88,6 +106,8 @@ const styles = {
     transition: "all var(--transition-fast)",
     background: "transparent",
     border: "none",
+    contentVisibility: "auto",
+    containIntrinsicSize: "auto 44px",
   },
 
   itemStates: {
@@ -166,6 +186,11 @@ const styles = {
   },
 
   itemCheckbox: {
+    width: 16,
+    height: 16,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
     flexShrink: 0,
     pointerEvents: "none",
   },
@@ -336,10 +361,21 @@ const styles = {
  * A section within a dropdown list with optional title.
  *
  */
-export const DropdownSection = ({ title, hidden = false, defaultExpanded = true, style, children, ...props }) => {
-  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
-
+export const DropdownSection = ({
+  title,
+  collapsible = false,
+  defaultExpanded = true,
+  hidden = false,
+  style,
+  children,
+  ...props
+}) => {
   const sectionChildren = Children.toArray(children);
+  const hasManyItems = sectionChildren.filter(isValidElement).length > 5;
+  const canCollapse = Boolean(title) && (collapsible || hasManyItems);
+  const [isExpanded, setIsExpanded] = useState(
+    canCollapse ? (collapsible ? defaultExpanded : false) : true
+  );
   const getSortMeta = (child, index) => {
     if (!isValidElement(child)) return { rank: 1, label: "", index };
     const rawLabel = typeof child.props?.children === "string" ? child.props.children : "";
@@ -372,7 +408,7 @@ export const DropdownSection = ({ title, hidden = false, defaultExpanded = true,
 
   return (
     <div style={sectionStyle} {...props}>
-      {title && (
+      {title && canCollapse && (
         <button
           type="button"
           style={styles.sectionHeader}
@@ -385,10 +421,11 @@ export const DropdownSection = ({ title, hidden = false, defaultExpanded = true,
           </span>
         </button>
       )}
+      {title && !canCollapse && <div style={styles.sectionTitle}>{title}</div>}
       <div
         style={{
           ...styles.sectionItems,
-          ...(!isExpanded && title ? styles.sectionContentHidden : null),
+          ...(canCollapse && !isExpanded ? styles.sectionContentHidden : null),
         }}
       >
         {sortedChildren}
@@ -436,12 +473,25 @@ export const DropdownListItem = ({
   ...props
 }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [internalChecked, setInternalChecked] = useState(checked);
   const isItemDisabled = isDisabled || disabled;
-  const isActive = active ?? checked;
+  const isChecked = onChange ? checked : internalChecked;
+  const isActive = active ?? isChecked;
+
+  useEffect(() => {
+    if (!onChange) {
+      setInternalChecked(checked);
+    }
+  }, [checked, onChange]);
 
   const handleToggle = () => {
     if (isItemDisabled) return;
-    onChange?.({ value, label: children, checked: !checked });
+    if (onChange) {
+      onChange({ value, label: children, checked: !checked });
+      return;
+    }
+
+    setInternalChecked((previous) => !previous);
   };
 
   const handleKeyDown = (e) => {
@@ -491,7 +541,7 @@ export const DropdownListItem = ({
       style={itemStyle}
       tabIndex={isItemDisabled ? -1 : 0}
       role="checkbox"
-      aria-checked={isIndeterminate ? "mixed" : checked}
+      aria-checked={isIndeterminate ? "mixed" : isChecked}
       aria-disabled={isItemDisabled}
       onClick={handleToggle}
       onKeyDown={handleKeyDown}
@@ -505,7 +555,7 @@ export const DropdownListItem = ({
         {!noCheckbox && (
           <div style={styles.itemCheckbox}>
             <Checkbox
-              isSelected={checked}
+              isSelected={isChecked}
               isIndeterminate={isIndeterminate}
               isDisabled={isItemDisabled}
               size="sm"
@@ -556,6 +606,7 @@ DropdownListItem.displayName = "DropdownListItem";
  */
 export const DropdownList = ({
   noSearch = false,
+  showSearch,
   searchPlaceholder = "Search",
   noAdd = false,
   addLabel = "Add value",
@@ -569,6 +620,8 @@ export const DropdownList = ({
   const [noResults, setNoResults] = useState(false);
   const [isSearchHovered, setIsSearchHovered] = useState(false);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const totalItemCount = countDropdownListItems(children);
+  const shouldShowSearch = showSearch ?? (!noSearch && totalItemCount >= 8);
 
   const handleSearchChange = useCallback(
     (e) => {
@@ -602,7 +655,7 @@ export const DropdownList = ({
   return (
     <div style={listStyle} {...props}>
       <div style={styles.listTop}>
-        {!noSearch && (
+        {shouldShowSearch && (
           <div style={styles.listSearch}>
             <input
               type="text"

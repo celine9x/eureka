@@ -47,7 +47,7 @@ const styles = {
     minWidth: 0,
     maxWidth: "100%",
     background: "var(--color-general-neutral-lighter)",
-    borderRadius: "var(--radius-sm)",
+    borderRadius: "var(--radius-xs)",
     outline: "1px solid var(--color-action-outline-secondary-enabled)",
     outlineOffset: "-1px",
     boxShadow: "var(--shadow-light-down)",

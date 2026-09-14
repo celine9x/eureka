@@ -28,6 +28,7 @@
 
 import React, { useState, forwardRef } from "react";
 import { Button } from "../../atoms/button.jsx";
+import { AiButton } from "../../atoms/ai-button.jsx";
 import { Icon } from "../../atoms/icon.jsx";
 import { MiniInfobox } from "../../molecules/miniinfobox.jsx";
 import { createStyleInjector, joinStyles } from "../../utils/styles.js";
@@ -404,6 +405,7 @@ export const CreationFormPanel = forwardRef(
 
       // Footer props
       footerButtons = [],
+      showFooter,
 
       // Content
       children,
@@ -420,7 +422,35 @@ export const CreationFormPanel = forwardRef(
     const classes = ["creation-form-panel", className].filter(Boolean).join(" ");
 
     const showHeader = title || headerButtons.length > 0 || infoMessage;
-    const showFooter = footerButtons.length > 0;
+    const resolvedFooterButtons = Array.isArray(footerButtons) ? footerButtons.filter(Boolean) : [];
+    const shouldShowFooter = showFooter === true || (showFooter !== false && resolvedFooterButtons.length > 0);
+
+    const renderFooterButton = (btn, index, position) => {
+      const buttonType = btn.buttonType || btn.type || btn.kind || "button";
+      const ButtonComponent = buttonType === "ai" ? AiButton : Button;
+      const buttonLabel = btn.label ?? btn.children ?? "";
+
+      return (
+        <ButtonComponent
+          key={`${position}-${index}`}
+          variant={btn.variant || (buttonType === "ai" ? "primary" : "secondary")}
+          color={btn.color}
+          size={btn.size || "md"}
+          iconLeading={btn.iconLeading}
+          iconTrailing={btn.iconTrailing}
+          iconOnly={btn.iconOnly}
+          ariaLabel={btn.ariaLabel}
+          onClick={btn.onClick}
+          isDisabled={btn.isDisabled}
+          href={btn.href}
+          type={btn.type === "ai" ? "button" : btn.type || "button"}
+          style={{ flex: 1, ...btn.style }}
+          {...btn.props}
+        >
+          {buttonLabel}
+        </ButtonComponent>
+      );
+    };
 
     return (
       <div ref={ref} className={classes} style={style} {...props}>
@@ -515,48 +545,18 @@ export const CreationFormPanel = forwardRef(
         </div>
 
         {/* Footer */}
-        {showFooter && (
+        {shouldShowFooter && (
           <div className="creation-form-panel__footer">
             <div className="creation-form-panel__footer-left">
-              {footerButtons
-                .filter((btn) => btn.position === "left" || (!btn.position && footerButtons.indexOf(btn) === 0))
+              {resolvedFooterButtons
+                .filter((btn) => btn.position === "left" || (!btn.position && resolvedFooterButtons.indexOf(btn) === 0))
                 .slice(0, 1)
-                .map((btn, index) => (
-                  <Button
-                    key={`left-${index}`}
-                    variant={btn.variant || "secondary"}
-                    color={btn.color}
-                    size={btn.size || "md"}
-                    iconLeading={btn.iconLeading}
-                    iconTrailing={btn.iconTrailing}
-                    onClick={btn.onClick}
-                    isDisabled={btn.isDisabled}
-                    style={{ flex: 1, ...btn.style }}
-                    {...btn.props}
-                  >
-                    {btn.label}
-                  </Button>
-                ))}
+                .map((btn, index) => renderFooterButton(btn, index, "left"))}
             </div>
             <div className="creation-form-panel__footer-right">
-              {footerButtons
+              {resolvedFooterButtons
                 .filter((btn, idx) => btn.position === "right" || (!btn.position && idx > 0))
-                .map((btn, index) => (
-                  <Button
-                    key={`right-${index}`}
-                    variant={btn.variant || "secondary"}
-                    color={btn.color}
-                    size={btn.size || "md"}
-                    iconLeading={btn.iconLeading}
-                    iconTrailing={btn.iconTrailing}
-                    onClick={btn.onClick}
-                    isDisabled={btn.isDisabled}
-                    style={{ flex: 1, ...btn.style }}
-                    {...btn.props}
-                  >
-                    {btn.label}
-                  </Button>
-                ))}
+                .map((btn, index) => renderFooterButton(btn, index, "right"))}
             </div>
           </div>
         )}

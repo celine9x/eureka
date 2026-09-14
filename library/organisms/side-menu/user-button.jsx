@@ -34,17 +34,14 @@ export const USER_BUTTON_STATES = {
 const styles = {
   base: {
     alignSelf: "stretch",
-    padding: "var(--spacing-2)",
+    padding: "var(--spacing-1)",
     background: "var(--color-general-white)",
-    boxShadow: "var(--shadow-light-down)",
     borderRadius: "var(--radius-sm)",
-    outline: "1px solid var(--color-action-outline-secondary-enabled)",
-    outlineOffset: "-1px",
+    border: "1px solid var(--color-action-outline-secondary-enabled)",
     display: "inline-flex",
     justifyContent: "flex-start",
     alignItems: "center",
     gap: "var(--spacing-2)",
-    border: "none",
     cursor: "pointer",
     fontFamily: "var(--font-family-primary)",
     boxSizing: "border-box",
@@ -52,24 +49,23 @@ const styles = {
   },
 
   hover: {
-    outlineColor: "var(--color-action-outline-secondary-hover)",
-    boxShadow: "var(--shadow-dark-down)",
+    borderColor: "var(--color-action-outline-secondary-hover)",
   },
 
   focus: {
-    outlineColor: "var(--color-action-fill-primary-enabled)",
-    boxShadow: "var(--shadow-focus)",
+    borderColor: "var(--color-action-fill-primary-enabled)",
   },
 
   collapsed: {
     alignSelf: "auto",
     width: "auto",
     justifyContent: "center",
-    padding: 0,
+    padding: "var(--spacing-1)",
     background: "transparent",
     boxShadow: "none",
     borderRadius: 0,
     outline: "none",
+    border: "1px solid transparent",
   },
 
   // Content wrapper
@@ -201,7 +197,7 @@ export const UserButton = ({
   };
 
   // Avatar size based on collapsed state
-  const avatarSize = "lg";
+  const avatarSize = "sm";
 
   return (
     <button

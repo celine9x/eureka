@@ -303,7 +303,7 @@ export const AiButton = forwardRef(
       if (isPrimary) {
         return isButtonDisabled
           ? "var(--color-ai-content-disabled)"
-          : "var(--color-ai-content-filled)";
+          : "var(--color-content-inverted)";
       }
       // secondary / tertiary
       return isButtonDisabled
@@ -445,7 +445,7 @@ export const AiButton = forwardRef(
       }
 
       const iconColor = isPrimary
-        ? (isButtonDisabled ? "var(--color-ai-content-disabled)" : "var(--color-ai-content-filled)")
+        ? (isButtonDisabled ? "var(--color-ai-content-disabled)" : "var(--color-content-inverted)")
         : (isButtonDisabled ? "var(--color-ai-content-disabled)" : "var(--color-ai-content-brand)");
 
       if (isValidElement(icon)) {

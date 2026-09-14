@@ -136,16 +136,6 @@ export const PreviewComponent = ({
         <h3 className="preview-component__title">{title}</h3>
         <div className="preview-component__controls">
           {actions}
-          {view === "code" && code && (
-            <Button
-              variant="secondary"
-              size="md"
-              iconLeading={<Icon name={copied ? "Check" : "DocumentDuplicate"} size="sm" />}
-              onClick={handleCopy}
-            >
-              {copied ? "Copied!" : "Copy"}
-            </Button>
-          )}
           <ButtonGroup value={view} onChange={setView}>
             <ButtonGroupItem value="preview" iconName="Squares2X2">
               Preview
@@ -161,9 +151,20 @@ export const PreviewComponent = ({
         {view === "preview" ? (
           <div className="preview-component__preview">{children}</div>
         ) : (
-          <div className="preview-component__code">
+          <div className="preview-component__code" style={{ position: "relative" }}>
+            {code && (
+              <Button
+                variant="secondary"
+                size="md"
+                iconLeading={<Icon name={copied ? "Check" : "DocumentDuplicate"} size="sm" />}
+                onClick={handleCopy}
+                style={{ position: "absolute", top: 16, right: 16, zIndex: 1 }}
+              >
+                {copied ? "Copied!" : "Copy"}
+              </Button>
+            )}
             {code ? (
-              <pre>
+              <pre style={{ paddingRight: 144 }}>
                 <code>{code}</code>
               </pre>
             ) : (

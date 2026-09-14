@@ -188,6 +188,7 @@
   --color-content-positive: var(--green-40);
   --color-content-negative: var(--red-70);
   --color-content-warning: var(--orange-50);
+   --color-content-search-highlight: var(--orange-50);
   --color-content-informative: var(--blue-70);
   --color-content-favorite: var(--yellow-50);
 
@@ -577,6 +578,12 @@
   --purple-70: var(--color-accent-purple);
   --dropdown-list-max-height: 17.5rem;
 
+    /* ===========================================
+     REDLINE 
+     =========================================== */
+     --color-redline-delete: var(--color-content-negative);
+     --color-redline-add: var(--color-content-positive);
+
   /* ===========================================
      TRANSITION
      =========================================== */
@@ -600,3 +607,5 @@
   border-bottom-left-radius: 0 !important;
   border-bottom-right-radius: 0 !important;
 }
+
+

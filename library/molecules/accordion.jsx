@@ -16,10 +16,11 @@
  * </Accordion>
  */
 
-import { useState, useRef, useEffect, createContext, useContext, useId } from "react";
+import { Children, cloneElement, isValidElement, useState, useRef, useEffect, createContext, useContext, useId } from "react";
 import { Button } from "../atoms/button.jsx";
+import { Badge } from "../atoms/badge.jsx";
+import { Checkbox } from "../atoms/checkbox.jsx";
 import { Icon } from "../atoms/icon.jsx";
-import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/16/solid";
 
 // ─────────────────────────────────────────────
 // CONSTANTS
@@ -29,6 +30,11 @@ export const ACCORDION_SIZES = {
   sm: "sm",
   md: "md",
   lg: "lg",
+};
+
+export const ACCORDION_VARIANTS = {
+  vertical: "vertical",
+  horizontal: "horizontal",
 };
 
 // ─────────────────────────────────────────────
@@ -43,11 +49,13 @@ const AccordionContext = createContext(null);
 
 const styles = {
   accordion: {
-    display: "inline-flex",
+    display: "flex",
     flexDirection: "column",
     justifyContent: "flex-start",
-    alignItems: "flex-start",
+    alignItems: "stretch",
     width: "100%",
+    minWidth: 0,
+    flex: "0 0 auto",
     border: "1px solid var(--color-action-outline-secondary-enabled)",
     borderRadius: 8,
     overflow: "hidden",
@@ -57,11 +65,11 @@ const styles = {
   header: {
     alignSelf: "stretch",
     display: "flex",
-    justifyContent: "flex-start",
+    justifyContent: "space-between",
     alignItems: "center",
-    gap: "var(--spacing-4)",
-    paddingLeft: "var(--spacing-4)",
-    paddingRight: "var(--spacing-4)",
+    gap: "var(--spacing-sm)",
+    paddingLeft: "var(--spacing-sm)",
+    paddingRight: "var(--spacing-sm)",
     background: "var(--color-general-white)",
     cursor: "pointer",
     textAlign: "left",
@@ -94,12 +102,17 @@ const styles = {
       paddingBottom: "var(--spacing-sm)",
     },
     md: {
-      paddingTop: "var(--spacing-4)",
-      paddingBottom: "var(--spacing-4)",
+      paddingTop: "var(--spacing-sm)",
+      paddingBottom: "var(--spacing-sm)",
     },
     lg: {
-      paddingTop: "var(--spacing-5)",
-      paddingBottom: "var(--spacing-5)",
+      icon: null,
+    },
+    lg: {
+      paddingTop: "var(--spacing-sm)",
+      paddingBottom: "var(--spacing-sm)",
+      icon: null, 
+      paddingBottom: "var(--spacing-sm)",
     },
   },
 
@@ -118,6 +131,11 @@ const styles = {
     alignItems: "center",
     gap: "var(--spacing-sm)",
     flexShrink: 0,
+  },
+
+  headerItem: {
+    display: "inline-flex",
+    alignItems: "center",
   },
 
   icon: {
@@ -141,17 +159,17 @@ const styles = {
   titleSizes: {
     sm: {
       fontSize: "var(--text-body-md)",
-      fontWeight: "var(--font-weight-semibold)",
+      fontWeight: "var(--font-weight-regular)",
       lineHeight: "var(--line-height-body-md)",
     },
     md: {
       fontSize: "var(--text-body-lg)",
-      fontWeight: "var(--font-weight-bold)",
+      fontWeight: "var(--font-weight-regular)",
       lineHeight: "var(--line-height-body-lg)",
     },
     lg: {
       fontSize: "var(--text-heading-h3)",
-      fontWeight: "var(--font-weight-bold)",
+      fontWeight: "var(--font-weight-semibold)",
       lineHeight: "var(--line-height-heading-h3)",
     },
   },
@@ -176,9 +194,12 @@ const styles = {
 
   content: {
     alignSelf: "stretch",
+    display: "block",
+    width: "100%",
     overflow: "hidden",
     background: "var(--color-general-white)",
     boxSizing: "border-box",
+    minHeight: 0,
   },
 
   contentAnimated: {
@@ -189,7 +210,10 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     gap: "var(--spacing-4)",
+    width: "100%",
+    minHeight: 0,
     padding: "var(--spacing-4)",
+    boxSizing: "border-box",
   },
 
   group: {
@@ -312,13 +336,45 @@ export const AccordionItem = ({
   secondaryText,
   icon,
   iconName,
+  showCheckbox = false,
+  checkbox,
+  checkboxProps,
+  badge,
+  showBadge = true,
+  badgeLabel,
+  badgeProps,
+  leftBadge,
+  showLeftBadge = true,
+  leftBadgeLabel,
+  leftBadgeProps,
+  rightBadge,
+  showRightBadge = true,
+  rightBadgeLabel,
+  rightBadgeProps,
+  leftChip,
+  showLeftChip = true,
+  leftChipSecondary,
+  showLeftChipSecondary = true,
+  rightChip,
+  showRightChip = true,
+  leftChips,
+  showLeftChips = true,
+  rightChips,
+  nodeButton,
+  showNodeButton,
   action,
+  showAction = true,
+  showRightChips = true,
+  variant = ACCORDION_VARIANTS.vertical,
+  collapsible = true,
+  showChevron = true,
   size = ACCORDION_SIZES.md,
   isDisabled = false,
   disabled,
   expanded: controlledExpanded,
   defaultExpanded = false,
   onToggle,
+  onHeaderClick,
   animated = true,
   children,
   style,
@@ -331,6 +387,8 @@ export const AccordionItem = ({
   const [isFocused, setIsFocused] = useState(false);
 
   const isItemDisabled = isDisabled || disabled;
+  const isHorizontalVariant = variant === ACCORDION_VARIANTS.horizontal;
+  const hasContent = Children.count(children) > 0;
 
   // Standalone or grouped mode
   const [internalExpanded, setInternalExpanded] = useState(defaultExpanded);
@@ -341,9 +399,10 @@ export const AccordionItem = ({
     : controlledExpanded !== undefined
     ? controlledExpanded
     : internalExpanded;
+  const isCollapsible = collapsible && hasContent;
 
   const handleToggle = () => {
-    if (isItemDisabled) return;
+    if (isItemDisabled || !isCollapsible) return;
 
     if (context) {
       context.toggleItem(id);
@@ -357,9 +416,23 @@ export const AccordionItem = ({
 
   // Measure content height for animation
   useEffect(() => {
-    if (contentRef.current) {
-      setHeight(contentRef.current.scrollHeight);
+    const node = contentRef.current;
+    if (!node) return;
+
+    const updateHeight = () => {
+      setHeight(node.scrollHeight);
+    };
+
+    updateHeight();
+
+    if (typeof ResizeObserver !== "undefined") {
+      const resizeObserver = new ResizeObserver(updateHeight);
+      resizeObserver.observe(node);
+      return () => resizeObserver.disconnect();
     }
+
+    window.addEventListener("resize", updateHeight);
+    return () => window.removeEventListener("resize", updateHeight);
   }, [children, isExpanded]);
 
   // Compose accordion styles
@@ -372,8 +445,9 @@ export const AccordionItem = ({
   const headerStyle = {
     ...styles.header,
     ...styles.headerSizes[size],
-    ...(isHovered && !isItemDisabled && styles.headerHover),
-    ...(isFocused && !isItemDisabled && styles.headerFocus),
+    ...(!isCollapsible ? { cursor: "default" } : null),
+    ...(isHovered && !isItemDisabled && (isCollapsible || isHorizontalVariant) && styles.headerHover),
+    ...(isFocused && !isItemDisabled && isCollapsible && styles.headerFocus),
     ...(isExpanded && styles.headerExpanded),
     ...(isItemDisabled && styles.headerDisabled),
   };
@@ -396,6 +470,56 @@ export const AccordionItem = ({
     height: animated && isExpanded ? height : isExpanded ? "auto" : 0,
   };
 
+  const shouldShowNodeButton = Boolean(nodeButton) && showNodeButton !== false;
+  const normalizeChipItem = (chip) => {
+    if (!isValidElement(chip)) return chip;
+    return cloneElement(chip, {
+      size: chip.props.size ?? "md",
+    });
+  };
+
+  const renderBadgeElement = ({ element, label, props: badgeElementProps, shouldShow }) => {
+    if (!shouldShow) return null;
+    if (element) return element;
+    if (!label) return null;
+
+    return (
+      <Badge size="md" shape="rounded" color="neutral" {...badgeElementProps}>
+        {label}
+      </Badge>
+    );
+  };
+
+  const leftBadgeElement = renderBadgeElement({
+    element: leftBadge ?? badge,
+    label: leftBadgeLabel ?? badgeLabel,
+    props: leftBadgeProps ?? badgeProps,
+    shouldShow: showLeftBadge && showBadge,
+  });
+
+  const rightBadgeElement = renderBadgeElement({
+    element: rightBadge,
+    label: rightBadgeLabel,
+    props: rightBadgeProps,
+    shouldShow: showRightBadge,
+  });
+
+  const leftPrimaryChip = showLeftChip ? normalizeChipItem(leftChip) : null;
+  const leftSecondaryChip = showLeftChipSecondary ? normalizeChipItem(leftChipSecondary) : null;
+  const rightSingleChip = showRightChip ? normalizeChipItem(rightChip) : null;
+
+  const leftChipItems = showLeftChips
+    ? Children.toArray(leftChips).filter(Boolean).map(normalizeChipItem)
+    : [];
+  const rightChipItems = showRightChips
+    ? Children.toArray(rightChips).filter(Boolean).map(normalizeChipItem)
+    : [];
+  const chevronIconName = isHorizontalVariant
+    ? "ChevronRight"
+    : isExpanded
+    ? "ChevronUp"
+    : "ChevronDown";
+
   const renderIcon = () => {
     if (icon) return <span style={styles.icon}>{icon}</span>;
     if (iconName) {
@@ -408,41 +532,119 @@ export const AccordionItem = ({
     return null;
   };
 
+  const isInteractiveHeaderTarget = (eventTarget, headerElement) => {
+    if (!(eventTarget instanceof Element)) return false;
+
+    const interactiveAncestor = eventTarget.closest(
+      "[data-accordion-interactive='true'], button, a, input, select, textarea, label, [role='button'], [role='checkbox'], [role='switch']"
+    );
+
+    if (!interactiveAncestor) return false;
+
+    // The header itself is role=button; only block toggle for nested interactive elements.
+    return interactiveAncestor !== headerElement;
+  };
+
+  const handleHeaderClick = (event) => {
+    if (isInteractiveHeaderTarget(event.target, event.currentTarget)) return;
+    onHeaderClick?.(event);
+    handleToggle();
+  };
+
+  const handleHeaderKeyDown = (event) => {
+    if (isInteractiveHeaderTarget(event.target, event.currentTarget)) return;
+
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      onHeaderClick?.(event);
+      handleToggle();
+    }
+  };
+
+  const renderCheckbox = () => {
+    if (!showCheckbox) return null;
+
+    return checkbox || <Checkbox size="sm" {...checkboxProps} />;
+  };
+
   return (
     <div style={accordionStyle} data-open={isExpanded} {...props}>
-      <button
-        type="button"
+      <div
         className="accordion-header"
         style={headerStyle}
-        onClick={handleToggle}
+        onClick={handleHeaderClick}
+        onKeyDown={handleHeaderKeyDown}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
-        disabled={isItemDisabled}
-        aria-expanded={isExpanded}
-        aria-controls={`accordion-content-${id}`}
+        role="button"
+        tabIndex={isItemDisabled ? -1 : 0}
+        aria-disabled={isItemDisabled}
+        aria-expanded={isCollapsible ? isExpanded : undefined}
+        aria-controls={isCollapsible ? `accordion-content-${id}` : undefined}
         id={`accordion-header-${id}`}
       >
         <div style={styles.headerLeft}>
           {renderIcon()}
+          {showCheckbox && (
+            <span data-accordion-interactive="true">
+              {renderCheckbox()}
+            </span>
+          )}
           <span style={titleStyle}>{title}</span>
+          {leftBadgeElement && <span style={styles.headerItem}>{leftBadgeElement}</span>}
+          {leftPrimaryChip && (
+            <span data-accordion-interactive="true" style={styles.headerItem}>
+              {leftPrimaryChip}
+            </span>
+          )}
+          {leftSecondaryChip && (
+            <span data-accordion-interactive="true" style={styles.headerItem}>
+              {leftSecondaryChip}
+            </span>
+          )}
+          {leftChipItems.map((chip, index) => (
+            <span key={`left-chip-${index}`} data-accordion-interactive="true" style={styles.headerItem}>
+              {chip}
+            </span>
+          ))}
           {secondaryText && <span style={styles.secondaryText}>{secondaryText}</span>}
         </div>
 
         <div style={styles.headerRight}>
-          {action && <span onClick={(e) => e.stopPropagation()}>{action}</span>}
-          <span style={chevronStyle}>
-            {isExpanded ? (
-              <ChevronUpIcon style={{ width: 20, height: 20 }} />
-            ) : (
-              <ChevronDownIcon style={{ width: 20, height: 20 }} />
-            )}
-          </span>
+          {shouldShowNodeButton && (
+            <span data-accordion-interactive="true" style={styles.headerItem}>
+              {nodeButton}
+            </span>
+          )}
+          {rightBadgeElement && (
+            <span data-accordion-interactive="true" style={styles.headerItem}>
+              {rightBadgeElement}
+            </span>
+          )}
+          {rightSingleChip && (
+            <span data-accordion-interactive="true" style={styles.headerItem}>
+              {rightSingleChip}
+            </span>
+          )}
+          {rightChipItems.map((chip, index) => (
+            <span key={`right-chip-${index}`} data-accordion-interactive="true" style={styles.headerItem}>
+              {chip}
+            </span>
+          ))}
+          {showAction && action && (
+            <span data-accordion-interactive="true" style={styles.headerItem}>{action}</span>
+          )}
+          {showChevron && (
+            <span style={chevronStyle}>
+              <Icon name={chevronIconName} size="sm" />
+            </span>
+          )}
         </div>
-      </button>
+      </div>
 
-      {isExpanded && (
+      {hasContent && isExpanded && (
         <div
           id={`accordion-content-${id}`}
           style={contentStyle}
@@ -674,15 +876,47 @@ export const Accordion = ({
   secondaryText,
   icon,
   iconName,
+  variant = ACCORDION_VARIANTS.vertical,
+  showCheckbox = false,
+  checkbox,
+  checkboxProps,
+  badge,
+  showBadge = true,
+  badgeLabel,
+  badgeProps,
+  leftBadge,
+  showLeftBadge = true,
+  leftBadgeLabel,
+  leftBadgeProps,
+  rightBadge,
+  showRightBadge = true,
+  rightBadgeLabel,
+  rightBadgeProps,
+  leftChip,
+  showLeftChip = true,
+  leftChipSecondary,
+  showLeftChipSecondary = true,
+  rightChip,
+  showRightChip = true,
+  leftChips,
+  showLeftChips = true,
+  rightChips,
+  showRightChips = true,
+  nodeButton,
+  showNodeButton,
   action,
+  showAction = true,
   actionLabel,
   onActionClick,
+  collapsible = true,
+  showChevron = true,
   size = ACCORDION_SIZES.md,
   isDisabled = false,
   disabled,
   expanded,
   defaultExpanded = false,
   onToggle,
+  onHeaderClick,
   animated = true,
   children,
   style,
@@ -714,12 +948,44 @@ export const Accordion = ({
       secondaryText={secondaryText}
       icon={icon}
       iconName={iconName}
+      variant={variant}
+      showCheckbox={showCheckbox}
+      checkbox={checkbox}
+      checkboxProps={checkboxProps}
+      badge={badge}
+      showBadge={showBadge}
+      badgeLabel={badgeLabel}
+      badgeProps={badgeProps}
+      leftBadge={leftBadge}
+      showLeftBadge={showLeftBadge}
+      leftBadgeLabel={leftBadgeLabel}
+      leftBadgeProps={leftBadgeProps}
+      rightBadge={rightBadge}
+      showRightBadge={showRightBadge}
+      rightBadgeLabel={rightBadgeLabel}
+      rightBadgeProps={rightBadgeProps}
+      leftChip={leftChip}
+      showLeftChip={showLeftChip}
+      leftChipSecondary={leftChipSecondary}
+      showLeftChipSecondary={showLeftChipSecondary}
+      rightChip={rightChip}
+      showRightChip={showRightChip}
+      leftChips={leftChips}
+      showLeftChips={showLeftChips}
+      rightChips={rightChips}
+      showRightChips={showRightChips}
+      nodeButton={nodeButton}
+      showNodeButton={showNodeButton}
       action={actionElement}
+      showAction={showAction}
+      collapsible={collapsible}
+      showChevron={showChevron}
       size={size}
       isDisabled={isAccordionDisabled}
       expanded={expanded}
       defaultExpanded={defaultExpanded}
       onToggle={onToggle}
+      onHeaderClick={onHeaderClick}
       animated={animated}
       style={style}
       {...props}

@@ -169,17 +169,16 @@ export const ButtonBadge = ({
       ? state
       : (internalActive ? BUTTON_BADGE_STATES.active : BUTTON_BADGE_STATES.enabled);
 
-  // Choose variant styles
-  const variantKey = variant === "primary" ? "primary" : "secondary";
-  const variantStyles = styles.variants ? styles.variants[variantKey] : styles.states;
   const sizeStyles = styles.sizes[size];
+  const effectiveBadgeColor = badgeColor || STATE_TO_BADGE_COLOR[effectiveState];
+  const effectiveBadgeSize = badgeIcon || badgeIconName ? "md" : "sm";
 
   // Compose button styles
   const buttonStyle = {
     ...styles.base,
     ...sizeStyles.base,
-    ...variantStyles[effectiveState],
-    ...(isHovered && effectiveState === "enabled" && variantStyles.enabledHover),
+    ...styles.states[effectiveState],
+    ...(isHovered && effectiveState === "enabled" && styles.states.enabledHover),
     ...style,
   };
 
@@ -221,10 +220,21 @@ export const ButtonBadge = ({
 
   const renderBadge = () => {
     if (variant === "without-badge") return null;
-    if (!badgeLabel && !badgeIcon && !badgeIconName) return null;
+    if (badgeLabel == null && !badgeIcon && !badgeIconName) return null;
+
+    const badgeProps = {
+      color: effectiveBadgeColor,
+      size: effectiveBadgeSize,
+    };
+
+    if (badgeIcon) {
+      badgeProps.leadingIcon = badgeIcon;
+    } else if (badgeIconName) {
+      badgeProps.leadingIcon = <Icon name={badgeIconName} size="sm" />;
+    }
 
     return (
-      <Badge color={effectiveBadgeColor} size={badgeSize}>
+      <Badge {...badgeProps}>
         {badgeLabel}
       </Badge>
     );

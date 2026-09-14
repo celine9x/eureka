@@ -41,25 +41,21 @@ const styles = {
     padding: "var(--spacing-4) var(--spacing-6)",
     background: "var(--color-general-white)",
     borderRadius: "var(--radius-md)",
-    outline: "1px solid var(--color-interaction-outline-enabled)",
-    outlineOffset: "-1px",
-    boxShadow: "var(--shadow-light-down)",
+    border: "1px solid var(--color-interaction-outline-enabled)",
     boxSizing: "border-box",
     cursor: "pointer",
     transition: "all var(--transition-fast)",
     userSelect: "none",
-    border: "none",
   },
 
   cardHover: {
     background: "var(--color-general-neutral-lighter)",
-    outlineColor: "var(--color-interaction-outline-hover)",
+    borderColor: "var(--color-interaction-outline-hover)",
   },
 
   cardChecked: {
     background: "var(--color-general-informative)",
-    outlineColor: "var(--color-interaction-outline-enabled)",
-    boxShadow: "var(--shadow-dark-down)",
+    borderColor: "var(--color-action-fill-primary-enabled)",
   },
 
   cardDisabled: {
@@ -68,18 +64,15 @@ const styles = {
   },
 
   cardDisabledUnchecked: {
-    outlineColor: "var(--color-interaction-outline-disabled)",
-    boxShadow: "var(--shadow-light-down)",
+    borderColor: "var(--color-interaction-outline-disabled)",
   },
 
   cardDisabledChecked: {
-    outlineColor: "var(--color-interaction-outline-disabled)",
-    boxShadow: "var(--shadow-dark-down)",
+    borderColor: "var(--color-action-fill-primary-disabled)",
   },
 
   cardFocus: {
-    outline: "2px solid var(--color-content-brand)",
-    outlineOffset: 2,
+    borderColor: "var(--color-content-brand)",
   },
 
   control: {

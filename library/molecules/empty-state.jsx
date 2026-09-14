@@ -216,6 +216,7 @@ export const EmptyState = ({
   onAction,
   actionProps,
   actions,
+  showActionButton,
   showIllustration = true,
   illustration,
   illustrationVariant = "noResult",
@@ -223,13 +224,26 @@ export const EmptyState = ({
   ...props
 }) => {
   const sizeStyles = styles.sizes[size] || styles.sizes.md;
+  const resolvedShowActionButton =
+    showActionButton ?? (Array.isArray(actions) ? actions.length > 0 : Boolean(actionLabel));
+  const resolvedIllustration =
+    typeof illustration === "string"
+      ? (
+          <img
+            src={illustration}
+            alt=""
+            aria-hidden="true"
+            style={{ width: 80, height: 80, objectFit: "contain", display: "block" }}
+          />
+        )
+      : illustration || <Illustration variant={illustrationVariant} />;
 
   return (
     <div style={{ ...styles.root, ...sizeStyles.root, ...style }} {...props}>
       <div style={{ ...styles.inner, ...sizeStyles.inner }}>
         {showIllustration ? (
           <div style={styles.illustrationWrap}>
-            {illustration || <Illustration variant={illustrationVariant} />}
+            {resolvedIllustration}
           </div>
         ) : null}
 
@@ -239,21 +253,23 @@ export const EmptyState = ({
             <p style={{ ...styles.description, ...sizeStyles.description }}>{description}</p>
           </div>
 
-          <div style={styles.actions}>
-            {Array.isArray(actions) && actions.length > 0 ? (
-              actions
-                .filter(Boolean)
-                .map((actionNode, index) => (
-                  <span key={`empty-state-action-${index}`} style={{ display: "inline-flex" }}>
-                    {actionNode}
-                  </span>
-                ))
-            ) : actionLabel ? (
-              <Button variant="secondary" size="md" onClick={onAction} {...(actionProps || {})}>
-                {actionLabel}
-              </Button>
-            ) : null}
-          </div>
+          {resolvedShowActionButton ? (
+            <div style={styles.actions}>
+              {Array.isArray(actions) && actions.length > 0 ? (
+                actions
+                  .filter(Boolean)
+                  .map((actionNode, index) => (
+                    <span key={`empty-state-action-${index}`} style={{ display: "inline-flex" }}>
+                      {actionNode}
+                    </span>
+                  ))
+              ) : actionLabel ? (
+                <Button variant="secondary" size="md" onClick={onAction} {...(actionProps || {})}>
+                  {actionLabel}
+                </Button>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       </div>
     </div>

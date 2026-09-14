@@ -34,7 +34,7 @@ const styles = {
     alignItems: "center",
     justifyContent: "center",
     gap: "var(--spacing-xs)",
-    padding: "0 var(--spacing-xs)",
+   
     borderRadius: "var(--radius-sm)",
     textDecoration: "none",
     cursor: "pointer",
@@ -69,6 +69,7 @@ const styles = {
     justifyContent: "center",
     flexShrink: 0,
     overflow: "hidden",
+    color: "var(--color-content-secondary)",
   },
 
   sizes: {

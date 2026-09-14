@@ -5,7 +5,8 @@
  * to browse all components from atoms to templates.
  */
 
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import tokensCssRaw from "./library/tokens/tokens.css?raw";
 
 // ─────────────────────────────────────────────
 // ATOMS
@@ -23,6 +24,7 @@ import { Tooltip } from "./library/atoms/tooltip.jsx";
 import { Step, STEP_STATUS } from "./library/atoms/step.jsx";
 import { ButtonBadge } from "./library/atoms/button-badge.jsx";
 import { AiButton } from "./library/atoms/ai-button.jsx";
+import { ProgressIndicator, PROGRESS_INDICATOR_LABEL_POSITIONS } from "./library/atoms/progress-indicator.jsx";
 
 // ─────────────────────────────────────────────
 // MOLECULES
@@ -50,10 +52,12 @@ import { Attachment } from "./library/molecules/attachment.jsx";
 import { FileUploader } from "./library/molecules/file-uploader.jsx";
 import { AiChatInput } from "./library/molecules/ai-chat-input.jsx";
 import { EmptyState, EMPTY_STATE_SIZES } from "./library/molecules/empty-state.jsx";
+import { ExpandableText } from "./library/molecules/expandable-text.jsx";
 import { Toast, ToastProvider, useToast } from "./library/molecules/toast.jsx";
 
 import { DatePicker } from "./library/molecules/datepicker.jsx";
 import { RichTextInput, RichTextInputEditable } from "./library/molecules/rich-text-input.jsx";
+import { RichTextEditToolbars } from "./library/molecules/rich-text-edit-toolbars.jsx";
 
 // ─────────────────────────────────────────────
 // ORGANISMS
@@ -85,6 +89,7 @@ import {
 import {
   HubHeader,
   HubHeaderTitle,
+  HubHeaderLabel,
   HubHeaderActions,
   HubHeaderControls,
   HubHeaderRow,
@@ -94,7 +99,11 @@ import {
 } from "./library/organisms/hub-header.jsx";
 import { FilterPanel, Row as FilterPanelRow, DEFAULT_FILTER_PANEL_OPTIONS } from "./library/organisms/filter-panel.jsx";
 import { DocumentViewer } from "./library/organisms/document-viewer/document-viewer.jsx";
+import pharmaAgreementPdf from "./library/organisms/document-viewer/pharma_agreement.pdf";
 import { Pagination as PaginationOrganism } from "./library/organisms/pagination.jsx";
+import { StatusUpdate } from "./library/organisms/status-update.jsx";
+import { CreationFormPanel } from "./library/organisms/section/creation-form-panel.jsx";
+import { SideMenuRichTextInput } from "./library/organisms/side-menu/rich-text-input.jsx";
 
 // ─────────────────────────────────────────────
 // TEMPLATES
@@ -137,9 +146,65 @@ const toPascalCase = (value = "") =>
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
     .join("");
 
+const useClipboardCopy = ({ getText, onError }) => {
+  const [copied, setCopied] = useState(false);
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(getText());
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch (error) {
+      if (onError) onError(error);
+    }
+  };
+
+  return { copied, copy };
+};
+
+const COPYABLE_CODE_BOX_STYLE = {
+  border: "1px solid var(--color-action-outline-secondary-enabled)",
+  borderRadius: 14,
+  background: "var(--color-general-white)",
+  padding: 8,
+};
+
+const CODE_SNIPPET_STYLE = {
+  margin: 0,
+  padding: "14px 16px",
+  borderRadius: 10,
+  background: "var(--color-general-neutral-25)",
+  overflowX: "auto",
+  fontFamily: "Monaco, Menlo, Consolas, monospace",
+  fontSize: 14,
+  lineHeight: 1.5,
+  color: "var(--color-content-primary)",
+};
+
+const DEMO_ROW_STYLE = { display: "flex", gap: 12, flexWrap: "wrap" };
+const DEMO_ROW_ALIGN_END_STYLE = { display: "flex", alignItems: "flex-end", gap: 16, flexWrap: "wrap" };
+const SECTION_HEADING_STYLE = { fontSize: 28, fontWeight: 700, color: "var(--color-content-primary)" };
+const COPY_BUTTON_OVERLAY_STYLE = { position: "absolute", top: "50%", right: 16, transform: "translateY(-50%)", zIndex: 1 };
+const COPY_BUTTON_CARD_STYLE = { position: "absolute", top: 12, right: 12, background: "rgba(255, 255, 255, 0.92)" };
+const APP_SHELL_STYLE = { display: "flex", minHeight: "100vh", background: "var(--color-general-neutral-light)" };
+const MAIN_CONTENT_STYLE = { flex: 1, marginLeft: 80, overflow: "auto" };
+const MAIN_CONTENT_INNER_STYLE = { maxWidth: 1000, margin: "0 auto" };
+const SIDE_MENU_USER = { name: "Developer", email: "dev@eureka.design", avatarInitials: "EU" };
+
+const CopyButton = ({ copied, onClick, size = "md", style }) => (
+  <Button
+    variant="secondary"
+    size={size}
+    iconLeading={<Icon name={copied ? "Check" : "DocumentDuplicate"} size="sm" />}
+    onClick={onClick}
+    style={style}
+  >
+    {copied ? "Copied" : "Copy"}
+  </Button>
+);
+
 const InstallationBlock = ({ title }) => {
   const [installMethod, setInstallMethod] = useState("cli");
-  const [copied, setCopied] = useState(false);
   const componentKey = toKebabCase(title);
   const componentName = toPascalCase(title);
   const cliSnippet = `npx ${PACKAGE_NAME}@latest add ${componentKey}`;
@@ -151,19 +216,14 @@ export default function Example() {
 }`;
   const activeSnippet = installMethod === "cli" ? cliSnippet : manualSnippet;
 
-  const handleCopyInstallation = async () => {
-    try {
-      await navigator.clipboard.writeText(activeSnippet);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    } catch (err) {
-      console.error("Failed to copy installation snippet:", err);
-    }
-  };
+  const { copied, copy } = useClipboardCopy({
+    getText: () => activeSnippet,
+    onError: (error) => console.error("Failed to copy installation snippet:", error),
+  });
 
   return (
     <div style={{ marginBottom: 32 }}>
-      <h2 style={{ fontSize: 28, fontWeight: 700, color: "var(--color-content-primary)", margin: 0 }}>Installation</h2>
+      <h2 style={{ ...SECTION_HEADING_STYLE, margin: 0 }}>Installation</h2>
       <p style={{ color: "var(--color-content-secondary)", fontSize: 16, marginTop: 8, marginBottom: 16 }}>
         You can add this {title.toLowerCase()} component using our CLI or manually:
       </p>
@@ -172,37 +232,15 @@ export default function Example() {
           <Tab id="cli">CLI</Tab>
           <Tab id="manual">Manual</Tab>
         </Tabs>
-        <Button
-          variant="secondary"
-          size="md"
-          iconLeading={<Icon name={copied ? "Check" : "DocumentDuplicate"} size="sm" />}
-          onClick={handleCopyInstallation}
-        >
-          {copied ? "Copied" : "Copy"}
-        </Button>
+        <CopyButton copied={copied} onClick={copy} />
       </div>
       <div
         style={{
           marginTop: 12,
-          border: "1px solid var(--color-action-outline-secondary-enabled)",
-          borderRadius: 14,
-          background: "var(--color-general-white)",
-          padding: 8,
+          ...COPYABLE_CODE_BOX_STYLE,
         }}
       >
-        <pre
-          style={{
-            margin: 0,
-            padding: "14px 16px",
-            borderRadius: 10,
-            background: "var(--color-general-neutral-25)",
-            overflowX: "auto",
-            fontFamily: "Monaco, Menlo, Consolas, monospace",
-            fontSize: 14,
-            lineHeight: 1.5,
-            color: "var(--color-content-primary)",
-          }}
-        >
+        <pre style={CODE_SNIPPET_STYLE}>
           <code>{activeSnippet}</code>
         </pre>
       </div>
@@ -210,25 +248,115 @@ export default function Example() {
   );
 };
 
-const Section = ({ title, description, children }) => (
+const ImportBlock = ({ title, importStatement, label = "Import" }) => {
+  const { copied, copy } = useClipboardCopy({
+    getText: () => importStatement,
+    onError: (error) => console.error(`Failed to copy ${title} import snippet:`, error),
+  });
+
+  return (
+    <div style={{ marginBottom: 32 }}>
+      <h2 style={{ ...SECTION_HEADING_STYLE, marginBottom: 10 }}>{label}</h2>
+      
+      <div
+        style={{
+          position: "relative",
+          ...COPYABLE_CODE_BOX_STYLE,
+        }}
+      >
+        <CopyButton copied={copied} onClick={copy} style={COPY_BUTTON_OVERLAY_STYLE} />
+        <pre style={{ ...CODE_SNIPPET_STYLE, paddingRight: 128 }}>
+          <code>{importStatement}</code>
+        </pre>
+      </div>
+    </div>
+  );
+};
+
+const normalizeSectionTitle = (title = "") =>
+  title
+    .replace(/\s*\([^)]*\)/g, "")
+    .replace(/\s*[—-]\s*.*$/, "")
+    .replace(/\s+Template$/, "")
+    .trim();
+
+const getPageByTitle = (title) => {
+  const normalizedTitle = normalizeSectionTitle(title);
+  return Object.values(PAGES).find((page) => page.title === title || page.title === normalizedTitle);
+};
+
+const getHeaderImportStatement = (title) => {
+  const page = getPageByTitle(title);
+
+  if (!page) {
+    return null;
+  }
+
+  if (title === "Stage") {
+    return 'import { Stepper } from "@/library/molecules/stepper";';
+  }
+
+  if (title === "Pagination (Organism)") {
+    return 'import { Pagination as PaginationOrganism } from "@/library/organisms/pagination";';
+  }
+
+  const normalizedTitle = normalizeSectionTitle(title);
+
+  if (page.category === "atoms" || page.category === "molecules") {
+    return `import { ${normalizedTitle} } from "@/library/${page.category}/${toKebabCase(normalizedTitle)}";`;
+  }
+
+  if (page.category === "templates") {
+    return `import { ${normalizedTitle} } from "@/library/templates/${toKebabCase(normalizedTitle)}";`;
+  }
+
+  if (
+    normalizedTitle === "SideMenuItem"
+    || normalizedTitle === "UserButton"
+    || normalizedTitle === "SideMenu"
+    || normalizedTitle === "SideMenuRichTextInput"
+  ) {
+    return `import { ${normalizedTitle} } from "@/library/organisms/side-menu/${toKebabCase(normalizedTitle)}";`;
+  }
+
+  if (normalizedTitle === "TableCell") {
+    return 'import { TableCell } from "@/library/organisms/table/tablecell";';
+  }
+
+  if (normalizedTitle === "DocumentViewer") {
+    return 'import { DocumentViewer } from "@/library/organisms/document-viewer/document-viewer";';
+  }
+
+  return `import { ${normalizedTitle} } from "@/library/organisms/${toKebabCase(normalizedTitle)}";`;
+};
+
+const getSectionHeaderBlock = (title) => {
+  const importStatement = getHeaderImportStatement(title);
+
+  return importStatement ? <ImportBlock title={title} importStatement={importStatement} /> : <InstallationBlock title={title} />;
+};
+
+const Section = ({ title, description, children, topBlock, showExamplesHeader = true }) => (
   <section style={{ marginBottom: 48 }}>
     <div style={{ marginBottom: 24, paddingBottom: 16, borderBottom: "1px solid var(--color-neutral-200)" }}>
       <h1 style={{ fontSize: 36, fontWeight: 700, color: "var(--color-content-primary)", marginBottom: 4 }}>{title}</h1>
       {description && <p style={{ color: "var(--color-content-secondary)", fontSize: 14 }}>{description}</p>}
     </div>
-    <InstallationBlock title={title} />
-    <div
-      style={{
-        marginBottom: 20,
-        paddingTop: 24,
-        borderTop: "1px dashed var(--color-action-outline-secondary-enabled)",
-      }}
-    >
-      <h2 style={{ fontSize: 28, fontWeight: 700, color: "var(--color-content-primary)", margin: 0 }}>{title} Examples</h2>
-      <p style={{ color: "var(--color-content-secondary)", fontSize: 16, marginTop: 8, marginBottom: 0 }}>
-        Below are examples and variations of this {title.toLowerCase()} component:
-      </p>
-    </div>
+    {topBlock !== undefined ? topBlock : getSectionHeaderBlock(title)}
+    {showExamplesHeader && (
+      <div
+        style={{
+          marginBottom: 20,
+          paddingTop: 24,
+          borderTop: "1px dashed var(--color-action-outline-secondary-enabled)",
+        }}
+      >
+        <h2 style={{ ...SECTION_HEADING_STYLE, margin: 0 }}>{title} Examples</h2>
+        <p style={{ color: "var(--color-content-secondary)", fontSize: 16, marginTop: 8, marginBottom: 0 }}>
+          Below are examples and variations of this {title.toLowerCase()} component:
+        </p>
+      </div>
+    )}
     {children}
   </section>
 );
@@ -260,6 +388,193 @@ const DemoBox = ({ children }) => (
   }}>
     {children}
   </div>
+);
+
+const COLOR_PRIMITIVE_FAMILIES = ["grey", "blue", "skyblue", "cyan", "green", "yellow", "peach", "orange", "red", "pink", "brown", "purple"];
+
+const COLOR_TOKEN_RE = /^\s*(--(?:color-[A-Za-z0-9-]+|(?:grey|blue|skyblue|cyan|green|yellow|peach|orange|red|pink|brown|purple)-\d+)):\s*([^;]+);/gm;
+
+const parseColorTokens = (cssText) => {
+  const tokenMap = new Map();
+  let match;
+
+  while ((match = COLOR_TOKEN_RE.exec(cssText)) !== null) {
+    tokenMap.set(match[1], match[2].trim());
+  }
+
+  const resolveValue = (name, seen = new Set()) => {
+    if (seen.has(name)) return tokenMap.get(name) || "";
+    const rawValue = tokenMap.get(name);
+    if (!rawValue) return "";
+
+    const directVarMatch = rawValue.match(/^var\((--[A-Za-z0-9-]+)\)$/);
+    if (directVarMatch) {
+      return resolveValue(directVarMatch[1], new Set([...seen, name]));
+    }
+
+    return rawValue.replace(/var\((--[A-Za-z0-9-]+)\)/g, (_, reference) => resolveValue(reference, new Set([...seen, name])) || rawValue);
+  };
+
+  const getGroup = (name) => {
+    if (!name.startsWith("--color-")) {
+      const family = name.slice(2).split("-")[0];
+      return `Primitive / ${family.charAt(0).toUpperCase() + family.slice(1)}`;
+    }
+
+    const parts = name.slice(8).split("-");
+    const root = parts[0];
+    const second = parts[1];
+
+    if (root === "action" && second) return `Action / ${second.charAt(0).toUpperCase() + second.slice(1)}`;
+    if (root === "interaction" && second) return `Interaction / ${second.charAt(0).toUpperCase() + second.slice(1)}`;
+    if (root === "ai" && second) return `AI / ${second.charAt(0).toUpperCase() + second.slice(1)}`;
+
+    return root.charAt(0).toUpperCase() + root.slice(1);
+  };
+
+  const isRenderableColor = (value) => {
+    const normalized = value.trim().toLowerCase();
+    return (
+      normalized.startsWith("#") ||
+      normalized.startsWith("rgb(") ||
+      normalized.startsWith("rgba(") ||
+      normalized.startsWith("hsl(") ||
+      normalized.startsWith("hsla(") ||
+      normalized === "transparent"
+    );
+  };
+
+  const tokens = [];
+
+  for (const [name, rawValue] of tokenMap.entries()) {
+    if (!name.startsWith("--color-") && !COLOR_PRIMITIVE_FAMILIES.some((family) => name.startsWith(`--${family}-`))) {
+      continue;
+    }
+
+    const resolvedValue = resolveValue(name);
+    if (!resolvedValue || resolvedValue.includes("gradient(")) {
+      continue;
+    }
+    if (!isRenderableColor(resolvedValue)) {
+      continue;
+    }
+
+    tokens.push({ name, rawValue, value: resolvedValue, group: getGroup(name) });
+  }
+
+  const groupOrder = [
+    "Primitive / Grey",
+    "Primitive / Blue",
+    "Primitive / Skyblue",
+    "Primitive / Cyan",
+    "Primitive / Green",
+    "Primitive / Yellow",
+    "Primitive / Peach",
+    "Primitive / Orange",
+    "Primitive / Red",
+    "Primitive / Pink",
+    "Primitive / Brown",
+    "Primitive / Purple",
+    "General",
+    "Content",
+    "Neutral",
+    "Action / Fill",
+    "Action / Content",
+    "Action / Outline",
+    "Interaction / Fill",
+    "Interaction / Outline",
+    "Accent",
+    "AI / Content",
+    "AI / Outline",
+  ];
+
+  const groupRank = new Map(groupOrder.map((group, index) => [group, index]));
+
+  tokens.sort((a, b) => {
+    if (a.group !== b.group) return (groupRank.get(a.group) ?? 999) - (groupRank.get(b.group) ?? 999);
+
+    const aShade = Number(a.name.match(/(\d+)$/)?.[1] || Number.POSITIVE_INFINITY);
+    const bShade = Number(b.name.match(/(\d+)$/)?.[1] || Number.POSITIVE_INFINITY);
+
+    if (aShade !== bShade) return aShade - bShade;
+    return a.name.localeCompare(b.name);
+  });
+
+  return Object.entries(
+    tokens.reduce((accumulator, token) => {
+      if (!accumulator[token.group]) accumulator[token.group] = [];
+      accumulator[token.group].push(token);
+      return accumulator;
+    }, {})
+  ).map(([group, items]) => ({ group, items }));
+};
+
+const isDarkColor = (value) => {
+  const hex = value.trim();
+  if (!hex.startsWith("#")) return false;
+
+  const normalized = hex.slice(1);
+  const expanded = normalized.length === 3 ? normalized.split("").map((char) => char + char).join("") : normalized;
+  if (expanded.length !== 6) return false;
+
+  const red = Number.parseInt(expanded.slice(0, 2), 16);
+  const green = Number.parseInt(expanded.slice(2, 4), 16);
+  const blue = Number.parseInt(expanded.slice(4, 6), 16);
+  const luminance = (red * 299 + green * 587 + blue * 114) / 1000;
+
+  return luminance < 128;
+};
+
+const ColorTokenCard = ({ token }) => {
+  const isTransparent = token.value.trim().toLowerCase() === "transparent";
+  const cardTextColor = isTransparent || isDarkColor(token.value) ? "var(--color-general-white)" : "var(--color-content-primary)";
+
+  const { copied, copy } = useClipboardCopy({
+    getText: () => token.name,
+    onError: (error) => console.error("Failed to copy color token:", error),
+  });
+
+  const cardStyle = {
+    position: "relative",
+    minHeight: 120,
+    padding: 16,
+    borderRadius: 16,
+    overflow: "hidden",
+    border: "1px solid var(--color-action-outline-secondary-enabled)",
+    background: isTransparent
+      ? "linear-gradient(45deg, var(--color-general-neutral-lighter) 25%, transparent 25%, transparent 75%, var(--color-general-neutral-lighter) 75%, var(--color-general-neutral-lighter)), linear-gradient(45deg, var(--color-general-neutral-lighter) 25%, transparent 25%, transparent 75%, var(--color-general-neutral-lighter) 75%, var(--color-general-neutral-lighter)), var(--color-general-white)"
+      : token.value,
+    backgroundSize: isTransparent ? "16px 16px" : undefined,
+    backgroundPosition: isTransparent ? "0 0, 8px 8px, 0 0" : undefined,
+    boxShadow: "var(--shadow-light-down)",
+    color: cardTextColor,
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
+    gap: 16,
+  };
+
+  return (
+    <div style={cardStyle}>
+      <CopyButton copied={copied} onClick={copy} size="sm" style={COPY_BUTTON_CARD_STYLE} />
+
+      <div style={{ paddingRight: 88 }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: cardTextColor, marginBottom: 8 }}>{token.name.replace(/^--/, "")}</div>
+        <div style={{ fontSize: 11, lineHeight: 1.4, color: cardTextColor, opacity: 0.9, wordBreak: "break-word" }}>{token.value}</div>
+      </div>
+    </div>
+  );
+};
+
+const ColorTokenGroup = ({ group, items }) => (
+  <section style={{ marginBottom: 32 }}>
+    <h3 style={{ fontSize: 16, fontWeight: 700, color: "var(--color-content-primary)", marginBottom: 16 }}>{group}</h3>
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 16 }}>
+      {items.map((token) => (
+        <ColorTokenCard key={token.name} token={token} />
+      ))}
+    </div>
+  </section>
 );
 
 // ─────────────────────────────────────────────
@@ -318,7 +633,7 @@ const ButtonPage = () => (
 <Button variant="positive">Positive</Button>
 <Button variant="link">Link</Button>`}
       >
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+        <div style={DEMO_ROW_STYLE}>
           <Button variant="primary">Primary</Button>
           <Button variant="secondary">Secondary</Button>
           <Button variant="tertiary">Tertiary</Button>
@@ -338,7 +653,7 @@ const ButtonPage = () => (
 <Button size="lg">Large</Button>
 <Button size="xl">Extra Large</Button>`}
       >
-        <div style={{ display: "flex", alignItems: "flex-end", gap: 16, flexWrap: "wrap" }}>
+        <div style={DEMO_ROW_ALIGN_END_STYLE}>
           <Button size="xs">Extra Small</Button>
           <Button size="sm">Small</Button>
           <Button size="md">Medium</Button>
@@ -355,7 +670,7 @@ const ButtonPage = () => (
 <Button variant="primary" isDisabled>Disabled</Button>
 <Button variant="primary" loading>Loading</Button>`}
       >
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+        <div style={DEMO_ROW_STYLE}>
           <Button variant="primary">Primary</Button>
           <Button variant="primary" isDisabled>Disabled</Button>
           <Button variant="primary" loading>Loading</Button>
@@ -370,7 +685,7 @@ const ButtonPage = () => (
 <Button variant="secondary" isDisabled>Disabled</Button>
 <Button variant="secondary" loading>Loading</Button>`}
       >
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+        <div style={DEMO_ROW_STYLE}>
           <Button variant="secondary">Secondary</Button>
           <Button variant="secondary" isDisabled>Disabled</Button>
           <Button variant="secondary" loading>Loading</Button>
@@ -384,7 +699,7 @@ const ButtonPage = () => (
 <Button variant="tertiary">Tertiary</Button>
 <Button variant="tertiary" isDisabled>Disabled</Button>`}
       >
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+        <div style={DEMO_ROW_STYLE}>
           <Button variant="tertiary">Tertiary</Button>
           <Button variant="tertiary" isDisabled>Disabled</Button>
         </div>
@@ -397,7 +712,7 @@ const ButtonPage = () => (
 <Button variant="negative">Delete</Button>
 <Button variant="negative" isDisabled>Disabled</Button>`}
       >
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+        <div style={DEMO_ROW_STYLE}>
           <Button variant="negative">Delete</Button>
           <Button variant="negative" isDisabled>Disabled</Button>
         </div>
@@ -410,7 +725,7 @@ const ButtonPage = () => (
 <Button variant="positive">Confirm</Button>
 <Button variant="positive" isDisabled>Disabled</Button>`}
       >
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+        <div style={DEMO_ROW_STYLE}>
           <Button variant="positive">Confirm</Button>
           <Button variant="positive" isDisabled>Disabled</Button>
         </div>
@@ -423,7 +738,7 @@ const ButtonPage = () => (
 <Button variant="link">Link Button</Button>
 <Button variant="link" isDisabled>Disabled</Button>`}
       >
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+        <div style={DEMO_ROW_STYLE}>
           <Button variant="link">Link Button</Button>
           <Button variant="link" isDisabled>Disabled</Button>
         </div>
@@ -462,7 +777,7 @@ const BadgePage = () => (
 <Badge color="informative">Informative</Badge>
 <Badge color="ai">AI</Badge>`}
     >
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+      <div style={DEMO_ROW_STYLE}>
         <Badge color="neutral">Neutral</Badge>
         <Badge color="brand">Brand</Badge>
         <Badge color="disabled">Disabled</Badge>
@@ -484,7 +799,7 @@ const BadgePage = () => (
 <Badge color="brand" size="md">Medium</Badge>
 <Badge color="brand" size="lg">Large</Badge>`}
     >
-      <div style={{ display: "flex", alignItems: "flex-end", gap: 16, flexWrap: "wrap" }}>
+      <div style={DEMO_ROW_ALIGN_END_STYLE}>
         <Badge color="brand" size="xs">Extra Small</Badge>
         <Badge color="brand" size="sm">Small</Badge>
         <Badge color="brand" size="md">Medium</Badge>
@@ -501,7 +816,7 @@ const BadgePage = () => (
 <Badge color="neutral" size="md" icon>With Icon</Badge>
 <Badge color="neutral" size="lg" icon>Large with Icon</Badge>`}
     >
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+      <div style={DEMO_ROW_STYLE}>
         <Badge color="neutral" size="md">Neutral</Badge>
         <Badge color="neutral" size="md" icon>With Icon</Badge>
         <Badge color="neutral" size="lg" icon>Large with Icon</Badge>
@@ -517,7 +832,7 @@ const BadgePage = () => (
 <Badge color="brand" size="md" icon>With Icon</Badge>
 <Badge color="brand" size="lg" icon>Large with Icon</Badge>`}
     >
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+      <div style={DEMO_ROW_STYLE}>
         <Badge color="brand" size="md">Brand</Badge>
         <Badge color="brand" size="md" icon>With Icon</Badge>
         <Badge color="brand" size="lg" icon>Large with Icon</Badge>
@@ -533,7 +848,7 @@ const BadgePage = () => (
 <Badge color="disabled" size="md" icon>With Icon</Badge>
 <Badge color="disabled" size="lg" icon>Large with Icon</Badge>`}
     >
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+      <div style={DEMO_ROW_STYLE}>
         <Badge color="disabled" size="md">Disabled</Badge>
         <Badge color="disabled" size="md" icon>With Icon</Badge>
         <Badge color="disabled" size="lg" icon>Large with Icon</Badge>
@@ -549,7 +864,7 @@ const BadgePage = () => (
 <Badge color="ai" size="md" icon>AI Generated</Badge>
 <Badge color="ai" size="lg" icon>AI with Sparkles</Badge>`}
     >
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+      <div style={DEMO_ROW_STYLE}>
         <Badge color="ai" size="md">AI</Badge>
         <Badge color="ai" size="md" icon>AI Generated</Badge>
         <Badge color="ai" size="lg" icon>AI with Sparkles</Badge>
@@ -565,7 +880,7 @@ const BadgePage = () => (
 <Badge color="positive" size="md" icon>With Icon</Badge>
 <Badge color="positive" size="lg" icon>Large with Icon</Badge>`}
     >
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+      <div style={DEMO_ROW_STYLE}>
         <Badge color="positive" size="md">Positive</Badge>
         <Badge color="positive" size="md" icon>With Icon</Badge>
         <Badge color="positive" size="lg" icon>Large with Icon</Badge>
@@ -581,7 +896,7 @@ const BadgePage = () => (
 <Badge color="negative" size="md" icon>With Icon</Badge>
 <Badge color="negative" size="lg" icon>Large with Icon</Badge>`}
     >
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+      <div style={DEMO_ROW_STYLE}>
         <Badge color="negative" size="md">Negative</Badge>
         <Badge color="negative" size="md" icon>With Icon</Badge>
         <Badge color="negative" size="lg" icon>Large with Icon</Badge>
@@ -597,7 +912,7 @@ const BadgePage = () => (
 <Badge color="warning" size="md" icon>With Icon</Badge>
 <Badge color="warning" size="lg" icon>Large with Icon</Badge>`}
     >
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+      <div style={DEMO_ROW_STYLE}>
         <Badge color="warning" size="md">Warning</Badge>
         <Badge color="warning" size="md" icon>With Icon</Badge>
         <Badge color="warning" size="lg" icon>Large with Icon</Badge>
@@ -613,7 +928,7 @@ const BadgePage = () => (
 <Badge color="informative" size="md" icon>With Icon</Badge>
 <Badge color="informative" size="lg" icon>Large with Icon</Badge>`}
     >
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+      <div style={DEMO_ROW_STYLE}>
         <Badge color="informative" size="md">Informative</Badge>
         <Badge color="informative" size="md" icon>With Icon</Badge>
         <Badge color="informative" size="lg" icon>Large with Icon</Badge>
@@ -630,7 +945,7 @@ const BadgePage = () => (
 <Badge color="brand" size="md" shape="pill">Pill</Badge>
 <Badge color="brand" size="md" shape="pill" icon>Pill with Icon</Badge>`}
     >
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+      <div style={DEMO_ROW_STYLE}>
         <Badge color="brand" size="md" shape="rounded">Rounded</Badge>
         <Badge color="brand" size="md" shape="rounded" icon>Rounded with Icon</Badge>
         <Badge color="brand" size="md" shape="pill">Pill</Badge>
@@ -653,7 +968,7 @@ const AvatarPage = () => (
 <Avatar size="lg" name="Alice Brown" />
 <Avatar size="xl" name="Charlie Davis" />`}
     >
-      <div style={{ display: "flex", alignItems: "flex-end", gap: 16, flexWrap: "wrap" }}>
+      <div style={DEMO_ROW_ALIGN_END_STYLE}>
         <Avatar size="xs" name="John Doe" />
         <Avatar size="sm" name="Jane Smith" />
         <Avatar size="md" name="Bob Wilson" />
@@ -881,6 +1196,56 @@ const IconPage = () => {
           ))}
         </div>
       </PreviewComponent>
+    </Section>
+  );
+};
+
+const ColorsPage = () => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const colorGroups = useMemo(() => parseColorTokens(tokensCssRaw), []);
+
+  const filteredGroups = useMemo(() => {
+    if (!searchQuery.trim()) return colorGroups;
+    const query = searchQuery.toLowerCase();
+
+    return colorGroups
+      .map((group) => ({
+        ...group,
+        items: group.items.filter(
+          (token) =>
+            token.name.toLowerCase().includes(query) ||
+            token.value.toLowerCase().includes(query) ||
+            group.group.toLowerCase().includes(query)
+        ),
+      }))
+      .filter((group) => group.items.length > 0);
+  }, [colorGroups, searchQuery]);
+
+  return (
+    <Section
+      title="Colors"
+      description="Search and copy every color token from library/tokens/tokens.css, including --color-content-search-highlight."
+      topBlock={null}
+      showExamplesHeader={false}
+    >
+      <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+        <div style={{ maxWidth: 420 }}>
+          <TextInput
+            label="Search colors"
+            placeholder="Search token name or value..."
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+          />
+        </div>
+
+        {filteredGroups.length > 0 ? (
+          filteredGroups.map((group) => <ColorTokenGroup key={group.group} group={group.group} items={group.items} />)
+        ) : (
+          <div style={{ padding: 24, border: "1px dashed var(--color-action-outline-secondary-enabled)", borderRadius: 16, color: "var(--color-content-secondary)" }}>
+            No matching color tokens.
+          </div>
+        )}
+      </div>
     </Section>
   );
 };
@@ -1289,7 +1654,7 @@ const ButtonBadgePage = () => {
 <ButtonBadge state="active" badgeLabel="5">Active</ButtonBadge>
 <ButtonBadge state="disabled" badgeLabel="5" isDisabled>Disabled</ButtonBadge>`}
       >
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+        <div style={DEMO_ROW_STYLE}>
           <ButtonBadge state="enabled" badgeLabel="5">Enabled</ButtonBadge>
           <ButtonBadge state="active" badgeLabel="5">Active</ButtonBadge>
           <ButtonBadge state="disabled" badgeLabel="5" isDisabled>Disabled</ButtonBadge>
@@ -1306,7 +1671,7 @@ const ButtonBadgePage = () => {
 <ButtonBadge iconName="Bell" badgeLabel="3">Notifications</ButtonBadge>
 <ButtonBadge variant="without-badge" iconName="Funnel">Filter</ButtonBadge>`}
       >
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+        <div style={DEMO_ROW_STYLE}>
           <ButtonBadge badgeLabel="5">Click Me</ButtonBadge>
           <ButtonBadge iconName="Bell" badgeLabel="3">Notifications</ButtonBadge>
           <ButtonBadge variant="without-badge" iconName="Funnel">Filter</ButtonBadge>
@@ -1336,7 +1701,7 @@ const ButtonBadgePage = () => {
 <ButtonBadge badgeLabel="12">Messages</ButtonBadge>
 <ButtonBadge badgeLabel="New">Updates</ButtonBadge>`}
       >
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+        <div style={DEMO_ROW_STYLE}>
           <ButtonBadge badgeLabel="5">Notifications</ButtonBadge>
           <ButtonBadge badgeLabel="12">Messages</ButtonBadge>
           <ButtonBadge badgeLabel="New">Updates</ButtonBadge>
@@ -1352,7 +1717,7 @@ const ButtonBadgePage = () => {
 <ButtonBadge iconName="Envelope" badgeLabel="99+">Inbox</ButtonBadge>
 <ButtonBadge iconName="ShoppingCart" badgeLabel="2">Cart</ButtonBadge>`}
       >
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+        <div style={DEMO_ROW_STYLE}>
           <ButtonBadge iconName="Bell" badgeLabel="3">Alerts</ButtonBadge>
           <ButtonBadge iconName="Envelope" badgeLabel="99+">Inbox</ButtonBadge>
           <ButtonBadge iconName="ShoppingCart" badgeLabel="2">Cart</ButtonBadge>
@@ -1368,7 +1733,7 @@ const ButtonBadgePage = () => {
 <ButtonBadge variant="without-badge" iconName="ArrowsUpDown">Sort</ButtonBadge>
 <ButtonBadge variant="without-badge" iconRightName="ChevronDown">Dropdown</ButtonBadge>`}
       >
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+        <div style={DEMO_ROW_STYLE}>
           <ButtonBadge variant="without-badge" iconName="Funnel">Filter</ButtonBadge>
           <ButtonBadge variant="without-badge" iconName="ArrowsUpDown">Sort</ButtonBadge>
           <ButtonBadge variant="without-badge" iconRightName="ChevronDown">Dropdown</ButtonBadge>
@@ -1398,7 +1763,7 @@ const [activeFilter, setActiveFilter] = useState(null);
           <p style={{ marginBottom: 16, color: "var(--color-content-secondary)", fontSize: 14 }}>
             Click to toggle active state:
           </p>
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <div style={DEMO_ROW_STYLE}>
             {["All", "Active", "Pending", "Completed"].map((filter) => (
               <ButtonBadge
                 key={filter}
@@ -1521,6 +1886,47 @@ import { Icon } from "@/library/atoms/icon";
       <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
         <AiButton variant="primary" size="lg" iconLeading={<Icon name="Sparkles" />} iconTrailing={<Icon name="ChevronDown" />}>Generate</AiButton>
         <AiButton variant="secondary" size="lg" iconLeading={<Icon name="Sparkles" />} iconTrailing={<Icon name="ChevronDown" />}>Generate</AiButton>
+      </div>
+    </PreviewComponent>
+  </Section>
+);
+
+const ProgressIndicatorPage = () => (
+  <Section title="ProgressIndicator" description="A token-based progress indicator with optional value labels in several layouts.">
+    <PreviewComponent
+      title="Default"
+      code={`import { ProgressIndicator } from "@/library/atoms/progress-indicator";
+
+<ProgressIndicator value={35} />
+<ProgressIndicator value={65} />`}
+    >
+      <div style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 420 }}>
+        <ProgressIndicator value={35} />
+        <ProgressIndicator value={65} />
+      </div>
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="With Right Label"
+      code={`import { ProgressIndicator } from "@/library/atoms/progress-indicator";
+
+<ProgressIndicator value={72} labelPosition="right" />`}
+    >
+      <div style={{ maxWidth: 420 }}>
+        <ProgressIndicator value={72} labelPosition={PROGRESS_INDICATOR_LABEL_POSITIONS.right} />
+      </div>
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="Bottom and Floating Labels"
+      code={`import { ProgressIndicator, PROGRESS_INDICATOR_LABEL_POSITIONS } from "@/library/atoms/progress-indicator";
+
+<ProgressIndicator value={48} labelPosition={PROGRESS_INDICATOR_LABEL_POSITIONS.bottom} />
+<ProgressIndicator value={88} labelPosition={PROGRESS_INDICATOR_LABEL_POSITIONS.bottomFloating} />`}
+    >
+      <div style={{ display: "flex", flexDirection: "column", gap: 24, maxWidth: 420 }}>
+        <ProgressIndicator value={48} labelPosition={PROGRESS_INDICATOR_LABEL_POSITIONS.bottom} />
+        <ProgressIndicator value={88} labelPosition={PROGRESS_INDICATOR_LABEL_POSITIONS.bottomFloating} />
       </div>
     </PreviewComponent>
   </Section>
@@ -1715,6 +2121,53 @@ const [value, setValue] = useState("");
           value={editableValue}
           onChange={setEditableValue}
         />
+      </PreviewComponent>
+    </Section>
+  );
+};
+
+const RichTextEditToolbarsPage = () => {
+  const [activeFormats, setActiveFormats] = useState({});
+
+  const handleToolbarAction = (format) => {
+    setActiveFormats((prev) => ({
+      ...prev,
+      [format]: !prev[format],
+    }));
+  };
+
+  return (
+    <Section
+      title="RichTextEditToolbars"
+      description="Formatting toolbar molecule used by RichTextInput with all editing actions."
+    >
+      <PreviewComponent
+        title="All Toolbar Actions"
+        code={`import { useState } from "react";
+import { RichTextEditToolbars } from "@/library/molecules/rich-text-edit-toolbars";
+
+const [activeFormats, setActiveFormats] = useState({});
+
+<RichTextEditToolbars
+  activeFormats={activeFormats}
+  onAction={(format) =>
+    setActiveFormats((prev) => ({
+      ...prev,
+      [format]: !prev[format],
+    }))
+  }
+/>
+`}
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <RichTextEditToolbars
+            activeFormats={activeFormats}
+            onAction={handleToolbarAction}
+          />
+          <p style={{ margin: 0, fontSize: 13, color: "var(--color-content-secondary)" }}>
+            Click buttons to toggle active state for preview.
+          </p>
+        </div>
       </PreviewComponent>
     </Section>
   );
@@ -1954,6 +2407,50 @@ const AccordionPage = () => (
     </PreviewComponent>
 
     <PreviewComponent
+      title="Horizontal Variant"
+      code={`import { Accordion } from "@/library/molecules/accordion";
+import { Chip } from "@/library/atoms/chip";
+import { Button } from "@/library/atoms/button";
+import { Icon } from "@/library/atoms/icon";
+
+<Accordion
+  title="Horizontal variant"
+  variant="horizontal"
+  showChevron
+  leftBadgeLabel="2/3"
+  leftChip={<Chip variant="neutral">Draft</Chip>}
+  leftChipSecondary={<Chip variant="blue">Legal</Chip>}
+  action={
+    <Button size="sm" variant="secondary" iconLeading={<Icon name="PencilSquare" size="sm" />}>
+      Edit
+    </Button>
+  }
+  rightChip={<Chip variant="warning">High risk</Chip>}
+/>
+`}
+    >
+      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <Accordion title="Vertical default" defaultExpanded>
+          <p>This accordion expands to show the inner container.</p>
+        </Accordion>
+        <Accordion
+          title="Horizontal variant"
+          variant="horizontal"
+          showChevron
+          leftBadgeLabel="2/3"
+          leftChip={<Chip variant="neutral">Draft</Chip>}
+          leftChipSecondary={<Chip variant="blue">Legal</Chip>}
+          action={
+            <Button size="sm" variant="secondary" iconLeading={<Icon name="PencilSquare" size="sm" />}>
+              Edit
+            </Button>
+          }
+          rightChip={<Chip variant="warning">High risk</Chip>}
+        />
+      </div>
+    </PreviewComponent>
+
+    <PreviewComponent
       title="With Icon and Action"
       code={`import { Accordion } from "@/library/molecules/accordion";
 
@@ -1975,11 +2472,128 @@ const AccordionPage = () => (
         <p>Accordion with icon and action button.</p>
       </Accordion>
     </PreviewComponent>
+
+    <PreviewComponent
+      title="With Checkbox, Badge, and Node Button"
+      code={`import { Accordion } from "@/library/molecules/accordion";
+import { Button } from "@/library/atoms/button";
+import { Icon } from "@/library/atoms/icon";
+
+<Accordion
+  title="Workflow"
+  showCheckbox
+  checkboxProps={{ defaultSelected: true, onChange: (checked) => console.log("checkbox", checked) }}
+  badgeLabel="Draft"
+  showBadge
+  nodeButton={
+    <Button
+      variant="secondary"
+      size="sm"
+      iconLeading={<Icon name="EllipsisHorizontal" size="sm" />}
+      onClick={() => alert("Node action")}
+    />
+  }
+>
+  <p>Accordion with all optional title-area controls.</p>
+</Accordion>
+
+<Accordion title="No badge example" badgeLabel="Hidden" showBadge={false}>
+  <p>Badge can be turned off with showBadge.</p>
+</Accordion>`}
+    >
+      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <Accordion
+          title="Workflow"
+          showCheckbox
+          checkboxProps={{ defaultSelected: true, onChange: (checked) => console.log("checkbox", checked) }}
+          badgeLabel="Draft"
+          showBadge
+          nodeButton={(
+            <Button
+              variant="secondary"
+              size="sm"
+              iconLeading={<Icon name="EllipsisHorizontal" size="sm" />}
+              onClick={() => alert("Node action")}
+            />
+          )}
+        >
+          <p>Accordion with all optional title-area controls.</p>
+        </Accordion>
+
+        <Accordion title="No badge example" badgeLabel="Hidden" showBadge={false}>
+          <p>Badge can be turned off with showBadge.</p>
+        </Accordion>
+      </div>
+    </PreviewComponent>
   </Section>
 );
 
 const TextInputPage = () => (
-  <Section title="TextInput" description="A complete text input with label, input field, and helper/error text.">
+  <Section
+    title="TextInput"
+    description="A complete text input with label, input field, and helper/error text."
+    topBlock={
+      <ImportBlock
+        title="TextInput"
+        label="Import"
+        importStatement={`import { TextInput } from "@/library/molecules/text-input";`}
+      />
+    }
+  >
+    <PreviewComponent
+      title="Dropdown Trigger"
+      code={`import { TextInput } from "@/library/molecules/text-input";
+
+    <TextInput
+  label="Choose condition"
+  placeholder="Click to select"
+  menuSections={[
+    {
+      title: "Neurology",
+      items: [
+        { value: "ad", label: "Alzheimer's disease" },
+        { value: "pd", label: "Parkinson's disease" },
+      ],
+    },
+    {
+      title: "Oncology",
+      collapsible: true,
+      defaultExpanded: false,
+      items: [
+        { value: "bc", label: "Breast cancer" },
+        { value: "lc", label: "Lung cancer" },
+      ],
+    },
+  ]}
+/>
+`}
+    >
+      <div style={{ maxWidth: 400 }}>
+        <TextInput
+          label="Choose condition"
+          placeholder="Click to select"
+          menuSections={[
+            {
+              title: "Neurology",
+              items: [
+                { value: "ad", label: "Alzheimer's disease" },
+                { value: "pd", label: "Parkinson's disease" },
+              ],
+            },
+            {
+              title: "Oncology",
+              collapsible: true,
+              defaultExpanded: false,
+              items: [
+                { value: "bc", label: "Breast cancer" },
+                { value: "lc", label: "Lung cancer" },
+              ],
+            },
+          ]}
+        />
+      </div>
+    </PreviewComponent>
+
     <PreviewComponent
       title="Sizes"
       code={`import { TextInput } from "@/library/molecules/text-input";
@@ -1988,7 +2602,7 @@ const TextInputPage = () => (
 <TextInput size="md" label="Medium (default)" placeholder="Medium input..." />
 <TextInput size="lg" label="Large" placeholder="Large input..." />`}
     >
-      <div style={{ display: "flex", alignItems: "flex-end", gap: 16, flexWrap: "wrap" }}>
+      <div style={DEMO_ROW_ALIGN_END_STYLE}>
         <div style={{ flex: 1, minWidth: 160 }}>
           <TextInput size="sm" label="Small" placeholder="Small input..." />
         </div>
@@ -2343,6 +2957,44 @@ const TextareaPage = () => (
     >
       <div style={{ maxWidth: 400 }}>
         <Textarea label="Description" placeholder="Enter description..." isRequired rows={4} />
+      </div>
+    </PreviewComponent>
+  </Section>
+);
+
+const expandableTextLongCopy = `The legal team completed an initial review of the target contracts and highlighted several obligations that may impact post-close operations. While most clauses follow expected market standards, a small set of renewal and assignment terms require escalation before final approval.\n\nIn parallel, the diligence workstream is validating whether notification timelines are aligned across jurisdictions. Any mismatch between governing law and termination windows can increase execution risk, especially for cross-border entities with staggered milestones.\n\nThe integration planning track also noted dependencies across data retention, audit readiness, and third-party consent handling. These dependencies can affect sequencing and should be resolved before launch readiness checks begin.\n\nThis summary is intentionally long to demonstrate the 8-line overflow behavior. Use Show more to expand and Show less to collapse while preserving the same typography and spacing tokens.`;
+
+const ExpandableTextPage = () => (
+  <Section title="ExpandableText" description="A text block that truncates after 8 lines and reveals full content via Show more / Show less.">
+    <PreviewComponent
+      title="MD Variant"
+      code={`import { ExpandableText } from "@/library/molecules/expandable-text";
+
+<ExpandableText
+  variant="md"
+  content="Long content here..."
+  showMoreLabel="Show more"
+  showLessLabel="Show less"
+/>`}
+    >
+      <div style={{ maxWidth: 460 }}>
+        <ExpandableText variant="md" content={expandableTextLongCopy} />
+      </div>
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="LG Variant"
+      code={`import { ExpandableText } from "@/library/molecules/expandable-text";
+
+<ExpandableText
+  variant="lg"
+  content="Long content here..."
+  showMoreLabel="Show more"
+  showLessLabel="Show less"
+/>`}
+    >
+      <div style={{ maxWidth: 460 }}>
+        <ExpandableText variant="lg" content={expandableTextLongCopy} />
       </div>
     </PreviewComponent>
   </Section>
@@ -3042,68 +3694,105 @@ import { Icon } from "@/library/atoms/icon";
 );
 
 const DropdownListPage = () => {
-  const [selected, setSelected] = useState(["pd"]);
+  const explicitSearchItems = Array.from({ length: 6 }, (_, index) => ({
+    value: `explicit-${index + 1}`,
+    label: `Explicit item ${index + 1}`,
+  }));
 
-  const handleChange = ({ value, checked }) => {
-    if (checked) {
-      setSelected([...selected, value]);
-    } else {
-      setSelected(selected.filter(v => v !== value));
-    }
-  };
+  const autoSearchItems = Array.from({ length: 8 }, (_, index) => ({
+    value: `auto-${index + 1}`,
+    label: `Auto item ${index + 1}`,
+  }));
+
+  const overflowItems = Array.from({ length: 14 }, (_, index) => ({
+    value: `item-${index + 1}`,
+    label: `Overflow item ${index + 1}`,
+  }));
 
   return (
     <Section title="DropdownList" description="A searchable, sectioned list with optional 'Add' action.">
       <PreviewComponent
-        title="Basic DropdownList"
+        title="Two Sections"
         code={`import { DropdownList, DropdownSection, DropdownListItem } from "@/library/molecules/dropdown-list";
 
-const [selected, setSelected] = useState(["pd"]);
-
-const handleChange = ({ value, checked }) => {
-  if (checked) {
-    setSelected([...selected, value]);
-  } else {
-    setSelected(selected.filter(v => v !== value));
-  }
-};
-
-<DropdownList>
+<DropdownList noSearch noAdd>
   <DropdownSection title="Neurology">
-    <DropdownListItem value="ad" checked={selected.includes("ad")} onChange={handleChange}>
-      Alzheimer's disease
-    </DropdownListItem>
-    <DropdownListItem value="pd" checked={selected.includes("pd")} onChange={handleChange}>
-      Parkinson's disease
-    </DropdownListItem>
+    <DropdownListItem value="ad">Alzheimer's disease</DropdownListItem>
+    <DropdownListItem value="pd">Parkinson's disease</DropdownListItem>
   </DropdownSection>
   <DropdownSection title="Oncology">
-    <DropdownListItem value="bc" checked={selected.includes("bc")} onChange={handleChange} subinfo="Phase 2">
-      Breast cancer
-    </DropdownListItem>
-    <DropdownListItem value="lc" checked={selected.includes("lc")} onChange={handleChange} subinfo="Phase 1">
-      Lung cancer
-    </DropdownListItem>
+    <DropdownListItem value="bc">Breast cancer</DropdownListItem>
+    <DropdownListItem value="lc">Lung cancer</DropdownListItem>
   </DropdownSection>
 </DropdownList>`}
       >
         <div style={{ maxWidth: 320 }}>
-          <DropdownList>
+          <DropdownList noSearch noAdd>
             <DropdownSection title="Neurology">
-              <DropdownListItem value="ad" checked={selected.includes("ad")} onChange={handleChange}>
-                Alzheimer's disease
-              </DropdownListItem>
-              <DropdownListItem value="pd" checked={selected.includes("pd")} onChange={handleChange}>
-                Parkinson's disease
-              </DropdownListItem>
+              <DropdownListItem value="ad">Alzheimer's disease</DropdownListItem>
+              <DropdownListItem value="pd">Parkinson's disease</DropdownListItem>
             </DropdownSection>
             <DropdownSection title="Oncology">
-              <DropdownListItem value="bc" checked={selected.includes("bc")} onChange={handleChange} subinfo="Phase 2">
-                Breast cancer
-              </DropdownListItem>
-              <DropdownListItem value="lc" checked={selected.includes("lc")} onChange={handleChange} subinfo="Phase 1">
-                Lung cancer
-              </DropdownListItem>
+              <DropdownListItem value="bc">Breast cancer</DropdownListItem>
+              <DropdownListItem value="lc">Lung cancer</DropdownListItem>
+            </DropdownSection>
+          </DropdownList>
+        </div>
+      </PreviewComponent>
+
+      <PreviewComponent
+        title="Explicit Search Override"
+        code={`import { DropdownList, DropdownSection, DropdownListItem } from "@/library/molecules/dropdown-list";
+
+<DropdownList showSearch>
+  <DropdownSection title="Auto-collapse section">
+    <DropdownListItem value="1">Item 1</DropdownListItem>
+    <DropdownListItem value="2">Item 2</DropdownListItem>
+    <DropdownListItem value="3">Item 3</DropdownListItem>
+    <DropdownListItem value="4">Item 4</DropdownListItem>
+    <DropdownListItem value="5">Item 5</DropdownListItem>
+    <DropdownListItem value="6">Item 6</DropdownListItem>
+  </DropdownSection>
+</DropdownList>`}
+      >
+        <div style={{ maxWidth: 320 }}>
+          <DropdownList showSearch>
+            <DropdownSection title="Auto-collapse section">
+              {explicitSearchItems.map((item) => (
+                <DropdownListItem key={item.value} value={item.value}>
+                  {item.label}
+                </DropdownListItem>
+              ))}
+            </DropdownSection>
+          </DropdownList>
+        </div>
+      </PreviewComponent>
+
+      <PreviewComponent
+        title="Automatic Search at 8+ Items"
+        code={`import { DropdownList, DropdownSection, DropdownListItem } from "@/library/molecules/dropdown-list";
+
+<DropdownList noAdd>
+  <DropdownSection title="Automatic search section">
+    <DropdownListItem value="1">Item 1</DropdownListItem>
+    <DropdownListItem value="2">Item 2</DropdownListItem>
+    <DropdownListItem value="3">Item 3</DropdownListItem>
+    <DropdownListItem value="4">Item 4</DropdownListItem>
+    <DropdownListItem value="5">Item 5</DropdownListItem>
+    <DropdownListItem value="6">Item 6</DropdownListItem>
+    <DropdownListItem value="7">Item 7</DropdownListItem>
+    <DropdownListItem value="8">Item 8</DropdownListItem>
+  </DropdownSection>
+</DropdownList>`}
+      >
+        <div style={{ maxWidth: 320 }}>
+          <DropdownList noAdd>
+            <DropdownSection title="Automatic search section">
+              {autoSearchItems.map((item) => (
+                <DropdownListItem key={item.value} value={item.value}>
+                  {item.label}
+                </DropdownListItem>
+              ))}
             </DropdownSection>
           </DropdownList>
         </div>
@@ -3127,6 +3816,63 @@ const handleChange = ({ value, checked }) => {
               <DropdownListItem value="a">Option A</DropdownListItem>
               <DropdownListItem value="b">Option B</DropdownListItem>
               <DropdownListItem value="c">Option C</DropdownListItem>
+            </DropdownSection>
+          </DropdownList>
+        </div>
+      </PreviewComponent>
+
+      <PreviewComponent
+        title="Without Add Action"
+        code={`import { DropdownList, DropdownSection, DropdownListItem } from "@/library/molecules/dropdown-list";
+
+<DropdownList noAdd>
+  <DropdownSection title="Static section">
+    <DropdownListItem value="ad">Alzheimer's disease</DropdownListItem>
+    <DropdownListItem value="pd">Parkinson's disease</DropdownListItem>
+  </DropdownSection>
+</DropdownList>`}
+      >
+        <div style={{ maxWidth: 320 }}>
+          <DropdownList noAdd>
+            <DropdownSection title="Static section">
+              <DropdownListItem value="ad">Alzheimer's disease</DropdownListItem>
+              <DropdownListItem value="pd">Parkinson's disease</DropdownListItem>
+            </DropdownSection>
+          </DropdownList>
+        </div>
+      </PreviewComponent>
+
+      <PreviewComponent
+        title="Scrollable Overflow"
+        code={`import { DropdownList, DropdownSection, DropdownListItem } from "@/library/molecules/dropdown-list";
+
+<DropdownList noSearch noAdd>
+  <DropdownSection title="Overflow section">
+    <DropdownListItem value="item-1">Overflow item 1</DropdownListItem>
+    <DropdownListItem value="item-2">Overflow item 2</DropdownListItem>
+    <DropdownListItem value="item-3">Overflow item 3</DropdownListItem>
+    <DropdownListItem value="item-4">Overflow item 4</DropdownListItem>
+    <DropdownListItem value="item-5">Overflow item 5</DropdownListItem>
+    <DropdownListItem value="item-6">Overflow item 6</DropdownListItem>
+    <DropdownListItem value="item-7">Overflow item 7</DropdownListItem>
+    <DropdownListItem value="item-8">Overflow item 8</DropdownListItem>
+    <DropdownListItem value="item-9">Overflow item 9</DropdownListItem>
+    <DropdownListItem value="item-10">Overflow item 10</DropdownListItem>
+    <DropdownListItem value="item-11">Overflow item 11</DropdownListItem>
+    <DropdownListItem value="item-12">Overflow item 12</DropdownListItem>
+    <DropdownListItem value="item-13">Overflow item 13</DropdownListItem>
+    <DropdownListItem value="item-14">Overflow item 14</DropdownListItem>
+  </DropdownSection>
+</DropdownList>`}
+      >
+        <div style={{ maxWidth: 320 }}>
+          <DropdownList noSearch noAdd>
+            <DropdownSection title="Overflow section">
+              {overflowItems.map((item) => (
+                <DropdownListItem key={item.value} value={item.value}>
+                  {item.label}
+                </DropdownListItem>
+              ))}
             </DropdownSection>
           </DropdownList>
         </div>
@@ -3838,6 +4584,111 @@ const UserButtonPage = () => (
     </PreviewComponent>
   </Section>
 );
+
+const statusUpdateNextSteps = "Prepare final diligence memo, align owners for the integration checklist, and confirm who will present the decision summary in Thursday's steering call.";
+const statusUpdateUpdates = "The team completed legal review for all priority documents and flagged two clauses for follow-up. Data-room indexing is now up to date, and cross-functional owners have acknowledged action items.The team completed legal review for all priority documents and flagged two clauses for follow-up. Data-room indexing is now up to date, and cross-functional owners have acknowledged action items.The team completed legal review for all priority documents and flagged two clauses for follow-up. Data-room indexing is now up to date, and cross-functional owners have acknowledged action items.The team completed legal review for all priority documents and flagged two clauses for follow-up. Data-room indexing is now up to date, and cross-functional owners have acknowledged action items.The team completed legal review for all priority documents and flagged two clauses for follow-up. Data-room indexing is now up to date, and cross-functional owners have acknowledged action items.The team completed legal review for all priority documents and flagged two clauses for follow-up. Data-room indexing is now up to date, and cross-functional owners have acknowledged action items.";
+
+const StatusUpdatePage = () => (
+  <Section title="StatusUpdate" description="An accordion-based status summary with action controls, metadata, and expandable next steps/updates content.">
+    <PreviewComponent
+      title="Default"
+      code={`import { StatusUpdate } from "@/library/organisms/status-update";
+
+<StatusUpdate
+  title="Status update"
+  dateLabel="Sep 8, 2026"
+  authorName="Linh Nguyen"
+  statusLabel="On track"
+  nextStepsContent="Prepare final diligence memo..."
+  updatesContent="The team completed legal review..."
+/>`}
+    >
+      <div style={{ maxWidth: 880 }}>
+        <StatusUpdate nextStepsContent={statusUpdateNextSteps} updatesContent={statusUpdateUpdates} />
+      </div>
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="Custom Labels"
+      code={`<StatusUpdate
+  title="Deal status"
+  dateLabel="Sep 10, 2026"
+  authorName="Product Ops"
+  authorInitials="PO"
+  statusLabel="Needs review"
+  badgeCount="3"
+/>`}
+    >
+      <div style={{ maxWidth: 880 }}>
+        <StatusUpdate
+          title="Deal status"
+          dateLabel="Sep 10, 2026"
+          authorName="Product Ops"
+          authorInitials="PO"
+          statusLabel="Needs review"
+          badgeCount="3"
+        />
+      </div>
+    </PreviewComponent>
+  </Section>
+);
+
+const SideMenuRichTextInputPage = () => {
+  const [enabledValue, setEnabledValue] = useState("");
+  const [activeValue, setActiveValue] = useState("Draft update prepared for legal review and stakeholder sign-off.");
+
+  return (
+    <Section
+      title="SideMenuRichTextInput"
+      description="A side-menu rich text composer with grouped toolbar actions, optional AI action, and configurable footer actions."
+    >
+      <PreviewComponent
+        title="Enabled"
+        code={`import { SideMenuRichTextInput } from "@/library/organisms/side-menu/rich-text-input";
+
+<SideMenuRichTextInput
+  value={value}
+  onChange={setValue}
+  placeholder="Write a comment"
+  submitLabel="Submit"
+/>`}
+      >
+        <div style={{ maxWidth: 820 }}>
+          <SideMenuRichTextInput value={enabledValue} onChange={setEnabledValue} submitLabel="Submit" />
+        </div>
+      </PreviewComponent>
+
+      <PreviewComponent
+        title="Active (With Optional Actions)"
+        code={`<SideMenuRichTextInput
+  state="active"
+  value={value}
+  onChange={setValue}
+  showSecondButton
+  secondButtonLabel="Cancel"
+  showBadgeAi
+  aiButtonLabel="AI"
+  showTableIcons
+  submitLabel="Post update"
+/>`}
+      >
+        <div style={{ maxWidth: 820 }}>
+          <SideMenuRichTextInput
+            state="active"
+            value={activeValue}
+            onChange={setActiveValue}
+            showSecondButton
+            secondButtonLabel="Cancel"
+            showBadgeAi
+            aiButtonLabel="AI"
+            showTableIcons
+            submitLabel="Post update"
+          />
+        </div>
+      </PreviewComponent>
+    </Section>
+  );
+};
 
 const TableCellPage = () => (
   <Section title="TableCell" description="Individual table cell variants used inside the Table organism.">
@@ -5067,24 +5918,215 @@ const DOCUMENT_VIEWER_SAMPLE_TEXT = `1. Milestone Payment Obligation
 10.1 This Agreement may be executed in counterparts, each of which shall be deemed an original and all of which together shall constitute one instrument.`;
 
 const DocumentViewerOrganismPage = () => {
+  const [editablePages, setEditablePages] = useState(() =>
+    DocumentViewer.paginateTextToPages({
+      text: DOCUMENT_VIEWER_SAMPLE_TEXT,
+      maxCharactersPerPage: 700,
+    })
+  );
+  const [editableComments, setEditableComments] = useState({});
+
   return (
     <Section title="DocumentViewer" description="A reusable document review organism with PDF support and text pagination. Vertical scrolling with fixed height container, zoom controls, and PDF export.">
       <PreviewComponent
-        title="PDF File Viewer"
-        code={`import { DocumentViewer } from "@/library/organisms/document-viewer";
+        title="Read-only PDF"
+        code={`import pharmaAgreementPdf from "@/library/organisms/document-viewer/pharma_agreement.pdf";
+import { DocumentViewer } from "@/library/organisms/document-viewer";
 
 <DocumentViewer
-  pdfFile="./library/organisms/document-viewer/pharma_agreement.pdf"
+  pdfFile={pharmaAgreementPdf}
+  editable={false}
+  showEditToolbar={false}
   exportFileName="pharma-agreement"
   defaultZoom={0.8}
 />`}
       >
         <div style={{ minHeight: 700 }}>
           <DocumentViewer
-            pdfFile="./library/organisms/document-viewer/pharma_agreement.pdf"
+            pdfFile={pharmaAgreementPdf}
+            editable={false}
+            showEditToolbar={false}
             exportFileName="pharma-agreement"
             defaultZoom={0.8}
           />
+        </div>
+      </PreviewComponent>
+
+      <PreviewComponent
+        title="Editable Text With Per-page Comments"
+        code={`import { useState } from "react";
+import { DocumentViewer } from "@/library/organisms/document-viewer";
+
+const [pages, setPages] = useState(
+  DocumentViewer.paginateTextToPages({ text: longText, maxCharactersPerPage: 700 })
+);
+const [commentsByPage, setCommentsByPage] = useState({});
+
+<DocumentViewer
+  pages={pages}
+  editable={true}
+  showEditToolbar={true}
+  showPageComments={true}
+  pageComments={commentsByPage}
+  onEditablePagesChange={setPages}
+  onPageCommentChange={(pageKey, value) =>
+    setCommentsByPage((prev) => ({ ...prev, [pageKey]: value }))
+  }
+/>`}
+      >
+        <div style={{ minHeight: 700 }}>
+          <DocumentViewer
+            pages={editablePages}
+            editable
+            showEditToolbar
+            showPageComments
+            pageComments={editableComments}
+            onEditablePagesChange={setEditablePages}
+            onPageCommentChange={(pageKey, value) => {
+              setEditableComments((prev) => ({ ...prev, [pageKey]: value }));
+            }}
+          />
+        </div>
+      </PreviewComponent>
+
+      <PreviewComponent
+        title="Read-only Text"
+        code={`<DocumentViewer
+  text={longText}
+  editable={false}
+  showEditToolbar={false}
+/>`}
+      >
+        <div style={{ minHeight: 700 }}>
+          <DocumentViewer text={DOCUMENT_VIEWER_SAMPLE_TEXT} editable={false} showEditToolbar={false} />
+        </div>
+      </PreviewComponent>
+    </Section>
+  );
+};
+
+const CreationFormPanelPage = () => {
+  const [currentIndex, setCurrentIndex] = useState(2);
+  const totalItems = 5;
+
+  return (
+    <Section title="CreationFormPanel" description="A sticky-header form panel with optional navigation and footer actions for extraction and review flows.">
+      <PreviewComponent
+        title="Creation Flow Panel"
+        code={`import { useState } from "react";
+import { CreationFormPanel } from "@/library/organisms/section/creation-form-panel";
+import { TextInput } from "@/library/molecules/text-input";
+import { Badge } from "@/library/atoms/badge";
+
+const [currentIndex, setCurrentIndex] = useState(2);
+
+<CreationFormPanel
+  title="Review extraction"
+  headerButtons={[
+    {
+      ariaLabel: "Info",
+      variant: "secondary",
+      size: "md",
+      iconLeading: <Icon name="InformationCircle" size="sm" />,
+    },
+  ]}
+  infoMessage="Inaccuracies may occur with AI. Please review carefully."
+  showNavigation
+  navigationTitle="Opportunity name"
+  currentIndex={currentIndex}
+  totalItems={5}
+  onPrevious={() => setCurrentIndex((prev) => Math.max(1, prev - 1))}
+  onNext={() => setCurrentIndex((prev) => Math.min(5, prev + 1))}
+  hasPrevious={currentIndex > 1}
+  hasNext={currentIndex < 5}
+  footerButtons={[
+    { label: "Discard", position: "left", variant: "secondary", color: "secondary-destructive" },
+    { label: "Create", position: "right", variant: "primary" },
+  ]}
+>
+  <CreationFormPanel.Section title="Opportunities" badge={<Badge size="sm">3</Badge>} collapsible={false}>
+    <TextInput label="Opportunity name" isRequired value="NeuroVanta Therapeutics - NVT-101" onChange={() => {}} />
+    <TextInput label="Therapeutic area" value="Oncology" onChange={() => {}} />
+  </CreationFormPanel.Section>
+
+  <CreationFormPanel.Divider />
+
+  <CreationFormPanel.Section title="Additional information" defaultExpanded={false}>
+    <TextInput label="Development phase" value="Phase I" onChange={() => {}} />
+    <TextInput label="Drug type" value="Antibody-Drug Conjugate" onChange={() => {}} />
+  </CreationFormPanel.Section>
+</CreationFormPanel>`}
+      >
+        <div style={{ height: 680 }}>
+          <CreationFormPanel
+            title="Review extraction"
+            headerButtons={[
+              {
+                ariaLabel: "Information",
+                variant: "secondary",
+                size: "md",
+                iconLeading: <Icon name="InformationCircle" size="sm" />,
+              },
+            ]}
+            infoMessage="Inaccuracies may occur with AI. Please review carefully."
+            showNavigation
+            navigationTitle="Opportunity name"
+            currentIndex={currentIndex}
+            totalItems={totalItems}
+            onPrevious={() => setCurrentIndex((prev) => Math.max(1, prev - 1))}
+            onNext={() => setCurrentIndex((prev) => Math.min(totalItems, prev + 1))}
+            hasPrevious={currentIndex > 1}
+            hasNext={currentIndex < totalItems}
+            footerButtons={[
+              {
+                label: "Discard",
+                variant: "secondary",
+                color: "secondary-destructive",
+                position: "left",
+              },
+              {
+                label: "Create",
+                variant: "primary",
+                position: "right",
+              },
+            ]}
+          >
+            <CreationFormPanel.Section
+              title="Opportunities"
+              badge={<Badge size="sm">3</Badge>}
+              collapsible={false}
+            >
+              <TextInput
+                label="Opportunity name"
+                isRequired
+                value="NeuroVanta Therapeutics - NVT-101"
+                onChange={() => {}}
+              />
+              <TextInput
+                label="Therapeutic area"
+                value="Oncology"
+                onChange={() => {}}
+              />
+            </CreationFormPanel.Section>
+
+            <CreationFormPanel.Divider />
+
+            <CreationFormPanel.Section
+              title="Additional information"
+              defaultExpanded={false}
+            >
+              <TextInput
+                label="Development phase"
+                value="Phase I"
+                onChange={() => {}}
+              />
+              <TextInput
+                label="Drug type"
+                value="Antibody-Drug Conjugate"
+                onChange={() => {}}
+              />
+            </CreationFormPanel.Section>
+          </CreationFormPanel>
         </div>
       </PreviewComponent>
     </Section>
@@ -6394,16 +7436,19 @@ const PAGES = {
   checkbox: { title: "Checkbox", component: CheckboxPage, category: "atoms" },
   toggle: { title: "Toggle", component: TogglePage, category: "atoms" },
   icon: { title: "Icon", component: IconPage, category: "atoms" },
+  colors: { title: "Colors", component: ColorsPage, category: "atoms" },
   chip: { title: "Chip", component: ChipPage, category: "atoms" },
   radioButton: { title: "RadioButton", component: RadioButtonPage, category: "atoms" },
   link: { title: "Link", component: LinkPage, category: "atoms" },
   tooltip: { title: "Tooltip", component: TooltipPage, category: "atoms" },
   buttonBadge: { title: "ButtonBadge", component: ButtonBadgePage, category: "atoms" },
   aiButton: { title: "AiButton", component: AiButtonPage, category: "atoms" },
+  progressIndicator: { title: "ProgressIndicator", component: ProgressIndicatorPage, category: "atoms" },
   step: { title: "Step", component: StepAtomPage, category: "atoms" },
   // Molecules
   datePicker: { title: "DatePicker", component: DatePickerPage, category: "molecules" },
   richTextInput: { title: "RichTextInput", component: RichTextInputPage, category: "molecules" },
+  richTextEditToolbars: { title: "RichTextEditToolbars", component: RichTextEditToolbarsPage, category: "molecules" },
   search: { title: "Search", component: SearchPage, category: "molecules" },
   tabs: { title: "Tabs", component: TabsPage, category: "molecules" },
   accordion: { title: "Accordion", component: AccordionPage, category: "molecules" },
@@ -6427,6 +7472,7 @@ const PAGES = {
   attachment: { title: "Attachment", component: AttachmentPage, category: "molecules" },
   fileUploader: { title: "FileUploader", component: FileUploaderPage, category: "molecules" },
   emptyState: { title: "EmptyState", component: EmptyStatePage, category: "molecules" },
+  expandableText: { title: "ExpandableText", component: ExpandableTextPage, category: "molecules" },
   aiChatInput: { title: "AiChatInput", component: AiChatInputPage, category: "molecules" },
   toast: { title: "Toast", component: ToastPage, category: "molecules" },
   // Organisms
@@ -6439,7 +7485,10 @@ const PAGES = {
   table: { title: "Table", component: TablePage, category: "organisms" },
   objectHeader: { title: "ObjectHeader", component: ObjectHeaderPage, category: "organisms" },
   hubHeader: { title: "HubHeader", component: HubHeaderPage, category: "organisms" },
+  statusUpdate: { title: "StatusUpdate", component: StatusUpdatePage, category: "organisms" },
+  sideMenuRichTextInput: { title: "SideMenuRichTextInput", component: SideMenuRichTextInputPage, category: "organisms" },
   filterPanel: { title: "FilterPanel", component: FilterPanelPage, category: "organisms" },
+  creationFormPanel: { title: "CreationFormPanel", component: CreationFormPanelPage, category: "organisms" },
   documentViewer: { title: "DocumentViewer", component: DocumentViewerOrganismPage, category: "organisms" },
   paginationOrganism: { title: "Pagination (Organism)", component: PaginationOrganismPage, category: "organisms" },
   tableCellInlineEdit: { title: "TableCell — Inline Edit", component: TableCellInlineEditPage, category: "organisms" },
@@ -6452,87 +7501,172 @@ const PAGES = {
   aiHomepageTemplate: { title: "AiHomepage", component: AiHomepageTemplatePage, category: "templates" },
 };
 
+const PAGE_SECTIONS = [
+  { title: "Atoms", category: "atoms" },
+  { title: "Molecules", category: "molecules" },
+  { title: "Organisms", category: "organisms" },
+  { title: "Templates", category: "templates" },
+];
+
+const PAGE_ICON_MAP = {
+  button: "CursorArrowRays",
+  badge: "Tag",
+  avatar: "UserCircle",
+  checkbox: "CheckCircle",
+  toggle: "AdjustmentsHorizontal",
+  icon: "Sparkles",
+  colors: "DocumentText",
+  chip: "RectangleStack",
+  radioButton: "ListBullet",
+  link: "Link",
+  tooltip: "ChatBubbleLeftRight",
+  buttonBadge: "RectangleGroup",
+  search: "MagnifyingGlass",
+  tabs: "Squares2X2",
+  accordion: "Bars3BottomLeft",
+  textInput: "PencilSquare",
+  textarea: "DocumentText",
+  dropdownMenuItem: "QueueList",
+  stepper: "ArrowTrendingUp",
+  radioCard: "CreditCard",
+  pagination: "ChevronDoubleRight",
+  infobox: "InformationCircle",
+  buttonGroup: "ViewColumns",
+  avatarGroup: "UserGroup",
+  chipInput: "Tag",
+  dialog: "ChatBubbleLeftRight",
+  dropdownMenu: "EllipsisVertical",
+  dropdownList: "ListBullet",
+  subinfo: "InformationCircle",
+  infofield: "DocumentText",
+  miniInfobox: "ExclamationCircle",
+  attachment: "PaperClip",
+  fileUploader: "ArrowUpTray",
+  emptyState: "DocumentText",
+  aiChatInput: "ChatBubbleLeftRight",
+  toast: "InformationCircle",
+  sideMenu: "Bars3",
+  modal: "Square2Stack",
+  table: "TableCells",
+  objectHeader: "DocumentText",
+  hubHeader: "RectangleGroup",
+  filterPanel: "Funnel",
+  creationFormPanel: "RectangleStack",
+  documentViewer: "DocumentText",
+  paginationOrganism: "ChevronDoubleRight",
+  hubTemplate: "ViewColumns",
+  objectPageTemplate: "Document",
+  documentViewerPageTemplate: "DocumentDuplicate",
+  sidePanelTemplate: "RectangleStack",
+  aiHomepageTemplate: "Sparkles",
+  step: "ArrowTrendingUp",
+  datePicker: "Calendar",
+  richTextInput: "PencilSquare",
+  richTextEditToolbars: "Bars3BottomLeft",
+  sideMenuRichTextInput: "PencilSquare",
+  sideMenuItem: "Bars3",
+  userButton: "UserCircle",
+  tableCell: "TableCells",
+  tableCellInlineEdit: "PencilSquare",
+  tableCellInlineEditTable: "TableCells",
+};
+
+const getIconForPage = (pageKey) => PAGE_ICON_MAP[pageKey] || "DocumentText";
+
+const LIBRARY_BASE_PATH = "/library";
+
+const getPageFromPathname = (pathname) => {
+  if (!pathname || !pathname.startsWith(`${LIBRARY_BASE_PATH}/`)) {
+    return null;
+  }
+
+  const routeSegment = pathname.slice(`${LIBRARY_BASE_PATH}/`.length).toLowerCase();
+  if (!routeSegment) {
+    return null;
+  }
+
+  return Object.keys(PAGES).find((key) => key.toLowerCase() === routeSegment) || null;
+};
+
+const getLibraryRouteForPage = (pageKey) => `${LIBRARY_BASE_PATH}/${pageKey.toLowerCase()}`;
+
+const matchesPageQuery = (query, key, page) =>
+  page.title.toLowerCase().includes(query) ||
+  page.category.toLowerCase().includes(query) ||
+  key.toLowerCase().includes(query);
+
+const groupEntriesByCategory = (entries) =>
+  entries.reduce((accumulator, [key, page]) => {
+    if (!accumulator[page.category]) accumulator[page.category] = [];
+    accumulator[page.category].push([key, page]);
+    return accumulator;
+  }, {});
+
+const buildSectionItems = ({ entries, activePage, setActivePage }) =>
+  entries.map(([key, page]) => ({
+    label: page.title,
+    iconName: getIconForPage(key),
+    state: activePage === key ? "active" : "enabled",
+    onClick: () => setActivePage(key),
+  }));
+
 // ─────────────────────────────────────────────
 // MAIN COMPONENT
 // ─────────────────────────────────────────────
 
 export const ComponentLibraryDemo = () => {
-  const [activePage, setActivePage] = useState("button");
+  const [activePage, setActivePage] = useState(() => getPageFromPathname(window.location.pathname) || "button");
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Filter pages based on search query
-  const filterPages = (pages) => {
-    if (!searchQuery.trim()) return pages;
-    const query = searchQuery.toLowerCase();
-    return Object.entries(pages)
-      .filter(([key, page]) =>
-        page.title.toLowerCase().includes(query) ||
-        page.category.toLowerCase().includes(query) ||
-        key.toLowerCase().includes(query)
-      )
-      .reduce((acc, [key, page]) => {
-        acc[key] = page;
-        return acc;
-      }, {});
-  };
+  useEffect(() => {
+    const handlePopState = () => {
+      const routePage = getPageFromPathname(window.location.pathname);
+      setActivePage(routePage || "button");
+    };
 
-  const filteredPages = filterPages(PAGES);
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
 
-  const sections = [
-    {
-      title: "Atoms",
-      items: Object.entries(filteredPages)
-        .filter(([, page]) => page.category === "atoms")
-        .map(([key, page]) => ({
-          label: page.title,
-          iconName: getIconForPage(key),
-          state: activePage === key ? "active" : "enabled",
-          onClick: () => setActivePage(key),
-        })),
-    },
-    {
-      title: "Molecules",
-      dividerBefore: true,
-      items: Object.entries(filteredPages)
-        .filter(([, page]) => page.category === "molecules")
-        .map(([key, page]) => ({
-          label: page.title,
-          iconName: getIconForPage(key),
-          state: activePage === key ? "active" : "enabled",
-          onClick: () => setActivePage(key),
-        })),
-    },
-    {
-      title: "Organisms",
-      dividerBefore: true,
-      items: Object.entries(filteredPages)
-        .filter(([, page]) => page.category === "organisms")
-        .map(([key, page]) => ({
-          label: page.title,
-          iconName: getIconForPage(key),
-          state: activePage === key ? "active" : "enabled",
-          onClick: () => setActivePage(key),
-        })),
-    },
-    {
-      title: "Templates",
-      dividerBefore: true,
-      items: Object.entries(filteredPages)
-        .filter(([, page]) => page.category === "templates")
-        .map(([key, page]) => ({
-          label: page.title,
-          iconName: getIconForPage(key),
-          state: activePage === key ? "active" : "enabled",
-          onClick: () => setActivePage(key),
-        })),
-    },
-  ].filter(section => section.items.length > 0);
+  useEffect(() => {
+    const targetPath = getLibraryRouteForPage(activePage);
+    if (window.location.pathname !== targetPath) {
+      window.history.pushState({}, "", targetPath);
+    }
+  }, [activePage]);
 
-  const CurrentPage = PAGES[activePage]?.component || ButtonPage;
-  const fullBleed = Boolean(PAGES[activePage]?.fullBleed);
+  const filteredEntries = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return Object.entries(PAGES);
+
+    return Object.entries(PAGES).filter(([key, page]) => matchesPageQuery(query, key, page));
+  }, [searchQuery]);
+
+  const entriesByCategory = useMemo(() => groupEntriesByCategory(filteredEntries), [filteredEntries]);
+
+  const sections = useMemo(
+    () =>
+      PAGE_SECTIONS
+        .map((section, sectionIndex) => {
+          const entries = entriesByCategory[section.category] || [];
+          const items = buildSectionItems({ entries, activePage, setActivePage });
+
+          return {
+            title: section.title,
+            dividerBefore: sectionIndex > 0,
+            items,
+          };
+        })
+        .filter((section) => section.items.length > 0),
+    [entriesByCategory, activePage]
+  );
+
+  const selectedPage = PAGES[activePage];
+  const CurrentPage = selectedPage?.component || ButtonPage;
+  const fullBleed = Boolean(selectedPage?.fullBleed);
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "var(--color-general-neutral-light)" }}>
+    <div style={APP_SHELL_STYLE}>
       {/* Side Menu */}
       <SideMenu
         variant="collapsed"
@@ -6547,19 +7681,15 @@ export const ComponentLibraryDemo = () => {
         onSearchChange={setSearchQuery}
         searchPlaceholder="Search components..."
         sections={sections}
-        user={{
-          name: "Developer",
-          email: "dev@eureka.design",
-          avatarInitials: "EU",
-        }}
+        user={SIDE_MENU_USER}
       />
 
       {/* Main Content */}
-      <main style={{ flex: 1, marginLeft: 80, overflow: "auto", padding: fullBleed ? 0 : 48 }}>
+      <main style={{ ...MAIN_CONTENT_STYLE, padding: fullBleed ? 0 : 48 }}>
         {fullBleed ? (
           <CurrentPage />
         ) : (
-          <div style={{ maxWidth: 1000, margin: "0 auto" }}>
+          <div style={MAIN_CONTENT_INNER_STYLE}>
             <CurrentPage />
           </div>
         )}
@@ -6567,68 +7697,5 @@ export const ComponentLibraryDemo = () => {
     </div>
   );
 };
-
-// Helper function to get icons for pages
-function getIconForPage(pageKey) {
-  const iconMap = {
-    button: "CursorArrowRays",
-    badge: "Tag",
-    avatar: "UserCircle",
-    checkbox: "CheckCircle",
-    toggle: "AdjustmentsHorizontal",
-    icon: "Sparkles",
-    chip: "RectangleStack",
-    radioButton: "ListBullet",
-    link: "Link",
-    tooltip: "ChatBubbleLeftRight",
-    buttonBadge: "RectangleGroup",
-    search: "MagnifyingGlass",
-    tabs: "Squares2X2",
-    accordion: "Bars3BottomLeft",
-    textInput: "PencilSquare",
-    textarea: "DocumentText",
-    dropdownMenuItem: "QueueList",
-    stepper: "ArrowTrendingUp",
-    radioCard: "CreditCard",
-    pagination: "ChevronDoubleRight",
-    infobox: "InformationCircle",
-    buttonGroup: "ViewColumns",
-    avatarGroup: "UserGroup",
-    chipInput: "Tag",
-    dialog: "ChatBubbleLeftRight",
-    dropdownMenu: "EllipsisVertical",
-    dropdownList: "ListBullet",
-    subinfo: "InformationCircle",
-    infofield: "DocumentText",
-    miniInfobox: "ExclamationCircle",
-    attachment: "PaperClip",
-    fileUploader: "ArrowUpTray",
-    emptyState: "DocumentText",
-    aiChatInput: "ChatBubbleLeftRight",
-    toast: "InformationCircle",
-    sideMenu: "Bars3",
-    modal: "Square2Stack",
-    table: "TableCells",
-    objectHeader: "DocumentText",
-    hubHeader: "RectangleGroup",
-    filterPanel: "Funnel",
-    documentViewer: "DocumentText",
-    paginationOrganism: "ChevronDoubleRight",
-    hubTemplate: "ViewColumns",
-    objectPageTemplate: "Document",
-    documentViewerPageTemplate: "DocumentDuplicate",
-    sidePanelTemplate: "RectangleStack",
-    aiHomepageTemplate: "Sparkles",
-    step: "ArrowTrendingUp",
-    datePicker: "Calendar",
-    richTextInput: "PencilSquare",
-    sideMenuItem: "Bars3",
-    userButton: "UserCircle",
-    tableCell: "TableCells",
-    tableCellInlineEdit: "PencilSquare",
-    tableCellInlineEditTable: "TableCells",
-  };
-  return iconMap[pageKey] || "DocumentText";
-}
 
 export default ComponentLibraryDemo;

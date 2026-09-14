@@ -1,510 +1,850 @@
-﻿import { useState, useRef, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Button } from "../../library/atoms/button.jsx";
-import { Infobox } from "../../library/molecules/infobox.jsx";
-import { TextInput } from "../../library/molecules/text-input.jsx";
-import { DropdownList, DropdownListItem } from "../../library/molecules/dropdown-list.jsx";
 import { Icon } from "../../library/atoms/icon.jsx";
+import { Toggle } from "../../library/atoms/toggle.jsx";
+import { Badge } from "../../library/atoms/badge.jsx";
+import { Chip } from "../../library/atoms/chip.jsx";
+import { Tooltip } from "../../library/atoms/tooltip.jsx";
+import { TextInput } from "../../library/molecules/text-input.jsx";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuSection,
+  DropdownMenuTrigger,
+} from "../../library/molecules/dropdown-menu.jsx";
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// MOCK DATA
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-const DATA_SOURCES = [
-  { value: "clarivate", label: "Clarivate" },
-  { value: "cortellis", label: "Cortellis" },
-  { value: "evaluate", label: "Evaluate Pharma" },
-];
-
-const ASSETS_BY_SOURCE = {
-  clarivate: [
-    { value: "tipifarnib", label: "Tipifarnib" },
-    { value: "selumetinib", label: "Selumetinib" },
-  ],
-  cortellis: [
-    { value: "inavolisib", label: "Inavolisib" },
-    { value: "adagrasib", label: "Adagrasib" },
-  ],
-  evaluate: [
-    { value: "sotorasib", label: "Sotorasib" },
-    { value: "osimertinib", label: "Osimertinib" },
-  ],
+const REFRESH_META = {
+  lastRefreshed: "Jul 3, 2024",
+  comparedWith: "Jun 12, 2024",
 };
 
-const COMPANIES_SINGLE = [
-  { value: "chameleon", label: "Chameleon Development Lic", subinfo: "2 opportunities Â· United States" },
+const BASE_ASSETS = [
+  {
+    id: "ast-001",
+    assetTitle: "ALX-201",
+    assetClass: "Small molecule",
+    owner: "Oncology",
+    region: "NA",
+    confidence: 95,
+    fieldSources: {
+      activeCompany: { provider: "EDGAR", refreshedAt: "Jul 3, 2024" },
+      target: { provider: "ClinicalTrials.gov", refreshedAt: "Jul 3, 2024" },
+      developmentPhase: { provider: "Pipeline DB", refreshedAt: "Jul 3, 2024" },
+      clinicalIndications: { provider: "Reg tracker", refreshedAt: "Jul 3, 2024" },
+    },
+    baseline: {
+      asset: "ALX-201",
+      activeCompany: "Aurelia Therapeutics",
+      otherNames: "AX201",
+      developmentPhase: "Phase 2",
+      drugType: "Kinase inhibitor",
+      mechanismOfAction: "Selective JAK pathway inhibition",
+      target: "JAK1",
+      clinicalIndications: "Rheumatoid arthritis",
+    },
+    refreshed: {
+      asset: "ALX-201",
+      activeCompany: "Aurelia Therapeutics",
+      otherNames: "AX201",
+      developmentPhase: "Phase 3",
+      drugType: "Kinase inhibitor",
+      mechanismOfAction: "Selective JAK pathway inhibition",
+      target: "JAK1",
+      clinicalIndications: "Rheumatoid arthritis",
+    },
+  },
+  {
+    id: "ast-002",
+    assetTitle: "NRV-88",
+    assetClass: "Biologic",
+    owner: "Neuro",
+    region: "EU",
+    confidence: 90,
+    fieldSources: {
+      activeCompany: { provider: "Company filing", refreshedAt: "Jul 3, 2024" },
+      target: { provider: "PubMed graph", refreshedAt: "Jul 3, 2024" },
+      mechanismOfAction: { provider: "Research note", refreshedAt: "Jul 3, 2024" },
+    },
+    baseline: {
+      asset: "NRV-88",
+      activeCompany: "NordRiver Biotech",
+      otherNames: "Nervion-88",
+      developmentPhase: "Phase 1",
+      drugType: "Monoclonal antibody",
+      mechanismOfAction: "IL-17 neutralization",
+      target: "IL-17A",
+      clinicalIndications: "Psoriasis",
+    },
+    refreshed: {
+      asset: "NRV-88",
+      activeCompany: "NordRiver Biotech",
+      otherNames: "Nervion-88",
+      developmentPhase: "Phase 1",
+      drugType: "Monoclonal antibody",
+      mechanismOfAction: "IL-17A neutralization",
+      target: "IL-17A",
+      clinicalIndications: "Psoriasis",
+    },
+  },
+  {
+    id: "ast-003",
+    assetTitle: "CRX-410",
+    assetClass: "Cell therapy",
+    owner: "Immunology",
+    region: "Global",
+    confidence: 82,
+    fieldSources: {
+      activeCompany: { provider: "Partner portal", refreshedAt: "Jul 3, 2024" },
+      developmentPhase: { provider: "Pipeline DB", refreshedAt: "Jul 3, 2024" },
+      target: { provider: "Mechanism index", refreshedAt: "Jul 3, 2024" },
+    },
+    baseline: {
+      asset: "CRX-410",
+      activeCompany: "Coraxis Labs",
+      otherNames: "CRX410",
+      developmentPhase: "Preclinical",
+      drugType: "CAR-T",
+      mechanismOfAction: "Autologous T-cell expansion",
+      target: "CD19",
+      clinicalIndications: "B-cell lymphoma",
+    },
+    refreshed: {
+      asset: "CRX-410",
+      activeCompany: "Coraxis Labs",
+      otherNames: "CRX410",
+      developmentPhase: "Phase 1",
+      drugType: "CAR-T",
+      mechanismOfAction: "Autologous T-cell expansion",
+      target: "CD19",
+      clinicalIndications: "B-cell lymphoma",
+    },
+  },
+  {
+    id: "ast-004",
+    assetTitle: "MTR-12",
+    assetClass: "Peptide",
+    owner: "Metabolic",
+    region: "APAC",
+    confidence: 86,
+    fieldSources: {
+      activeCompany: { provider: "Exchange feed", refreshedAt: "Jul 3, 2024" },
+      clinicalIndications: { provider: "Medical taxonomy", refreshedAt: "Jul 3, 2024" },
+      target: { provider: "Target DB", refreshedAt: "Jul 3, 2024" },
+    },
+    baseline: {
+      asset: "MTR-12",
+      activeCompany: "Mitratech Pharma",
+      otherNames: "Metra-12",
+      developmentPhase: "Phase 2",
+      drugType: "GLP-1 analog",
+      mechanismOfAction: "Incretin receptor agonism",
+      target: "GLP-1R",
+      clinicalIndications: "Type 2 diabetes",
+    },
+    refreshed: {
+      asset: "MTR-12",
+      activeCompany: "Mitratech Pharma",
+      otherNames: "",
+      developmentPhase: "Phase 2",
+      drugType: "GLP-1 analog",
+      mechanismOfAction: "Incretin receptor agonism",
+      target: "GLP-1R",
+      clinicalIndications: "Type 2 diabetes",
+    },
+  },
+  {
+    id: "ast-005",
+    assetTitle: "QBX-7",
+    assetClass: "Antisense",
+    owner: "Rare disease",
+    region: "LATAM",
+    confidence: 79,
+    fieldSources: {
+      activeCompany: { provider: "Private data room", refreshedAt: "Jul 3, 2024" },
+      target: { provider: "Target DB", refreshedAt: "Jul 3, 2024" },
+      clinicalIndications: { provider: "ClinicalTrials.gov", refreshedAt: "Jul 3, 2024" },
+    },
+    baseline: {
+      asset: "QBX-7",
+      activeCompany: "Qubex Life Sciences",
+      otherNames: "QubeX7",
+      developmentPhase: "Phase 1",
+      drugType: "Antisense oligonucleotide",
+      mechanismOfAction: "RNA splicing modulation",
+      target: "SMN2",
+      clinicalIndications: "Spinal muscular atrophy",
+    },
+    refreshed: {
+      asset: "QBX-7",
+      activeCompany: "Qubex Life Sciences",
+      otherNames: "QubeX7",
+      developmentPhase: "Phase 1",
+      drugType: "Antisense oligonucleotide",
+      mechanismOfAction: "RNA splicing modulation",
+      target: "SMN2",
+      clinicalIndications: "Spinal muscular atrophy, pediatric",
+    },
+  },
 ];
 
-const COMPANIES_MULTIPLE = [
-  { value: "chameleon", label: "Chameleon Development Lic", subinfo: "2 opportunities Â· United States" },
-  { value: "expression", label: "Expression Therapeutics", subinfo: "2 opportunities Â· UK" },
-  { value: "novartis", label: "Novartis", subinfo: "1 opportunity Â· Switzerland" },
+const DETAIL_FIELDS = [
+  "asset",
+  "activeCompany",
+  "otherNames",
+  "developmentPhase",
+  "drugType",
+  "mechanismOfAction",
+  "target",
+  "clinicalIndications",
 ];
 
-const COMPANIES_BY_SOURCE = {
-  clarivate: COMPANIES_SINGLE,
-  cortellis: COMPANIES_MULTIPLE,
-  evaluate: COMPANIES_MULTIPLE,
+const FIELD_LABELS = {
+  asset: "Asset",
+  activeCompany: "Active company",
+  otherNames: "Other names",
+  developmentPhase: "Development phase",
+  drugType: "Drug type",
+  mechanismOfAction: "Mechanism of action",
+  target: "Target",
+  clinicalIndications: "Clinical indications",
 };
 
-const INITIATIVES = [
-  { value: "oncology-2025", label: "Oncology 2025" },
-  { value: "rare-disease", label: "Rare Disease" },
-  { value: "neurology", label: "Neurology" },
-];
+const styles = {
+  mutedText: {
+    margin: 0,
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-sm)",
+    color: "var(--color-content-secondary)",
+  },
+  card: {
+    background: "var(--color-general-white)",
+    borderRadius: "var(--radius-lg)",
+    border: "1px solid var(--color-action-outline-secondary-enabled)",
+    boxShadow: "var(--shadow-medium-down)",
+  },
+};
 
-let lastUsedInitiative = INITIATIVES[0];
+const getFieldChange = (baselineValue, currentValue) => {
+  const before = baselineValue || "";
+  const after = currentValue || "";
+  if (before === after) return { changed: false, type: null };
+  if (!before && after) return { changed: true, type: "added" };
+  if (before && !after) return { changed: true, type: "removed" };
+  return { changed: true, type: "updated" };
+};
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// FIELD LABEL
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+const toWorkspaceAsset = (asset, hasComparison) => {
+  const fieldChanges = DETAIL_FIELDS.reduce((acc, key) => {
+    const change = getFieldChange(asset.baseline[key], asset.refreshed[key]);
+    acc[key] = change;
+    return acc;
+  }, {});
 
-function FieldLabel({ children, isRequired }) {
+  const changedKeys = DETAIL_FIELDS.filter((key) => fieldChanges[key].changed);
+
+  return {
+    ...asset,
+    display: hasComparison ? asset.refreshed : asset.baseline,
+    changedKeys,
+    fieldChanges,
+    hasChanges: hasComparison && changedKeys.length > 0,
+  };
+};
+
+const changeBadge = (type) => {
+  if (type === "added") return <Badge color="positive" size="xs">+ Added</Badge>;
+  if (type === "removed") return <Badge color="negative" size="xs">- Removed</Badge>;
+  if (type === "updated") return <Badge color="warning" size="xs">Updated</Badge>;
+  return null;
+};
+
+const SourceIndicator = ({ source }) => {
+  if (!source) return null;
   return (
-    <label style={{
-      fontFamily: "var(--font-family-primary)",
-      fontSize: "var(--text-body-sm)",
-      color: "var(--color-content-secondary)",
-    }}>
-      {children}
-      {isRequired && <span style={{ color: "var(--color-content-negative)", marginLeft: 2 }}>*</span>}
-    </label>
-  );
-}
-
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// GENERIC DROPDOWN FIELD (source, asset, initiative)
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-function DropdownField({ label, isRequired, placeholder, value, icon, open, onToggle, onClose, children, disabled }) {
-  const ref = useRef(null);
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) onClose(); };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [open, onClose]);
-
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-xs)", position: "relative" }} ref={ref}>
-      {label && <FieldLabel isRequired={isRequired}>{label}</FieldLabel>}
-      <button
-        type="button"
-        disabled={disabled}
-        onClick={onToggle}
+    <Tooltip content={`${source.provider} · Refreshed ${source.refreshedAt}`}>
+      <span
         style={{
-          display: "flex", alignItems: "center", gap: "var(--spacing-sm)",
-          padding: "var(--spacing-sm) var(--spacing-md)",
-          background: "var(--color-general-white)",
-          border: `1px solid ${open ? "var(--color-content-brand)" : "var(--color-action-outline-secondary-enabled)"}`,
-          borderRadius: "var(--radius-md)",
-          cursor: disabled ? "not-allowed" : "pointer",
-          fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-md)",
-          color: value ? "var(--color-content-primary)" : "var(--color-content-tertiary)",
-          width: "100%", textAlign: "left", boxSizing: "border-box", minHeight: 40,
-          opacity: disabled ? 0.5 : 1,
+          display: "inline-flex",
+          alignItems: "center",
+          color: "var(--color-content-secondary)",
         }}
       >
-        {icon && <span style={{ display: "flex", alignItems: "center", flexShrink: 0, color: "var(--color-content-secondary)" }}>{icon}</span>}
-        <span style={{ flex: 1 }}>{value || placeholder}</span>
-        <span style={{ display: "flex", alignItems: "center", color: "var(--color-content-secondary)" }}>
-          <Icon name="ChevronDown" size="sm" />
-        </span>
-      </button>
-      {open && (
-        <div style={{
-          position: "absolute", zIndex: 100, top: "100%", left: 0, right: 0, marginTop: 4,
-          background: "var(--color-general-white)",
-          border: "1px solid var(--color-action-outline-secondary-enabled)",
-          borderRadius: "var(--radius-md)", boxShadow: "var(--shadow-button-hover)", overflow: "hidden",
-        }}>
-          {children}
-        </div>
-      )}
-    </div>
+        <Icon name="InformationCircle" size={14} />
+      </span>
+    </Tooltip>
   );
-}
+};
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// COMPANY FIELD
-// single: chevron trigger + search inside popover
-// multiple: search-input trigger + list in popover
-// "Create new company" always visible; clicking it pre-fills "New company"
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+const TableValueWithSource = ({ value, source, showSources }) => (
+  <div style={{ display: "inline-flex", alignItems: "center", gap: "var(--spacing-xxs)" }}>
+    <span>{value || "-"}</span>
+    {showSources && <SourceIndicator source={source} />}
+  </div>
+);
 
-function CompanyField({ label, isRequired, companies, value, onSelect, onCreate, disabled }) {
-  const ref = useRef(null);
-  const inputRef = useRef(null);
-  const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const [creatingMode, setCreatingMode] = useState(false); // true after "Create new company" clicked
-
-  const isSingle = companies.length === 1;
-
-  const filtered = search.trim()
-    ? companies.filter((c) => c.label.toLowerCase().includes(search.trim().toLowerCase()))
-    : companies;
-
-  const createLabel = creatingMode && search.trim()
-    ? `Create new company "${search.trim()}"`
-    : "Create new company";
+export default function AddToDealPage() {
+  const [isNarrow, setIsNarrow] = useState(false);
+  const [hasComparison, setHasComparison] = useState(false);
+  const [showSources, setShowSources] = useState(false);
+  const [highlightChanges, setHighlightChanges] = useState(false);
+  const [showChangedRowsOnly, setShowChangedRowsOnly] = useState(false);
+  const [showChangedFieldsOnly, setShowChangedFieldsOnly] = useState(false);
+  const [showHiddenUnchanged, setShowHiddenUnchanged] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
+  const [summaryVisible, setSummaryVisible] = useState(true);
+  const [selectedId, setSelectedId] = useState(BASE_ASSETS[0].id);
 
   useEffect(() => {
-    if (!open) return;
-    const handler = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) {
-        setOpen(false);
-        setSearch("");
-        setCreatingMode(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [open]);
+    if (typeof window === "undefined") return undefined;
+    const onResize = () => setIsNarrow(window.innerWidth < 1280);
+    onResize();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
-  const handleSelect = (c) => {
-    onSelect(c);
-    setSearch("");
-    setCreatingMode(false);
-    setOpen(false);
-  };
+  const assets = useMemo(() => BASE_ASSETS.map((asset) => toWorkspaceAsset(asset, hasComparison)), [hasComparison]);
+  const changedCount = useMemo(() => assets.filter((asset) => asset.hasChanges).length, [assets]);
 
-  const handleCreateClick = () => {
-    if (creatingMode && search.trim()) {
-      // Confirm creation
-      onCreate(search.trim());
-      setSearch("");
-      setCreatingMode(false);
-      setOpen(false);
-    } else {
-      // Enter creation mode: clear selection, clear input, focus with placeholder
-      onSelect(null);
-      setCreatingMode(true);
-      setSearch("");
-      setTimeout(() => {
-        const el = inputRef.current;
-        if (el) { el.focus(); }
-      }, 0);
+  const filteredRows = useMemo(() => {
+    const q = searchValue.trim().toLowerCase();
+    return assets
+      .filter((asset) => !showChangedRowsOnly || asset.hasChanges)
+      .filter((asset) => {
+        if (!q) return true;
+        return (
+          asset.assetTitle.toLowerCase().includes(q) ||
+          asset.owner.toLowerCase().includes(q) ||
+          asset.region.toLowerCase().includes(q)
+        );
+      });
+  }, [assets, searchValue, showChangedRowsOnly]);
+
+  useEffect(() => {
+    if (!filteredRows.length) return;
+    if (!filteredRows.some((row) => row.id === selectedId)) {
+      setSelectedId(filteredRows[0].id);
+    }
+  }, [filteredRows, selectedId]);
+
+  const selectedAsset = useMemo(
+    () => filteredRows.find((row) => row.id === selectedId) || assets.find((row) => row.id === selectedId) || null,
+    [assets, filteredRows, selectedId]
+  );
+
+  const detailRows = useMemo(() => {
+    if (!selectedAsset) return [];
+    return DETAIL_FIELDS.map((fieldKey) => {
+      const change = selectedAsset.fieldChanges[fieldKey];
+      return {
+        fieldKey,
+        label: FIELD_LABELS[fieldKey],
+        baselineValue: selectedAsset.baseline[fieldKey],
+        currentValue: selectedAsset.display[fieldKey],
+        source: selectedAsset.fieldSources[fieldKey],
+        changed: selectedAsset.hasChanges && change.changed,
+        type: change.type,
+      };
+    });
+  }, [selectedAsset]);
+
+  const changedDetailRows = useMemo(() => detailRows.filter((row) => row.changed), [detailRows]);
+  const unchangedDetailRows = useMemo(() => detailRows.filter((row) => !row.changed), [detailRows]);
+
+  const visibleDetailRows = useMemo(() => {
+    if (!showChangedFieldsOnly) return detailRows;
+    if (showHiddenUnchanged) return [...changedDetailRows, ...unchangedDetailRows];
+    return changedDetailRows;
+  }, [detailRows, changedDetailRows, unchangedDetailRows, showChangedFieldsOnly, showHiddenUnchanged]);
+
+  const runRefresh = () => {
+    const firstComparison = !hasComparison;
+    setHasComparison(true);
+    setSummaryVisible(true);
+    if (firstComparison) {
+      setHighlightChanges(true);
     }
   };
 
-  // Shared popover list + create button
-  const popoverContent = (
-    <>
-      {/* For single-company: show search input inside popover */}
-      {isSingle && (
-        <div style={{ padding: "var(--spacing-sm)", borderBottom: "1px solid var(--color-action-outline-secondary-enabled)" }}>
-          <input
-            ref={inputRef}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={creatingMode ? "Enter new company name" : "Search or type new company name"}
-            style={{
-              width: "100%", boxSizing: "border-box",
-              border: "1px solid var(--color-action-outline-secondary-enabled)",
-              borderRadius: "var(--radius-md)",
-              padding: "var(--spacing-xs) var(--spacing-sm)",
-              fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-md)",
-              color: "var(--color-content-primary)", outline: "none",
-            }}
-          />
-        </div>
-      )}
-      <DropdownList noSearch addLabel={createLabel} onAdd={handleCreateClick}>
-        <DropdownList.Section>
-          {filtered.map((c) => (
-            <DropdownListItem
-              key={c.value} value={c.value} noCheckbox
-              active={value?.value === c.value} subinfo={c.subinfo}
-              onChange={() => handleSelect(c)}
-            >
-              {c.label}
-            </DropdownListItem>
-          ))}
-        </DropdownList.Section>
-      </DropdownList>
-    </>
-  );
-
-  const popover = (
-    <div style={{
-      position: "absolute", zIndex: 100, top: "100%", left: 0, right: 0, marginTop: 4,
-      background: "var(--color-general-white)",
-      border: "1px solid var(--color-action-outline-secondary-enabled)",
-      borderRadius: "var(--radius-md)", boxShadow: "var(--shadow-button-hover)", overflow: "hidden",
-    }}>
-      {popoverContent}
-    </div>
-  );
-
-  // â”€â”€ Single: standard chevron trigger â”€â”€
-  if (isSingle) {
-    return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-xs)", position: "relative" }} ref={ref}>
-        {label && <FieldLabel isRequired={isRequired}>{label}</FieldLabel>}
-        <button
-          type="button" disabled={disabled}
-          onClick={() => {
-            const next = !open;
-            setOpen(next);
-            if (next) setTimeout(() => inputRef.current?.focus(), 0);
-          }}
-          style={{
-            display: "flex", alignItems: "center", gap: "var(--spacing-sm)",
-            padding: "var(--spacing-sm) var(--spacing-md)",
-            background: "var(--color-general-white)",
-            border: `1px solid ${open ? "var(--color-content-brand)" : "var(--color-action-outline-secondary-enabled)"}`,
-            borderRadius: "var(--radius-md)", cursor: disabled ? "not-allowed" : "pointer",
-            fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-md)",
-            color: "var(--color-content-primary)",
-            width: "100%", textAlign: "left", boxSizing: "border-box", minHeight: 40,
-            opacity: disabled ? 0.5 : 1,
-          }}
-        >
-          <span style={{ flex: 1 }}>{value?.label || companies[0]?.label}</span>
-          <span style={{ display: "flex", alignItems: "center", color: "var(--color-content-secondary)" }}>
-            <Icon name="ChevronDown" size="sm" />
-          </span>
-        </button>
-        {open && popover}
-      </div>
-    );
-  }
-
-  // â”€â”€ Multiple: search-input trigger â”€â”€
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-xs)", position: "relative" }} ref={ref}>
-      {label && <FieldLabel isRequired={isRequired}>{label}</FieldLabel>}
-      <div
-        style={{
-          display: "flex", alignItems: "center", gap: "var(--spacing-sm)",
-          padding: "var(--spacing-sm) var(--spacing-md)",
-          background: "var(--color-general-white)",
-          border: `1px solid ${open ? "var(--color-content-brand)" : "var(--color-action-outline-secondary-enabled)"}`,
-          borderRadius: "var(--radius-md)", boxSizing: "border-box", minHeight: 40,
-          opacity: disabled ? 0.5 : 1, pointerEvents: disabled ? "none" : "auto", cursor: "text",
-        }}
-        onClick={() => { setOpen(true); inputRef.current?.focus(); }}
-      >
-        <span style={{ display: "flex", alignItems: "center", flexShrink: 0, color: "var(--color-content-secondary)" }}>
-          <Icon name="MagnifyingGlass" size="sm" />
-        </span>
-        {open ? (
-          <input
-            ref={inputRef}
-            autoFocus
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={creatingMode ? "Enter new company name" : (value ? value.label : "Select or create company")}
-            style={{
-              flex: 1, border: "none", outline: "none",
-              fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-md)",
-              color: "var(--color-content-primary)", background: "transparent",
-            }}
-          />
-        ) : (
-          <span style={{ flex: 1, fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-md)", color: value ? "var(--color-content-primary)" : "var(--color-content-tertiary)" }}>
-            {value ? value.label : creatingMode ? "Enter new company name" : "Select or create company"}
-          </span>
-        )}
-        <span style={{ display: "flex", alignItems: "center", color: "var(--color-content-secondary)" }}>
-          <Icon name="ChevronDown" size="sm" />
-        </span>
-      </div>
-      {open && popover}
-    </div>
-  );
-}
-
-// ---------------------------------------------
-// INLINE MODAL CARD (no fixed overlay)
-// ---------------------------------------------
-
-function ModalCard({ title, children, primaryLabel, primaryDisabled, onPrimary, onSecondary }) {
-  return (
-    <div style={{
-      background: "var(--color-general-white)",
-      borderRadius: "var(--radius-md)",
-      outline: "1px solid var(--color-action-outline-secondary-enabled)",
-      outlineOffset: -1,
-      boxShadow: "var(--shadow-button-hover)",
-      display: "flex",
-      flexDirection: "column",
-      overflow: "hidden",
-      width: "100%",
-    }}>
-      <div style={{ padding: "0 var(--spacing-6)", borderBottom: "1px solid var(--color-action-outline-secondary-enabled)" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "var(--spacing-4) 0" }}>
-          <h2 style={{ margin: 0, fontFamily: "var(--font-family-primary)", fontSize: "var(--text-heading-h3)", fontWeight: "var(--font-weight-bold)", color: "var(--color-content-primary)" }}>
-            {title}
-          </h2>
-          <button type="button" style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 24, height: 24, background: "transparent", border: "none", borderRadius: "var(--radius-sm)", cursor: "pointer", color: "var(--color-content-secondary)" }}>
-            <Icon name="XMark" size="md" />
-          </button>
-        </div>
-      </div>
-      <div style={{ padding: "var(--spacing-6)", display: "flex", flexDirection: "column", gap: "var(--spacing-4)", flex: 1, overflowY: "auto" }}>
-        {children}
-      </div>
-      <div style={{ padding: "var(--spacing-4) var(--spacing-6)", borderTop: "1px solid var(--color-action-outline-secondary-enabled)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div />
-        <div style={{ display: "flex", gap: "var(--spacing-sm)" }}>
-          <Button variant="secondary" size="lg" onPress={onSecondary}>Cancel</Button>
-          <Button variant="primary" size="lg" isDisabled={primaryDisabled} onPress={onPrimary}>{primaryLabel}</Button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ---------------------------------------------
-// ADD TO DEAL FORM
-// ---------------------------------------------
-
-function AddToDealModal({ forcedCompanies }) {
-  const [dataSource, setDataSource] = useState(null);
-  const [asset, setAsset] = useState(null);
-  const [company, setCompany] = useState(null);
-  const [opportunityName, setOpportunityName] = useState("");
-  const [initiative, setInitiative] = useState(lastUsedInitiative);
-  const [openDropdown, setOpenDropdown] = useState(null);
-
-  const toggleDropdown = (name) => setOpenDropdown((p) => (p === name ? null : name));
-  const closeDropdown = () => setOpenDropdown(null);
-
-  const availableAssets = dataSource ? ASSETS_BY_SOURCE[dataSource.value] ?? [] : [];
-  const availableCompanies = forcedCompanies ?? (dataSource ? COMPANIES_BY_SOURCE[dataSource.value] ?? [] : []);
-
-  const handleSelectSource = (src) => {
-    const assets = ASSETS_BY_SOURCE[src.value] ?? [];
-    const companies = forcedCompanies ?? COMPANIES_BY_SOURCE[src.value] ?? [];
-    const firstAsset = assets[0] ?? null;
-    const firstCompany = companies.length === 1 ? companies[0] : null;
-    setDataSource(src);
-    setAsset(firstAsset);
-    setOpportunityName(firstAsset?.label ?? "");
-    setCompany(firstCompany);
-    closeDropdown();
+  const clearReviewState = () => {
+    setHasComparison(false);
+    setHighlightChanges(false);
+    setShowChangedRowsOnly(false);
+    setShowChangedFieldsOnly(false);
+    setShowHiddenUnchanged(false);
+    setSummaryVisible(true);
   };
 
-  const handleSelectAsset = (a) => { setAsset(a); setOpportunityName(a.label); closeDropdown(); };
-  const handleCreateCompany = (name) => { setCompany({ value: `custom-${Date.now()}`, label: name, subinfo: "New company" }); };
-  const handleSelectInitiative = (ini) => { lastUsedInitiative = ini; setInitiative(ini); closeDropdown(); };
-
-  const canSubmit = dataSource && asset && company && opportunityName.trim() && initiative;
+  const clearFilters = () => {
+    setShowChangedRowsOnly(false);
+    setSearchValue("");
+  };
 
   return (
-    <ModalCard
-      title="Add asset to Deal"
-      primaryLabel="Create"
-      primaryDisabled={!canSubmit}
-      onPrimary={() => console.log("Submit", { dataSource, asset, company, opportunityName, initiative })}
-      onSecondary={() => {}}
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "linear-gradient(162deg, #f6f9ff 0%, #eef4ff 55%, #eaf1ff 100%)",
+        padding: "var(--spacing-8)",
+        boxSizing: "border-box",
+      }}
     >
-      <Infobox variant="info" title="This will create new opportunity in Deal" actionLabel="x" onAction={() => {}} />
-
-      <div style={{ position: "relative" }}>
-        <DropdownField
-          label="Data source" isRequired placeholder="Select data source"
-          value={dataSource?.label} open={openDropdown === "source"}
-          onToggle={() => toggleDropdown("source")} onClose={closeDropdown}
-          icon={<Icon name="MagnifyingGlass" size="sm" />}
+      <div
+        style={{
+          maxWidth: 1460,
+          margin: "0 auto",
+          display: "flex",
+          flexDirection: "column",
+          gap: "var(--spacing-lg)",
+        }}
+      >
+        <header
+          style={{
+            ...styles.card,
+            padding: "var(--spacing-lg)",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: "var(--spacing-md)",
+            flexWrap: "wrap",
+          }}
         >
-          <DropdownList noAdd>
-            <DropdownList.Section>
-              {DATA_SOURCES.map((src) => (
-                <DropdownListItem key={src.value} value={src.value} noCheckbox active={dataSource?.value === src.value} onChange={() => handleSelectSource(src)}>
-                  {src.label}
-                </DropdownListItem>
-              ))}
-            </DropdownList.Section>
-          </DropdownList>
-        </DropdownField>
-        {!dataSource && (
-          <p style={{ display: "flex", alignItems: "center", gap: "var(--spacing-xs)", margin: "var(--spacing-xs) 0 0", fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-sm)", color: "var(--color-content-secondary)" }}>
-            <Icon name="InformationCircle" size="sm" /> Select data source to populate other fields
-          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-xs)" }}>
+            <h1
+              style={{
+                margin: 0,
+                fontFamily: "var(--font-family-primary)",
+                fontSize: "var(--text-heading-h3)",
+                lineHeight: "var(--line-height-heading-h3)",
+                color: "var(--color-content-primary)",
+              }}
+            >
+              Assets Review
+            </h1>
+            <p style={{ ...styles.mutedText, fontSize: "var(--text-body-md)" }}>
+              Validate refreshed extraction changes before publishing to downstream systems.
+            </p>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-sm)", flexWrap: "wrap" }}>
+            <DropdownMenu closeOnSelect={false}>
+              <DropdownMenuTrigger asChild>
+                <Button variant="secondary" size="md" iconLeading={<Icon name="AdjustmentsHorizontal" size={16} />}>
+                  View options
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="right" width={350}>
+                <DropdownMenuSection>
+                  <div style={{ padding: "var(--spacing-sm)", display: "flex", flexDirection: "column", gap: "var(--spacing-sm)" }}>
+                    <p style={{ ...styles.mutedText, color: "var(--color-content-primary)", fontWeight: 700 }}>View options</p>
+
+                    <div style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "var(--spacing-xs)",
+                      border: "1px solid var(--color-action-outline-secondary-enabled)",
+                      borderRadius: "var(--radius-sm)",
+                      padding: "var(--spacing-sm)",
+                    }}>
+                      <p style={{ ...styles.mutedText, color: "var(--color-content-primary)", fontWeight: 600 }}>Display</p>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "var(--spacing-sm)" }}>
+                        <div>
+                          <p style={{ ...styles.mutedText, color: "var(--color-content-primary)", fontWeight: 600 }}>Show sources</p>
+                          <p style={styles.mutedText}>Apply to table and asset details.</p>
+                        </div>
+                        <Toggle size="sm" isSelected={showSources} onChange={setShowSources} />
+                      </div>
+                    </div>
+
+                    <div style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "var(--spacing-xs)",
+                      border: "1px solid var(--color-action-outline-secondary-enabled)",
+                      borderRadius: "var(--radius-sm)",
+                      padding: "var(--spacing-sm)",
+                    }}>
+                      <p style={{ ...styles.mutedText, color: "var(--color-content-primary)", fontWeight: 600 }}>Refresh review</p>
+                      {hasComparison ? (
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "var(--spacing-sm)" }}>
+                          <div>
+                            <p style={{ ...styles.mutedText, color: "var(--color-content-primary)", fontWeight: 600 }}>Highlight changes</p>
+                            <p style={styles.mutedText}>Apply to table and asset details.</p>
+                          </div>
+                          <Toggle size="sm" isSelected={highlightChanges} onChange={setHighlightChanges} />
+                        </div>
+                      ) : (
+                        <p style={styles.mutedText}>Highlight changes is available after a refresh comparison.</p>
+                      )}
+                    </div>
+                  </div>
+                </DropdownMenuSection>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <Button variant="primary" size="md" iconLeading={<Icon name="ArrowPath" size={16} />} onClick={runRefresh}>
+              Run refresh
+            </Button>
+          </div>
+        </header>
+
+        {hasComparison && summaryVisible && (
+          <div
+            style={{
+              ...styles.card,
+              padding: "var(--spacing-md)",
+              display: "flex",
+              flexDirection: "column",
+              gap: "var(--spacing-sm)",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "var(--spacing-sm)", flexWrap: "wrap" }}>
+              <p style={{ ...styles.mutedText, color: "var(--color-content-primary)", fontWeight: 600 }}>
+                Data refreshed successfully · {changedCount} of {assets.length} assets changed
+              </p>
+              <Button variant="tertiary" size="sm" iconOnly ariaLabel="Dismiss review summary" iconLeading={<Icon name="XMark" size={16} />} onClick={() => setSummaryVisible(false)} />
+            </div>
+
+            <p style={styles.mutedText}>
+              Last refreshed: {REFRESH_META.lastRefreshed} · Compared with: {REFRESH_META.comparedWith}
+            </p>
+
+            <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-sm)", flexWrap: "wrap" }}>
+              <Button variant="secondary" size="sm" onClick={() => setShowChangedRowsOnly(true)}>
+                Show changed assets
+              </Button>
+              <Button variant="tertiary" size="sm" onClick={clearReviewState}>
+                Clear review state
+              </Button>
+              <Button variant="link" size="sm" onClick={() => setSummaryVisible(false)}>
+                Dismiss
+              </Button>
+            </div>
+          </div>
         )}
-      </div>
 
-      <div style={{ position: "relative" }}>
-        <DropdownField
-          label="Asset name" isRequired placeholder="Select or create asset"
-          value={asset?.label} open={openDropdown === "asset"}
-          onToggle={() => toggleDropdown("asset")} onClose={closeDropdown}
-          disabled={!dataSource} icon={<Icon name="MagnifyingGlass" size="sm" />}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: isNarrow ? "1fr" : "minmax(780px, 1fr) minmax(440px, 520px)",
+            gap: "var(--spacing-md)",
+            alignItems: "start",
+          }}
         >
-          <DropdownList addLabel="Create asset" onAdd={() => closeDropdown()}>
-            <DropdownList.Section>
-              {availableAssets.map((a) => (
-                <DropdownListItem key={a.value} value={a.value} noCheckbox active={asset?.value === a.value} onChange={() => handleSelectAsset(a)}>
-                  {a.label}
-                </DropdownListItem>
-              ))}
-            </DropdownList.Section>
-          </DropdownList>
-        </DropdownField>
-      </div>
+          <section style={{ ...styles.card, overflow: "hidden" }}>
+            <div
+              style={{
+                padding: "var(--spacing-md)",
+                borderBottom: "1px solid var(--color-action-outline-secondary-enabled)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: "var(--spacing-md)",
+                flexWrap: "wrap",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-sm)", flexWrap: "wrap" }}>
+                <TextInput
+                  size="md"
+                  placeholder="Search assets, owner, region"
+                  value={searchValue}
+                  onChange={(e) => setSearchValue(e.target.value)}
+                  iconLeading="MagnifyingGlass"
+                  style={{ width: 290 }}
+                />
 
-      <CompanyField
-        label="Select company" isRequired
-        companies={availableCompanies} value={company}
-        onSelect={setCompany} onCreate={handleCreateCompany} disabled={!dataSource}
-      />
+                <Button variant="secondary" size="md" iconLeading={<Icon name="Funnel" size={16} />}>
+                  Filters
+                </Button>
 
-      <TextInput
-        label="Opportunity name" isRequired placeholder="Name your opportunity"
-        value={opportunityName} onChange={(e) => setOpportunityName(e.target.value)}
-      />
+                {hasComparison && (
+                  <Button
+                    variant={showChangedRowsOnly ? "primary" : "secondary"}
+                    size="md"
+                    onClick={() => setShowChangedRowsOnly((prev) => !prev)}
+                  >
+                    Changed since last refresh
+                  </Button>
+                )}
 
-      <div style={{ position: "relative" }}>
-        <DropdownField
-          label="Initiative" isRequired placeholder="Select initiative"
-          value={initiative?.label} open={openDropdown === "initiative"}
-          onToggle={() => toggleDropdown("initiative")} onClose={closeDropdown}
-        >
-          <DropdownList noAdd>
-            <DropdownList.Section>
-              {INITIATIVES.map((ini) => (
-                <DropdownListItem key={ini.value} value={ini.value} noCheckbox active={initiative?.value === ini.value} onChange={() => handleSelectInitiative(ini)}>
-                  {ini.label}
-                </DropdownListItem>
-              ))}
-            </DropdownList.Section>
-          </DropdownList>
-        </DropdownField>
-      </div>
-    </ModalCard>
-  );
-}
+                {showChangedRowsOnly && (
+                  <Chip size="md" removable onRemove={() => setShowChangedRowsOnly(false)}>
+                    Changed since last refresh
+                  </Chip>
+                )}
+              </div>
 
-// ---------------------------------------------
-// PAGE — both cases side by side
-// ---------------------------------------------
+              <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-sm)" }}>
+                {(searchValue.trim() || showChangedRowsOnly) && (
+                  <Button variant="link" size="sm" onClick={clearFilters}>
+                    Clear filters
+                  </Button>
+                )}
+                <Badge color="neutral" size="md">{filteredRows.length} shown of {assets.length}</Badge>
+              </div>
+            </div>
 
-export default function AddToDealPage() {
-  return (
-    <div style={{
-      minHeight: "100vh",
-      background: "var(--color-general-neutral-lighter)",
-      padding: "var(--spacing-8)",
-      display: "flex",
-      gap: "var(--spacing-8)",
-      alignItems: "flex-start",
-      justifyContent: "center",
-    }}>
-      <div style={{ flex: "0 1 560px", display: "flex", flexDirection: "column", gap: "var(--spacing-sm)" }}>
-        <p style={{ margin: 0, fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--color-content-secondary)" }}>
-          Only 1 active company
-        </p>
-        <AddToDealModal forcedCompanies={COMPANIES_SINGLE} />
-      </div>
-      <div style={{ flex: "0 1 560px", display: "flex", flexDirection: "column", gap: "var(--spacing-sm)" }}>
-        <p style={{ margin: 0, fontFamily: "var(--font-family-primary)", fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--color-content-secondary)" }}>
-          Multiple active companies
-        </p>
-        <AddToDealModal forcedCompanies={COMPANIES_MULTIPLE} />
+            <div style={{ overflowX: "auto" }}>
+              <table
+                style={{
+                  width: "100%",
+                  borderCollapse: "separate",
+                  borderSpacing: 0,
+                  fontFamily: "var(--font-family-primary)",
+                }}
+              >
+                <thead>
+                  <tr style={{ background: "var(--color-general-neutral-lighter)" }}>
+                    {["Asset", "Active company", "Development phase", "Target", "Owner", "Region", "Confidence"].map((label) => (
+                      <th
+                        key={label}
+                        style={{
+                          textAlign: "left",
+                          padding: "var(--spacing-sm) var(--spacing-md)",
+                          color: "var(--color-content-secondary)",
+                          fontWeight: 600,
+                          fontSize: "var(--text-body-sm)",
+                          borderBottom: "1px solid var(--color-action-outline-secondary-enabled)",
+                        }}
+                      >
+                        {label}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredRows.map((asset) => {
+                    const rowSelected = selectedId === asset.id;
+                    const tableFields = ["activeCompany", "developmentPhase", "target"];
+                    return (
+                      <tr
+                        key={asset.id}
+                        onClick={() => setSelectedId(asset.id)}
+                        style={{
+                          cursor: "pointer",
+                          background: rowSelected ? "var(--color-general-informative)" : "var(--color-general-white)",
+                        }}
+                      >
+                        <td style={{ padding: "var(--spacing-sm) var(--spacing-md)", borderBottom: "1px solid var(--color-action-outline-secondary-enabled)", minWidth: 220 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-xs)", flexWrap: "wrap" }}>
+                            <span style={{ fontWeight: 600 }}>{asset.assetTitle}</span>
+                            <Badge color="neutral" size="xs">{asset.assetClass}</Badge>
+                            {asset.hasChanges && <Badge color="warning" size="xs">Changed</Badge>}
+                          </div>
+                        </td>
+
+                        {tableFields.map((fieldKey) => {
+                          const change = asset.fieldChanges[fieldKey];
+                          const fieldChanged = asset.hasChanges && change.changed;
+                          const cellHighlighted = fieldChanged && highlightChanges;
+                          const baseValue = asset.baseline[fieldKey];
+                          const currentValue = asset.display[fieldKey];
+                          const source = asset.fieldSources[fieldKey];
+
+                          return (
+                            <td
+                              key={`${asset.id}-${fieldKey}`}
+                              style={{
+                                padding: "var(--spacing-sm) var(--spacing-md)",
+                                borderBottom: "1px solid var(--color-action-outline-secondary-enabled)",
+                                background: cellHighlighted ? "rgba(255, 205, 118, 0.22)" : undefined,
+                              }}
+                            >
+                              <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-xxs)" }}>
+                                <TableValueWithSource value={currentValue || "-"} source={source} showSources={showSources} />
+                                {fieldChanged && (
+                                  <>
+                                    {changeBadge(change.type)}
+                                    {change.type === "updated" && (
+                                      <span style={{ ...styles.mutedText, fontSize: "var(--text-body-caption)" }}>
+                                        Previous: {baseValue}
+                                      </span>
+                                    )}
+                                    {change.type === "removed" && (
+                                      <span style={{ ...styles.mutedText, textDecoration: "line-through" }}>{baseValue}</span>
+                                    )}
+                                  </>
+                                )}
+                              </div>
+                            </td>
+                          );
+                        })}
+
+                        <td style={{ padding: "var(--spacing-sm) var(--spacing-md)", borderBottom: "1px solid var(--color-action-outline-secondary-enabled)" }}>{asset.owner}</td>
+                        <td style={{ padding: "var(--spacing-sm) var(--spacing-md)", borderBottom: "1px solid var(--color-action-outline-secondary-enabled)" }}>{asset.region}</td>
+                        <td style={{ padding: "var(--spacing-sm) var(--spacing-md)", borderBottom: "1px solid var(--color-action-outline-secondary-enabled)" }}>{asset.confidence}%</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <aside
+            style={{
+              ...styles.card,
+              padding: "var(--spacing-lg)",
+              minWidth: isNarrow ? "100%" : 440,
+              maxWidth: isNarrow ? "100%" : 520,
+              boxSizing: "border-box",
+              display: "flex",
+              flexDirection: "column",
+              gap: "var(--spacing-md)",
+            }}
+          >
+            {!selectedAsset ? (
+              <p style={styles.mutedText}>No asset selected.</p>
+            ) : (
+              <>
+                <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-xs)" }}>
+                  <p style={{ ...styles.mutedText, textTransform: "uppercase", letterSpacing: 0.4 }}>Asset details</p>
+                  <h2
+                    style={{
+                      margin: 0,
+                      fontFamily: "var(--font-family-primary)",
+                      fontSize: "var(--text-heading-h5)",
+                      lineHeight: "var(--line-height-heading-h5)",
+                      color: "var(--color-content-primary)",
+                    }}
+                  >
+                    {selectedAsset.assetTitle}
+                  </h2>
+                </div>
+
+                <div style={{ display: "flex", gap: "var(--spacing-xs)", flexWrap: "wrap" }}>
+                  <Badge color="neutral" size="xs">{selectedAsset.assetClass}</Badge>
+                  <Badge color="informative" size="xs">{selectedAsset.region}</Badge>
+                  {selectedAsset.hasChanges && <Badge color="warning" size="xs">Changed</Badge>}
+                </div>
+
+                {hasComparison && (
+                  <p style={styles.mutedText}>
+                    Last refreshed: {REFRESH_META.lastRefreshed} · Compared with: {REFRESH_META.comparedWith}
+                  </p>
+                )}
+
+                <div
+                  style={{
+                    border: "1px dashed var(--color-action-outline-secondary-enabled)",
+                    borderRadius: "var(--radius-sm)",
+                    padding: "var(--spacing-sm)",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "var(--spacing-xs)",
+                  }}
+                >
+                  <p style={{ ...styles.mutedText, color: "var(--color-content-primary)", fontWeight: 600 }}>Review context</p>
+                  <p style={styles.mutedText}>• {highlightChanges ? "Changes highlighted" : "Changes not highlighted"}</p>
+                  <p style={styles.mutedText}>• {showSources ? "Sources shown" : "Sources hidden"}</p>
+                </div>
+
+                {hasComparison && (
+                  <div
+                    style={{
+                      borderTop: "1px solid var(--color-action-outline-secondary-enabled)",
+                      paddingTop: "var(--spacing-sm)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: "var(--spacing-sm)",
+                    }}
+                  >
+                    <div>
+                      <p style={{ ...styles.mutedText, color: "var(--color-content-primary)", fontWeight: 600 }}>Details display</p>
+                      <p style={styles.mutedText}>Show changed fields only</p>
+                      <p style={styles.mutedText}>Only this asset panel</p>
+                    </div>
+                    <Toggle
+                      size="sm"
+                      isSelected={showChangedFieldsOnly}
+                      onChange={(next) => {
+                        setShowChangedFieldsOnly(next);
+                        setShowHiddenUnchanged(false);
+                      }}
+                    />
+                  </div>
+                )}
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-xs)" }}>
+                  {visibleDetailRows.map((row) => {
+                    const highlighted = row.changed && highlightChanges;
+                    return (
+                      <div
+                        key={row.fieldKey}
+                        style={{
+                          border: "1px solid var(--color-action-outline-secondary-enabled)",
+                          borderRadius: "var(--radius-sm)",
+                          padding: "var(--spacing-sm)",
+                          background: highlighted ? "rgba(255, 205, 118, 0.22)" : "var(--color-general-white)",
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "var(--spacing-xs)" }}>
+                          <div style={{ display: "inline-flex", alignItems: "center", gap: "var(--spacing-xxs)" }}>
+                            <p style={{ ...styles.mutedText, margin: 0 }}>{row.label}</p>
+                            {showSources && <SourceIndicator source={row.source} />}
+                          </div>
+                          {row.changed && changeBadge(row.type)}
+                        </div>
+
+                        {!row.changed && (
+                          <p style={{ margin: "var(--spacing-xxs) 0 0", fontFamily: "var(--font-family-primary)", color: "var(--color-content-primary)" }}>
+                            {row.currentValue || "-"}
+                          </p>
+                        )}
+
+                        {row.changed && row.type === "updated" && (
+                          <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-xxs)", marginTop: "var(--spacing-xxs)" }}>
+                            <p style={{ margin: 0, fontFamily: "var(--font-family-primary)", color: "var(--color-content-primary)", fontWeight: 600 }}>
+                              {row.currentValue}
+                            </p>
+                            <p style={styles.mutedText}>Previous: {row.baselineValue}</p>
+                          </div>
+                        )}
+
+                        {row.changed && row.type === "added" && (
+                          <p style={{ margin: "var(--spacing-xxs) 0 0", fontFamily: "var(--font-family-primary)", color: "var(--color-content-positive)", fontWeight: 600 }}>
+                            <Icon name="Plus" size={12} /> {row.currentValue}
+                          </p>
+                        )}
+
+                        {row.changed && row.type === "removed" && (
+                          <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-xxs)", marginTop: "var(--spacing-xxs)" }}>
+                            <p style={{ margin: 0, fontFamily: "var(--font-family-primary)", color: "var(--color-content-tertiary)", textDecoration: "line-through" }}>
+                              {row.baselineValue}
+                            </p>
+                            <p style={{ margin: 0, fontFamily: "var(--font-family-primary)", color: "var(--color-content-negative)" }}>
+                              <Icon name="Minus" size={12} /> Removed
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+
+                  {hasComparison && showChangedFieldsOnly && unchangedDetailRows.length > 0 && !showHiddenUnchanged && (
+                    <button
+                      type="button"
+                      onClick={() => setShowHiddenUnchanged(true)}
+                      style={{
+                        border: "1px dashed var(--color-action-outline-secondary-enabled)",
+                        borderRadius: "var(--radius-sm)",
+                        background: "var(--color-general-neutral-lighter)",
+                        padding: "var(--spacing-sm)",
+                        textAlign: "left",
+                        fontFamily: "var(--font-family-primary)",
+                        color: "var(--color-content-secondary)",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {unchangedDetailRows.length} unchanged fields hidden
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
+          </aside>
+        </div>
       </div>
     </div>
   );
 }
-

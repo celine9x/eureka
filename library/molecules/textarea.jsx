@@ -15,6 +15,23 @@
 import { useState, useId, forwardRef } from "react";
 import { Icon } from "../atoms/icon.jsx";
 
+let placeholderStylesInjected = false;
+
+const injectPlaceholderStyles = () => {
+  if (placeholderStylesInjected || typeof document === "undefined") return;
+
+  const styleEl = document.createElement("style");
+  styleEl.setAttribute("data-eureka", "textarea-placeholder");
+  styleEl.textContent = `
+    .eureka-textarea::placeholder {
+      color: var(--color-content-tertiary);
+      opacity: 1;
+    }
+  `;
+  document.head.appendChild(styleEl);
+  placeholderStylesInjected = true;
+};
+
 // ─────────────────────────────────────────────
 // CONSTANTS
 // ─────────────────────────────────────────────
@@ -51,7 +68,7 @@ const styles = {
     fontSize: "var(--text-body-md)",
     fontWeight: "var(--font-weight-regular)",
     lineHeight: "var(--line-height-body-md)",
-    color: "var(--color-content-primary)",
+    color: "var(--color-content-secondary)",
     cursor: "pointer",
   },
 
@@ -72,7 +89,7 @@ const styles = {
     fontSize: "var(--text-body-lg)",
     fontWeight: "var(--font-weight-regular)",
     lineHeight: "var(--line-height-body-lg)",
-    color: "var(--color-content-primary)",
+    color: "var(--color-content-secondary)",
     background: "var(--color-interaction-fill-enabled)",
     border: "none",
     borderRadius: "var(--radius-md)",
@@ -264,10 +281,13 @@ export const TextareaField = forwardRef(
       isReadOnly = false,
       readOnly,
       style,
+      className,
       ...props
     },
     ref
   ) => {
+    injectPlaceholderStyles();
+
     const [isHovered, setIsHovered] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
 
@@ -294,6 +314,7 @@ export const TextareaField = forwardRef(
         <textarea
           ref={ref}
           rows={rows}
+          className={className ? `eureka-textarea ${className}` : "eureka-textarea"}
           style={textareaStyle}
           disabled={isTextareaDisabled}
           readOnly={isTextareaReadOnly}
