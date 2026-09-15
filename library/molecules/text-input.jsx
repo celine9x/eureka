@@ -5,14 +5,11 @@
  *
  * A complete text input with label, input field, and helper/error text.
  * Uses inline styles with CSS variables from tokens.css for consistent styling.
- *
- * @example
- * <TextInput label="Email" type="email" isRequired />
- * <TextInput label="Password" type="password" error="Required field" />
- * <TextInput label="Name" helper="Enter your full name" />
  */
 
-import { useState, useId, forwardRef } from "react";
+import { useState, useEffect, useId, useRef, forwardRef } from "react";
+import { DropdownList, DropdownSection, DropdownListItem } from "./dropdown-list.jsx";
+import { Icon } from "../atoms/icon.jsx";
 import MiniInfobox from "./miniinfobox.jsx";
 
 let placeholderStylesInjected = false;
@@ -31,10 +28,6 @@ const injectPlaceholderStyles = () => {
   document.head.appendChild(styleEl);
   placeholderStylesInjected = true;
 };
-
-// ─────────────────────────────────────────────
-// CONSTANTS
-// ─────────────────────────────────────────────
 
 export const INPUT_STATES = {
   default: "default",
@@ -63,17 +56,12 @@ export const HELPER_VARIANTS = {
   success: "success",
 };
 
-// ─────────────────────────────────────────────
-// STYLES (Token-mapped inline styles)
-// ─────────────────────────────────────────────
-
 const styles = {
   field: {
     display: "flex",
     flexDirection: "column",
     gap: "var(--spacing-xs)",
   },
-
   label: {
     display: "flex",
     alignItems: "center",
@@ -85,17 +73,12 @@ const styles = {
     color: "var(--color-content-primary)",
     cursor: "pointer",
   },
-
   required: {
-    color: "var(--color-content-negative)",
   },
-
   inputWrapper: {
     position: "relative",
     display: "flex",
-    alignItems: "center",
   },
-
   input: {
     width: "100%",
     fontFamily: "var(--font-family-primary)",
@@ -111,23 +94,19 @@ const styles = {
     boxSizing: "border-box",
     transition: "all var(--transition-fast)",
   },
-
   inputSizes: {
-    // sm → 32px height
     sm: {
       height: 32,
       padding: "0 var(--spacing-3)",
       fontSize: "var(--text-body-md)",
       lineHeight: "var(--line-height-body-md)",
     },
-    // md → 40px height
     md: {
       height: 40,
       padding: "0 var(--spacing-3)",
       fontSize: "var(--text-body-lg)",
       lineHeight: "var(--line-height-body-lg)",
     },
-    // lg → 48px height
     lg: {
       height: 48,
       padding: "0 var(--spacing-3)",
@@ -135,68 +114,70 @@ const styles = {
       lineHeight: "var(--line-height-body-lg)",
     },
   },
-
   inputHover: {
     outlineColor: "var(--color-interaction-outline-hover)",
   },
-
   inputFocus: {},
-
   inputError: {
     outlineColor: "var(--color-interaction-outline-negative)",
   },
-
   inputErrorFocus: {
     outlineColor: "var(--color-interaction-outline-negative)",
   },
-
   inputSuccess: {
     outlineColor: "var(--color-content-positive)",
   },
-
   inputSuccessFocus: {
     outlineColor: "var(--color-content-positive)",
   },
-
   inputDisabled: {
     background: "var(--color-interaction-fill-disabled)",
     outlineColor: "var(--color-interaction-outline-disabled)",
     color: "var(--color-content-tertiary)",
     cursor: "not-allowed",
   },
-
   inputReadOnly: {
     background: "var(--color-general-neutral-lighter)",
   },
-
+  dropdownTrigger: {
+    position: "relative",
+    width: "100%",
+  },
+  dropdownTriggerInput: {
+    cursor: "pointer",
+    paddingRight: "var(--spacing-8)",
+  },
+  dropdownTriggerChevron: {
+    position: "absolute",
+    right: "var(--spacing-3)",
+    top: "50%",
+    transform: "translateY(-50%)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "var(--color-content-secondary)",
+    pointerEvents: "none",
+  },
+  dropdownPanel: {
+    position: "absolute",
+    top: "calc(100% + var(--spacing-1))",
+    left: 0,
+    width: "100%",
+    zIndex: 1000,
+  },
   helper: {
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-body-md)",
     fontWeight: "var(--font-weight-regular)",
     lineHeight: "var(--line-height-body-md)",
   },
-
   helperVariants: {
-    default: {
-      color: "var(--color-content-secondary)",
-    },
-    error: {
-      color: "var(--color-content-negative)",
-    },
-    success: {
-      color: "var(--color-content-positive)",
-    },
+    default: { color: "var(--color-content-secondary)" },
+    error: { color: "var(--color-content-negative)" },
+    success: { color: "var(--color-content-positive)" },
   },
 };
 
-// ─────────────────────────────────────────────
-// LABEL COMPONENT
-// ─────────────────────────────────────────────
-
-/**
- * Label
- *
- */
 export const Label = ({ htmlFor, required = false, style, children, ...props }) => {
   const labelStyle = {
     ...styles.label,
@@ -213,20 +194,7 @@ export const Label = ({ htmlFor, required = false, style, children, ...props }) 
 
 Label.displayName = "Label";
 
-// ─────────────────────────────────────────────
-// HELPER TEXT COMPONENT
-// ─────────────────────────────────────────────
-
-/**
- * HelperText
- *
- */
-export const HelperText = ({
-  variant = HELPER_VARIANTS.default,
-  style,
-  children,
-  ...props
-}) => {
+export const HelperText = ({ variant = HELPER_VARIANTS.default, style, children, ...props }) => {
   const helperStyle = {
     ...styles.helper,
     ...styles.helperVariants[variant],
@@ -243,14 +211,6 @@ export const HelperText = ({
 HelperText.displayName = "HelperText";
 HelperText.variants = HELPER_VARIANTS;
 
-// ─────────────────────────────────────────────
-// INPUT COMPONENT
-// ─────────────────────────────────────────────
-
-/**
- * Input
- *
- */
 export const Input = forwardRef(
   (
     {
@@ -264,6 +224,12 @@ export const Input = forwardRef(
       iconLeading,
       iconTrailing,
       style,
+      onFocus,
+      onBlur,
+      onMouseEnter,
+      onMouseLeave,
+      onKeyDown,
+      onClick,
       ...props
     },
     ref
@@ -276,10 +242,9 @@ export const Input = forwardRef(
     const isInputDisabled = isDisabled || disabled;
     const isInputReadOnly = isReadOnly || readOnly;
 
-    // Compose input styles
     const inputStyle = {
       ...styles.input,
-      ...styles.inputSizes[size] || styles.inputSizes.md,
+      ...(styles.inputSizes[size] || styles.inputSizes.md),
       ...(iconLeading && { paddingLeft: 36 }),
       ...(iconTrailing && { paddingRight: 36 }),
       ...(isHovered && !isInputDisabled && !isFocused && styles.inputHover),
@@ -292,6 +257,44 @@ export const Input = forwardRef(
       ...(isInputReadOnly && styles.inputReadOnly),
       ...style,
     };
+
+    const handleMouseEnter = (event) => {
+      setIsHovered(true);
+      onMouseEnter?.(event);
+    };
+
+    const handleMouseLeave = (event) => {
+      setIsHovered(false);
+      onMouseLeave?.(event);
+    };
+
+    const handleFocus = (event) => {
+      setIsFocused(true);
+      onFocus?.(event);
+    };
+
+    const handleBlur = (event) => {
+      setIsFocused(false);
+      onBlur?.(event);
+    };
+
+    const inputElement = (
+      <input
+        ref={ref}
+        type={type}
+        className="eureka-text-input"
+        style={inputStyle}
+        disabled={isInputDisabled}
+        readOnly={isInputReadOnly}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        onKeyDown={onKeyDown}
+        onClick={onClick}
+        {...props}
+      />
+    );
 
     if (iconLeading || iconTrailing) {
       return (
@@ -308,19 +311,7 @@ export const Input = forwardRef(
               {iconLeading}
             </span>
           )}
-          <input
-            ref={ref}
-            type={type}
-            className="eureka-text-input"
-            style={{ ...inputStyle, width: "100%" }}
-            disabled={isInputDisabled}
-            readOnly={isInputReadOnly}
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
-            {...props}
-          />
+          {inputElement}
           {iconTrailing && (
             <span style={{
               position: "absolute",
@@ -337,21 +328,7 @@ export const Input = forwardRef(
       );
     }
 
-    return (
-      <input
-        ref={ref}
-        type={type}
-        className="eureka-text-input"
-        style={inputStyle}
-        disabled={isInputDisabled}
-        readOnly={isInputReadOnly}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
-        {...props}
-      />
-    );
+    return inputElement;
   }
 );
 
@@ -359,14 +336,7 @@ Input.displayName = "Input";
 Input.types = INPUT_TYPES;
 Input.states = INPUT_STATES;
 Input.sizes = INPUT_SIZES;
-// ─────────────────────────────────────────────
 
-/**
- * TextInput
- *
- * A complete text input field with label and helper text.
- *
- */
 export const TextInput = forwardRef(
   (
     {
@@ -375,6 +345,7 @@ export const TextInput = forwardRef(
       label,
       placeholder,
       value,
+      defaultValue = "",
       helper,
       error,
       success,
@@ -392,9 +363,11 @@ export const TextInput = forwardRef(
       onClick,
       iconLeading,
       iconTrailing,
+      menuItems = [],
+      menuSections = [],
+      onSelect,
+      onOpenChange,
       style,
-      multiline: _multiline,
-      rows: _rows,
       ...props
     },
     ref
@@ -402,12 +375,11 @@ export const TextInput = forwardRef(
     const generatedId = useId();
     const inputId = id || generatedId;
 
-    // Support legacy props
     const fieldDisabled = isDisabled || disabled;
     const fieldRequired = isRequired || required;
+    const hasDropdown = menuItems.length > 0 || menuSections.length > 0;
     const fieldReadOnly = isReadOnly || readOnly;
 
-    // Determine state
     const hasError = !!error;
     const hasSuccess = !!success && !hasError;
     const inputState = hasError
@@ -416,45 +388,177 @@ export const TextInput = forwardRef(
       ? INPUT_STATES.success
       : INPUT_STATES.default;
 
-    // Determine helper text and variant
     const helperMessage = error || success || helper;
-    const helperVariant = hasError
-      ? HELPER_VARIANTS.error
-      : hasSuccess
-      ? HELPER_VARIANTS.success
-      : HELPER_VARIANTS.default;
+
+    const [dropdownValue, setDropdownValue] = useState(defaultValue);
+    const [isOpen, setIsOpen] = useState(false);
+    const wrapperRef = useRef(null);
+
+    const displayValue = hasDropdown ? "" : (value !== undefined ? value : dropdownValue);
 
     const fieldStyle = {
       ...styles.field,
       ...style,
     };
 
+    useEffect(() => {
+      if (!hasDropdown || !isOpen) return;
+
+      const handleClickOutside = (event) => {
+        if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
+          setIsOpen(false);
+          onOpenChange?.(false);
+        }
+      };
+
+      const handleEscape = (event) => {
+        if (event.key === "Escape") {
+          setIsOpen(false);
+          onOpenChange?.(false);
+        }
+      };
+
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleEscape);
+
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+        document.removeEventListener("keydown", handleEscape);
+      };
+    }, [hasDropdown, isOpen, onOpenChange]);
+
+    const handleSelect = (item) => {
+      const nextValue = item?.label ?? item?.value ?? "";
+
+      if (value === undefined) {
+        setDropdownValue(nextValue);
+      }
+
+      onSelect?.(item);
+      setIsOpen(false);
+      onOpenChange?.(false);
+    };
+
+    const toggleOpen = () => {
+      const nextOpen = !isOpen;
+      setIsOpen(nextOpen);
+      onOpenChange?.(nextOpen);
+    };
+
+    const renderMenuItem = (item, index) => (
+      <DropdownListItem
+        key={item.id || item.value || item.label || index}
+        noCheckbox
+        active={item.active || displayValue === (item.label ?? item.value)}
+        isDisabled={item.disabled}
+        onChange={() => handleSelect(item)}
+      >
+        {item.label}
+      </DropdownListItem>
+    );
+
+    const renderDropdownContent = () => (
+      <div style={styles.dropdownPanel}>
+        <DropdownList noAdd style={{ width: "100%" }}>
+          {menuSections.length > 0
+            ? menuSections.map((section, sectionIndex) => (
+                <DropdownSection
+                  key={section.id || section.title || sectionIndex}
+                  title={section.title}
+                  collapsible={section.collapsible}
+                  defaultExpanded={section.defaultExpanded}
+                >
+                  {(section.items || []).map(renderMenuItem)}
+                </DropdownSection>
+              ))
+            : (
+              <DropdownSection>
+                {menuItems.map(renderMenuItem)}
+              </DropdownSection>
+            )}
+        </DropdownList>
+      </div>
+    );
+
+    if (!hasDropdown) {
+      return (
+        <div style={fieldStyle} {...props}>
+          {label && (
+            <Label htmlFor={inputId} required={fieldRequired}>
+              {label}
+            </Label>
+          )}
+
+          <Input
+            ref={ref}
+            id={inputId}
+            type={type}
+            size={size}
+            name={name}
+            placeholder={placeholder}
+            value={value}
+            state={inputState}
+            isDisabled={fieldDisabled}
+            isReadOnly={fieldReadOnly}
+            iconLeading={iconLeading}
+            iconTrailing={iconTrailing}
+            onChange={onChange}
+            onFocus={onFocus}
+            onBlur={onBlur}
+          />
+
+          {helperMessage && (
+            hasError
+              ? <MiniInfobox variant="error" message={helperMessage} />
+              : hasSuccess
+              ? <MiniInfobox variant="success" message={helperMessage} />
+              : <MiniInfobox variant="info" message={helperMessage} />
+          )}
+        </div>
+      );
+    }
+
     return (
-      <div style={fieldStyle} {...props}>
+      <div ref={wrapperRef} style={fieldStyle} {...props}>
         {label && (
           <Label htmlFor={inputId} required={fieldRequired}>
             {label}
           </Label>
         )}
 
-        <Input
-          ref={ref}
-          id={inputId}
-          type={type}
-          size={size}
-          name={name}
-          placeholder={placeholder}
-          value={value}
-          state={inputState}
-          isDisabled={fieldDisabled}
-          isReadOnly={fieldReadOnly}
-          iconLeading={iconLeading}
-          iconTrailing={iconTrailing}
-          onChange={onChange}
-          onFocus={onFocus}
-          onBlur={onBlur}
-          onClick={onClick}
-        />
+        <div style={{ ...styles.inputWrapper, ...styles.dropdownTrigger }}>
+          <Input
+            ref={ref}
+            id={inputId}
+            type={type}
+            size={size}
+            name={name}
+            placeholder={placeholder}
+            value={displayValue}
+            state={inputState}
+            isDisabled={fieldDisabled}
+            isReadOnly={fieldReadOnly}
+            iconLeading={iconLeading}
+            iconTrailing={iconTrailing}
+            tabIndex={-1}
+            onClick={fieldDisabled ? undefined : toggleOpen}
+            onKeyDown={(event) => {
+              if (fieldDisabled) return;
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                toggleOpen();
+              }
+            }}
+            style={{ ...styles.dropdownTriggerInput, cursor: fieldDisabled ? "not-allowed" : "pointer" }}
+            onFocus={onFocus}
+            onBlur={onBlur}
+          />
+          <span style={styles.dropdownTriggerChevron}>
+            <Icon name={isOpen ? "ChevronUp" : "ChevronDown"} size="sm" />
+          </span>
+
+          {isOpen && renderDropdownContent()}
+        </div>
 
         {helperMessage && (
           hasError

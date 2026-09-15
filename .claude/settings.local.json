@@ -9,7 +9,15 @@
       "Bash(node \"/c/Users/lnguyen/AppData/Local/Temp/claude/C--Users-lnguyen-OneDrive---Inpart-Documents-Code-eureka/e9b311a9-8e0c-4c1b-9efd-550dcebe3896/scratchpad/screenshot-hub.js\")",
       "Bash(npm run build:*)",
       "Bash(xargs -n1 basename)",
-      "Bash(sed 's/.js.d.ts//')"
+      "mcp__claude_ai_Figma__get_design_context",
+      "mcp__claude_ai_Figma__get_screenshot",
+      "Bash(curl:*)",
+      "mcp__mobbin__search_screens",
+      "mcp__claude_ai_Figma__get_figma_skill",
+      "mcp__claude_ai_Figma__get_metadata",
+      "mcp__claude_ai_Figma__use_figma",
+      "Bash(python3 -c:*)",
+      "WebFetch(domain:www.figma.com)"
     ]
   }
 }

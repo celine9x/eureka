@@ -281,7 +281,23 @@ export const RadioButton = ({
         disabled={isRadioDisabled}
         onChange={handleClick}
         onKeyDown={handleKeyDown}
-        style={{ position: "absolute", opacity: 0, width: 0, height: 0 }}
+        style={{
+          position: "absolute",
+          width: 1,
+          height: 1,
+          margin: -1,
+          padding: 0,
+          overflow: "hidden",
+          clip: "rect(0, 0, 0, 0)",
+          clipPath: "inset(50%)",
+          whiteSpace: "nowrap",
+          border: 0,
+          outline: "none",
+          appearance: "none",
+          WebkitAppearance: "none",
+          MozAppearance: "none",
+          background: "transparent",
+        }}
       />
       <span style={controlStyle}>
         <span style={dotStyle} />

@@ -3,15 +3,22 @@
 import React, {
   isValidElement,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
 import * as pdfjsLib from "pdfjs-dist";
+import { ChatBubbleLeftRightIcon, EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import { Button } from "../../atoms/button.jsx";
 import { Icon } from "../../atoms/icon.jsx";
+import { CommentPopover, DEFAULT_COMMENT_THREAD } from "../../molecules/comment-popover.jsx";
+import { Tooltip } from "../../atoms/tooltip.jsx";
 import { createStyleInjector, joinStyles } from "../../utils/styles.js";
-
+import {
+  RichTextEditToolbars,
+  RICH_TEXT_EDIT_TOOLBAR_ACTIONS,
+} from "../../molecules/rich-text-edit-toolbars.jsx";
 // Set up PDF.js worker - set globally before any PDF operations
 if (typeof window !== "undefined") {
   pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
@@ -76,8 +83,9 @@ const styles = {
       position: relative;
       width: 100%;
       display: flex;
+      flex-direction: column;
       justify-content: center;
-      align-items: flex-start;
+      align-items: center;
       flex: 0 0 auto;
     }
 
@@ -88,6 +96,13 @@ const styles = {
       outline: var(--document-viewer-outline-width) solid var(--document-viewer-page-outline-color);
       outline-offset: calc(var(--document-viewer-outline-width) * -1);
       overflow: hidden;
+    }
+
+    .document-viewer__page-body {
+      width: 100%;
+      height: 100%;
+      padding: var(--spacing-6);
+      box-sizing: border-box;
     }
 
     .document-viewer__page-canvas {
@@ -101,11 +116,88 @@ const styles = {
       height: 100%;
       white-space: pre-wrap;
       word-break: break-word;
-      padding: var(--spacing-6);
       font-family: var(--font-family-primary);
       font-size: var(--document-viewer-page-text-font-size);
       line-height: var(--document-viewer-page-text-line-height);
       color: var(--color-content-primary);
+      box-sizing: border-box;
+    }
+
+    .document-viewer__page-text--editable {
+      outline: none;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .document-viewer--show-live-changes ins,
+    .document-viewer--show-live-changes del {
+      text-decoration: none;
+    }
+
+    .document-viewer--show-live-changes ins {
+      color: var(--color-content-redline-add);
+      background: transparent;
+    }
+
+    .document-viewer--show-live-changes del {
+      color: var(--color-content-redline-delete);
+      background: transparent;
+      text-decoration: line-through;
+    }
+
+    .document-viewer--hide-live-changes ins {
+      color: inherit;
+      background: transparent;
+    }
+
+    .document-viewer--hide-live-changes del {
+      display: none;
+    }
+
+    .document-viewer__highlight {
+      color: inherit;
+      border-radius: var(--radius-xs);
+    }
+
+    .document-viewer__highlight--high {
+      background: var(--color-redline-highlight-high);
+    }
+
+    .document-viewer__highlight--medium {
+      background: var(--color-redline-highlight-medium);
+    }
+
+    .document-viewer__highlight--low {
+      background: var(--color-redline-highlight-low);
+    }
+
+    .document-viewer__page-comments {
+      width: min(100%, calc(var(--spacing-12) * 14));
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-1);
+      margin-top: var(--spacing-2);
+    }
+
+    .document-viewer__page-comment-label {
+      font-family: var(--font-family-primary);
+      font-size: var(--text-body-md);
+      line-height: var(--line-height-body-md);
+      color: var(--color-content-secondary);
+    }
+
+    .document-viewer__page-comment-input {
+      width: 100%;
+      min-height: calc(var(--spacing-12) * 2.5);
+      resize: vertical;
+      border-radius: var(--radius-sm);
+      border: var(--document-viewer-outline-width) solid var(--color-action-outline-secondary-enabled);
+      background: var(--color-general-white);
+      color: var(--color-content-primary);
+      font-family: var(--font-family-primary);
+      font-size: var(--text-body-md);
+      line-height: var(--line-height-body-md);
+      padding: var(--spacing-2);
       box-sizing: border-box;
     }
 
@@ -130,6 +222,65 @@ const styles = {
       padding: var(--spacing-2) var(--spacing-1);
       background: var(--color-general-neutral-light);
       border-top: var(--document-viewer-outline-width) solid var(--color-action-outline-secondary-enabled);
+    }
+
+    .document-viewer__edit-toolbar {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-1);
+      padding: var(--spacing-1) var(--spacing-2);
+      background: var(--color-general-neutral-light);
+      border-bottom: var(--document-viewer-outline-width) solid var(--color-action-outline-secondary-enabled);
+      overflow-x: auto;
+    }
+
+    .document-viewer__edit-toolbar-group {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-1);
+    }
+
+    .document-viewer__edit-toolbar-divider {
+      width: var(--document-viewer-outline-width);
+      align-self: stretch;
+      background: var(--color-content-tertiary);
+      opacity: 0.6;
+      margin: 0 var(--spacing-1);
+    }
+
+    .document-viewer__edit-toolbar-button {
+      width: calc(var(--size-button-xs) + var(--spacing-2));
+      height: calc(var(--size-button-xs) + var(--spacing-2));
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      border-radius: var(--radius-xs);
+      background: transparent;
+      color: var(--color-content-brand);
+      cursor: pointer;
+      transition: background var(--transition-fast), color var(--transition-fast);
+      flex: 0 0 auto;
+    }
+
+    .document-viewer__edit-toolbar-button:hover {
+      background: var(--color-action-fill-tertiary-hover);
+    }
+
+    .document-viewer__edit-toolbar-button:focus-visible {
+      outline: var(--document-viewer-outline-width) solid var(--color-interaction-outline-active);
+      outline-offset: 0;
+    }
+
+    .document-viewer__edit-toolbar-button--active {
+      background: var(--color-action-fill-tertiary-active);
+      color: var(--color-action-content-tertiary-active);
+    }
+
+    .document-viewer__edit-toolbar-button:disabled {
+      color: var(--color-content-tertiary);
+      cursor: not-allowed;
     }
 
     .document-viewer__toolbar-group {
@@ -189,7 +340,120 @@ const styles = {
 
 const injectStyles = createStyleInjector("document-viewer");
 
+const DEFAULT_EDITABLE_ACTIONS = [
+  RICH_TEXT_EDIT_TOOLBAR_ACTIONS.bold,
+  RICH_TEXT_EDIT_TOOLBAR_ACTIONS.italic,
+  RICH_TEXT_EDIT_TOOLBAR_ACTIONS.underline,
+  RICH_TEXT_EDIT_TOOLBAR_ACTIONS.bulletList,
+  RICH_TEXT_EDIT_TOOLBAR_ACTIONS.numberList,
+  RICH_TEXT_EDIT_TOOLBAR_ACTIONS.alignLeft,
+  RICH_TEXT_EDIT_TOOLBAR_ACTIONS.alignCenter,
+  RICH_TEXT_EDIT_TOOLBAR_ACTIONS.alignRight,
+  RICH_TEXT_EDIT_TOOLBAR_ACTIONS.link,
+  RICH_TEXT_EDIT_TOOLBAR_ACTIONS.undo,
+  RICH_TEXT_EDIT_TOOLBAR_ACTIONS.redo,
+];
+
+const EDIT_COMMANDS = {
+  [RICH_TEXT_EDIT_TOOLBAR_ACTIONS.bold]: { command: "bold" },
+  [RICH_TEXT_EDIT_TOOLBAR_ACTIONS.italic]: { command: "italic" },
+  [RICH_TEXT_EDIT_TOOLBAR_ACTIONS.underline]: { command: "underline" },
+  [RICH_TEXT_EDIT_TOOLBAR_ACTIONS.bulletList]: { command: "insertUnorderedList" },
+  [RICH_TEXT_EDIT_TOOLBAR_ACTIONS.numberList]: { command: "insertOrderedList" },
+  [RICH_TEXT_EDIT_TOOLBAR_ACTIONS.alignLeft]: { command: "justifyLeft" },
+  [RICH_TEXT_EDIT_TOOLBAR_ACTIONS.alignCenter]: { command: "justifyCenter" },
+  [RICH_TEXT_EDIT_TOOLBAR_ACTIONS.alignRight]: { command: "justifyRight" },
+  [RICH_TEXT_EDIT_TOOLBAR_ACTIONS.undo]: { command: "undo" },
+  [RICH_TEXT_EDIT_TOOLBAR_ACTIONS.redo]: { command: "redo" },
+};
+
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+
+const escapeHtml = (value = "") =>
+  String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
+const toEditableHtml = (value = "") => escapeHtml(String(value)).replace(/\n/g, "<br>");
+
+const createHighlightedHtml = (value = "", targets = [], fallbackLevel = "high") => {
+  const text = String(value);
+  const normalizedTargets = (Array.isArray(targets) ? targets : [{ text: targets, level: fallbackLevel }])
+    .filter((target) => target?.text)
+    .map((target) => ({ ...target, index: text.indexOf(target.text) }))
+    .filter((target) => target.index >= 0)
+    .sort((first, second) => first.index - second.index);
+  let cursor = 0;
+  let html = "";
+
+  normalizedTargets.forEach((target) => {
+    if (target.index < cursor) return;
+    html += toEditableHtml(text.slice(cursor, target.index));
+    html += `<mark data-document-highlight="${target.active ? "active" : ""}" class="document-viewer__highlight document-viewer__highlight--${target.level || fallbackLevel}">${toEditableHtml(target.text)}</mark>`;
+    cursor = target.index + target.text.length;
+  });
+
+  return html + toEditableHtml(text.slice(cursor));
+};
+
+const tokenizeForRedline = (value = "") => String(value).match(/\s+|[^\s]+/g) ?? [];
+
+const createRedlineHtml = (originalValue = "", currentValue = "") => {
+  const originalTokens = tokenizeForRedline(originalValue);
+  const currentTokens = tokenizeForRedline(currentValue);
+  let prefixLength = 0;
+  let suffixLength = 0;
+
+  while (
+    prefixLength < originalTokens.length &&
+    prefixLength < currentTokens.length &&
+    originalTokens[prefixLength] === currentTokens[prefixLength]
+  ) {
+    prefixLength += 1;
+  }
+
+  while (
+    suffixLength < originalTokens.length - prefixLength &&
+    suffixLength < currentTokens.length - prefixLength &&
+    originalTokens[originalTokens.length - 1 - suffixLength] === currentTokens[currentTokens.length - 1 - suffixLength]
+  ) {
+    suffixLength += 1;
+  }
+
+  const unchangedStart = originalTokens.slice(0, prefixLength).join("");
+  const removed = originalTokens.slice(prefixLength, originalTokens.length - suffixLength).join("");
+  const added = currentTokens.slice(prefixLength, currentTokens.length - suffixLength).join("");
+  const unchangedEnd = suffixLength ? originalTokens.slice(originalTokens.length - suffixLength).join("") : "";
+
+  return [
+    escapeHtml(unchangedStart),
+    removed ? `<del>${escapeHtml(removed)}</del>` : "",
+    added ? `<ins>${escapeHtml(added)}</ins>` : "",
+    escapeHtml(unchangedEnd),
+  ].join("").replace(/\n/g, "<br>");
+};
+
+const createAppliedRedlineHtml = (value = "", changes = []) => {
+  let remainingText = String(value);
+  let result = "";
+  let hasAppliedChange = false;
+
+  changes.forEach(({ originalText = "", proposedText = "", commentId }) => {
+    const changeIndex = proposedText ? remainingText.indexOf(proposedText) : -1;
+    if (changeIndex < 0) return;
+
+    hasAppliedChange = true;
+    result += escapeHtml(remainingText.slice(0, changeIndex)).replace(/\n/g, "<br>");
+    const redline = `<del>${escapeHtml(originalText)}</del><ins>${escapeHtml(proposedText)}</ins>`;
+    result += commentId ? `<span data-document-comment-anchor="${commentId}">${redline}</span>` : redline;
+    remainingText = remainingText.slice(changeIndex + proposedText.length);
+  });
+
+  return hasAppliedChange ? `${result}${escapeHtml(remainingText).replace(/\n/g, "<br>")}` : "";
+};
 
 const normalizePageRecord = (page, index) => {
   if (page && typeof page === "object" && !isValidElement(page)) {
@@ -283,6 +547,11 @@ export const DocumentViewer = ({
   pdfFile,
   pages,
   text = "",
+  originalText,
+  appliedRedlines = [],
+  highlights = [],
+  highlightText,
+  highlightLevel = "high",
   pageSeparator = "\f",
   maxCharactersPerPage = 1800,
   defaultPage = 1,
@@ -290,9 +559,25 @@ export const DocumentViewer = ({
   minZoom = 0.75,
   maxZoom = 1.5,
   zoomStep = 0.1,
-  pageWidth = 598,
-  pageHeight = 789,
+  pageWidth = 595,
+  pageHeight = 842,
   pagePadding = 40,
+  showEditToolbar = true,
+  editable = false,
+  liveChanges,
+  defaultLiveChanges = true,
+  onLiveChangesChange,
+  showCommentPopover = true,
+  commentThread = DEFAULT_COMMENT_THREAD,
+  onCommentSubmit,
+  showPageComments = false,
+  pageComments,
+  onPageCommentChange,
+  onEditablePagesChange,
+  editToolbarActions,
+  activeEditActions = [],
+  onEditAction,
+  disableEditToolbar = false,
   showToolbar = true,
   showExportButton = true,
   exportFileName = "document-preview",
@@ -307,10 +592,6 @@ export const DocumentViewer = ({
 }) => {
   injectStyles(joinStyles(styles));
 
-  const [pdfDoc, setPdfDoc] = useState(null);
-  const [loading, setLoading] = useState(!!pdfFile);
-  const [error, setError] = useState(null);
-
   const normalizedPages = useMemo(() => {
     if (Array.isArray(pages) && pages.length > 0) {
       return pages.map(normalizePageRecord);
@@ -323,13 +604,113 @@ export const DocumentViewer = ({
     });
   }, [maxCharactersPerPage, pageSeparator, pages, text]);
 
-  const totalPages = pdfDoc ? pdfDoc.numPages : normalizedPages.length || 1;
+  const [pdfDoc, setPdfDoc] = useState(null);
+  const [loading, setLoading] = useState(!!pdfFile);
+  const [error, setError] = useState(null);
+  const [activeFormats, setActiveFormats] = useState({});
+  const editablePageHtmlRef = useRef([]);
+  const [editablePages, setEditablePages] = useState(null);
+  const editablePageCapacityRef = useRef(maxCharactersPerPage);
+  const originalPageTextRef = useRef(null);
+  const [redlineHtmlByPage, setRedlineHtmlByPage] = useState({});
+  const [editingPageIndex, setEditingPageIndex] = useState(null);
+  const [internalComments, setInternalComments] = useState({});
+  const [activeCommentId, setActiveCommentId] = useState(null);
+  const [commentAnchorPositions, setCommentAnchorPositions] = useState([]);
+  const [internalLiveChanges, setInternalLiveChanges] = useState(defaultLiveChanges);
+  const activeToolbarActions = useMemo(() => new Set(activeEditActions), [activeEditActions]);
+  const isLiveChangesControlled = liveChanges !== undefined;
+  const resolvedLiveChanges = isLiveChangesControlled ? liveChanges : internalLiveChanges;
+  const setShowLiveChanges = (nextValue) => {
+    if (!isLiveChangesControlled) {
+      setInternalLiveChanges(nextValue);
+    }
+    onLiveChangesChange?.(nextValue);
+  };
+
+  const resolvedToolbarActions = useMemo(() => {
+    if (!editable) return [];
+    if (!Array.isArray(editToolbarActions) || editToolbarActions.length === 0) {
+      return DEFAULT_EDITABLE_ACTIONS;
+    }
+    return editToolbarActions;
+  }, [editable, editToolbarActions]);
+
+  const displayedPages = editable && !pdfDoc && editablePages ? editablePages : normalizedPages;
+  const totalPages = pdfDoc ? pdfDoc.numPages : displayedPages.length || 1;
   const [currentPage, setCurrentPage] = useState(clamp(defaultPage, 1, totalPages));
   const [zoom, setZoom] = useState(clamp(defaultZoom, minZoom, maxZoom));
 
   const viewportRef = useRef(null);
+  const viewerRef = useRef(null);
   const pageRefs = useRef([]);
+  const editableRefs = useRef([]);
   const isProgrammaticScrollRef = useRef(false);
+
+  useEffect(() => {
+    editablePageHtmlRef.current = displayedPages.map((page) => toEditableHtml(page.content ?? ""));
+  }, [displayedPages]);
+
+  useEffect(() => {
+    originalPageTextRef.current = paginateTextToPages({
+      text: originalText ?? text,
+      maxCharactersPerPage,
+      pageSeparator,
+    }).map((page) => String(page.content ?? ""));
+    setEditablePages(null);
+    setRedlineHtmlByPage({});
+    setEditingPageIndex(null);
+  }, [maxCharactersPerPage, originalText, pageSeparator, text]);
+
+  useEffect(() => {
+    editablePageCapacityRef.current = maxCharactersPerPage;
+  }, [maxCharactersPerPage]);
+
+  const updateCommentAnchorPositions = () => {
+    const viewer = viewerRef.current;
+    if (!viewer) return;
+
+    const positions = commentThread.flatMap((comment) => {
+      const anchor = viewer.querySelector(`[data-document-comment-anchor="${comment.id}"]`);
+      if (!anchor) return [];
+      const anchorRect = anchor.getBoundingClientRect();
+      const pageRect = anchor.closest(".document-viewer__page")?.getBoundingClientRect();
+      if (!pageRect) return [];
+      return [{ id: comment.id, top: anchorRect.top, left: pageRect.right + 24 }];
+    });
+    setCommentAnchorPositions((previousPositions) => {
+      const hasSamePositions = previousPositions.length === positions.length && previousPositions.every(
+        (position, index) =>
+          position.id === positions[index].id &&
+          Math.round(position.top) === Math.round(positions[index].top) &&
+          Math.round(position.left) === Math.round(positions[index].left)
+      );
+      return hasSamePositions ? previousPositions : positions;
+    });
+  };
+
+  useLayoutEffect(() => {
+    updateCommentAnchorPositions();
+  }, [appliedRedlines, commentThread, displayedPages, resolvedLiveChanges]);
+
+  useLayoutEffect(() => {
+    if (!highlightText) return;
+
+    const scrollToHighlight = () => {
+      const viewport = viewportRef.current;
+      const highlight = viewport?.querySelector('[data-document-highlight="active"]');
+      if (!viewport || !highlight) return;
+
+      const topOffset = 24;
+      const highlightTop = highlight.getBoundingClientRect().top - viewport.getBoundingClientRect().top;
+      viewport.scrollTo({
+        top: viewport.scrollTop + highlightTop - topOffset,
+        behavior: "smooth",
+      });
+    };
+    const frameId = window.requestAnimationFrame(scrollToHighlight);
+    return () => window.cancelAnimationFrame(frameId);
+  }, [highlightLevel, highlightText, displayedPages]);
 
   // Load PDF if provided
   useEffect(() => {
@@ -372,6 +753,33 @@ export const DocumentViewer = ({
     onZoomChange?.(zoom);
   }, [onZoomChange, zoom]);
 
+  useEffect(() => {
+    if (!editable || typeof document === "undefined") return;
+
+    const syncActiveFormats = () => {
+      const getState = (command) => {
+        try {
+          return Boolean(document.queryCommandState(command));
+        } catch {
+          return false;
+        }
+      };
+
+      setActiveFormats({
+        [RICH_TEXT_EDIT_TOOLBAR_ACTIONS.bold]: getState("bold"),
+        [RICH_TEXT_EDIT_TOOLBAR_ACTIONS.italic]: getState("italic"),
+        [RICH_TEXT_EDIT_TOOLBAR_ACTIONS.underline]: getState("underline"),
+        [RICH_TEXT_EDIT_TOOLBAR_ACTIONS.bulletList]: getState("insertUnorderedList"),
+        [RICH_TEXT_EDIT_TOOLBAR_ACTIONS.numberList]: getState("insertOrderedList"),
+      });
+    };
+
+    document.addEventListener("selectionchange", syncActiveFormats);
+    return () => {
+      document.removeEventListener("selectionchange", syncActiveFormats);
+    };
+  }, [editable]);
+
   const scrollToPage = (pageNumber) => {
     const nextPage = clamp(pageNumber, 1, totalPages);
     const pageNode = pageRefs.current[nextPage - 1];
@@ -389,6 +797,8 @@ export const DocumentViewer = ({
 
   const handleScroll = () => {
     if (isProgrammaticScrollRef.current) return;
+
+    updateCommentAnchorPositions();
 
     const viewport = viewportRef.current;
     if (!viewport || pageRefs.current.length === 0) return;
@@ -484,6 +894,80 @@ export const DocumentViewer = ({
     }, 1000);
   };
 
+  const getPageCommentValue = (pageKey) => {
+    if (pageComments && typeof pageComments === "object") {
+      return pageComments[pageKey] ?? "";
+    }
+    return internalComments[pageKey] ?? "";
+  };
+
+  const updatePageComment = (pageKey, value) => {
+    if (!(pageComments && typeof pageComments === "object")) {
+      setInternalComments((prev) => ({ ...prev, [pageKey]: value }));
+    }
+    onPageCommentChange?.(pageKey, value);
+  };
+
+  const executeToolbarAction = (action) => {
+    if (!editable || disableEditToolbar || typeof document === "undefined") return;
+
+    const activeEditor = editableRefs.current[currentPage - 1];
+    if (!activeEditor) {
+      onEditAction?.(action);
+      return;
+    }
+
+    activeEditor.focus();
+
+    if (action === RICH_TEXT_EDIT_TOOLBAR_ACTIONS.link) {
+      const link = window.prompt("Enter link URL");
+      if (link) {
+        document.execCommand("createLink", false, link);
+      }
+      onEditAction?.(action);
+      return;
+    }
+
+    const command = EDIT_COMMANDS[action];
+    if (command) {
+      document.execCommand(command.command, false, command.value ?? null);
+    }
+    onEditAction?.(action);
+  };
+
+  const reflowEditablePages = (editedEditor) => {
+    if (!editable || pdfDoc) return;
+
+    const text = editableRefs.current
+      .map((editor, index) => editor?.innerText ?? displayedPages[index]?.content ?? "")
+      .join(pageSeparator);
+    if (editedEditor?.scrollHeight > editedEditor.clientHeight) {
+      const currentLength = Math.max(1, editedEditor.innerText.length);
+      const measuredCapacity = Math.floor(
+        currentLength * (editedEditor.clientHeight / editedEditor.scrollHeight)
+      );
+      editablePageCapacityRef.current = Math.max(1, measuredCapacity);
+    }
+
+    const nextPages = paginateTextToPages({
+      text,
+      maxCharactersPerPage: editablePageCapacityRef.current,
+      pageSeparator,
+    });
+
+    editablePageHtmlRef.current = nextPages.map((page) => toEditableHtml(page.content ?? ""));
+    setRedlineHtmlByPage(
+      Object.fromEntries(
+        nextPages.map((page, index) => [
+          index,
+          createRedlineHtml(originalPageTextRef.current?.[index] ?? "", page.content),
+        ])
+      )
+    );
+    setEditablePages(nextPages);
+    onEditablePagesChange?.(nextPages);
+  };
+
   const renderPageBody = (page, index) => {
     if (renderPage) {
       return renderPage(page, index);
@@ -495,13 +979,57 @@ export const DocumentViewer = ({
       return content;
     }
 
-    const textContent = String(content ?? "").trim();
+    const rawTextContent = String(content ?? "").trim();
+    const appliedRedlineHtml = editingPageIndex !== index && appliedRedlines.length > 0
+      ? createAppliedRedlineHtml(content, appliedRedlines)
+      : "";
+    const editableHtml = appliedRedlineHtml || (editingPageIndex !== index && resolvedLiveChanges && redlineHtmlByPage[index]
+      ? redlineHtmlByPage[index]
+      : (highlightText || highlights.length > 0) && editingPageIndex !== index
+      ? createHighlightedHtml(
+        content,
+        [
+          ...highlights.map((highlight) => ({ ...highlight, active: highlight.text === highlightText })),
+          ...(highlightText && !highlights.some((highlight) => highlight.text === highlightText)
+            ? [{ text: highlightText, level: highlightLevel, active: true }]
+            : []),
+        ],
+        highlightLevel
+      )
+      : editablePageHtmlRef.current[index] ?? toEditableHtml(content ?? ""));
 
-    if (!textContent) {
+    if (!rawTextContent && !editableHtml) {
       return <div className="document-viewer__empty">{emptyState}</div>;
     }
 
-    return <div className="document-viewer__page-text">{textContent}</div>;
+    if (!editable || pdfDoc) {
+      return <div className="document-viewer__page-text">{rawTextContent}</div>;
+    }
+
+    return (
+      <div
+        ref={(node) => {
+          editableRefs.current[index] = node;
+          if (node && node.innerHTML !== editableHtml) {
+            node.innerHTML = editableHtml;
+          }
+        }}
+        className="document-viewer__page-text document-viewer__page-text--editable"
+        contentEditable
+        suppressContentEditableWarning
+        onFocus={() => setEditingPageIndex(index)}
+        onInput={(event) => {
+          editablePageHtmlRef.current[index] = event.currentTarget.innerHTML;
+          if (event.currentTarget.scrollHeight > event.currentTarget.clientHeight) {
+            reflowEditablePages(event.currentTarget);
+          }
+        }}
+        onBlur={(event) => {
+          reflowEditablePages(event.currentTarget);
+          setEditingPageIndex(null);
+        }}
+      />
+    );
   };
 
   const renderPdfPage = (pageNumber) => {
@@ -517,7 +1045,11 @@ export const DocumentViewer = ({
     );
   };
 
-  const classes = ["document-viewer", className].filter(Boolean).join(" ");
+  const classes = [
+    "document-viewer",
+    resolvedLiveChanges ? "document-viewer--show-live-changes" : "document-viewer--hide-live-changes",
+    className,
+  ].filter(Boolean).join(" ");
 
   if (error) {
     return (
@@ -562,10 +1094,39 @@ export const DocumentViewer = ({
 
   const pagesToRender = pdfDoc
     ? Array.from({ length: totalPages }, (_, i) => i + 1)
-    : normalizedPages;
+    : displayedPages;
+  const activePageKey = pdfDoc
+    ? `pdf-page-${currentPage}`
+    : displayedPages[currentPage - 1]?.id ?? `page-${currentPage}`;
 
   return (
-    <div className={classes} style={style} {...props}>
+    <div ref={viewerRef} className={classes} style={style} {...props}>
+      {editable && showEditToolbar && (
+        <RichTextEditToolbars
+          visibleActions={resolvedToolbarActions}
+          activeFormats={{ ...activeFormats, ...Object.fromEntries([...activeToolbarActions].map((key) => [key, true])) }}
+          disabled={disableEditToolbar}
+          onAction={executeToolbarAction}
+          rightActions={
+            <div style={{ display: "inline-flex", alignItems: "center", gap: "var(--spacing-2)" }}>
+              <Tooltip content={resolvedLiveChanges ? "Hide changes" : "Show changes"}>
+                <Button
+                  variant="tertiary"
+                  size="md"
+                  iconOnly
+                  aria-label={resolvedLiveChanges ? "Hide changes" : "Show changes"}
+                  aria-pressed={resolvedLiveChanges}
+                  isDisabled={disableEditToolbar}
+                  iconLeading={resolvedLiveChanges ? <EyeIcon /> : <EyeSlashIcon />}
+                  onClick={() => setShowLiveChanges(!resolvedLiveChanges)}
+                />
+              </Tooltip>
+            </div>
+          }
+          style={{ padding: "var(--spacing-1) var(--spacing-2)" }}
+        />
+      )}
+
       <div
         ref={viewportRef}
         className="document-viewer__viewport"
@@ -573,6 +1134,7 @@ export const DocumentViewer = ({
       >
         {pdfDoc
           ? pagesToRender.map((pageNumber) => {
+              const pageKey = `pdf-page-${pageNumber}`;
               return (
                 <div
                   key={`page-${pageNumber}`}
@@ -584,52 +1146,88 @@ export const DocumentViewer = ({
                   <div className="document-viewer__page">
                     {renderPdfPage(pageNumber)}
                   </div>
+                  {showPageComments && (
+                    <div className="document-viewer__page-comments">
+                      <label className="document-viewer__page-comment-label" htmlFor={`document-viewer-comment-${pageNumber}`}>
+                        Comment for page {pageNumber}
+                      </label>
+                      <textarea
+                        id={`document-viewer-comment-${pageNumber}`}
+                        className="document-viewer__page-comment-input"
+                        placeholder="Add comment for this page"
+                        value={getPageCommentValue(pageKey)}
+                        onChange={(event) => updatePageComment(pageKey, event.target.value)}
+                      />
+                    </div>
+                  )}
                 </div>
               );
             })
-          : normalizedPages.map((page, index) => {
-              const scaledHeight = pageHeight * zoom;
+          : displayedPages.map((page, index) => {
+              const pageNumber = index + 1;
+              const pageKey = page.id ?? `page-${pageNumber}`;
 
               return (
                 <div
-                  key={page.id ?? `page-${index + 1}`}
+                  key={pageKey}
                   ref={(node) => {
                     pageRefs.current[index] = node;
                   }}
                   className="document-viewer__page-shell"
-                  style={{ height: scaledHeight }}
                 >
                   <div
                     className="document-viewer__page"
                     style={{
-                      width: pageWidth,
-                      height: pageHeight,
-                      transform: `scale(${zoom})`,
-                      transformOrigin: "top center",
+                      width: pageWidth * zoom,
+                      height: pageHeight * zoom,
                     }}
                   >
                     <div
+                      className="document-viewer__page-body"
                       style={{
-                        width: "100%",
-                        height: "100%",
                         padding: pagePadding,
-                        boxSizing: "border-box",
+                        height: "100%",
                       }}
                     >
                       {renderPageBody(page, index)}
                     </div>
                   </div>
+                  {showPageComments && (
+                    <div className="document-viewer__page-comments">
+                      <label className="document-viewer__page-comment-label" htmlFor={`document-viewer-comment-${pageNumber}`}>
+                        Comment for page {pageNumber}
+                      </label>
+                      <textarea
+                        id={`document-viewer-comment-${pageNumber}`}
+                        className="document-viewer__page-comment-input"
+                        placeholder="Add comment for this page"
+                        value={getPageCommentValue(pageKey)}
+                        onChange={(event) => updatePageComment(pageKey, event.target.value)}
+                      />
+                    </div>
+                  )}
                 </div>
               );
             })}
       </div>
+
+      {editable && showCommentPopover && commentAnchorPositions.map((position) => {
+        const comment = commentThread.find((item) => item.id === position.id);
+        if (!comment) return null;
+        return (
+          <div key={comment.id} style={{ position: "fixed", top: position.top, left: position.left, zIndex: 3 }}>
+            <Button variant="tertiary" size="md" iconOnly aria-label="Open comment" iconLeading={<ChatBubbleLeftRightIcon />} onClick={() => setActiveCommentId(comment.id)} />
+            <CommentPopover open={activeCommentId === comment.id} onClose={() => setActiveCommentId(null)} comments={commentThread.filter((item) => item.targetText === comment.targetText)} onSubmit={(value) => onCommentSubmit?.(value, comment.targetText)} />
+          </div>
+        );
+      })}
 
       {showToolbar && (
         <div className="document-viewer__toolbar">
           <div className="document-viewer__toolbar-group">
             <Button
               variant="secondary"
-              size="xs"
+              size="sm"
               iconLeading={<Icon name="ChevronLeft" size="sm" />}
               onClick={() => scrollToPage(currentPage - 1)}
               disabled={currentPage <= 1}
@@ -643,7 +1241,7 @@ export const DocumentViewer = ({
             </div>
             <Button
               variant="secondary"
-              size="xs"
+              size="sm"
               iconLeading={<Icon name="ChevronRight" size="sm" />}
               onClick={() => scrollToPage(currentPage + 1)}
               disabled={currentPage >= totalPages}
@@ -657,7 +1255,7 @@ export const DocumentViewer = ({
           <div className="document-viewer__toolbar-group">
             <Button
               variant="secondary"
-              size="xs"
+              size="sm"
               iconLeading={<Icon name="Minus" size="sm" />}
               onClick={() => updateZoom(-1)}
               disabled={zoom <= minZoom}
@@ -666,7 +1264,7 @@ export const DocumentViewer = ({
             />
             <Button
               variant="secondary"
-              size="xs"
+              size="sm"
               iconLeading={<Icon name="Plus" size="sm" />}
               onClick={() => updateZoom(1)}
               disabled={zoom >= maxZoom}
@@ -676,7 +1274,7 @@ export const DocumentViewer = ({
             {showExportButton && (
               <Button
                 variant="secondary"
-                size="xs"
+                size="sm"
                 iconLeading={<Icon name="ArrowDownTray" size="sm" />}
                 onClick={handleExportPdf}
                 aria-label="Export to PDF"
@@ -686,6 +1284,7 @@ export const DocumentViewer = ({
           </div>
         </div>
       )}
+
     </div>
   );
 };

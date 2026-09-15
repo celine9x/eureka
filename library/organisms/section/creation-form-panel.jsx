@@ -28,6 +28,7 @@
 
 import React, { useState, forwardRef } from "react";
 import { Button } from "../../atoms/button.jsx";
+import { AiButton } from "../../atoms/ai-button.jsx";
 import { Icon } from "../../atoms/icon.jsx";
 import { MiniInfobox } from "../../molecules/miniinfobox.jsx";
 import { createStyleInjector, joinStyles } from "../../utils/styles.js";
@@ -76,6 +77,13 @@ const styles = {
       font-weight: var(--font-weight-bold);
       line-height: var(--line-height-heading-h2);
       color: var(--color-content-primary);
+    }
+
+    .creation-form-panel__title-group {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-2);
+      min-width: 0;
     }
 
     .creation-form-panel__header-actions {
@@ -164,6 +172,7 @@ const styles = {
     .creation-form-panel__content {
       flex: 1 1 auto;
       overflow-y: auto;
+      scrollbar-gutter: stable;
       padding: var(--spacing-6);
       display: flex;
       flex-direction: column;
@@ -386,6 +395,7 @@ export const CreationFormPanel = forwardRef(
     {
       // Header props
       title,
+      headerBadge,
       headerButtons = [],
       infoMessage,
       infoVariant = "info",
@@ -404,6 +414,7 @@ export const CreationFormPanel = forwardRef(
 
       // Footer props
       footerButtons = [],
+      showFooter,
 
       // Content
       children,
@@ -419,8 +430,36 @@ export const CreationFormPanel = forwardRef(
 
     const classes = ["creation-form-panel", className].filter(Boolean).join(" ");
 
-    const showHeader = title || headerButtons.length > 0 || infoMessage;
-    const showFooter = footerButtons.length > 0;
+    const showHeader = title || headerBadge || headerButtons.length > 0 || infoMessage;
+    const resolvedFooterButtons = Array.isArray(footerButtons) ? footerButtons.filter(Boolean) : [];
+    const shouldShowFooter = showFooter === true || (showFooter !== false && resolvedFooterButtons.length > 0);
+
+    const renderFooterButton = (btn, index, position) => {
+      const buttonType = btn.buttonType || btn.type || btn.kind || "button";
+      const ButtonComponent = buttonType === "ai" ? AiButton : Button;
+      const buttonLabel = btn.label ?? btn.children ?? "";
+
+      return (
+        <ButtonComponent
+          key={`${position}-${index}`}
+          variant={btn.variant || (buttonType === "ai" ? "primary" : "secondary")}
+          color={btn.color}
+          size={btn.size || "md"}
+          iconLeading={btn.iconLeading}
+          iconTrailing={btn.iconTrailing}
+          iconOnly={btn.iconOnly}
+          aria-label={btn.ariaLabel}
+          onClick={btn.onClick}
+          isDisabled={btn.isDisabled}
+          href={btn.href}
+          type={btn.type === "ai" ? "button" : btn.type || "button"}
+          style={{ flex: 1, ...btn.style }}
+          {...btn.props}
+        >
+          {buttonLabel}
+        </ButtonComponent>
+      );
+    };
 
     return (
       <div ref={ref} className={classes} style={style} {...props}>
@@ -428,7 +467,12 @@ export const CreationFormPanel = forwardRef(
         {showHeader && (
           <div className="creation-form-panel__header">
             <div className="creation-form-panel__header-top">
-              {title && <h2 className="creation-form-panel__title">{title}</h2>}
+              {(title || headerBadge) && (
+                <div className="creation-form-panel__title-group">
+                  {title && <h2 className="creation-form-panel__title">{title}</h2>}
+                  {headerBadge}
+                </div>
+              )}
               {headerButtons.length > 0 && (
                 <div className="creation-form-panel__header-actions">
                   {headerButtons.map((btn, index) => (
@@ -437,7 +481,7 @@ export const CreationFormPanel = forwardRef(
                       variant={btn.variant || "secondary"}
                       size={btn.size || "md"}
                       iconOnly={btn.iconOnly}
-                      ariaLabel={btn.ariaLabel}
+                      aria-label={btn.ariaLabel}
                       iconLeading={btn.iconLeading}
                       iconTrailing={btn.iconTrailing}
                       onClick={btn.onClick}
@@ -464,7 +508,7 @@ export const CreationFormPanel = forwardRef(
                     variant="tertiary"
                     size="sm"
                     iconOnly
-                    ariaLabel="Back to list"
+                    aria-label="Back to list"
                     iconLeading={<Icon name="ChevronLeft" size="sm" />}
                     onClick={onBack}
                   />
@@ -477,9 +521,9 @@ export const CreationFormPanel = forwardRef(
                 <div className="creation-form-panel__nav-right">
                   <Button
                     variant="secondary"
-                    size="xs"
+                    size="sm"
                     iconOnly
-                    ariaLabel="Previous item"
+                    aria-label="Previous item"
                     iconLeading={<Icon name="ChevronUp" size="sm" />}
                     onClick={onPrevious}
                     isDisabled={!hasPrevious}
@@ -490,9 +534,9 @@ export const CreationFormPanel = forwardRef(
                   </span>
                   <Button
                     variant="secondary"
-                    size="xs"
+                    size="sm"
                     iconOnly
-                    ariaLabel="Next item"
+                    aria-label="Next item"
                     iconLeading={<Icon name="ChevronDown" size="sm" />}
                     onClick={onNext}
                     isDisabled={!hasNext}
@@ -515,48 +559,18 @@ export const CreationFormPanel = forwardRef(
         </div>
 
         {/* Footer */}
-        {showFooter && (
+        {shouldShowFooter && (
           <div className="creation-form-panel__footer">
             <div className="creation-form-panel__footer-left">
-              {footerButtons
-                .filter((btn) => btn.position === "left" || (!btn.position && footerButtons.indexOf(btn) === 0))
+              {resolvedFooterButtons
+                .filter((btn) => btn.position === "left" || (!btn.position && resolvedFooterButtons.indexOf(btn) === 0))
                 .slice(0, 1)
-                .map((btn, index) => (
-                  <Button
-                    key={`left-${index}`}
-                    variant={btn.variant || "secondary"}
-                    color={btn.color}
-                    size={btn.size || "md"}
-                    iconLeading={btn.iconLeading}
-                    iconTrailing={btn.iconTrailing}
-                    onClick={btn.onClick}
-                    isDisabled={btn.isDisabled}
-                    style={{ flex: 1, ...btn.style }}
-                    {...btn.props}
-                  >
-                    {btn.label}
-                  </Button>
-                ))}
+                .map((btn, index) => renderFooterButton(btn, index, "left"))}
             </div>
             <div className="creation-form-panel__footer-right">
-              {footerButtons
+              {resolvedFooterButtons
                 .filter((btn, idx) => btn.position === "right" || (!btn.position && idx > 0))
-                .map((btn, index) => (
-                  <Button
-                    key={`right-${index}`}
-                    variant={btn.variant || "secondary"}
-                    color={btn.color}
-                    size={btn.size || "md"}
-                    iconLeading={btn.iconLeading}
-                    iconTrailing={btn.iconTrailing}
-                    onClick={btn.onClick}
-                    isDisabled={btn.isDisabled}
-                    style={{ flex: 1, ...btn.style }}
-                    {...btn.props}
-                  >
-                    {btn.label}
-                  </Button>
-                ))}
+                .map((btn, index) => renderFooterButton(btn, index, "right"))}
             </div>
           </div>
         )}

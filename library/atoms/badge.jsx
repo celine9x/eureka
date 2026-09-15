@@ -68,7 +68,7 @@ const styles = {
   },
 
   shapes: {
-    rounded: { borderRadius: "var(--radius-sm)" },
+    rounded: { borderRadius: "var(--radius-xs)" },
     pill: { borderRadius: "var(--radius-full)" },
   },
 

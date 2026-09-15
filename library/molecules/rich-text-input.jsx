@@ -180,7 +180,7 @@ const MAX_HEIGHT = LINE_HEIGHT * MAX_LINES; // 160px
 const ShowMoreButton = ({ expanded, onClick }) => (
   <Button
     variant="secondary"
-    size="xs"
+    size="sm"
     iconTrailing={<Icon name={expanded ? "ChevronUp" : "ChevronDown"} size="sm" />}
     onClick={onClick}
   >
@@ -290,6 +290,7 @@ const Toolbar = ({ activeFormats = {}, onFormat }) => (
 
 // ─────────────────────────────────────────────
 // RICH TEXT INPUT (textarea-based)
+// RICH TEXT INPUT COMPONENT
 // ─────────────────────────────────────────────
 
 /**
@@ -334,11 +335,13 @@ export const RichTextInput = ({
     if (!el) return;
     const check = () => setOverflows(el.scrollHeight > MAX_HEIGHT);
     check();
+    if (typeof ResizeObserver === "undefined") return;
     const ro = new ResizeObserver(check);
     ro.observe(el);
     return () => ro.disconnect();
   }, [value, isActive]);
 
+  // Compose container styles
   const containerStyle = {
     ...styles.container,
     ...(isHovered && !isActive && !disabled && styles.containerHover),
@@ -511,6 +514,7 @@ export const RichTextInputEditable = ({
     if (!el) return;
     const check = () => setOverflows(el.scrollHeight > MAX_HEIGHT);
     check();
+    if (typeof ResizeObserver === "undefined") return;
     const ro = new ResizeObserver(check);
     ro.observe(el);
     return () => ro.disconnect();

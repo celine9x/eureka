@@ -200,7 +200,7 @@ const AccessLevelDropdown = ({ value, objectLabel, principalType, onChange, onRe
     >
       <Button
         variant="secondary"
-        size="xs"
+        size="sm"
         iconTrailing={<ChevronIcon size={14} />}
         onClick={toggle}
       >
@@ -315,7 +315,7 @@ const AccessRow = ({
           {isGroup && memberCount > 0 && (
             <Button
               variant="tertiary"
-              size="xs"
+              size="sm"
               iconTrailing={<ChevronIcon size={12} style={isExpanded ? { transform: "rotate(180deg)" } : undefined} />}
               onClick={() => onToggleMembers?.(principal.id)}
             >
@@ -908,7 +908,7 @@ export const AccessControlModal = ({
                 {inheritedPrincipals.length > 0 && (
                   <Button
                     variant="tertiary"
-                    size="xs"
+                    size="sm"
                     iconTrailing={<ChevronIcon size={12} style={isInheritedExpanded ? { transform: "rotate(180deg)" } : undefined} />}
                     onClick={() => setIsInheritedExpanded((prev) => !prev)}
                   >
@@ -1087,7 +1087,7 @@ export const AccessControlModal = ({
                     <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-sm)", flexShrink: 0 }}>
                       <Button
                         variant="tertiary"
-                        size="xs"
+                        size="sm"
                         iconTrailing={<ChevronIcon size={12} style={isInheritedExpanded ? { transform: "rotate(180deg)" } : undefined} />}
                         onClick={() => setIsInheritedExpanded((prev) => !prev)}
                       >

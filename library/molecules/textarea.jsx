@@ -12,8 +12,69 @@
  * <Textarea label="Comments" error="This field is required" />
  */
 
-import { useState, useId, forwardRef } from "react";
+import { useEffect, useState, useId, forwardRef } from "react";
 import { Icon } from "../atoms/icon.jsx";
+import { Badge } from "../atoms/badge.jsx";
+import { Button } from "../atoms/button.jsx";
+import { Tooltip } from "../atoms/tooltip.jsx";
+
+let placeholderStylesInjected = false;
+
+const injectPlaceholderStyles = () => {
+  if (placeholderStylesInjected || typeof document === "undefined") return;
+
+  const styleEl = document.createElement("style");
+  styleEl.setAttribute("data-eureka", "textarea-placeholder");
+  styleEl.textContent = `
+    .eureka-textarea::placeholder {
+      color: var(--color-content-tertiary);
+      opacity: 1;
+    }
+
+    .eureka-textarea {
+      scrollbar-width: none;
+    }
+
+    .eureka-textarea::-webkit-scrollbar {
+      display: none;
+    }
+
+    .eureka-textarea-redline-preview ins {
+      color: var(--color-content-redline-add);
+      text-decoration: none;
+    }
+
+    .eureka-textarea-redline-preview del {
+      color: var(--color-content-redline-delete);
+      text-decoration: line-through;
+    }
+  `;
+  document.head.appendChild(styleEl);
+  placeholderStylesInjected = true;
+};
+
+const tokenizeForRedline = (value = "") => String(value).match(/\s+|[^\s]+/g) ?? [];
+
+const renderRedlinePreview = (originalValue = "", proposedValue = "") => {
+  const originalTokens = tokenizeForRedline(originalValue);
+  const proposedTokens = tokenizeForRedline(proposedValue);
+  let prefixLength = 0;
+  let suffixLength = 0;
+
+  while (prefixLength < originalTokens.length && prefixLength < proposedTokens.length && originalTokens[prefixLength] === proposedTokens[prefixLength]) {
+    prefixLength += 1;
+  }
+  while (suffixLength < originalTokens.length - prefixLength && suffixLength < proposedTokens.length - prefixLength && originalTokens[originalTokens.length - 1 - suffixLength] === proposedTokens[proposedTokens.length - 1 - suffixLength]) {
+    suffixLength += 1;
+  }
+
+  return [
+    <span key="start">{originalTokens.slice(0, prefixLength).join("")}</span>,
+    originalTokens.length - prefixLength - suffixLength > 0 && <del key="delete">{originalTokens.slice(prefixLength, originalTokens.length - suffixLength).join("")}</del>,
+    proposedTokens.length - prefixLength - suffixLength > 0 && <ins key="add">{proposedTokens.slice(prefixLength, proposedTokens.length - suffixLength).join("")}</ins>,
+    <span key="end">{suffixLength ? originalTokens.slice(originalTokens.length - suffixLength).join("") : ""}</span>,
+  ];
+};
 
 // ─────────────────────────────────────────────
 // CONSTANTS
@@ -23,6 +84,11 @@ export const TEXTAREA_STATES = {
   default: "default",
   error: "error",
   success: "success",
+};
+
+export const TEXTAREA_VARIANTS = {
+  default: "default",
+  ai: "ai",
 };
 
 export const HELPER_VARIANTS = {
@@ -51,7 +117,7 @@ const styles = {
     fontSize: "var(--text-body-md)",
     fontWeight: "var(--font-weight-regular)",
     lineHeight: "var(--line-height-body-md)",
-    color: "var(--color-content-primary)",
+    color: "var(--color-content-secondary)",
     cursor: "pointer",
   },
 
@@ -62,6 +128,16 @@ const styles = {
   fieldWrapper: {
     position: "relative",
     width: "100%",
+  },
+
+  aiContent: {
+    position: "absolute",
+    top: "var(--spacing-2)",
+    right: "var(--spacing-2)",
+    justifyContent: "center",
+    alignItems: "flex-start",
+    gap: "var(--spacing-2)",
+    display: "inline-flex",
   },
 
   textarea: {
@@ -84,6 +160,34 @@ const styles = {
     boxShadow: "var(--shadow-light-down)",
     transition: "all var(--transition-fast)",
     resize: "vertical",
+  },
+
+  textareaAi: {
+    paddingRight: "calc(var(--spacing-2) + var(--size-button-xs) + var(--spacing-lg))",
+  },
+
+  redlinePreview: {
+    width: "100%",
+    minHeight: 0,
+    padding: "var(--spacing-xs) var(--spacing-3)",
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-lg)",
+    fontWeight: "var(--font-weight-regular)",
+    lineHeight: "var(--line-height-body-lg)",
+    color: "var(--color-content-primary)",
+    background: "var(--color-interaction-fill-enabled)",
+    border: "none",
+    borderRadius: "var(--radius-md)",
+    outline: "1px solid var(--color-interaction-outline-enabled)",
+    outlineOffset: "-1px",
+    boxSizing: "border-box",
+    boxShadow: "var(--shadow-light-down)",
+    cursor: "text",
+    whiteSpace: "pre-wrap",
+  },
+  redlinePreviewWrapper: {
+    position: "relative",
+    width: "100%",
   },
 
   textareaHover: {
@@ -124,16 +228,6 @@ const styles = {
 
   textareaReadOnly: {
     background: "var(--color-general-neutral-lighter)",
-  },
-
-  resizeHandle: {
-    position: "absolute",
-    right: "var(--spacing-xs)",
-    bottom: "var(--spacing-xs)",
-    width: 6,
-    height: 6,
-    pointerEvents: "none",
-    color: "var(--color-content-tertiary)",
   },
 
   helper: {
@@ -263,11 +357,18 @@ export const TextareaField = forwardRef(
       disabled,
       isReadOnly = false,
       readOnly,
+      variant = TEXTAREA_VARIANTS.default,
+      aiValue = "",
+      isAiEdited = false,
+      onRevert,
       style,
+      className,
       ...props
     },
     ref
   ) => {
+    injectPlaceholderStyles();
+
     const [isHovered, setIsHovered] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
 
@@ -277,6 +378,7 @@ export const TextareaField = forwardRef(
     // Compose textarea styles
     const textareaStyle = {
       ...styles.textarea,
+      ...(variant === TEXTAREA_VARIANTS.ai && styles.textareaAi),
       ...(isHovered && !isTextareaDisabled && !isFocused && styles.textareaHover),
       ...(isFocused && !isTextareaDisabled && state === TEXTAREA_STATES.default && styles.textareaFocus),
       ...(state === TEXTAREA_STATES.error && !isFocused && styles.textareaError),
@@ -294,6 +396,7 @@ export const TextareaField = forwardRef(
         <textarea
           ref={ref}
           rows={rows}
+          className={className ? `eureka-textarea ${className}` : "eureka-textarea"}
           style={textareaStyle}
           disabled={isTextareaDisabled}
           readOnly={isTextareaReadOnly}
@@ -303,12 +406,24 @@ export const TextareaField = forwardRef(
           onBlur={() => setIsFocused(false)}
           {...props}
         />
-        {resizable && !isTextareaDisabled && (
-          <span style={styles.resizeHandle}>
-            <svg viewBox="0 0 6 6" fill="currentColor" style={{ width: "100%", height: "100%", transform: "rotate(90deg)" }}>
-              <path d="M6 6L0 6L6 0L6 6Z" />
-            </svg>
-          </span>
+        {variant === TEXTAREA_VARIANTS.ai && (
+          <div style={styles.aiContent}>
+            {isAiEdited ? (
+              <Tooltip content="Revert to AI">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  iconOnly
+                  aria-label="Revert to AI"
+                  onClick={() => onRevert?.(aiValue)}
+                  iconLeading={<Icon name="ArrowPath" size="sm" />}
+                />
+              </Tooltip>
+            ) : (
+              <Badge color="ai" size="md">AI</Badge>
+            )}
+          </div>
         )}
       </div>
     );
@@ -317,6 +432,7 @@ export const TextareaField = forwardRef(
 
 TextareaField.displayName = "TextareaField";
 TextareaField.states = TEXTAREA_STATES;
+TextareaField.variants = TEXTAREA_VARIANTS;
 
 // ─────────────────────────────────────────────
 // TEXTAREA COMPONENT (MOLECULE)
@@ -334,6 +450,7 @@ export const Textarea = forwardRef(
       label,
       placeholder,
       value,
+      defaultValue = "",
       helper,
       error,
       success,
@@ -351,6 +468,11 @@ export const Textarea = forwardRef(
       onChange,
       onFocus,
       onBlur,
+      variant = TEXTAREA_VARIANTS.default,
+      aiValue,
+      originalValue,
+      showRedlinePreview = false,
+      onRevert,
       style,
       ...props
     },
@@ -358,6 +480,18 @@ export const Textarea = forwardRef(
   ) => {
     const generatedId = useId();
     const textareaId = id || generatedId;
+    const initialAiValue = aiValue ?? value ?? defaultValue;
+    const [uncontrolledValue, setUncontrolledValue] = useState(defaultValue);
+    const [aiBaseline, setAiBaseline] = useState(initialAiValue);
+    const [isRedlineEditing, setIsRedlineEditing] = useState(false);
+    const isControlled = value !== undefined;
+    const currentValue = isControlled ? value : uncontrolledValue;
+
+    useEffect(() => {
+      if (aiValue !== undefined) {
+        setAiBaseline(aiValue);
+      }
+    }, [aiValue]);
 
     // Support legacy props
     const fieldDisabled = isDisabled || disabled;
@@ -386,6 +520,23 @@ export const Textarea = forwardRef(
       ...style,
     };
 
+    const handleChange = (event) => {
+      if (!isControlled) {
+        setUncontrolledValue(event.target.value);
+      }
+      onChange?.(event);
+    };
+
+    const handleRevert = (nextValue) => {
+      if (!isControlled) {
+        setUncontrolledValue(nextValue);
+      }
+      onRevert?.(nextValue);
+      setIsRedlineEditing(false);
+    };
+
+    const showPreview = showRedlinePreview && variant === TEXTAREA_VARIANTS.ai && !isRedlineEditing && currentValue === aiBaseline;
+
     return (
       <div style={fieldStyle} {...props}>
         {label && (
@@ -394,22 +545,51 @@ export const Textarea = forwardRef(
           </TextareaLabel>
         )}
 
-        <TextareaField
-          ref={ref}
-          id={textareaId}
-          name={name}
-          placeholder={placeholder}
-          value={value}
-          state={textareaState}
-          rows={rows}
-          maxLength={maxLength}
-          resizable={resizable}
-          isDisabled={fieldDisabled}
-          isReadOnly={fieldReadOnly}
-          onChange={onChange}
-          onFocus={onFocus}
-          onBlur={onBlur}
-        />
+        {showPreview ? (
+          <div style={styles.redlinePreviewWrapper}>
+            <div
+              role="button"
+              tabIndex={fieldDisabled || fieldReadOnly ? -1 : 0}
+              aria-label="Edit AI suggestion"
+              className="eureka-textarea-redline-preview"
+              style={{ ...styles.redlinePreview, ...styles.textareaAi }}
+              onClick={() => setIsRedlineEditing(true)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  setIsRedlineEditing(true);
+                }
+              }}
+            >
+              {renderRedlinePreview(originalValue, currentValue)}
+            </div>
+            <div style={styles.aiContent}>
+              <Badge color="ai" size="md">AI</Badge>
+            </div>
+          </div>
+        ) : (
+          <TextareaField
+            ref={ref}
+            id={textareaId}
+            name={name}
+            placeholder={placeholder}
+            value={currentValue}
+            state={textareaState}
+            rows={rows}
+            maxLength={maxLength}
+            resizable={resizable}
+            isDisabled={fieldDisabled}
+            isReadOnly={fieldReadOnly}
+            onChange={handleChange}
+            onFocus={onFocus}
+            onBlur={onBlur}
+            variant={variant}
+            aiValue={aiBaseline}
+            isAiEdited={variant === TEXTAREA_VARIANTS.ai && (currentValue !== aiBaseline || (showRedlinePreview && isRedlineEditing))}
+            onRevert={handleRevert}
+            style={showRedlinePreview ? { minHeight: "auto" } : undefined}
+          />
+        )}
 
         {helperMessage && (
           <TextareaHelperText variant={helperVariant}>{helperMessage}</TextareaHelperText>
@@ -421,6 +601,7 @@ export const Textarea = forwardRef(
 
 Textarea.displayName = "Textarea";
 Textarea.states = TEXTAREA_STATES;
+Textarea.variants = TEXTAREA_VARIANTS;
 Textarea.helperVariants = HELPER_VARIANTS;
 Textarea.Label = TextareaLabel;
 Textarea.Field = TextareaField;

@@ -565,8 +565,20 @@ export const Button = forwardRef(
         setIsHovered(false);
         setIsActive(false);
       },
+      onPointerLeave: () => {
+        setIsHovered(false);
+        setIsActive(false);
+      },
+      onPointerCancel: () => {
+        setIsHovered(false);
+        setIsActive(false);
+      },
       onMouseDown: () => setIsActive(true),
       onMouseUp: () => setIsActive(false),
+      onBlur: () => {
+        setIsHovered(false);
+        setIsActive(false);
+      },
       ...props,
     };
 

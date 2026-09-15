@@ -1338,7 +1338,7 @@ export const AiOpportunityExtractionReviewPage = () => {
         <div style={styles.formPanelNav}>
           <Button
             variant="secondary"
-            size="xs"
+            size="sm"
             iconOnly
             ariaLabel="Previous extracted opportunity"
             iconLeading={<Icon name="ChevronUp" size="sm" />}
@@ -1349,7 +1349,7 @@ export const AiOpportunityExtractionReviewPage = () => {
           <div style={styles.formPanelNavText}>{`${selectedIndex + 1} of ${opportunities.length}`}</div>
           <Button
             variant="secondary"
-            size="xs"
+            size="sm"
             iconOnly
             ariaLabel="Next extracted opportunity"
             iconLeading={<Icon name="ChevronDown" size="sm" />}

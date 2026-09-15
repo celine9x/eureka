@@ -10,6 +10,7 @@
 import React, { useRef, useState } from "react";
 import { Button } from "../atoms/button.jsx";
 import { Icon } from "../atoms/icon.jsx";
+import { FileUploaded } from "./file-uploaded.jsx";
 import folderIllustration from "../../illustration/Folder.svg";
 
 export const FILE_UPLOADER_STATES = {
@@ -96,6 +97,14 @@ const styles = {
   hiddenInput: {
     display: "none",
   },
+
+  fileList: {
+    width: "100%",
+    alignSelf: "stretch",
+    display: "flex",
+    flexDirection: "column",
+    gap: "var(--spacing-2)",
+  },
 };
 
 export const FileUploader = ({
@@ -107,14 +116,40 @@ export const FileUploader = ({
   multiple = true,
   accept,
   isDisabled = false,
+  files: controlledFiles,
+  defaultFiles = [],
+  showFileList = true,
   onBrowse,
   onFilesSelected,
+  onFilesChange,
+  onFileRemoved,
   style,
   ...props
 }) => {
   const inputRef = useRef(null);
   const [isHovered, setIsHovered] = useState(false);
   const [isDragActive, setIsDragActive] = useState(false);
+  const [internalFiles, setInternalFiles] = useState(defaultFiles);
+
+  const isFilesControlled = controlledFiles !== undefined;
+  const files = isFilesControlled ? controlledFiles : internalFiles;
+
+  const updateFiles = (nextFiles) => {
+    if (!isFilesControlled) setInternalFiles(nextFiles);
+    onFilesChange?.(nextFiles);
+  };
+
+  const addFiles = (newFiles) => {
+    const nextFiles = multiple ? [...files, ...newFiles] : newFiles.slice(0, 1);
+    updateFiles(nextFiles);
+    onFilesSelected?.(newFiles);
+  };
+
+  const removeFile = (index) => {
+    const removed = files[index];
+    updateFiles(files.filter((_, fileIndex) => fileIndex !== index));
+    onFileRemoved?.(removed, index);
+  };
 
   const resolvedState = isDragActive
     ? FILE_UPLOADER_STATES.active
@@ -136,9 +171,9 @@ export const FileUploader = ({
   };
 
   const handleInputChange = (event) => {
-    const files = Array.from(event.target?.files || []);
-    if (files.length > 0) {
-      onFilesSelected?.(files);
+    const selectedFiles = Array.from(event.target?.files || []);
+    if (selectedFiles.length > 0) {
+      addFiles(selectedFiles);
     }
     event.target.value = "";
   };
@@ -148,9 +183,9 @@ export const FileUploader = ({
     if (isDisabled) return;
 
     setIsDragActive(false);
-    const files = Array.from(event.dataTransfer?.files || []);
-    if (files.length > 0) {
-      onFilesSelected?.(files);
+    const droppedFiles = Array.from(event.dataTransfer?.files || []);
+    if (droppedFiles.length > 0) {
+      addFiles(droppedFiles);
     }
   };
 
@@ -193,6 +228,19 @@ export const FileUploader = ({
         onChange={handleInputChange}
         style={styles.hiddenInput}
       />
+
+      {showFileList && files.length > 0 ? (
+        <div style={styles.fileList}>
+          {files.map((file, index) => (
+            <FileUploaded
+              key={`${file.name}-${index}`}
+              fileName={file.name}
+              onRemove={() => removeFile(index)}
+              removeAriaLabel={`Remove ${file.name}`}
+            />
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 };

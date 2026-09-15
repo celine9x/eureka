@@ -43,6 +43,7 @@ const styles = {
   wrapper: {
     display: "inline-flex",
     alignItems: "center",
+    flexShrink: 0,
     lineHeight: 1,
     gap: "var(--spacing-sm)",
     cursor: "pointer",
@@ -96,6 +97,10 @@ const styles = {
   },
 
   markIcon: {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
     color: "var(--color-content-inverted)",
     transition: "color var(--transition-fast)",
   },
@@ -105,6 +110,10 @@ const styles = {
   },
 
   intermediateBar: {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
     borderRadius: "var(--radius-full)",
     background: "var(--color-content-inverted)",
   },

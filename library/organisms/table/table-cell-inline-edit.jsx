@@ -508,7 +508,7 @@ export function ButtonCellInlineEdit({
         {value ? (
           <Button
             variant="secondary"
-            size="xs"
+            size="sm"
             style={{ pointerEvents: "none", flexShrink: 0 }}
             tabIndex={-1}
           >
