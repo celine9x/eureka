@@ -115,7 +115,6 @@ import { ObjectPage } from "./library/templates/object-page.jsx";
 import { SidePanel } from "./library/templates/side-panel.jsx";
 import { DocumentViewerPage } from "./library/templates/document-viewer-page.jsx";
 import { AiHomepage } from "./library/templates/ai-homepage.jsx";
-import HubPage from "./pages/hub/hub-page.jsx";
 
 // ─────────────────────────────────────────────
 // SHARED PROPS
@@ -6696,8 +6695,6 @@ const [selectedRow, setSelectedRow] = useState(null);
   );
 };
 
-const HubTemplatePage = () => <HubPage />;
-
 const ObjectPageTemplatePage = () => {
   const [activeTab, setActiveTab] = useState("overview");
 
@@ -7644,7 +7641,6 @@ const PAGES = {
   tableCellInlineEdit: { title: "TableCell — Inline Edit", component: TableCellInlineEditPage, category: "organisms" },
   tableCellInlineEditTable: { title: "TableCell — Inline Edit Table", component: TableCellInlineEditTablePage, category: "organisms" },
   // Templates
-  hubTemplate: { title: "Hub", component: HubTemplatePage, category: "templates", fullBleed: true },
   objectPageTemplate: { title: "ObjectPage", component: ObjectPageTemplatePage, category: "templates" },
   documentViewerPageTemplate: { title: "DocumentViewerPage", component: DocumentViewerPageTemplatePage, category: "templates" },
   sidePanelTemplate: { title: "SidePanel", component: SidePanelPage, category: "templates" },
