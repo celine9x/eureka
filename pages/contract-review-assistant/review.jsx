@@ -26,6 +26,7 @@ import { Tabs, Tab } from "@/library/molecules/tabs";
 import { EmptyState } from "../../library/molecules/empty-state.jsx";
 import { useToast } from "../../library/molecules/toast.jsx";
 import { Modal } from "../../library/organisms/modal.jsx";
+import { FileUploader } from "../../library/molecules/file-uploader.jsx";
 import { RadioCardGroup, RadioCard } from "../../library/molecules/radio-card.jsx";
 import fileDocIcon from "../../library/atoms/custom-icons/file-doc.svg";
 import redlinedContractFile from "./Collaboration-License-Agreement-REDLINE.docx?url";
@@ -775,6 +776,8 @@ export const AiObligationExtractionPage = () => {
   const [regulatoryTableRows, setRegulatoryTableRows] = useState(INITIAL_REGULATORY_TABLE_ROWS);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [exportFormat, setExportFormat] = useState(EXPORT_FORMATS.redlined);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [uploadFiles, setUploadFiles] = useState([]);
   const hasAnnouncedFindingsRef = useRef(false);
 
   useEffect(() => {
@@ -1115,11 +1118,11 @@ export const AiObligationExtractionPage = () => {
                   ) : (
                     <EmptyState
                       size="sm"
-                      illustrationVariant="noIssues"
+                      illustrationVariant="noHealthCheck"
                       title="All findings resolved"
                       description="Every finding in this contract has been reviewed and resolved. Upload another document to start a new review."
                       actionLabel="Upload another document"
-                      onAction={() => navigateToPath(CONTRACT_REVIEW_ASSISTANT_GUIDANCE_PATH)}
+                      onAction={() => setIsUploadModalOpen(true)}
                     />
                   )
                 )}
@@ -1262,6 +1265,30 @@ export const AiObligationExtractionPage = () => {
             icon={<img src={fileDocIcon} alt="" width={20} height={20} />}
           />
         </RadioCardGroup>
+      </Modal>
+
+      <Modal
+        open={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        title="Upload another document"
+        style={{ maxWidth: 600 }}
+        tertiaryLabel="Cancel"
+        primaryLabel="Start review"
+        primaryDisabled={uploadFiles.length === 0}
+        onTertiaryClick={() => setIsUploadModalOpen(false)}
+        onPrimaryClick={() => {
+          setIsUploadModalOpen(false);
+          navigateToPath(CONTRACT_REVIEW_ASSISTANT_GUIDANCE_PATH);
+        }}
+      >
+        <p style={styles.exportModalSubtitle}>Upload a contract to start a new AI-assisted review.</p>
+        <FileUploader
+          files={uploadFiles}
+          onFilesChange={setUploadFiles}
+          multiple={false}
+          accept=".pdf,.doc,.docx"
+          subtitle="PDF or Word, max 25MB"
+        />
       </Modal>
     </div>
   );
