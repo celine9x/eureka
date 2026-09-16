@@ -150,6 +150,11 @@ const styles = {
     whiteSpace: "nowrap",
     overflow: "hidden",
     textOverflow: "ellipsis",
+    // Flex items default to min-width: auto (their content's natural size),
+    // which stops them shrinking below that no matter what overflow/ellipsis
+    // is set — so without this, a wide custom `title` node just gets
+    // clipped mid-character with no "…" instead of actually truncating.
+    minWidth: 0,
   },
 
   titleSizes: {

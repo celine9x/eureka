@@ -493,8 +493,14 @@ const styles = {
     alignItems: "center",
     gap: "var(--spacing-xs)",
     minWidth: 0,
+    // Stretches to whatever width the accordion header actually gives this
+    // title node, so the label below has a real box to shrink within
+    // instead of just rendering at its full content width and getting
+    // clipped by the header's overflow: hidden with no "…".
+    width: "100%",
   },
   accordionTitleLabel: {
+    flex: "1 1 auto",
     minWidth: 0,
     overflow: "hidden",
     textOverflow: "ellipsis",
@@ -921,7 +927,7 @@ export const AiObligationExtractionPage = () => {
                     key={finding.id}
                     title={
                       <span style={styles.accordionTitle}>
-                        <ColorStatus variant={SEVERITY_COLOR_STATUS_VARIANT[finding.severity]}>{finding.severity}</ColorStatus>
+                        <ColorStatus variant={SEVERITY_COLOR_STATUS_VARIANT[finding.severity]} style={{ flexShrink: 0 }}>{finding.severity}</ColorStatus>
                         <span style={styles.accordionTitleLabel}>{finding.title}</span>
                       </span>
                     }

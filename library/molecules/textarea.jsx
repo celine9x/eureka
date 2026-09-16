@@ -444,7 +444,7 @@ export const TextareaField = forwardRef(
                 />
               </Tooltip>
             ) : (
-              <Badge color="ai" size="md">AI</Badge>
+              <Badge color="ai" size="xs">AI</Badge>
             )}
           </div>
         )}
@@ -591,7 +591,7 @@ export const Textarea = forwardRef(
               {renderRedlinePreview(originalValue, currentValue)}
             </div>
             <div style={styles.aiContent}>
-              <Badge color="ai" size="md">AI</Badge>
+              <Badge color="ai" size="xs">AI</Badge>
             </div>
           </div>
         ) : (
