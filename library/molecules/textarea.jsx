@@ -53,7 +53,14 @@ const injectPlaceholderStyles = () => {
   placeholderStylesInjected = true;
 };
 
-const tokenizeForRedline = (value = "") => String(value).match(/\s+|[^\s]+/g) ?? [];
+// Splits into whitespace runs, word runs (letters/digits, with internal
+// apostrophes kept so "Party's" stays one token), and individual punctuation
+// characters. Punctuation is NOT glued to the adjacent word — otherwise
+// adding a comma after "Efforts" makes the whole "Efforts,"/"Efforts" pair
+// fail to match as tokens, and the diff shows the entire word as deleted
+// and re-added right next to itself instead of just inserting the comma.
+const tokenizeForRedline = (value = "") =>
+  String(value).match(/\s+|[A-Za-z0-9]+(?:'[A-Za-z0-9]+)*|[^\sA-Za-z0-9]/g) ?? [];
 
 const renderRedlinePreview = (originalValue = "", proposedValue = "") => {
   const originalTokens = tokenizeForRedline(originalValue);

@@ -31,6 +31,7 @@ const styles = {
       --document-viewer-scrollbar-size: var(--spacing-1);
       --document-viewer-outline-width: calc(var(--spacing-1) / 4);
       --document-viewer-page-outline-color: var(--color-action-outline-secondary-enabled);
+      --document-viewer-page-text-font-family: var(--font-family-primary);
       --document-viewer-page-text-font-size: var(--text-body-md);
       --document-viewer-page-text-line-height: var(--line-height-body-lg);
       --document-viewer-counter-size: var(--size-button-xs);
@@ -116,7 +117,7 @@ const styles = {
       height: 100%;
       white-space: pre-wrap;
       word-break: break-word;
-      font-family: var(--font-family-primary);
+      font-family: var(--document-viewer-page-text-font-family);
       font-size: var(--document-viewer-page-text-font-size);
       line-height: var(--document-viewer-page-text-line-height);
       color: var(--color-content-primary);
@@ -127,6 +128,29 @@ const styles = {
       outline: none;
       height: 100%;
       overflow: hidden;
+    }
+
+    .document-viewer__paragraph--title {
+      display: block;
+      text-align: center;
+      font-weight: 700;
+      font-size: 1.6em;
+    }
+
+    .document-viewer__paragraph--heading1 {
+      font-weight: 700;
+      font-size: 1.3em;
+      color: var(--color-content-brand);
+    }
+
+    .document-viewer__paragraph--heading2 {
+      font-weight: 700;
+      font-size: 1.1em;
+      color: var(--color-content-brand);
+    }
+
+    .document-viewer__paragraph--italic {
+      font-style: italic;
     }
 
     .document-viewer--show-live-changes ins,
@@ -383,6 +407,51 @@ const escapeHtml = (value = "") =>
 
 const toEditableHtml = (value = "") => escapeHtml(String(value)).replace(/\n/g, "<br>");
 
+// Wraps specific known paragraphs (a title, section headings, an italic
+// notice, ...) in a styling span. Runs after the page's HTML has already
+// been built (highlights/redlines/escaping). Paragraphs are joined with a
+// blank line (rendered as "<br><br>"), so splitting on that and requiring a
+// whole-segment match means a heading's own text is styled without also
+// matching that same text where it's merely quoted inside another
+// paragraph (e.g. "LICENSE AGREEMENT" the title vs. "THIS LICENSE
+// AGREEMENT (...) is made effective..." later in the same page).
+const PARAGRAPH_BREAK_HTML = "<br><br>";
+const applyParagraphStyles = (html, paragraphStyles = []) => {
+  const classByParagraphHtml = new Map();
+  paragraphStyles.forEach(({ text, className } = {}) => {
+    if (!text || !className) return;
+    classByParagraphHtml.set(toEditableHtml(text), className);
+  });
+  if (classByParagraphHtml.size === 0) return html;
+
+  return html
+    .split(PARAGRAPH_BREAK_HTML)
+    .map((segment) => {
+      const className = classByParagraphHtml.get(segment);
+      return className ? `<span class="${className}">${segment}</span>` : segment;
+    })
+    .join(PARAGRAPH_BREAK_HTML);
+};
+
+// Replaces a whole paragraph (e.g. a placeholder marker standing in for a
+// table) with arbitrary trusted HTML supplied by the caller — same
+// whole-segment-match approach as applyParagraphStyles, but substitutes the
+// segment instead of wrapping it, so a table can flow inline with the
+// surrounding prose on the same page instead of needing its own page.
+const applyBlockHtmlOverrides = (html, blockHtmlOverrides = []) => {
+  const htmlByParagraphHtml = new Map();
+  blockHtmlOverrides.forEach(({ text, html: overrideHtml } = {}) => {
+    if (!text || !overrideHtml) return;
+    htmlByParagraphHtml.set(toEditableHtml(text), overrideHtml);
+  });
+  if (htmlByParagraphHtml.size === 0) return html;
+
+  return html
+    .split(PARAGRAPH_BREAK_HTML)
+    .map((segment) => htmlByParagraphHtml.get(segment) ?? segment)
+    .join(PARAGRAPH_BREAK_HTML);
+};
+
 const createHighlightedHtml = (value = "", targets = [], fallbackLevel = "high") => {
   const text = String(value);
   const normalizedTargets = (Array.isArray(targets) ? targets : [{ text: targets, level: fallbackLevel }])
@@ -403,7 +472,14 @@ const createHighlightedHtml = (value = "", targets = [], fallbackLevel = "high")
   return html + toEditableHtml(text.slice(cursor));
 };
 
-const tokenizeForRedline = (value = "") => String(value).match(/\s+|[^\s]+/g) ?? [];
+// Splits into whitespace runs, word runs (letters/digits, with internal
+// apostrophes kept so "Party's" stays one token), and individual punctuation
+// characters. Punctuation is NOT glued to the adjacent word — otherwise
+// adding a comma after "Efforts" makes the whole "Efforts,"/"Efforts" pair
+// fail to match as tokens, and the diff shows the entire word as deleted
+// and re-added right next to itself instead of just inserting the comma.
+const tokenizeForRedline = (value = "") =>
+  String(value).match(/\s+|[A-Za-z0-9]+(?:'[A-Za-z0-9]+)*|[^\sA-Za-z0-9]/g) ?? [];
 
 const createRedlineHtml = (originalValue = "", currentValue = "") => {
   const originalTokens = tokenizeForRedline(originalValue);
@@ -440,7 +516,20 @@ const createRedlineHtml = (originalValue = "", currentValue = "") => {
   ].join("").replace(/\n/g, "<br>");
 };
 
-const createAppliedRedlineHtml = (value = "", changes = []) => {
+// Marks an applied suggestion with the same word-level diff shown in the
+// Suggestion panel before it was applied (see textarea.jsx's
+// renderRedlinePreview) — unchanged words stay plain/primary-colored, and
+// only the words that actually differ between the original clause and the
+// applied suggestion are shown as removed/added, instead of treating the
+// whole clause as one big delete-and-replace.
+// activeProposedText marks the currently-selected finding's applied change
+// with data-document-highlight="active" (matching the attribute
+// createHighlightedHtml uses before a finding is applied), so the existing
+// scroll-to-highlight effect below can find it and scroll straight to the
+// top of that block right after Apply — otherwise, once a finding is
+// applied, this function's output has no "active" marker at all and that
+// effect finds nothing to scroll to.
+const createAppliedRedlineHtml = (value = "", changes = [], activeProposedText) => {
   let remainingText = String(value);
   let result = "";
   let hasAppliedChange = false;
@@ -451,8 +540,10 @@ const createAppliedRedlineHtml = (value = "", changes = []) => {
 
     hasAppliedChange = true;
     result += escapeHtml(remainingText.slice(0, changeIndex)).replace(/\n/g, "<br>");
-    const redline = `<del>${escapeHtml(originalText)}</del><ins>${escapeHtml(proposedText)}</ins>`;
-    result += commentId ? `<span data-document-comment-anchor="${commentId}">${redline}</span>` : redline;
+    const redline = createRedlineHtml(originalText, proposedText);
+    const isActive = Boolean(proposedText) && proposedText === activeProposedText;
+    const redlineBlock = isActive ? `<span data-document-highlight="active">${redline}</span>` : redline;
+    result += commentId ? `<span data-document-comment-anchor="${commentId}">${redlineBlock}</span>` : redlineBlock;
     remainingText = remainingText.slice(changeIndex + proposedText.length);
   });
 
@@ -556,6 +647,8 @@ export const DocumentViewer = ({
   highlights = [],
   highlightText,
   highlightLevel = "high",
+  paragraphStyles = [],
+  blockHtmlOverrides = [],
   pageSeparator = "\f",
   maxCharactersPerPage = 1800,
   defaultPage = 1,
@@ -962,6 +1055,14 @@ export const DocumentViewer = ({
 
   const reflowEditablePages = (editedEditor) => {
     if (!editable || pdfDoc) return;
+    // When the caller supplies its own `pages` (e.g. paginated by measuring
+    // real rendered height, with tables placed inline), this component must
+    // not repaginate them with its own generic character-count method —
+    // that discards the caller's pagination and, since originalPageTextRef
+    // below is computed from `text`/`originalText` rather than those custom
+    // pages, diffs two mismatched page boundaries into a nonsensical
+    // full-page redline. The caller owns pagination in that case.
+    if (Array.isArray(pages) && pages.length > 0) return;
 
     const text = editableRefs.current
       .map((editor, index) => editor?.innerText ?? displayedPages[index]?.content ?? "")
@@ -1006,9 +1107,9 @@ export const DocumentViewer = ({
 
     const rawTextContent = String(content ?? "").trim();
     const appliedRedlineHtml = editingPageIndex !== index && appliedRedlines.length > 0
-      ? createAppliedRedlineHtml(content, appliedRedlines)
+      ? createAppliedRedlineHtml(content, appliedRedlines, highlightText)
       : "";
-    const editableHtml = appliedRedlineHtml || (editingPageIndex !== index && resolvedLiveChanges && redlineHtmlByPage[index]
+    const baseEditableHtml = appliedRedlineHtml || (editingPageIndex !== index && resolvedLiveChanges && redlineHtmlByPage[index]
       ? redlineHtmlByPage[index]
       : (highlightText || highlights.length > 0) && editingPageIndex !== index
       ? createHighlightedHtml(
@@ -1022,6 +1123,12 @@ export const DocumentViewer = ({
         highlightLevel
       )
       : editablePageHtmlRef.current[index] ?? toEditableHtml(content ?? ""));
+    // Skipped while this page is actively being typed into, same as the
+    // highlight/redline overlays above — reassigning innerHTML mid-edit
+    // would otherwise fight the user's cursor position.
+    const editableHtml = editingPageIndex !== index
+      ? applyBlockHtmlOverrides(applyParagraphStyles(baseEditableHtml, paragraphStyles), blockHtmlOverrides)
+      : baseEditableHtml;
 
     if (!rawTextContent && !editableHtml) {
       return <div className="document-viewer__empty">{emptyState}</div>;

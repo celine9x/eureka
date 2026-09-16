@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useLayoutEffect, useMemo, useState } from "react";
 import { SideMenu } from "../../library/organisms/side-menu/side-menu.jsx";
 import {
   HubHeader,
@@ -28,210 +28,177 @@ import { Modal } from "../../library/organisms/modal.jsx";
 import { RadioCardGroup, RadioCard } from "../../library/molecules/radio-card.jsx";
 import fileDocIcon from "../../library/atoms/custom-icons/file-doc.svg";
 import redlinedContractFile from "./Collaboration-License-Agreement-REDLINE.docx?url";
+import {
+  SAMPLE_DOCUMENT_TEXT,
+  CONTRACT_TABLE_DEVELOPMENT_MARKER,
+  CONTRACT_TABLE_DEVELOPMENT_HEADERS,
+  CONTRACT_TABLE_DEVELOPMENT_ROWS,
+  CONTRACT_TABLE_REGULATORY_MARKER,
+  CONTRACT_TABLE_REGULATORY_HEADERS,
+  CONTRACT_TABLE_REGULATORY_ROWS,
+  CONTRACT_TABLE_SALES_MARKER,
+  CONTRACT_TABLE_SALES_HEADERS,
+  CONTRACT_TABLE_SALES_ROWS,
+  CONTRACT_TABLE_PATENTS_MARKER,
+  CONTRACT_TABLE_PATENTS_HEADERS,
+  CONTRACT_TABLE_PATENTS_ROWS,
+  CONTRACT_TABLE_INDSUBMISSIONS_MARKER,
+  CONTRACT_TABLE_INDSUBMISSIONS_HEADERS,
+  CONTRACT_TABLE_INDSUBMISSIONS_ROWS,
+  CONTRACT_TITLE_TEXT,
+  CONTRACT_DISCLAIMER_TEXT,
+  CONTRACT_HEADING1_TEXTS,
+  CONTRACT_HEADING2_TEXTS,
+} from "./contract-content.js";
+
+// Typographic treatment for the document's own title/heading/disclaimer
+// paragraphs (see DocumentViewer's paragraphStyles prop) — title bold and
+// large, section headings in the brand blue Heading1/Heading2 sizes, and
+// the small-print disclaimer italic, matching the source docx's styling.
+const DOCUMENT_PARAGRAPH_STYLES = [
+  { text: CONTRACT_TITLE_TEXT, className: "document-viewer__paragraph--title" },
+  { text: CONTRACT_DISCLAIMER_TEXT, className: "document-viewer__paragraph--italic" },
+  ...CONTRACT_HEADING1_TEXTS.map((text) => ({ text, className: "document-viewer__paragraph--heading1" })),
+  ...CONTRACT_HEADING2_TEXTS.map((text) => ({ text, className: "document-viewer__paragraph--heading2" })),
+];
 
 const EXPORT_FORMATS = {
   redlined: "redlined",
   clean: "clean",
 };
 
-const SAMPLE_DOCUMENT_TEXT = `COLLABORATION AND LICENSE AGREEMENT
+// Each row needs a stable id for React keys and (for the regulatory
+// milestones table) for findings to target a specific row. Tables with no
+// attached findings just use their position.
+const buildStaticRows = (rows) => rows.map((cells, index) => ({ id: `row-${index}`, cells }));
 
-This Collaboration and License Agreement (this "Agreement") is entered into as of the Effective Date by and between Veltarix Therapeutics, Inc., a Delaware corporation with offices at 1200 Research Parkway, Boston, Massachusetts 02110 ("Veltarix"), and Meridian Biosciences Ltd., a company organized under the laws of England and Wales with offices at 14 Cambridge Science Park, Cambridge CB4 0FY, United Kingdom ("Meridian"). Veltarix and Meridian are each referred to as a "Party" and together as the "Parties."
+const DEVELOPMENT_TABLE_ROWS = buildStaticRows(CONTRACT_TABLE_DEVELOPMENT_ROWS);
+const SALES_TABLE_ROWS = buildStaticRows(CONTRACT_TABLE_SALES_ROWS);
+const PATENTS_TABLE_ROWS = buildStaticRows(CONTRACT_TABLE_PATENTS_ROWS);
+const IND_SUBMISSIONS_TABLE_ROWS = buildStaticRows(CONTRACT_TABLE_INDSUBMISSIONS_ROWS);
 
-RECITALS
+const REGULATORY_ROW_IDS = [
+  "bla-filing",
+  "fda-hemoglobinopathy",
+  "fda-ultra-orphan",
+  "fda-other-indication",
+  "ema-hemoglobinopathy",
+  "ema-ultra-orphan",
+  "ema-other-indication",
+  "japan-hemoglobinopathy",
+  "japan-ultra-orphan",
+  "japan-other-indication",
+  "pricing-france",
+  "pricing-germany",
+  "pricing-italy",
+  "pricing-spain",
+  "pricing-uk",
+  "second-product-fda",
+  "second-product-ema",
+  "second-product-japan",
+];
+const INITIAL_REGULATORY_TABLE_ROWS = CONTRACT_TABLE_REGULATORY_ROWS.map((cells, index) => ({
+  id: REGULATORY_ROW_IDS[index],
+  cells,
+}));
 
-WHEREAS, Veltarix owns or controls certain intellectual property relating to the Compound and has expertise in the discovery and preclinical development of therapeutic products;
-
-WHEREAS, Meridian has expertise in clinical development, regulatory affairs, manufacturing, and commercialization of therapeutic products in the Territory;
-
-WHEREAS, the Parties wish to collaborate on the development and commercialization of products containing the Compound and to establish the rights and obligations governing that collaboration;
-
-NOW, THEREFORE, in consideration of the mutual covenants and promises contained herein, the Parties agree as follows.
-
-1. DEFINITIONS
-
-1.1 "Affiliate" means, with respect to a Party, any entity that controls, is controlled by, or is under common control with that Party. For purposes of this definition, "control" means the direct or indirect ownership of more than fifty percent (50%) of the voting interests of an entity or the power to direct its management and policies.
-
-1.2 "Applicable Law" means all laws, regulations, regulatory guidance, and governmental requirements applicable to a Party, the Compound, a Product, or activities under this Agreement.
-
-1.3 "Business Day" means a day other than a Saturday, Sunday, or public holiday in Boston, Massachusetts or London, England.
-
-1.7 "Compound" means the proprietary molecule designated VTX-338 and any salt, ester or polymorph thereof.
-
-1.9 "Field" means all human therapeutic, prophylactic and diagnostic uses.
-
-1.14 "Licensed IP" means all patents, know-how, regulatory materials, and other intellectual property controlled by Veltarix that are reasonably necessary to develop, manufacture, use, sell, offer for sale, or import a Product in the Field.
-
-1.20 "Royalty Term" means, on a product-by-product and country-by-country basis, the period beginning on First Commercial Sale and ending on the later of patent expiry or ten (10) years thereafter, without specifying the treatment of patent term extensions or regulatory exclusivity.
-
-\f
-
-2. LICENSE GRANT AND DEVELOPMENT
-
-2.1 Subject to the terms and conditions of this Agreement, Veltarix hereby grants to Meridian an exclusive, royalty-bearing license in the Field and Territory under Licensed IP.
-
-2.2 Meridian shall use Commercially Reasonable Efforts to develop and seek Regulatory Approval for at least one Product in the United States, the United Kingdom, Germany, France, Italy, and Spain. The development plan attached as Schedule 1 may be amended by the JSC from time to time.
-
-2.3 Veltarix shall provide Meridian with the existing preclinical data package, manufacturing process description, and regulatory correspondence in its possession within thirty (30) days after the Effective Date. Each Party shall maintain complete and accurate records of activities conducted under the development plan.
-
-2.4 Meridian shall be responsible for clinical development costs incurred after the Effective Date, except that Veltarix shall bear costs specifically allocated to it in the approved annual budget. Neither Party may incur an unbudgeted commitment exceeding one hundred thousand dollars ($100,000) without prior written approval from the other Party.
-
-2.5 The Parties shall meet at least quarterly to review development progress, material safety findings, manufacturing readiness, and anticipated regulatory interactions. Either Party may request an extraordinary meeting where a matter is reasonably expected to materially affect the development timeline or budget.
-
-2.6 Meridian shall provide Veltarix with written development reports within twenty (20) Business Days after the end of each calendar quarter. Each report shall include study status, budget variance, key risks, and a forecast of activities for the following two quarters.
-
-\f
-
-3. GOVERNANCE
-
-3.1 A Joint Steering Committee (JSC) will oversee development and commercialization activities. Decisions require unanimous approval, and this Agreement does not specify an escalation process for unresolved decisions.
-
-3.2 The JSC shall consist of three (3) representatives appointed by each Party. Each representative must have sufficient seniority and decision-making authority to address matters within the JSC's remit. Either Party may replace its representatives by written notice to the other Party.
-
-3.3 The JSC shall review the development plan, annual budget, clinical strategy, material supply plan, and launch readiness plan. The JSC may establish working groups for clinical operations, chemistry manufacturing and controls, regulatory affairs, and commercial planning.
-
-3.4 Meeting minutes shall be prepared by the chairperson and circulated to the JSC within ten (10) Business Days after each meeting. Minutes shall identify each decision, responsible owner, required deliverable, and target completion date.
-
-3.5 Neither Party may use the JSC to amend this Agreement, alter the scope of the license, waive a material breach, or commit the other Party to expenditures not approved under the annual budget.
-
-\f
-
-4. TERM AND TERMINATION
-
-4.1 This Agreement commences on the Effective Date and remains in effect unless earlier terminated. Neither Party is required to provide transition support or reimburse non-cancellable costs following termination.
-
-4.2 Either Party may terminate this Agreement for convenience upon sixty (60) days' written notice. The notice and cure periods in this Section do not state whether they override other termination timelines.
-
-4.3 Either Party may terminate this Agreement for a material breach by the other Party if the breach is not cured within thirty (30) days after written notice describing the breach in reasonable detail; provided that a breach incapable of cure may be terminated immediately upon written notice.
-
-4.4 Upon expiration or termination, Meridian shall cease use of the Licensed IP except as necessary to wind down ongoing clinical studies in accordance with Applicable Law. The Parties shall cooperate in good faith regarding safety reporting, regulatory notifications, and disposition of remaining Product inventory.
-
-4.5 Termination shall not affect any obligation that by its nature is intended to survive, including confidentiality, accrued payment obligations, limitations of liability, audit rights, and rights necessary to complete regulatory reporting for enrolled subjects.
-
-\f
-
-5. INTELLECTUAL PROPERTY
-
-5.1 Foreground IP arising from the Collaboration will be owned jointly by the Parties. This Agreement does not allocate ownership for sole inventions, assignment obligations for affiliates, or prosecution authority.
-
-5.2 Each Party shall promptly disclose to the other Party any invention conceived or reduced to practice in the performance of activities under the development plan. The Parties shall meet through the JSC to review invention disclosures and determine whether patent protection should be pursued.
-
-5.3 Veltarix shall retain all right, title, and interest in and to its Background IP. Meridian shall retain all right, title, and interest in and to its Background IP. Except for the licenses expressly granted in this Agreement, neither Party grants any right or license to the other Party by implication, estoppel, or otherwise.
-
-5.4 Each Party shall ensure that its employees, contractors, and consultants involved in the Collaboration are bound by written obligations sufficient to permit that Party to grant the rights contemplated by this Agreement.
-
-6. CONFIDENTIALITY AND PUBLICATIONS
-
-6.1 Each Party shall protect the other Party's Confidential Information using at least the same degree of care that it uses to protect its own confidential information of similar importance, and in no event less than reasonable care.
-
-6.2 Neither Party shall issue a press release or make any public announcement concerning this Agreement without the other Party's prior written consent, except as required by Applicable Law or the rules of a securities exchange.
-
-6.3 The Parties acknowledge that timely coordination on publications and external communications is necessary to preserve patent rights and protect the confidentiality of development data.`;
+// Marker -> table config for the pages that carry a contract table instead of
+// flowing text (see documentPages below). The regulatory milestones table is
+// the only one with rows in state, since it's the only one a finding targets.
+const TABLE_PAGE_CONFIGS = [
+  { marker: CONTRACT_TABLE_DEVELOPMENT_MARKER, headers: CONTRACT_TABLE_DEVELOPMENT_HEADERS, rows: DEVELOPMENT_TABLE_ROWS },
+  { marker: CONTRACT_TABLE_REGULATORY_MARKER, headers: CONTRACT_TABLE_REGULATORY_HEADERS, rows: null },
+  { marker: CONTRACT_TABLE_SALES_MARKER, headers: CONTRACT_TABLE_SALES_HEADERS, rows: SALES_TABLE_ROWS },
+  { marker: CONTRACT_TABLE_PATENTS_MARKER, headers: CONTRACT_TABLE_PATENTS_HEADERS, rows: PATENTS_TABLE_ROWS },
+  { marker: CONTRACT_TABLE_INDSUBMISSIONS_MARKER, headers: CONTRACT_TABLE_INDSUBMISSIONS_HEADERS, rows: IND_SUBMISSIONS_TABLE_ROWS },
+];
 
 const FINDINGS = [
   {
-    id: "field-scope",
-    title: "4.1 Termination: missing transition support and cost recovery",
+    id: "milestone-notice-gap",
+    title: "5.2.1 Milestone Payments: no notice obligation when a Milestone is achieved",
     severity: "High",
     reason:
-      "The review found no express obligation for transition support and recovery of non-cancellable costs after early termination.",
-    originalClause: "4.1 This Agreement commences on the Effective Date and remains in effect unless earlier terminated. Neither Party is required to provide transition support or reimburse non-cancellable costs following termination.",
+      "The clause ties payment timing to achievement of the Milestone but never requires LICENSEE to notify MERIDIAN when that achievement occurs — MERIDIAN has no proactive visibility and is relying entirely on LICENSEE to self-report. This compounds the risk given Helios's own track record: 3 of its last 4 licensing milestones have slipped by 6+ months, and a company already prone to delay has no contractual obligation to disclose sooner.",
+    originalClause: "5.2.1 Milestone Payments. In further consideration of the licenses and rights granted to LICENSEE, within sixty (60) days after achievement of each Milestone set forth below (unless otherwise specified below), LICENSEE shall, subject to Section 1.6, pay to MERIDIAN the corresponding non-creditable and non-refundable milestone payment (each, a \"Milestone Payment\"). For the avoidance of doubt each Milestone Payment shall be payable only once upon achievement of the applicable Milestone.",
     sources: [
       {
-        label: "Post-mortem, Alliance X",
+        label: "Post-Mortem — Helios Pharma / Kestrel Bio Alliance (Closed 2024)",
         summary:
-          "Section 15 language caused unrecovered commitments and a delayed CMO transfer due to missing transition and recovery obligations.",
+          "One of two recent Helios alliances where a program went quiet for over a year with no defined check-in point — the same self-reporting gap this finding flags for Milestone achievement.",
         excerpt:
-          "Transition and recovery obligations should survive convenience termination until all committed work has been completed or recovered.",
+          "Section 5.3's diligence obligation used 'commercially reasonable efforts' without defined FTE or spend commitments.",
         documentContent:
-          "The Alliance X termination review found that transition obligations ended on the termination date while committed CMO costs continued to accrue. Transition and recovery obligations should survive convenience termination until all committed work has been completed or recovered. Future agreements should preserve transition support and include a defined recovery mechanism for non-cancellable commitments.",
+          "Section 5.3's diligence obligation used 'commercially reasonable efforts' without defined FTE or spend commitments. When Helios deprioritized the program following an internal portfolio review, Kestrel had no contractual basis to demonstrate breach, despite 14 months of inactivity. Recommendation: future agreements should tie diligence obligations to measurable inputs (FTEs, budget) rather than effort-based standards.",
       },
       {
-        label: "Termination playbook",
-        summary: "The playbook requires a documented transition plan before a termination notice is issued.",
-        excerpt: "Document cost ownership, CMO transfer steps, and the final delivery timeline in the termination schedule.",
+        label: "Post-Mortem — Helios Pharma / Corvale Biosciences Alliance (Closed 2025)",
+        summary:
+          "The same Corvale post-mortem cites Helios's milestone-slippage pattern as \"Risk #1\" alongside a separate diligence-standard failure in that alliance.",
+        excerpt:
+          "This is the second of Helios's last four licensing deals where this exact standard has failed to hold up",
         documentContent:
-          "Before issuing a termination notice, the termination playbook requires a documented transition plan. Document cost ownership, CMO transfer steps, and the final delivery timeline in the termination schedule. This ensures remaining deliverables and the final close-out timeline are addressed.",
+          "The diligence clause mirrored standard 'commercially reasonable efforts' language. A shift in Helios's R&D priorities following a portfolio reprioritization led to an 18-month stall with no remedy available to Corvale under the existing terms. This is the second of Helios's last four licensing deals where this exact standard has failed to hold up (see also the Kestrel Bio post-mortem, 2024 — and the milestone-slippage pattern already flagged in Risk #1 above).",
       },
     ],
-    suggestion: "Either Party may terminate with 180 days notice where convenience is documented and transition support obligations are explicitly preserved in Schedule 2.",
-    comment: "Confirm that the transition schedule covers non-cancellable CMO commitments and specifies the recovery process.",
+    suggestion: "Milestone Payments. In further consideration of the licenses and rights granted to LICENSEE, LICENSEE shall notify MERIDIAN in writing within ten (10) business days after achievement of each Milestone, and within sixty (60) days after such achievement, LICENSEE shall, subject to Section 1.6, pay to MERIDIAN the corresponding non-creditable and non-refundable milestone payment (each, a \"Milestone Payment\"), together with reasonable supporting documentation evidencing such achievement. For the avoidance of doubt each Milestone Payment shall be payable only once upon achievement of the applicable Milestone.",
+    comment: "Confirm with the deal team whether ten business days is the right notice window, and whether MERIDIAN's finance/alliance management team should be a required notice recipient alongside the primary contract notice address.",
     recommendations: [
-      "Add explicit non-cancellable cost recovery mechanics.",
-      "Define transition support scope and timeline.",
-      "Require documented rationale for convenience termination.",
+      "Add an explicit written-notice obligation (e.g., 10 business days) triggered by achievement of a Milestone.",
+      "Require supporting documentation evidencing achievement alongside the Milestone Payment.",
+      "Confirm an internal handoff process between LICENSEE's R&D and Alliance Management teams for this counterparty, given its track record of delayed notifications.",
     ],
   },
   {
-    id: "governance-deadlock",
-    title: "3.1 Governance: no JSC deadlock escalation",
+    id: "reasonable-efforts-diligence-gap",
+    title: "4.1.1 Development: \"Commercially Reasonable Efforts\" diligence has no measurable floor",
     severity: "High",
     reason:
-      "The JSC process has no binding fallback when parties cannot resolve strategic decisions.",
-    originalClause: "3.1 A Joint Steering Committee (JSC) will oversee development and commercialization activities. Decisions require unanimous approval, and this Agreement does not specify an escalation process for unresolved decisions.",
+      "LICENSEE's diligence obligation is defined only by the \"Commercially Reasonable Efforts\" standard, with no minimum FTE count, spend commitment, or activity-based milestone MERIDIAN can point to if LICENSEE deprioritizes the program. This is the same standard that failed to protect the counterparty in two of Helios's last four licensing alliances (Kestrel Bio, 2024, and Corvale Biosciences, 2025), in both cases following an internal portfolio reprioritization at Helios.",
+    originalClause: "4.1.1 LICENSEE shall itself, or through its Affiliates or Sublicensees, use Commercially Reasonable Efforts to Develop Products in the Major Markets in the Field, and LICENSEE shall undertake all Development activities relating to the Compounds and Products in the Field at its sole expense.",
     sources: [
       {
-        label: "Playbook guidance",
-        summary: "Governance deadlocks should escalate to executive sponsors within a fixed timeline.",
-        excerpt: "Escalate unresolved Joint Steering Committee decisions to executive sponsors within 10 business days.",
+        label: "Issue #ISS-2291 — Late milestone payment, discovered via partner follow-up",
+        summary:
+          "Internal process gaps let a significant Development milestone go unreported for months — the same lack of visibility that makes an effort-based diligence standard hard to enforce here.",
+        excerpt:
+          "Alliance Management first learned of the achievement five months later, when Kestrel's BD team followed up asking about the outstanding payment.",
         documentContent:
-          "Playbook guidance requires unresolved governance decisions to follow a defined escalation path. Escalate unresolved Joint Steering Committee decisions to executive sponsors within 10 business days. The agreement should also assign final authority for each decision category.",
+          "Milestone Event 3 (IND clearance) was achieved on record by Helios's own development team. No internal process notified Alliance Management or Finance, and the contract itself contained no explicit notice obligation — only a payment-timing clause tied to achievement. Alliance Management first learned of the achievement five months later, when Kestrel's BD team followed up asking about the outstanding payment. The payment was processed immediately upon discovery, but the delay prompted a formal notice-of-breach warning from Kestrel's legal team.",
       },
     ],
-    suggestion: "Add a 10-business-day escalation path from JSC to executive committee with topic-specific final authority.",
-    comment: "Confirm executive sponsor roles and final decision rights before the governance clause is finalized.",
+    suggestion: "LICENSEE shall itself, or through its Affiliates or Sublicensees, use Commercially Reasonable Efforts, including maintaining at least the equivalent of two (2) full-time employees dedicated to Development of the Products until the first Regulatory Approval, to Develop Products in the Major Markets in the Field, and LICENSEE shall undertake all Development activities relating to the Compounds and Products in the Field at its sole expense.",
+    comment: "Confirm with the deal team whether a minimum FTE commitment (or a defined spend floor) is the preferred way to make this diligence obligation measurable, given how easily a slowdown can go unreported internally, as in the ISS-2291 milestone-notice gap.",
     recommendations: [
-      "Set a fixed escalation timeline after deadlock.",
-      "Assign final decision rights per topic area.",
-      "Capture interim operating rules during dispute windows.",
+      "Tie the diligence obligation to measurable inputs (minimum FTEs or a spend floor), not just an effort-based standard.",
+      "Add a notice obligation if LICENSEE materially reduces or deprioritizes Development.",
+      "Define an objective trigger (e.g., a defined period of inactivity) MERIDIAN can point to as a diligence failure.",
     ],
   },
   {
-    id: "termination-notice",
-    title: "4.2 Termination: inconsistent notice periods",
+    id: "assignment-change-of-control-gap",
+    title: "17.1 Assignment: Change of Control assignment has no competitor carve-out",
     severity: "Moderate",
     reason:
-      "Notice periods differ between convenience and breach sections without priority rules.",
-    originalClause: "4.2 Either Party may terminate this Agreement for convenience upon sixty (60) days' written notice. The notice and cure periods in this Section do not state whether they override other termination timelines.",
+      "Clause 17.1(b) lets LICENSEE assign the entire Agreement upon a Change in Control without MERIDIAN's consent and without any carve-out for a direct competitor of MERIDIAN. If LICENSEE is acquired by a competitor, the exclusive license — and the Licensed Technology it covers — could transfer to that competitor with no renegotiation or termination right for MERIDIAN.",
+    originalClause: "17.1 Assignment. LICENSEE may not assign its rights and obligations under this Agreement without MERIDIAN' prior written consent, except that: (a) LICENSEE may assign its rights and obligations under this Agreement in whole or in part to one or more of its Affiliates without the consent of MERIDIAN; and (b) LICENSEE may assign this Agreement in the event of a Change in Control.",
     sources: [
       {
-        label: "Internal policy",
-        summary: "Termination timelines should be harmonized unless an explicit exception is stated.",
-        excerpt: "Use a single notice framework and identify any approved exceptions directly in the applicable termination clause.",
+        label: "Inpart AM Best Practice Playbook — Section 7: Contract Red Flags",
+        summary:
+          "Assignment clauses that permit a Change-of-Control transfer without a competitor carve-out are a commonly overlooked risk, especially where the counterparty's financial position makes M&A plausible.",
+        excerpt:
+          "Reviewers should always check for a competitor carve-out and a renegotiation or termination right — particularly when the counterparty's financial position suggests M&A is plausible.",
         documentContent:
-          "Internal policy requires consistent notice and cure periods across termination provisions. Use a single notice framework and identify any approved exceptions directly in the applicable termination clause. Where timelines differ, the agreement must state which provision controls.",
+          "Generic M&A assignment clauses are among the most overlooked risk points in licensing agreements. A clause permitting assignment 'without consent' in connection with a merger or acquisition, without a carve-out for direct competitors, can transfer an exclusive license into a competitor's hands with zero renegotiation rights. Reviewers should always check for a competitor carve-out and a renegotiation or termination right — particularly when the counterparty's financial position suggests M&A is plausible.",
       },
     ],
-    suggestion: "Align notice and cure windows, then add clause precedence language for conflicting timelines.",
-    comment: "Check that the revised notice periods align with the dispute-resolution and cure provisions.",
+    suggestion: "Assignment. LICENSEE may not assign its rights and obligations under this Agreement without MERIDIAN' prior written consent, except that: (a) LICENSEE may assign its rights and obligations under this Agreement in whole or in part to one or more of its Affiliates without the consent of MERIDIAN; and (b) LICENSEE may assign this Agreement in the event of a Change in Control, provided that the acquiring party is not a direct competitor of MERIDIAN in the Field; if the acquiring party is a direct competitor of MERIDIAN in the Field, such assignment shall require MERIDIAN's prior written consent, not to be unreasonably withheld.",
+    comment: "Confirm with the deal team how \"direct competitor\" should be defined for this carve-out, and whether MERIDIAN should also have a termination or renegotiation right rather than only a consent right.",
     recommendations: [
-      "Harmonize notice periods across clauses.",
-      "Specify cure windows for material and non-material breach.",
-      "State effective date mechanics for notice delivery.",
-    ],
-  },
-  {
-    id: "ip-ownership",
-    title: "5.1 Foreground IP: incomplete ownership allocation",
-    severity: "Low",
-    reason:
-      "Foreground IP clauses do not fully allocate ownership and prosecution authority for joint inventions.",
-    originalClause: "5.1 Foreground IP arising from the Collaboration will be owned jointly by the Parties. This Agreement does not allocate ownership for sole inventions, assignment obligations for affiliates, or prosecution authority.",
-    sources: [
-      {
-        label: "Alliance dispute summary",
-        summary: "Unclear assignment wording previously delayed patent filing responsibilities across affiliates.",
-        excerpt: "Ownership and prosecution responsibilities must include affiliates that contribute to a joint invention.",
-        documentContent:
-          "The dispute summary identified delayed patent filings because the agreement did not clearly assign responsibilities. Ownership and prosecution responsibilities must include affiliates that contribute to a joint invention. Future clauses should distinguish sole and joint inventions and identify responsible parties.",
-      },
-    ],
-    suggestion: "Separate sole/joint invention ownership, assignment obligations, and prosecution controls by invention type.",
-    comment: "Confirm that affiliate inventors are covered by the assignment and prosecution provisions.",
-    recommendations: [
-      "Define sole vs joint ownership rules for inventions.",
-      "Add assignment mechanics for affiliate contributors.",
-      "Include prosecution and enforcement decision rights.",
+      "Add a competitor carve-out to the Change of Control assignment right in 17.1(b).",
+      "Define \"direct competitor\" for purposes of the carve-out.",
+      "Consider a renegotiation or termination right for MERIDIAN if the acquiring party is a competitor.",
     ],
   },
 ];
@@ -265,6 +232,200 @@ const renderHighlightedDocument = (documentContent, excerpt) => {
       {documentContent.slice(endIndex)}
     </>
   );
+};
+
+// Findings can target a contract-table row instead of a span of the flowing
+// contract text (see FINDINGS[].milestoneRowId), so the table can show the
+// same highlight/apply treatment plain-text clauses get. Only the regulatory
+// milestones table currently has a finding attached to it.
+const FINDING_BY_TABLE_ROW_ID = Object.fromEntries(
+  FINDINGS.filter((finding) => finding.milestoneRowId).map((finding) => [finding.milestoneRowId, finding])
+);
+
+// Passed to paginateDocumentByMeasurement as forcedPageBreakTexts — each of
+// these clauses always starts a fresh page (see that function for why).
+// Excludes milestoneRowId findings, which target a table row rather than a
+// paragraph in the flowing text.
+const FINDING_ORIGINAL_CLAUSES = FINDINGS.filter((finding) => !finding.milestoneRowId).map((finding) => finding.originalClause);
+
+const PAYMENT_AMOUNT_PATTERN = /\$[\d,]+/;
+const extractPaymentAmount = (value = "") => value.match(PAYMENT_AMOUNT_PATTERN)?.[0] ?? null;
+
+const escapeHtml = (value = "") =>
+  String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
+const CONTRACT_TABLE_STYLE = 'width:100%;border-collapse:collapse;font-family:"Times New Roman",Times,serif;font-size:var(--text-body-md);color:var(--color-content-primary);';
+const CONTRACT_TABLE_HEADER_CELL_STYLE = "border:1px solid var(--color-content-primary);padding:var(--spacing-xs) var(--spacing-sm);text-align:left;font-weight:var(--font-weight-bold);";
+const CONTRACT_TABLE_CELL_STYLE = "border:1px solid var(--color-content-primary);padding:var(--spacing-xs) var(--spacing-sm);vertical-align:top;";
+
+// Builds one of the contract's tables (development/regulatory/sales
+// milestones, patent schedule, IND submission log) as an HTML string, in the
+// document's own Times New Roman styling. This (rather than a React
+// component) is what lets a table be substituted directly into a page's
+// text content — see DocumentViewer's blockHtmlOverrides — so it flows on
+// the same page as surrounding prose instead of needing a page of its own.
+// `findingByRowId` is only passed for the table a finding can target, so
+// the others render with no highlight behavior.
+const renderContractTableHtml = ({ headers, rows, findingByRowId, expandedFindingId }) => {
+  const headerCellsHtml = headers
+    .map((header) => `<th style="${CONTRACT_TABLE_HEADER_CELL_STYLE}">${escapeHtml(header)}</th>`)
+    .join("");
+  const rowsHtml = rows
+    .map((row) => {
+      const finding = findingByRowId?.[row.id];
+      const isActive = finding?.id === expandedFindingId;
+      const highlightLevel = finding && SEVERITY_HIGHLIGHT_LEVEL[finding.severity];
+      const rowExtraStyle = [
+        highlightLevel ? `background:var(--color-redline-highlight-${highlightLevel});` : "",
+        isActive ? "box-shadow:inset 0 0 0 2px var(--color-content-brand);" : "",
+      ].join("");
+      const cellsHtml = row.cells
+        .map((cell) => `<td style="${CONTRACT_TABLE_CELL_STYLE}${rowExtraStyle}">${escapeHtml(cell)}</td>`)
+        .join("");
+      return `<tr${isActive ? ' data-document-highlight="active"' : ""}>${cellsHtml}</tr>`;
+    })
+    .join("");
+  return `<table style="${CONTRACT_TABLE_STYLE}"><thead><tr>${headerCellsHtml}</tr></thead><tbody>${rowsHtml}</tbody></table>`;
+};
+
+// Matches DocumentViewer's default pageWidth/pageHeight/pagePadding (595 x
+// 842 = A4 at 72dpi, 40px padding) — this page never overrides them, so the
+// measurer below has to reproduce the same content box to paginate accurately.
+const PAGE_CONTENT_WIDTH = 595 - 40 * 2;
+const PAGE_CONTENT_HEIGHT = 842 - 40 * 2;
+
+// A hidden, off-screen element used purely to measure how tall a given
+// amount of content renders at — same width/font/line-height as the real
+// page text (and, for a table paragraph, the table's own real markup), so
+// "does this fit on one A4 page" is answered by the browser's own layout
+// instead of a guessed character count (which either wastes space or
+// silently clips, depending on which way the guess is wrong).
+const createPageMeasurer = () => {
+  const element = document.createElement("div");
+  element.style.position = "absolute";
+  element.style.visibility = "hidden";
+  element.style.pointerEvents = "none";
+  element.style.top = "-99999px";
+  element.style.left = "-99999px";
+  element.style.width = `${PAGE_CONTENT_WIDTH}px`;
+  element.style.whiteSpace = "pre-wrap";
+  element.style.wordBreak = "break-word";
+  element.style.boxSizing = "border-box";
+  element.style.fontFamily = '"Times New Roman", Times, serif';
+  element.style.fontSize = "var(--text-body-md)";
+  element.style.lineHeight = "var(--line-height-body-lg)";
+  document.body.appendChild(element);
+  return element;
+};
+
+// Once a finding is applied, the paragraph it touched renders both the
+// struck-through original text AND the accepted replacement (see
+// createAppliedRedlineHtml in document-viewer.jsx) — taller than the
+// replacement text alone. Measuring only the current (already-replaced)
+// paragraph text would under-count that height and clip the page, so for
+// measurement only, the original text is added back in ahead of the
+// replacement wherever an applied redline's proposed text appears. This
+// slightly over-estimates height (the real diff can share a common
+// prefix/suffix and take less room), which is the safe direction to be
+// wrong in — a little extra blank space beats clipped text.
+const expandParagraphForMeasurement = (paragraph, appliedRedlines) =>
+  appliedRedlines.reduce((text, { originalText = "", proposedText = "" }) => {
+    if (!proposedText || !text.includes(proposedText)) return text;
+    return text.split(proposedText).join(`${originalText}${proposedText}`);
+  }, paragraph);
+
+// A paragraph that's really a table marker measures using the table's own
+// real rendered HTML instead of its literal marker text, so the packer
+// below sees the table's true height — exactly what DocumentViewer will
+// substitute in at render time (see blockHtmlOverrides).
+const buildMeasurementHtml = (paragraphs, tableHtmlByMarker, appliedRedlines) =>
+  paragraphs
+    .map((paragraph) => tableHtmlByMarker[paragraph] ?? escapeHtml(expandParagraphForMeasurement(paragraph, appliedRedlines)))
+    .join("<br><br>");
+
+const measuredParagraphsFitOnPage = (measurer, paragraphs, tableHtmlByMarker, appliedRedlines) => {
+  measurer.innerHTML = buildMeasurementHtml(paragraphs, tableHtmlByMarker, appliedRedlines);
+  return measurer.scrollHeight <= PAGE_CONTENT_HEIGHT;
+};
+
+// Greedily fills each page paragraph-by-paragraph (a "paragraph" being
+// either prose or a table marker), checking real rendered height rather
+// than a character count — so a table shares a page with surrounding prose
+// exactly when there's room, instead of always burning a whole page.
+// Only ever breaks between whole paragraphs/tables (never mid-paragraph)
+// unless a single paragraph alone doesn't fit a full page — which doesn't
+// happen for this document's prose, but the word-level fallback keeps that
+// case from silently overflowing/clipping. Breaking only at paragraph
+// boundaries also guarantees a finding's clause text (always wholly inside
+// one paragraph) never ends up split across two pages, which would
+// otherwise stop it from being found for highlighting.
+//
+// A paragraph a finding targets (forcedPageBreakTexts) always starts a
+// fresh page, even if it would technically still fit alongside whatever
+// came before it. Applying that finding can make the paragraph grow (the
+// redline shows both the struck-through original and the accepted text —
+// see expandParagraphForMeasurement), and if it started mid-page, that
+// growth would knock it — and only it — onto the next page, shifting
+// unrelated preceding content along with it. Starting the clause at the top
+// of its own page means growth only ever affects that one page.
+const paginateDocumentByMeasurement = (documentParagraphs, measurer, tableHtmlByMarker, appliedRedlines, forcedPageBreakTexts = []) => {
+  const pages = [];
+  let current = [];
+
+  const startFreshPage = (paragraph) => {
+    if (measuredParagraphsFitOnPage(measurer, [paragraph], tableHtmlByMarker, appliedRedlines)) {
+      current = [paragraph];
+      return;
+    }
+    if (tableHtmlByMarker[paragraph]) {
+      // A table alone taller than a full page isn't expected in this
+      // document — keep it whole rather than attempting to split table rows.
+      current = [paragraph];
+      return;
+    }
+    const words = paragraph.split(/\s+/).filter(Boolean);
+    let chunk = "";
+    words.forEach((word) => {
+      const candidate = chunk ? `${chunk} ${word}` : word;
+      if (!chunk || measuredParagraphsFitOnPage(measurer, [candidate], tableHtmlByMarker, appliedRedlines)) {
+        chunk = candidate;
+        return;
+      }
+      pages.push([chunk]);
+      chunk = word;
+    });
+    current = [chunk];
+  };
+
+  documentParagraphs.forEach((paragraph) => {
+    if (current.length === 0) {
+      startFreshPage(paragraph);
+      return;
+    }
+    const mustStartFreshPage = forcedPageBreakTexts.some((text) => text && paragraph.includes(text));
+    if (mustStartFreshPage) {
+      pages.push(current);
+      current = [];
+      startFreshPage(paragraph);
+      return;
+    }
+    const candidate = [...current, paragraph];
+    if (measuredParagraphsFitOnPage(measurer, candidate, tableHtmlByMarker, appliedRedlines)) {
+      current = candidate;
+      return;
+    }
+    pages.push(current);
+    current = [];
+    startFreshPage(paragraph);
+  });
+
+  if (current.length > 0) pages.push(current);
+  return pages.length > 0 ? pages.map((page) => page.join("\n\n")) : [documentParagraphs.join("\n\n")];
 };
 
 const styles = {
@@ -441,8 +602,67 @@ export const AiObligationExtractionPage = () => {
   const [documentText, setDocumentText] = useState(SAMPLE_DOCUMENT_TEXT);
   const [documentComments, setDocumentComments] = useState([]);
   const [appliedRedlines, setAppliedRedlines] = useState([]);
+  const [regulatoryTableRows, setRegulatoryTableRows] = useState(INITIAL_REGULATORY_TABLE_ROWS);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [exportFormat, setExportFormat] = useState(EXPORT_FORMATS.redlined);
+  // Pagination measured against the real A4 page box (see
+  // paginateDocumentByMeasurement), so each fixed-size page — including ones
+  // that contain a table — is packed to capacity instead of a table always
+  // burning a whole page regardless of how little it fills. Null until the
+  // layout-effect below measures it in the browser; documentPages falls back
+  // to one big page until then.
+  const [measuredTextPages, setMeasuredTextPages] = useState(null);
+
+  // Each table's HTML (current row data + which row, if any, is the active
+  // finding) substituted into a page's text wherever that table's marker
+  // paragraph appears — see DocumentViewer's blockHtmlOverrides prop. A
+  // row's own payment digits changing doesn't change the table's row count,
+  // so this doesn't need to trigger re-pagination (see the effect below).
+  const tableHtmlByMarker = useMemo(
+    () =>
+      Object.fromEntries(
+        TABLE_PAGE_CONFIGS.map((config) => {
+          const isRegulatoryTable = config.marker === CONTRACT_TABLE_REGULATORY_MARKER;
+          return [
+            config.marker,
+            renderContractTableHtml({
+              headers: config.headers,
+              rows: isRegulatoryTable ? regulatoryTableRows : config.rows,
+              findingByRowId: isRegulatoryTable ? FINDING_BY_TABLE_ROW_ID : undefined,
+              expandedFindingId,
+            }),
+          ];
+        })
+      ),
+    [regulatoryTableRows, expandedFindingId]
+  );
+  const blockHtmlOverrides = useMemo(
+    () => TABLE_PAGE_CONFIGS.map((config) => ({ text: config.marker, html: tableHtmlByMarker[config.marker] })),
+    [tableHtmlByMarker]
+  );
+
+  useLayoutEffect(() => {
+    const measurer = createPageMeasurer();
+    try {
+      const paragraphs = documentText.split(/\n\s*\n/).map((paragraph) => paragraph.trim()).filter(Boolean);
+      setMeasuredTextPages(
+        paginateDocumentByMeasurement(paragraphs, measurer, tableHtmlByMarker, appliedRedlines, FINDING_ORIGINAL_CLAUSES)
+      );
+    } finally {
+      measurer.remove();
+    }
+    // Re-measures whenever documentText or appliedRedlines changes (applying
+    // a finding updates both together) — but not for every
+    // regulatoryTableRows/expandedFindingId change (which tableHtmlByMarker
+    // also depends on), since a payment amount or the active row changing
+    // doesn't change a table's row count/height enough to matter.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [documentText, appliedRedlines]);
+
+  const documentPages = useMemo(
+    () => (measuredTextPages ?? [documentText]).map((pageText) => ({ content: pageText })),
+    [measuredTextPages, documentText]
+  );
 
   const selectedFinding = useMemo(
     () => ORDERED_FINDINGS.find((finding) => finding.id === expandedFindingId) ?? ORDERED_FINDINGS[0],
@@ -486,6 +706,26 @@ export const AiObligationExtractionPage = () => {
   const handleApplyFinding = (finding) => {
     const suggestion = suggestionDrafts[finding.id] ?? finding.suggestion;
     const commentId = addDocumentComment(commentDrafts[finding.id] ?? "", suggestion);
+
+    // Table-targeted findings update a specific regulatory-milestone row's
+    // payment cell directly instead of doing a text replace in the flowing
+    // contract text.
+    if (finding.milestoneRowId) {
+      const nextPayment = extractPaymentAmount(suggestion) ?? suggestion;
+      setRegulatoryTableRows((rows) =>
+        rows.map((row) =>
+          row.id === finding.milestoneRowId ? { ...row, cells: [row.cells[0], nextPayment] } : row
+        )
+      );
+      setAppliedRedlines((changes) => {
+        const nextChange = { originalText: finding.originalClause, proposedText: suggestion, commentId };
+        const existingIndex = changes.findIndex((change) => change.originalText === nextChange.originalText);
+        if (existingIndex < 0) return [...changes, nextChange];
+        return changes.map((change, index) => (index === existingIndex ? nextChange : change));
+      });
+      setCommentDrafts((drafts) => ({ ...drafts, [finding.id]: "" }));
+      return;
+    }
 
     // Keep the clause number (e.g. "4.1 ") fixed: apply the suggestion to
     // the clause body only, so the number is never part of the redline swap
@@ -555,9 +795,9 @@ export const AiObligationExtractionPage = () => {
         menuVariant="deal"
         createButtonLabel="Create"
         user={{
-          name: "Linh Nguyen",
-          email: "linh.nguyen@inpart.io",
-          avatarInitials: "LN",
+          name: "Julie Settipani",
+               email: "julie.settipani@heliospharma.com",
+          avatarInitials: "JS",
         }}
         onCreateClick={() => {}}
       />
@@ -571,7 +811,7 @@ export const AiObligationExtractionPage = () => {
                 <Button variant="secondary" size="sm" iconLeading={<Icon name="ChevronLeft" size="sm" />}>
                   Back
                 </Button>
-                <HubHeaderTitle size="md">Alliance name</HubHeaderTitle>
+                <HubHeaderTitle size="md">Meridian bio alliance</HubHeaderTitle>
               </HubHeaderLeft>
               <HubHeaderRight>
                 <HubHeaderActions>
@@ -594,19 +834,25 @@ export const AiObligationExtractionPage = () => {
           <div style={styles.viewerPane}>
             <DocumentViewer
               text={documentText}
+              pages={documentPages}
               originalText={SAMPLE_DOCUMENT_TEXT}
               appliedRedlines={appliedRedlines}
-              highlights={ORDERED_FINDINGS.map((finding) => ({ text: finding.originalClause, level: SEVERITY_HIGHLIGHT_LEVEL[finding.severity] }))}
+              highlights={ORDERED_FINDINGS.filter((finding) => !finding.milestoneRowId).map((finding) => ({ text: finding.originalClause, level: SEVERITY_HIGHLIGHT_LEVEL[finding.severity] }))}
               highlightText={expandedFindingId ? activeAppliedRedline?.proposedText ?? selectedFinding.originalClause : undefined}
               highlightLevel={SEVERITY_HIGHLIGHT_LEVEL[selectedFinding.severity]}
+              paragraphStyles={DOCUMENT_PARAGRAPH_STYLES}
+              blockHtmlOverrides={blockHtmlOverrides}
               commentThread={documentComments}
               onCommentSubmit={addDocumentComment}
               defaultPage={1}
               editable
               showToolbar
               showEditToolbar
-              
-              style={{ height: "100%", "--document-viewer-height": "100%" }}
+              style={{
+                height: "100%",
+                "--document-viewer-height": "100%",
+                "--document-viewer-page-text-font-family": '"Times New Roman", Times, serif',
+              }}
             />
           </div>
 

@@ -72,6 +72,7 @@ const styles = {
   // Content wrapper
   content: {
     flex: 1,
+    minWidth: 0,
     display: "flex",
     justifyContent: "flex-start",
     alignItems: "center",
@@ -101,9 +102,10 @@ const styles = {
   // Info section
   info: {
     flex: 1,
+    minWidth: 0,
     display: "inline-flex",
     flexDirection: "column",
-    justifyContent: "center",
+    justifyContent: "left",
     alignItems: "flex-start",
   },
 
@@ -112,12 +114,15 @@ const styles = {
     justifyContent: "center",
     display: "flex",
     flexDirection: "column",
+    textAlign: "left",
     color: "var(--color-content-secondary)",
     fontSize: "var(--text-body-md)",
     fontFamily: "var(--font-family-primary)",
     fontWeight: "var(--font-weight-regular)",
     lineHeight: "var(--line-height-body-md)",
-    wordWrap: "break-word",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
   },
 
   email: {
@@ -125,12 +130,15 @@ const styles = {
     justifyContent: "center",
     display: "flex",
     flexDirection: "column",
+    textAlign: "left",
     color: "var(--color-content-tertiary)",
     fontSize: "var(--text-body-caption)",
     fontFamily: "var(--font-family-primary)",
     fontWeight: "var(--font-weight-regular)",
     lineHeight: "var(--line-height-body-caption)",
-    wordWrap: "break-word",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
   },
 
   // Chevron

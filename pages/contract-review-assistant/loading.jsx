@@ -307,9 +307,9 @@ export const AiObligationExtractionPage = () => {
         sections={dealSections}
         createButtonLabel="Create"
         user={{
-          name: "Linh Nguyen",
-          email: "linh.nguyen@inpart.io",
-          avatarInitials: "LN",
+          name: "Julie Settipani",
+          email: "julie.settipani@heliospharma.com",
+          avatarInitials: "JS",
         }}
         onCreateClick={() => {}}
       />
@@ -323,7 +323,7 @@ export const AiObligationExtractionPage = () => {
                 <Button variant="secondary" size="sm" iconLeading={<Icon name="ChevronLeft" size="sm" />}>
                   Back
                 </Button>
-                <HubHeaderTitle size="md">Alliance name</HubHeaderTitle>
+                <HubHeaderTitle size="md">Meridian bio alliance</HubHeaderTitle>
               </HubHeaderLeft>
               <HubHeaderRight>
                 <HubHeaderActions>

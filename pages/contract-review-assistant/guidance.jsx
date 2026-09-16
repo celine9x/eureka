@@ -27,40 +27,6 @@ import { FileUploader } from "../../library/molecules/file-uploader.jsx";
 import { FileUploaded } from "../../library/molecules/file-uploaded.jsx";
 import { AiButton } from "@/library/atoms/ai-button";
 
-const dealSections = [
-  {
-    items: [
-      { label: "Home", iconName: "Home" },
-      { label: "AI assistant", iconName: "Sparkles" },
-      { label: "Dashboard", iconName: "ChartBar" },
-      { label: "Network", iconName: "Share" },
-    ],
-  },
-  {
-    title: "Workspace",
-    items: [
-      { label: "Initiatives", iconName: "initiative" },
-      { label: "Opportunities", iconName: "opportunity" },
-      { label: "Agreements", iconName: "agreement" },
-      { label: "Alliances", iconName: "alliance" },
-      { label: "Obligations", iconName: "obligation" },
-    ],
-  },
-  {
-    title: "Directory",
-    items: [
-      { label: "Companies", iconName: "company" },
-      { label: "Contacts", iconName: "contact" },
-      { label: "Meetings", iconName: "meeting" },
-    ],
-    dividerAfter: true,
-  },
-  {
-    title: "Recent Initiatives",
-    items: [{ label: "ALLINPART", iconColor: "var(--color-content-brand)", iconLetter: "A" }],
-  },
-];
-
 const CONTRACT_REVIEW_ASSISTANT_LOADING_PATH = "/contract-review-assistant/loading";
 
 const navigateToPath = (nextPath) => {
@@ -69,16 +35,14 @@ const navigateToPath = (nextPath) => {
 };
 
 const ALLIANCE_POST_MORTEMS = [
-  { id: "nuvexa-cmc-overrun", label: "Nuvexa Bio – CMC cost overrun post-mortem" },
-  { id: "helix-milestone-dispute", label: "Helix Pharmaceuticals – milestone trigger dispute retro" },
-  { id: "arden-jsc-deadlock", label: "Arden Therapeutics – JSC governance deadlock review" },
+  { id: "nuvexa-cmc-overrun", label: "Post-Mortem — Helios Pharma / Kestrel Bio Alliance (Closed 2024)" },
+  { id: "helix-milestone-dispute", label: " Post-Mortem — Helios Pharma / Corvale Biosciences Alliance (Closed 2025)" },
 ];
 
 const LINKED_OPEN_RISKS = [
-  { id: "liability-cap-gap", label: "Liability cap excludes confidentiality breach — Clause 12.3", severity: "High" },
-  { id: "exclusivity-term-cap", label: "Exclusivity term exceeds 12-month policy cap — Clause 8.2", severity: "Moderate" },
-  { id: "unbudgeted-spend-gap", label: "Unbudgeted spend approval gap — Clause 2.4", severity: "Moderate" },
-  { id: "royalty-term-ambiguity", label: "Royalty term end-date ambiguity — Clause 1.20", severity: "Low" },
+  { id: "liability-cap-gap", label: "Milestone slippage pattern", severity: "High" },
+  { id: "exclusivity-term-cap", label: " Partner cash runway2", severity: "High" },
+  { id: "unbudgeted-spend-gap", label: "Competitive timeline pressure", severity: "Moderate" },
 ];
 
 const SEVERITY_TO_RISK_LEVEL = {
@@ -302,22 +266,22 @@ export const AiObligationExtractionPage = () => {
 
   return (
     <div style={styles.shell}>
-      <SideMenu
-        variant="collapsed"
-        expandOnHover
-        logoSrc={InpartLogo}
-        collapsedLogoSrc={InpartLogoCollapsed}
-        showSearch
-        searchPlaceholder="Quick search"
-        sections={dealSections}
-        createButtonLabel="Create"
-        user={{
-          name: "Linh Nguyen",
-          email: "linh.nguyen@inpart.io",
-          avatarInitials: "LN",
-        }}
-        onCreateClick={() => {}}
-      />
+          <SideMenu
+             variant="collapsed"
+             expandOnHover
+             logoSrc={InpartLogo}
+             collapsedLogoSrc={InpartLogoCollapsed}
+             showSearch
+             searchPlaceholder="Quick search"
+             menuVariant="deal"
+             createButtonLabel="Create"
+             user={{
+               name: "Julie Settipani",
+               email: "julie.settipani@heliospharma.com",
+               avatarInitials: "JS",
+             }}
+             onCreateClick={() => {}}
+           />
 
       <div style={styles.main}>
   
@@ -328,7 +292,7 @@ export const AiObligationExtractionPage = () => {
                 <Button variant="secondary" size="sm" iconLeading={<Icon name="ChevronLeft" size="sm" />}>
                   Back
                 </Button>
-                <HubHeaderTitle size="md">Alliance name</HubHeaderTitle>
+                <HubHeaderTitle size="md">Meridian bio alliance</HubHeaderTitle>
               </HubHeaderLeft>
               <HubHeaderRight>
                 <HubHeaderActions>
