@@ -1,6 +1,6 @@
 # PRD: Contract review assistant (current prototype behavior)
 
-This document describes the **actual behavior implemented** in the three prototype screens — `guidance.jsx`, `loading.jsx`, `review.jsx` — as a single source of truth. It replaces the earlier goal-oriented PRD and the separate `code.md` notes; both are folded in below.
+This document describes the **actual behavior implemented** in `pages/contract-review-assistant/`: `guidance.jsx`, `loading.jsx`, `review.jsx`, and the `router-app.jsx` that wires them together. It replaces the previous version of this PRD, which had drifted from the code (dismiss flow, side panel accordion, hardcoded badges, "Phase 1"–"Phase 4" labels, and the missing routing layer no longer match what's implemented).
 
 ## Flow
 
@@ -8,30 +8,31 @@ This document describes the **actual behavior implemented** in the three prototy
 
 All three screens share the same shell:
 
-- `SideMenu` — collapsed, expands on hover, with the standard workspace/directory nav and a hardcoded user (Linh Nguyen).
+- `SideMenu` — collapsed, expands on hover, standard workspace/directory nav, hardcoded user (Linh Nguyen, linh.nguyen@inpart.io).
 - `HubHeader` — **Back** button + **Alliance name** title on the left; **Save and close** and **Export** buttons on the right.
-- A 12-column grid (`main`) with content occupying columns 2–11: a `DocumentViewer` pane (6 of 10 inner columns) on the left and a `CreationFormPanel` pane (4 of 10) on the right.
+- A 12-column grid (`main`) with content in columns 2–11: a `DocumentViewer` pane (6 of 10 inner columns) on the left and a `CreationFormPanel` pane (4 of 10) on the right.
 
-There is currently **no wiring between the three screens** — each renders in isolation with its own local/sample data, and none of them navigates to the next (see [Known gaps](#known-gaps--not-yet-wired)).
+Unlike the earlier prototype, the three screens **are now wired together** via `router-app.jsx` and real navigation calls (see [Routing](#routing--router-appjsx)). State is still **not shared** across screens — each owns its own local sample data, and nothing selected in `guidance.jsx` (checked post-mortems/risks, uploaded files, instructions) carries into `loading.jsx` or `review.jsx`.
 
 ---
 
 ## Screen 1 — Review setup (`guidance.jsx`)
 
 ### Document viewer (left)
-- Renders a short static sample contract (`SAMPLE_DOCUMENT_TEXT`), `editable`, with toolbar and edit toolbar shown.
-- No highlights, no redlines — this is a plain read/edit view of the contract before analysis.
+- Renders a short static sample contract (`SAMPLE_DOCUMENT_TEXT`, 4 clauses), `editable`, with toolbar and edit toolbar shown. No highlights, no redlines — a plain read/edit view before analysis.
 
 ### Form panel (right) — `CreationFormPanel title="Contract review"`
 - Info message: *"Inaccuracies may occur with AI. Please review carefully."*
 - Heading **"Review guidance"** + subtext *"Redlines the contract against your selected guidance and instructions."*
-- **Accordion — "Alliance post-mortems"** (size `sm`, header checkbox, badge `3/3`):
-  - Two rows, each a checkbox (default selected) + `Link` (icon leading `DocumentText`, icon trailing external-link) labeled "Alliance mortems name", opening the source in a new context.
-- **Accordion — "Linked open risks"** (size `sm`, header checkbox, badge `3/4`):
-  - Two rows, same structure, labeled "Linked risk name".
-- **"Additional files for context"** — label + secondary **Browse files** button (icon `ArrowUpTray`). No uploaded-file list is rendered.
-- Free-text instructions: `Textarea` label "Default", placeholder "Enter your message...".
-- Footer CTA: **Run review** — AI-styled secondary button (icon `Sparkles`, size `lg`, full width).
+- **Accordion — "Alliance post-mortems"** (size `sm`, header checkbox, badge `{selected}/{total}`):
+  - Rows for `ALLIANCE_POST_MORTEMS` (3 items, e.g. *"Nuvexa Bio – CMC cost overrun post-mortem"*), each a `Checkbox` + `Link` (icon leading `DocumentText`, icon trailing external-link icon), label truncated to one line with an ellipsis and a `Tooltip` (`bottom-left`) showing the full label on hover.
+  - Checkbox state (`guidanceChecked`) and the header's select-all checkbox / badge count (`selectedGuidanceCount`) are **fully wired** — checking/unchecking a row or the header updates the badge live.
+- **Accordion — "Linked open risks"** (size `sm`, header checkbox, badge `{selected}/{total}`):
+  - Same structure for `LINKED_OPEN_RISKS` (4 items), each row also showing a severity `Badge` (`High`/`Moderate`/`Low`) on the right. One row ("Royalty term end-date ambiguity") starts unchecked by default; the rest start checked.
+  - Same wiring as above (`riskChecked`, `selectedRiskCount`).
+- **"Additional files for context"** — secondary **Browse files** button (icon `ArrowUpTray`) opens a hidden native file input; selected files are appended to `contextFiles` and rendered as a list of `FileUploaded` rows, each with a working **Remove** button. Multiple files can be added across multiple browses.
+- Free-text instructions: `Textarea` label "Additional instruction", placeholder about cost-sharing, milestone triggers, non-cancellable CMC commitments. Not bound to any state (uncontrolled).
+- Footer CTA: **Run review** — AI-styled secondary button (icon `Sparkles`, size `lg`, full width). `onClick` navigates to `/contract-review-assistant/loading`.
 
 ---
 
@@ -44,15 +45,19 @@ There is currently **no wiring between the three screens** — each renders in i
 - `EmptyState`: title **"Reviewing"**, description *"The AI is currently reviewing the uploaded contract. Please wait for the process to complete."*, illustration `Detect AI.svg`, no action button.
 - `ProgressIndicator`:
   - Value animates 0 → 100 over a fixed **5000 ms** via `requestAnimationFrame` (purely client-side simulation, not tied to a real analysis job or API call).
-  - `usePhaseMode` with 4 phases labeled "Phase 1"–"Phase 4".
+  - `usePhaseMode` with 4 phases, now labeled with in-progress copy rather than generic step numbers: *"Reading the contract...", "Extracting key clauses...", "Comparing against precedent and policy...", "Compiling findings..."*.
   - Label position `right`, value formatted as a rounded `%`.
+  - **On completion** (`elapsed >= duration`), automatically navigates to `/contract-review-assistant/review` — this transition is now implemented (previously it was a known gap).
+
+### Dead code (present but unused)
+- `guidanceChecked`, `riskChecked`, `selectedGuidanceCount`, `selectedRiskCount`, the `ChecklistRows` component, and the `REVIEW_GUIDANCE_ITEMS` / `LINKED_RISK_ITEMS` constants are all defined but **never rendered** — this screen shows only the `EmptyState` + `ProgressIndicator`, not a guidance/risk checklist. Safe to remove or intentionally wire up.
 
 ---
 
 ## Screen 3 — Findings & review (`review.jsx`)
 
 ### Document text
-- Uses a longer, more complete sample agreement (its own `SAMPLE_DOCUMENT_TEXT`, distinct from Screens 1–2) with numbered clauses (Definitions, License Grant, Governance, Term and Termination, IP, Confidentiality) so each finding can anchor to a real clause.
+- Uses a longer, more complete sample agreement (its own `SAMPLE_DOCUMENT_TEXT`, distinct from — and structurally unrelated to — the short one shared by Screens 1–2) with numbered clauses (Definitions, License Grant, Governance, Term and Termination, IP, Confidentiality) so each finding can anchor to a real clause. **Known inconsistency:** the document reviewed here is not the same document shown in `guidance.jsx`/`loading.jsx`.
 
 ### Findings data model (`FINDINGS`)
 Each finding object has:
@@ -61,74 +66,76 @@ Each finding object has:
 |---|---|
 | `id` | Unique key |
 | `title` | Clause reference + issue name, e.g. *"4.1 Termination: missing transition support and cost recovery"* |
-| `severity` / `severityVariant` | `High` / `Moderate` / `Low`, mapped to chip color `warning` / `neutral` / `positive` |
+| `severity` | `High` / `Moderate` / `Low` — mapped to chip variant via `SEVERITY_CHIP_VARIANTS` (`negative` / `warning` / `blue`) and to document highlight level via `SEVERITY_HIGHLIGHT_LEVEL` (`high` / `medium` / `low`), so both stay in sync from one field. |
 | `reason` | One-paragraph explanation shown under "Reason" |
-| `originalClause` | Exact source text — used both to highlight the clause in the document and as the string replaced when a redline is applied |
-| `highlightLevel` | `high` / `medium` / `low` — drives the highlight color in the document |
-| `sources[]` | `{ label, summary, excerpt, documentContent }` — rendered as a link + summary + excerpt under "Sources"; `documentContent` is shown in the `SidePanel` when the source link is clicked |
+| `originalClause` | Exact source text — used to highlight the clause in the document and as the string replaced when a suggestion is applied |
+| `sources[]` | `{ label, summary, excerpt, documentContent }` — rendered as a link + summary + excerpt under "Sources". `documentContent` **literally contains** `excerpt` as a substring (data was adjusted so this holds for every source); clicking the link opens the `SidePanel` with the full document, with the excerpt portion highlighted inline via `<mark>`. |
 | `suggestion` | The AI-proposed redline text |
 | `comment` | Seed/default comment copy — **present in data but not currently rendered anywhere in the UI** |
 | `recommendations[]` | Bullet list of follow-ups — **present in data but not currently rendered anywhere in the UI** |
 
-Findings are sorted High → Moderate → Low (`SEVERITY_ORDER`) into `ORDERED_FINDINGS` before rendering; there is no re-sort/filter/search control in this prototype.
+Findings are sorted High → Moderate → Low (`SEVERITY_ORDER`) into `ORDERED_FINDINGS`; there is no re-sort/filter/search control.
 
 ### Component state
-- `currentIndex` — 1-based index of the "active" finding; drives which clause is treated as selected even when its accordion is collapsed.
-- `expandedFindingId` — which finding's accordion is open (controls whether detail content, including the active document highlight, is shown).
-- `suggestionDrafts` — per-finding edited suggestion text (defaults to `finding.suggestion` until the user edits it).
+- `activeTab` — `"needs-review"` or `"resolved"`, drives which findings list is visible.
+- `resolvedFindingIds` — set of finding ids moved to the Resolved tab.
+- `expandedFindingId` — which finding's accordion is open; also drives the active document highlight.
+- `suggestionDrafts` — per-finding edited suggestion text (defaults to `finding.suggestion` until edited).
 - `commentDrafts` — per-finding draft comment text.
 - `selectedSource` — the source currently shown in the `SidePanel`.
-- `documentText` — the live, mutable contract text (starts equal to the sample text; mutated when a redline is applied).
+- `documentText` — the live, mutable contract text (mutated when a suggestion is applied).
 - `documentComments` — comments attached to spans of text.
-- `appliedRedlines` — list of `{ originalText, proposedText, commentId }` recorded once **Apply** is used.
+- `appliedRedlines` — list of `{ originalText, proposedText, commentId }`, recorded once **Apply** is used.
 
 ### Findings list (right panel)
-- `CreationFormPanel` header badge shows the total finding count.
-- Each finding renders as a vertical `Accordion`:
-  - Header: `finding.title` + right-aligned `Chip` with severity label/color.
-  - Clicking the header (`onHeaderClick`) sets `currentIndex` to that finding **and** sets `expandedFindingId` to its id (this both expands the row and makes it the "active" document highlight). Toggling the accordion open/closed independently updates `expandedFindingId` via `onToggle`.
+- `CreationFormPanel` header badge shows the total finding count; below the header, `Tabs` show **Needs review** / **Resolved**, each with a live count badge.
+- Each visible finding renders as a vertical `Accordion`:
+  - Header: severity `Chip` + `finding.title` (truncated with ellipsis if too long), plus a header-level **Resolve** action button (hidden on the Resolved tab).
+  - Clicking the header (`onHeaderClick`) sets `expandedFindingId` to that finding (expands it and makes it the active document highlight). Toggling the accordion open/closed independently updates `expandedFindingId` via `onToggle`.
+  - **Resolve** (`handleResolveFinding`) adds the finding's id to `resolvedFindingIds` and collapses it if it was expanded — it moves to the Resolved tab. There is no "un-resolve" action.
   - **Expanded content:**
     1. **Reason** — `finding.reason`.
-    2. **Sources** — one card per source: bordered/background block with a `Link` (opens the `SidePanel` with `source.documentContent`), `source.summary`, and `source.excerpt` (rendered as a left-bordered quote).
-    3. **Suggestion** — `Textarea variant="ai"`: `aiValue={finding.suggestion}`, `originalValue={finding.originalClause}`, `showRedlinePreview`. Bound to `suggestionDrafts[finding.id]`; clicking **Revert to AI** resets the draft back to `finding.suggestion`.
+    2. **Sources** — one card per source: bordered/background block with a truncated, tooltip-enabled `Link` (opens the `SidePanel`), `source.summary`, and `source.excerpt` (left-bordered quote).
+    3. **Suggestion** — `Textarea variant="ai"`: `aiValue={finding.suggestion}`, `originalValue={finding.originalClause}`, `showRedlinePreview`. Bound to `suggestionDrafts[finding.id]`; **Revert to AI** resets the draft back to `finding.suggestion`.
     4. **Comment** — plain `Textarea`, placeholder "Leave your comment", bound to `commentDrafts[finding.id]`.
-    5. **Actions** — **Dismiss** (secondary, destructive) and **Apply** (primary).
-
-### "Dismiss" behavior (as implemented)
-Only collapses the accordion (`setExpandedFindingId(null)`). It does **not** set a dismissed status, capture a reason, or persist any record — this is a placeholder, not the full dismiss flow described in the goal-state PRD.
+    5. **Action** — either an **Apply** button (primary), or — once applied — a read-only **Applied** `Badge.WithIcon` in its place. There is no separate Dismiss action in this screen; Resolve (header) is the only dismissal-style action.
 
 ### "Apply" behavior (`handleApplyFinding`)
 1. Resolve the suggestion text: edited draft if present, otherwise `finding.suggestion`.
-2. Call `addDocumentComment` with the current comment draft (if the draft is empty after trimming, no comment is created — `addDocumentComment` returns `null` and is skipped).
-3. Replace `finding.originalClause` with the resolved suggestion inside `documentText` via a plain string `replace`.
-4. Upsert an entry in `appliedRedlines` keyed by `originalText` (replaces any existing entry for the same clause rather than duplicating).
+2. Call `addDocumentComment` with the current comment draft (if empty after trimming, no comment is created).
+3. Split off the clause number (e.g. `"4.1 "`) from both the original clause and the suggestion so it's never part of the redline swap, then replace `finding.originalClause` with the reassembled suggestion inside `documentText` via a plain string `replace`.
+4. Upsert an entry in `appliedRedlines` keyed by the clause body (replaces any existing entry for the same clause rather than duplicating).
 5. Clear the comment draft for that finding.
 
-There is no status field on findings (e.g. Open/Applied/Dismissed) in this prototype — status is only implicit in whether an `appliedRedlines` entry exists for that clause.
+There is no separate status field — a finding's status is implicit: present in `appliedRedlines` (Applied), present in `resolvedFindingIds` (Resolved tab), or neither (Needs review, not yet applied).
 
 ### Document viewer wiring
 - `text={documentText}` (live, mutates on apply) / `originalText={SAMPLE_DOCUMENT_TEXT}` (baseline for diffing).
 - `appliedRedlines={appliedRedlines}` — renders applied tracked changes inline.
-- `highlights` — **all** findings' `{ text: originalClause, level: highlightLevel }`, so every finding's clause is passively marked in the document regardless of selection.
-- `highlightText` — the active finding's applied redline text if one exists, else its `originalClause`; only set while a finding is expanded (`expandedFindingId` truthy), otherwise `undefined` (no active/scrolled highlight).
-- `highlightLevel` — the active finding's `highlightLevel`, distinct from the passive `highlights` list (drives the "selected" highlight styling).
+- `highlights` — **all** findings' `{ text: originalClause, level }`, so every finding's clause is passively marked regardless of selection.
+- `highlightText` — the active finding's applied redline text if one exists, else its `originalClause`; only set while a finding is expanded, otherwise `undefined`.
+- `highlightLevel` — the active finding's highlight level (distinct from the passive `highlights` list; drives the "selected" highlight styling).
 - `commentThread={documentComments}` / `onCommentSubmit={addDocumentComment}` — lets a user add a comment directly from the document, independent of any finding.
 
 ### Redline color and interaction system
-- **Passive highlight** (clause markers for all findings, unselected) — severity-keyed CSS vars:
-  - `--color-redline-highlight-high`: `color-mix(in srgb, var(--color-content-negative) 30%, transparent)`
-  - `--color-redline-highlight-medium`: `color-mix(in srgb, var(--color-content-warning) 30%, transparent)`
-  - `--color-redline-highlight-low`: `color-mix(in srgb, var(--color-content-positive) 30%, transparent)`
-- **Suggestion textarea redline preview** (read-only state):
-  - Deleted text → `--color-redline-delete` (`var(--color-content-negative)`), struck through.
-  - Inserted text → `--color-redline-add` (`var(--color-content-positive)`).
-  - Unchanged text → `--color-content-primary`.
-  - The container sizes to fit content.
-- **Click-to-edit:** clicking the suggestion textarea switches it from the read-only redline-preview render into a fully editable textarea: all text becomes plain `--color-content-primary`, the struck-through deletion is hidden, the insertion becomes normal editable text, and the "AI" badge becomes a **Revert to AI** button — standard `Textarea` behavior once the field has focus/edits.
-- **Apply** inserts the resolved suggestion directly into `documentText` as the new clause text (via `handleApplyFinding`); the `DocumentViewer`'s `appliedRedlines` prop is what renders it as a tracked change in the document pane.
+- **Passive highlight** (clause markers for all findings, unselected) — severity-keyed CSS vars: `--color-redline-highlight-high/medium/low`, each a `color-mix()` of the matching content-status color at 20–30% over transparent.
+- **Suggestion textarea redline preview** (read-only state): deletions struck through in `--color-redline-delete`, insertions in `--color-redline-add`, unchanged text in `--color-content-primary`.
+- **Click-to-edit:** clicking the suggestion textarea switches it into a fully editable field — deletions hidden, insertions become plain text, and the "AI" badge becomes **Revert to AI**.
+- **Apply** inserts the resolved suggestion directly into `documentText`; the `DocumentViewer`'s `appliedRedlines` prop renders it as a tracked change in the document pane.
 
-### Side panel
-- Opens when `selectedSource` is set; title = `source.label` (icon `DocumentText`); single section **"Document content"** rendering `source.documentContent`.
+### Side panel (linked source viewer)
+- Opens when `selectedSource` is set. Header: `source.label` as title (icon `DocumentText`, colored `--color-content-secondary`), an **Open** button in the top-left (currently a no-op placeholder — there's no real destination for the mock source data), and a close (×) button top-right. No divider between the top bar and the title, and no accordion in the body.
+- Body renders the source's full `documentContent` as a bordered "document" card, with the matching `excerpt` substring highlighted via `<mark>` (`color-mix(in srgb, var(--color-content-search-highlight) 20%, transparent)`).
+
+---
+
+## Routing (`router-app.jsx`)
+
+- A minimal client-side router keyed off `window.location.pathname`, using `history.pushState`/`popstate` (see each screen's `navigateToPath` helper) rather than a routing library.
+- Known paths: `/contract-review-assistant/guidance`, `/contract-review-assistant/loading`, `/contract-review-assistant/review`, and `/library` (the full component library demo, `ComponentLibraryDemo`, including any `/library/...` sub-path).
+- Any unrecognized path (including `/`) redirects to `/library` via `history.replaceState`.
+- Sets `document.title` per route (e.g. "Contract Review Assistant Review — Eureka").
+- This is the only place that ties the three screens together; there is otherwise no shared layout/provider component across them.
 
 ---
 
@@ -136,9 +143,9 @@ There is no status field on findings (e.g. Open/Applied/Dismissed) in this proto
 
 These reflect the current code, not the eventual target experience:
 
-- **`guidance.jsx`**: `guidanceChecked` / `riskChecked` state and the derived `selectedGuidanceCount` / `selectedRiskCount` are computed but not connected to the rendered accordion checkboxes or badges — the badges are hardcoded (`3/3`, `3/4`) and each row's checkbox uses its own inline `defaultSelected` plus a `console.log`, not the outer state.
-- **`guidance.jsx`**: the free-text instructions `Textarea` and **Browse files** button aren't wired to any state; **Run review** has no `onClick` / navigation to `loading.jsx`.
-- **`loading.jsx`**: progress is a fixed 5-second client-side animation, not connected to a real analysis job, and there is no automatic or manual transition into `review.jsx` once it completes.
+- **`guidance.jsx`**: the free-text "Additional instruction" `Textarea` isn't bound to any state — it's not carried forward to `loading.jsx`/`review.jsx`, and neither are the checked post-mortems/risks or uploaded context files.
+- **`loading.jsx`**: progress is a fixed 5-second client-side animation, not connected to a real analysis job or the selections made in `guidance.jsx`. It also contains an unused checklist implementation (`guidanceChecked`/`riskChecked`/`ChecklistRows`/`REVIEW_GUIDANCE_ITEMS`/`LINKED_RISK_ITEMS`) that is never rendered.
 - **`review.jsx`**: `finding.comment` (seed comment copy) and `finding.recommendations` exist in the data model but are not rendered anywhere.
-- **`review.jsx`**: **Dismiss** only collapses the accordion — no status, reason capture, or persistence.
-- **All three screens** use hardcoded local sample data — no file upload, no backend/API call, and no state is shared or persisted across screens.
+- **`review.jsx`**: the `SidePanel`'s **Open** button has no real destination — the mock source data has no URL/document id to open to.
+- **Document mismatch**: `guidance.jsx`/`loading.jsx` show a short 4-clause sample contract; `review.jsx` shows a longer, unrelated 6-section sample agreement. They are not the same document.
+- **All three screens** use hardcoded local sample data — no file upload is actually analyzed, no backend/API call is made, and no state is shared or persisted across screens (routing changes the URL/screen only, not any data).

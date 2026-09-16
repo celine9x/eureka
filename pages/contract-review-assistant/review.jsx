@@ -19,9 +19,20 @@ import InpartLogoCollapsed from "../../library/organisms/side-menu/Inpart1.svg";
 import Accordion from "../../library/molecules/accordion.jsx";
 import { TextInput } from "../../library/molecules/text-input.jsx";
 import { Link } from "../../library/atoms/link.jsx";
+import { Tooltip } from "../../library/atoms/tooltip.jsx";
 import { Textarea, TextareaField } from "../../library/molecules/textarea.jsx";
 import { SidePanel } from "../../library/templates/side-panel.jsx";
 import { Tabs, Tab } from "@/library/molecules/tabs";
+import { EmptyState } from "../../library/molecules/empty-state.jsx";
+import { Modal } from "../../library/organisms/modal.jsx";
+import { RadioCardGroup, RadioCard } from "../../library/molecules/radio-card.jsx";
+import fileDocIcon from "../../library/atoms/custom-icons/file-doc.svg";
+import redlinedContractFile from "./Collaboration-License-Agreement-REDLINE.docx?url";
+
+const EXPORT_FORMATS = {
+  redlined: "redlined",
+  clean: "clean",
+};
 
 const dealSections = [
   {
@@ -159,7 +170,6 @@ const FINDINGS = [
     reason:
       "The review found no express obligation for transition support and recovery of non-cancellable costs after early termination.",
     originalClause: "4.1 This Agreement commences on the Effective Date and remains in effect unless earlier terminated. Neither Party is required to provide transition support or reimburse non-cancellable costs following termination.",
-    highlightLevel: "high",
     sources: [
       {
         label: "Post-mortem, Alliance X",
@@ -168,14 +178,14 @@ const FINDINGS = [
         excerpt:
           "Transition and recovery obligations should survive convenience termination until all committed work has been completed or recovered.",
         documentContent:
-          "The Alliance X termination review found that transition obligations ended on the termination date while committed CMO costs continued to accrue. Future agreements should preserve transition support and include a defined recovery mechanism for non-cancellable commitments.",
+          "The Alliance X termination review found that transition obligations ended on the termination date while committed CMO costs continued to accrue. Transition and recovery obligations should survive convenience termination until all committed work has been completed or recovered. Future agreements should preserve transition support and include a defined recovery mechanism for non-cancellable commitments.",
       },
       {
         label: "Termination playbook",
         summary: "The playbook requires a documented transition plan before a termination notice is issued.",
         excerpt: "Document cost ownership, CMO transfer steps, and the final delivery timeline in the termination schedule.",
         documentContent:
-          "Before issuing a termination notice, the termination playbook requires a documented plan covering cost ownership, CMO technology transfer, remaining deliverables, and the final close-out timeline.",
+          "Before issuing a termination notice, the termination playbook requires a documented transition plan. Document cost ownership, CMO transfer steps, and the final delivery timeline in the termination schedule. This ensures remaining deliverables and the final close-out timeline are addressed.",
       },
     ],
     suggestion: "Either Party may terminate with 180 days notice where convenience is documented and transition support obligations are explicitly preserved in Schedule 2.",
@@ -193,14 +203,13 @@ const FINDINGS = [
     reason:
       "The JSC process has no binding fallback when parties cannot resolve strategic decisions.",
     originalClause: "3.1 A Joint Steering Committee (JSC) will oversee development and commercialization activities. Decisions require unanimous approval, and this Agreement does not specify an escalation process for unresolved decisions.",
-    highlightLevel: "high",
     sources: [
       {
         label: "Playbook guidance",
         summary: "Governance deadlocks should escalate to executive sponsors within a fixed timeline.",
         excerpt: "Escalate unresolved Joint Steering Committee decisions to executive sponsors within 10 business days.",
         documentContent:
-          "Playbook guidance requires unresolved Joint Steering Committee decisions to escalate to named executive sponsors within 10 business days. The agreement should also assign final authority for each decision category.",
+          "Playbook guidance requires unresolved governance decisions to follow a defined escalation path. Escalate unresolved Joint Steering Committee decisions to executive sponsors within 10 business days. The agreement should also assign final authority for each decision category.",
       },
     ],
     suggestion: "Add a 10-business-day escalation path from JSC to executive committee with topic-specific final authority.",
@@ -218,14 +227,13 @@ const FINDINGS = [
     reason:
       "Notice periods differ between convenience and breach sections without priority rules.",
     originalClause: "4.2 Either Party may terminate this Agreement for convenience upon sixty (60) days' written notice. The notice and cure periods in this Section do not state whether they override other termination timelines.",
-    highlightLevel: "medium",
     sources: [
       {
         label: "Internal policy",
         summary: "Termination timelines should be harmonized unless an explicit exception is stated.",
         excerpt: "Use a single notice framework and identify any approved exceptions directly in the applicable termination clause.",
         documentContent:
-          "Internal policy requires consistent notice and cure periods across termination provisions unless an exception is expressly approved. Where timelines differ, the agreement must state which provision controls.",
+          "Internal policy requires consistent notice and cure periods across termination provisions. Use a single notice framework and identify any approved exceptions directly in the applicable termination clause. Where timelines differ, the agreement must state which provision controls.",
       },
     ],
     suggestion: "Align notice and cure windows, then add clause precedence language for conflicting timelines.",
@@ -243,14 +251,13 @@ const FINDINGS = [
     reason:
       "Foreground IP clauses do not fully allocate ownership and prosecution authority for joint inventions.",
     originalClause: "5.1 Foreground IP arising from the Collaboration will be owned jointly by the Parties. This Agreement does not allocate ownership for sole inventions, assignment obligations for affiliates, or prosecution authority.",
-    highlightLevel: "low",
     sources: [
       {
         label: "Alliance dispute summary",
         summary: "Unclear assignment wording previously delayed patent filing responsibilities across affiliates.",
         excerpt: "Ownership and prosecution responsibilities must include affiliates that contribute to a joint invention.",
         documentContent:
-          "The dispute summary identified delayed patent filings because the agreement did not clearly assign ownership or prosecution authority for inventions created by affiliates. Future clauses should distinguish sole and joint inventions and identify responsible parties.",
+          "The dispute summary identified delayed patent filings because the agreement did not clearly assign responsibilities. Ownership and prosecution responsibilities must include affiliates that contribute to a joint invention. Future clauses should distinguish sole and joint inventions and identify responsible parties.",
       },
     ],
     suggestion: "Separate sole/joint invention ownership, assignment obligations, and prosecution controls by invention type.",
@@ -265,9 +272,34 @@ const FINDINGS = [
 
 const SEVERITY_ORDER = { High: 0, Moderate: 1, Low: 2 };
 const SEVERITY_CHIP_VARIANTS = { High: "negative", Moderate: "warning", Low: "blue" };
+// Drives the document highlight color from the same severity that labels
+// the finding's accordion badge, so the two can never drift out of sync.
+const SEVERITY_HIGHLIGHT_LEVEL = { High: "high", Moderate: "medium", Low: "low" };
 const ORDERED_FINDINGS = [...FINDINGS].sort(
   (first, second) => SEVERITY_ORDER[first.severity] - SEVERITY_ORDER[second.severity]
 );
+
+// Clause numbers (e.g. "4.1 ") are a fixed identifier, not part of the
+// substantive text — applying a suggestion should never redline them away.
+const CLAUSE_NUMBER_PATTERN = /^\d+(?:\.\d+)*\s+/;
+const splitClauseNumber = (clauseText = "") => {
+  const match = clauseText.match(CLAUSE_NUMBER_PATTERN);
+  return match ? { number: match[0], body: clauseText.slice(match[0].length) } : { number: "", body: clauseText };
+};
+
+const renderHighlightedDocument = (documentContent, excerpt) => {
+  if (!excerpt) return documentContent;
+  const startIndex = documentContent.indexOf(excerpt);
+  if (startIndex === -1) return documentContent;
+  const endIndex = startIndex + excerpt.length;
+  return (
+    <>
+      {documentContent.slice(0, startIndex)}
+      <mark style={styles.sourceDocumentHighlight}>{documentContent.slice(startIndex, endIndex)}</mark>
+      {documentContent.slice(endIndex)}
+    </>
+  );
+};
 
 const styles = {
   shell: {
@@ -337,8 +369,14 @@ const styles = {
   },
   findingActions: {
     display: "flex",
-    justifyContent: "flex-start",
+    justifyContent: "flex-end",
     gap: "var(--spacing-2)",
+  },
+  appliedBadge: {
+    height: "var(--size-button-md)",
+    padding: "0 var(--spacing-sm)",
+    borderRadius: "var(--radius-sm)",
+    justifyContent: "center",
   },
   reviewSection: {
     display: "flex",
@@ -374,6 +412,13 @@ const styles = {
     alignItems: "flex-start",
     gap: "var(--spacing-xs)",
   },
+  sourceLinkLabel: {
+    minWidth: 0,
+    flex: "1 1 auto",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+  },
   sourceSummary: {
     margin: 0,
     fontFamily: "var(--font-family-primary)",
@@ -392,10 +437,26 @@ const styles = {
   },
   sourceDocument: {
     margin: 0,
+    padding: "var(--spacing-6)",
+    background: "var(--color-general-white)",
+    borderRadius: "var(--radius-lg)",
+    border: "1px solid var(--color-action-outline-secondary-enabled)",
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-body-lg)",
     lineHeight: "var(--line-height-body-lg)",
     color: "var(--color-content-primary)",
+    whiteSpace: "pre-wrap",
+  },
+  sourceDocumentHighlight: {
+    background: "color-mix(in srgb, var(--color-content-search-highlight) 20%, transparent)",
+    borderRadius: "var(--radius-xs)",
+  },
+  exportModalSubtitle: {
+    margin: 0,
+    color: "var(--color-content-secondary)",
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-md)",
+    lineHeight: "var(--line-height-body-md)",
   },
 };
 
@@ -414,6 +475,8 @@ export const AiObligationExtractionPage = () => {
   const [documentText, setDocumentText] = useState(SAMPLE_DOCUMENT_TEXT);
   const [documentComments, setDocumentComments] = useState([]);
   const [appliedRedlines, setAppliedRedlines] = useState([]);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [exportFormat, setExportFormat] = useState(EXPORT_FORMATS.redlined);
 
   const selectedFinding = useMemo(
     () => ORDERED_FINDINGS.find((finding) => finding.id === expandedFindingId) ?? ORDERED_FINDINGS[0],
@@ -457,9 +520,17 @@ export const AiObligationExtractionPage = () => {
   const handleApplyFinding = (finding) => {
     const suggestion = suggestionDrafts[finding.id] ?? finding.suggestion;
     const commentId = addDocumentComment(commentDrafts[finding.id] ?? "", suggestion);
-    setDocumentText((currentText) => currentText.replace(finding.originalClause, suggestion));
+
+    // Keep the clause number (e.g. "4.1 ") fixed: apply the suggestion to
+    // the clause body only, so the number is never part of the redline swap
+    // and the final document text still starts with it.
+    const { number, body: originalBody } = splitClauseNumber(finding.originalClause);
+    const suggestionBody = number && suggestion.startsWith(number) ? suggestion.slice(number.length) : suggestion;
+    const fullSuggestion = `${number}${suggestionBody}`;
+
+    setDocumentText((currentText) => currentText.replace(finding.originalClause, fullSuggestion));
     setAppliedRedlines((changes) => {
-      const nextChange = { originalText: finding.originalClause, proposedText: suggestion, commentId };
+      const nextChange = { originalText: originalBody, proposedText: suggestionBody, commentId };
       const existingIndex = changes.findIndex((change) => change.originalText === nextChange.originalText);
       if (existingIndex < 0) return [...changes, nextChange];
       return changes.map((change, index) => (index === existingIndex ? nextChange : change));
@@ -473,8 +544,38 @@ export const AiObligationExtractionPage = () => {
   };
 
   const activeAppliedRedline = appliedRedlines.find(
-    (change) => change.originalText === selectedFinding.originalClause
+    (change) => change.originalText === splitClauseNumber(selectedFinding.originalClause).body
   );
+
+  const isFindingApplied = (finding) =>
+    appliedRedlines.some(
+      (change) => change.originalText === splitClauseNumber(finding.originalClause).body
+    );
+
+  const handleExportContract = () => {
+    const isRedlined = exportFormat === EXPORT_FORMATS.redlined;
+    const link = document.createElement("a");
+
+    if (isRedlined) {
+      link.href = redlinedContractFile;
+      link.download = "Collaboration-License-Agreement-REDLINE.docx";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setIsExportModalOpen(false);
+      return;
+    }
+
+    const blob = new Blob([documentText], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.download = "contract-clean.docx";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    setIsExportModalOpen(false);
+  };
 
   return (
     <div style={styles.shell}>
@@ -509,7 +610,14 @@ export const AiObligationExtractionPage = () => {
               <HubHeaderRight>
                 <HubHeaderActions>
                   <Button variant="secondary" size="sm">Save and close</Button>
-                  <Button variant="secondary" iconLeading={<Icon name="ArrowDownTray" size="sm" />} size="sm">Export</Button>
+                  <Button
+                    variant="secondary"
+                    iconLeading={<Icon name="ArrowUpTray" size="sm" />}
+                    size="sm"
+                    onClick={() => setIsExportModalOpen(true)}
+                  >
+                    Export
+                  </Button>
                 </HubHeaderActions>
               </HubHeaderRight>
             </HubHeaderRow>
@@ -522,9 +630,9 @@ export const AiObligationExtractionPage = () => {
               text={documentText}
               originalText={SAMPLE_DOCUMENT_TEXT}
               appliedRedlines={appliedRedlines}
-              highlights={ORDERED_FINDINGS.map((finding) => ({ text: finding.originalClause, level: finding.highlightLevel }))}
+              highlights={ORDERED_FINDINGS.map((finding) => ({ text: finding.originalClause, level: SEVERITY_HIGHLIGHT_LEVEL[finding.severity] }))}
               highlightText={expandedFindingId ? activeAppliedRedline?.proposedText ?? selectedFinding.originalClause : undefined}
-              highlightLevel={selectedFinding.highlightLevel}
+              highlightLevel={SEVERITY_HIGHLIGHT_LEVEL[selectedFinding.severity]}
               commentThread={documentComments}
               onCommentSubmit={addDocumentComment}
               defaultPage={1}
@@ -541,17 +649,27 @@ export const AiObligationExtractionPage = () => {
               title="Contract review"
               headerBadge={<Badge color="neutral" size="md">{ORDERED_FINDINGS.length}</Badge>}
               infoMessage="Inaccuracies may occur with AI. Please review carefully."
+              showNavigation
+              navigationSubContent={
+                <Tabs  selectedKey={activeTab} onSelectionChange={setActiveTab}>
+                  <Tab id={REVIEW_TABS.needsReview} badge={needsReviewFindings.length}>Needs review</Tab>
+                  <Tab id={REVIEW_TABS.resolved} badge={resolvedFindings.length}>Resolved</Tab>
+                </Tabs>
+              }
             >
-              <Tabs selectedKey={activeTab} onSelectionChange={setActiveTab}>
-                <Tab id={REVIEW_TABS.needsReview} badge={needsReviewFindings.length}>Needs review</Tab>
-                <Tab id={REVIEW_TABS.resolved} badge={resolvedFindings.length}>Resolved</Tab>
-              </Tabs>
-
               <div style={styles.findingsStack}>
                 {visibleFindings.length === 0 && (
-                  <p style={styles.reviewLabel}>
-                    {activeTab === REVIEW_TABS.resolved ? "No findings resolved yet." : "No findings need review."}
-                  </p>
+                  activeTab === REVIEW_TABS.resolved ? (
+                    <EmptyState
+                      size="sm"
+                      illustrationVariant="noIssues"
+                      title="No resolved findings yet"
+                      description="Findings you resolve tab will show up here."
+                      showActionButton={false}
+                    />
+                  ) : (
+                    <p style={styles.reviewLabel}>No findings need review.</p>
+                  )
                 )}
                 {visibleFindings.map((finding) => (
                   <Accordion
@@ -585,12 +703,20 @@ export const AiObligationExtractionPage = () => {
                         <div style={styles.sources}>
                           {finding.sources.map((source) => (
                             <div key={source.label} style={styles.sourceSection}>
-                              <Link size="md" href="#" iconLeading={<Icon name="DocumentText" variant="outline" size="sm" />} iconTrailing={<Icon name="ArrowTopRightOnSquare" variant="outline" size="sm" />} onClick={(event) => {
-                                event.preventDefault();
-                                setSelectedSource(source);
-                              }}>
-                                {source.label}
-                              </Link>
+                              <Tooltip content={source.label} placement="bottom-left" style={{ width: "100%", minWidth: 0, justifyContent: "flex-start" }}>
+                                <Link
+                                  size="md"
+                                  href="#"
+                                  style={{ width: "100%", minWidth: 0, justifyContent: "flex-start" }}
+                                  iconLeading={<Icon name="DocumentText" variant="outline" size="sm" />}
+                                  onClick={(event) => {
+                                    event.preventDefault();
+                                    setSelectedSource(source);
+                                  }}
+                                >
+                                  <span style={styles.sourceLinkLabel}>{source.label}</span>
+                                </Link>
+                              </Tooltip>
                               <p style={styles.sourceSummary}>{source.summary}</p>
                               <p style={styles.sourceExcerpt}>{source.excerpt}</p>
                             </div>
@@ -601,7 +727,7 @@ export const AiObligationExtractionPage = () => {
                         label="Suggestion"
                         variant="ai"
                         aiValue={finding.suggestion}
-                        originalValue={finding.originalClause}
+                        originalValue={splitClauseNumber(finding.originalClause).body}
                         showRedlinePreview
                         value={suggestionDrafts[finding.id] ?? finding.suggestion}
                         onChange={(event) => setSuggestionDrafts((drafts) => ({ ...drafts, [finding.id]: event.target.value }))}
@@ -614,7 +740,24 @@ export const AiObligationExtractionPage = () => {
                         onChange={(event) => setCommentDrafts((drafts) => ({ ...drafts, [finding.id]: event.target.value }))}
                       />
                       <div style={styles.findingActions}>
-                        <Button variant="primary" onClick={() => handleApplyFinding(finding)}>Apply</Button>
+                        {isFindingApplied(finding) ? (
+                          <Badge.WithIcon
+                            color="positive"
+                            size="md"
+                            iconLeading={<Icon name="Check" size="sm" />}
+                            style={styles.appliedBadge}
+                          >
+                            Applied
+                          </Badge.WithIcon>
+                        ) : (
+                          <Button
+                            variant="primary"
+                            iconLeading={<Icon name="ArrowUturnLeft" size="sm" />}
+                            onClick={() => handleApplyFinding(finding)}
+                          >
+                            Apply
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </Accordion>
@@ -628,20 +771,43 @@ export const AiObligationExtractionPage = () => {
       <SidePanel
         isOpen={selectedSource !== null}
         onClose={() => setSelectedSource(null)}
+        onOpen={() => {}}
         title={selectedSource?.label}
         titleIconName="DocumentText"
-        sections={
-          selectedSource
-            ? [
-                {
-                  id: "document-content",
-                  title: "Document content",
-                  content: <p style={styles.sourceDocument}>{selectedSource.documentContent}</p>,
-                },
-              ]
-            : []
-        }
-      />
+      >
+        {selectedSource && (
+          <p style={styles.sourceDocument}>
+            {renderHighlightedDocument(selectedSource.documentContent, selectedSource.excerpt)}
+          </p>
+        )}
+      </SidePanel>
+
+      <Modal
+        open={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        title="Export contract"
+        style={{ maxWidth: 600 }}
+        tertiaryLabel="Cancel"
+        primaryLabel="Export"
+        onTertiaryClick={() => setIsExportModalOpen(false)}
+        onPrimaryClick={handleExportContract}
+      >
+        <p style={styles.exportModalSubtitle}>Choose how you want to export the reviewed contract.</p>
+        <RadioCardGroup value={exportFormat} onChange={setExportFormat}>
+          <RadioCard
+            value={EXPORT_FORMATS.redlined}
+            label="Redlined version (recommended)"
+            info="Includes all proposed changes as tracked changes."
+            icon={<img src={fileDocIcon} alt="" width={20} height={20} />}
+          />
+          <RadioCard
+            value={EXPORT_FORMATS.clean}
+            label="Clean version"
+            info="Final text with all changes accepted."
+            icon={<img src={fileDocIcon} alt="" width={20} height={20} />}
+          />
+        </RadioCardGroup>
+      </Modal>
     </div>
   );
 };

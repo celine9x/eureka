@@ -20,6 +20,7 @@ import InpartLogoCollapsed from "../../library/organisms/side-menu/Inpart1.svg";
 import { RichTextToolbars } from "../../library/index.js";
 import Accordion from "../../library/molecules/accordion.jsx";
 import Link from "../../library/atoms/link.jsx";
+import { Tooltip } from "../../library/atoms/tooltip.jsx";
 import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/16/solid";
 import { Textarea } from "@/library/molecules/textarea";
 import { FileUploader } from "../../library/molecules/file-uploader.jsx";
@@ -217,19 +218,29 @@ const styles = {
     alignItems: "center",
     justifyContent: "flex-start",
     gap: "var(--spacing-2)",
+    minWidth: 0,
   },
   guidancelineWithBadge: {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
     gap: "var(--spacing-2)",
+    minWidth: 0,
   },
   guidancelineLeft: {
     display: "flex",
     alignItems: "center",
     gap: "var(--spacing-2)",
     minWidth: 0,
-  }
+    flex: "1 1 auto",
+  },
+  guidancelineLinkLabel: {
+    minWidth: 0,
+    flex: "1 1 auto",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+  },
 
 };
 
@@ -237,10 +248,7 @@ const withAllSetTo = (items, isSelected) => Object.fromEntries(items.map((item) 
 
 export const AiObligationExtractionPage = () => {
   const [guidanceChecked, setGuidanceChecked] = useState(() => withAllSetTo(ALLIANCE_POST_MORTEMS, true));
-  const [riskChecked, setRiskChecked] = useState(() => ({
-    ...withAllSetTo(LINKED_OPEN_RISKS, true),
-    "royalty-term-ambiguity": false,
-  }));
+  const [riskChecked, setRiskChecked] = useState(() => withAllSetTo(LINKED_OPEN_RISKS, true));
 
   const selectedGuidanceCount = useMemo(
     () => ALLIANCE_POST_MORTEMS.filter((item) => guidanceChecked[item.id]).length,
@@ -361,7 +369,7 @@ export const AiObligationExtractionPage = () => {
                   Review guidance
                 </h3>
                 <p style={styles.sectionIntro}>
-                  Redlines the contract against your selected guidance and instructions.
+                  Redlines the contract against your selected instructions.
                 </p>
               </div>
 
@@ -386,14 +394,16 @@ export const AiObligationExtractionPage = () => {
       isSelected={Boolean(guidanceChecked[item.id])}
       onChange={(isSelected) => toggleGuidanceItem(item.id, isSelected)}
     />
-    <Link
-      size="md"
-      href="#"
-      iconLeading={<Icon name="DocumentText" variant="outline" size="sm" />}
-      iconTrailing={<Icon name="ArrowTopRightOnSquare" variant="outline" size="sm" />}
-    >
-      {item.label}
-    </Link>
+    <Tooltip content={item.label} placement="bottom-left" style={{ flex: "1 1 auto", minWidth: 0, justifyContent: "flex-start" }}>
+      <Link
+        size="md"
+        href="#"
+        style={{ minWidth: 0, justifyContent: "flex-start" }}
+        iconLeading={<Icon name="DocumentText" variant="outline" size="sm" />}
+      >
+        <span style={styles.guidancelineLinkLabel}>{item.label}</span>
+      </Link>
+    </Tooltip>
   </div>
 ))}
 
@@ -421,14 +431,16 @@ export const AiObligationExtractionPage = () => {
         isSelected={Boolean(riskChecked[item.id])}
         onChange={(isSelected) => toggleRiskItem(item.id, isSelected)}
       />
-      <Link
-        size="md"
-        href="#"
-        iconLeading={<Icon name="DocumentText" variant="outline" size="sm" />}
-        iconTrailing={<Icon name="ArrowTopRightOnSquare" variant="outline" size="sm" />}
-      >
-        {item.label}
-      </Link>
+      <Tooltip content={item.label} placement="bottom-left" style={{ flex: "1 1 auto", minWidth: 0, justifyContent: "flex-start" }}>
+        <Link
+          size="md"
+          href="#"
+          style={{ minWidth: 0, justifyContent: "flex-start" }}
+          iconLeading={<Icon name="DocumentText" variant="outline" size="sm" />}
+        >
+          <span style={styles.guidancelineLinkLabel}>{item.label}</span>
+        </Link>
+      </Tooltip>
     </div>
     <Badge size="sm" color={item.color}>{item.severity}</Badge>
   </div>

@@ -501,6 +501,7 @@ export const CreationFormPanel = forwardRef(
         {/* Navigation Sub-header */}
         {showNavigation && (
           <div className="creation-form-panel__navigation">
+            {(onBack || navigationTitle || (currentIndex !== undefined && totalItems !== undefined)) && (
             <div className="creation-form-panel__nav-row">
               <div className="creation-form-panel__nav-left">
                 {onBack && (
@@ -545,6 +546,7 @@ export const CreationFormPanel = forwardRef(
                 </div>
               )}
             </div>
+            )}
             {navigationSubContent && (
               <div className="creation-form-panel__nav-sub-content">
                 {navigationSubContent}

@@ -12,7 +12,7 @@
  * <Textarea label="Comments" error="This field is required" />
  */
 
-import { useEffect, useState, useId, forwardRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useId, forwardRef } from "react";
 import { Icon } from "../atoms/icon.jsx";
 import { Badge } from "../atoms/badge.jsx";
 import { Button } from "../atoms/button.jsx";
@@ -171,7 +171,7 @@ const styles = {
     minHeight: 0,
     padding: "var(--spacing-xs) var(--spacing-3)",
     fontFamily: "var(--font-family-primary)",
-    fontSize: "var(--text-body-lg)",
+    fontSize: "var(--text-body-md)",
     fontWeight: "var(--font-weight-regular)",
     lineHeight: "var(--line-height-body-lg)",
     color: "var(--color-content-primary)",
@@ -361,6 +361,7 @@ export const TextareaField = forwardRef(
       aiValue = "",
       isAiEdited = false,
       onRevert,
+      autoResize = false,
       style,
       className,
       ...props
@@ -371,9 +372,23 @@ export const TextareaField = forwardRef(
 
     const [isHovered, setIsHovered] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
+    const internalRef = useRef(null);
+
+    const setRefs = (node) => {
+      internalRef.current = node;
+      if (typeof ref === "function") ref(node);
+      else if (ref) ref.current = node;
+    };
 
     const isTextareaDisabled = isDisabled || disabled;
     const isTextareaReadOnly = isReadOnly || readOnly;
+
+    useLayoutEffect(() => {
+      if (!autoResize || !internalRef.current) return;
+      const el = internalRef.current;
+      el.style.height = "auto";
+      el.style.height = `${el.scrollHeight}px`;
+    }, [autoResize, props.value]);
 
     // Compose textarea styles
     const textareaStyle = {
@@ -387,14 +402,15 @@ export const TextareaField = forwardRef(
       ...(state === TEXTAREA_STATES.success && isFocused && styles.textareaSuccessFocus),
       ...(isTextareaDisabled && styles.textareaDisabled),
       ...(isTextareaReadOnly && styles.textareaReadOnly),
-      resize: resizable && !isTextareaDisabled ? "vertical" : "none",
+      resize: autoResize ? "none" : resizable && !isTextareaDisabled ? "vertical" : "none",
+      ...(autoResize && { overflow: "hidden" }),
       ...style,
     };
 
     return (
       <div style={styles.fieldWrapper}>
         <textarea
-          ref={ref}
+          ref={setRefs}
           rows={rows}
           className={className ? `eureka-textarea ${className}` : "eureka-textarea"}
           style={textareaStyle}
@@ -587,6 +603,7 @@ export const Textarea = forwardRef(
             aiValue={aiBaseline}
             isAiEdited={variant === TEXTAREA_VARIANTS.ai && (currentValue !== aiBaseline || (showRedlinePreview && isRedlineEditing))}
             onRevert={handleRevert}
+            autoResize={showRedlinePreview && variant === TEXTAREA_VARIANTS.ai}
             style={showRedlinePreview ? { minHeight: "auto" } : undefined}
           />
         )}

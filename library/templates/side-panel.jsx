@@ -76,9 +76,15 @@ const styles = `
   }
   .side-panel__header {
     flex-shrink: 0;
-    background: var(--color-general-white);
+    background: var(--color-general-neutral-light);
     border-bottom: 1px solid var(--color-action-outline-secondary-enabled);
     padding: 0 var(--spacing-6);
+  }
+  .side-panel__header .object-header-top-bar {
+    border-bottom: none;
+  }
+  .side-panel__header .object-header-title-icon {
+    color: var(--color-content-secondary);
   }
   .side-panel__body {
     flex: 1;
@@ -140,6 +146,7 @@ const injectStyles = () => {
  * - topBarLeft {ReactNode}        — extra content in the top-bar left slot (before Open button)
  * - topBarRight {ReactNode}       — extra content in the top-bar right slot (before close button)
  * - sections {array}              — [{id, title, defaultExpanded, actionLabel, onActionClick, content}]
+ * - children {ReactNode}          — raw body content, rendered instead of `sections` (no accordion wrapper)
  * - openButtonLabel {string}      — label for the expand button (default "Open")
  * - className {string}
  */
@@ -166,6 +173,8 @@ export const SidePanel = ({
   topBarRight,
   // Body sections (single-column accordions)
   sections = [],
+  // Raw body content — bypasses sections/Accordion when provided
+  children,
   // Open button
   openButtonLabel = "Open",
   className = "",
@@ -307,21 +316,23 @@ export const SidePanel = ({
           </ObjectHeader>
         </div>
 
-        {/* Body — single-column accordions */}
+        {/* Body — raw content when provided, otherwise single-column accordions */}
         <div className="side-panel__body">
-          {sections.map((section, index) => (
-            <div key={section.id || index} className="side-panel__section">
-              <Accordion
-                title={section.title}
-                defaultExpanded={section.defaultExpanded !== false}
-                actionLabel={section.actionLabel}
-                onActionClick={section.onActionClick}
-                size={section.size || "md"}
-              >
-                {section.content}
-              </Accordion>
-            </div>
-          ))}
+          {children != null
+            ? children
+            : sections.map((section, index) => (
+                <div key={section.id || index} className="side-panel__section">
+                  <Accordion
+                    title={section.title}
+                    defaultExpanded={section.defaultExpanded !== false}
+                    actionLabel={section.actionLabel}
+                    onActionClick={section.onActionClick}
+                    size={section.size || "md"}
+                  >
+                    {section.content}
+                  </Accordion>
+                </div>
+              ))}
         </div>
       </div>
     </Portal>

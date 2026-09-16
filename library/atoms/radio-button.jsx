@@ -207,6 +207,7 @@ RadioGroup.displayName = "RadioGroup";
 export const RadioButton = ({
   size = RADIO_SIZES.md,
   value,
+  checked = false,
   isDisabled = false,
   disabled,
   style,
@@ -216,7 +217,9 @@ export const RadioButton = ({
   const [isHovered, setIsHovered] = useState(false);
   const context = useContext(RadioGroupContext);
 
-  const isSelected = context?.value === value;
+  // Outside a RadioGroup (e.g. used standalone, like inside RadioCard) there's
+  // no context to derive selection from, so fall back to the `checked` prop.
+  const isSelected = context ? context.value === value : checked;
   const isRadioDisabled = isDisabled || disabled || context?.isDisabled;
   const sizeStyles = styles.sizes[size];
 

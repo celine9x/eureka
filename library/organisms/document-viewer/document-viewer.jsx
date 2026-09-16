@@ -2,6 +2,7 @@
 
 import React, {
   isValidElement,
+  useCallback,
   useEffect,
   useLayoutEffect,
   useMemo,
@@ -340,6 +341,10 @@ const styles = {
 
 const injectStyles = createStyleInjector("document-viewer");
 
+// Width reserved for the comment marker button so it clamps to stay inside
+// the document viewer's viewport instead of spilling past its edge.
+const COMMENT_MARKER_SIZE = 40;
+
 const DEFAULT_EDITABLE_ACTIONS = [
   RICH_TEXT_EDIT_TOOLBAR_ACTIONS.bold,
   RICH_TEXT_EDIT_TOOLBAR_ACTIONS.italic,
@@ -379,6 +384,127 @@ const escapeHtml = (value = "") =>
 
 const toEditableHtml = (value = "") => escapeHtml(String(value)).replace(/\n/g, "<br>");
 
+const placeCaretAtEnd = (node) => {
+  if (typeof window === "undefined" || typeof document === "undefined" || !node) return;
+  const range = document.createRange();
+  range.selectNodeContents(node);
+  range.collapse(false);
+  const selection = window.getSelection();
+  selection?.removeAllRanges();
+  selection?.addRange(range);
+};
+
+// Resolves a viewport point (captured on mousedown, while the page is still
+// showing decorated markup — redline <del>/<ins> or <mark> highlights) into
+// an offset within the *plain* text that the page's editable content is
+// keyed on. Clicking into a page swaps its decorated markup for plain
+// editable text (see the `onMouseDown` handler below), and <del> segments
+// disappear in that swap, so a pixel/DOM-node position captured beforehand
+// no longer lines up afterward — a text offset that skips <del> content
+// does, since it matches how `content` (and `toEditableHtml(content)`)
+// don't include deleted text either.
+const getPlainTextOffsetAtPoint = (container, x, y) => {
+  if (typeof document === "undefined" || !container) return null;
+
+  let range = null;
+  if (typeof document.caretRangeFromPoint === "function") {
+    range = document.caretRangeFromPoint(x, y);
+  } else if (typeof document.caretPositionFromPoint === "function") {
+    const position = document.caretPositionFromPoint(x, y);
+    if (position) {
+      range = document.createRange();
+      range.setStart(position.offsetNode, position.offset);
+    }
+  }
+
+  if (!range || !container.contains(range.startContainer)) return null;
+
+  const isInsideDeletion = (node) => {
+    let current = node.nodeType === Node.TEXT_NODE ? node.parentNode : node;
+    while (current && current !== container) {
+      if (current.nodeName === "DEL") return true;
+      current = current.parentNode;
+    }
+    return false;
+  };
+
+  const walker = document.createTreeWalker(container, NodeFilter.SHOW_ALL);
+  let plainOffset = 0;
+  let node = walker.currentNode;
+
+  while (node) {
+    if (node === range.startContainer) {
+      if (node.nodeType === Node.TEXT_NODE && !isInsideDeletion(node)) {
+        plainOffset += range.startOffset;
+      }
+      return plainOffset;
+    }
+
+    if (node.nodeType === Node.TEXT_NODE && !isInsideDeletion(node)) {
+      plainOffset += node.textContent.length;
+    } else if (node.nodeName === "BR") {
+      plainOffset += 1;
+    }
+
+    node = walker.nextNode();
+  }
+
+  return plainOffset;
+};
+
+// Places the caret `plainOffset` characters into `node`'s plain text,
+// treating each <br> as one character — matching how `toEditableHtml` turns
+// `\n` into <br>. Falls back to the end of the text when the offset can't be
+// resolved (e.g. it's stale after the content changed shape).
+const placeCaretAtPlainOffset = (node, plainOffset) => {
+  if (typeof document === "undefined" || !node || plainOffset == null) {
+    placeCaretAtEnd(node);
+    return;
+  }
+
+  const walker = document.createTreeWalker(node, NodeFilter.SHOW_ALL);
+  let remaining = plainOffset;
+  let current = walker.currentNode;
+  let target = null;
+  let targetOffset = 0;
+
+  while (current) {
+    if (current.nodeType === Node.TEXT_NODE) {
+      if (remaining <= current.textContent.length) {
+        target = current;
+        targetOffset = remaining;
+        break;
+      }
+      remaining -= current.textContent.length;
+    } else if (current.nodeName === "BR") {
+      if (remaining <= 0) {
+        target = current;
+        targetOffset = 0;
+        break;
+      }
+      remaining -= 1;
+    }
+    current = walker.nextNode();
+  }
+
+  if (!target) {
+    placeCaretAtEnd(node);
+    return;
+  }
+
+  const range = document.createRange();
+  if (target.nodeType === Node.TEXT_NODE) {
+    range.setStart(target, targetOffset);
+  } else {
+    range.setStartBefore(target);
+  }
+  range.collapse(true);
+
+  const selection = window.getSelection();
+  selection?.removeAllRanges();
+  selection?.addRange(range);
+};
+
 const createHighlightedHtml = (value = "", targets = [], fallbackLevel = "high") => {
   const text = String(value);
   const normalizedTargets = (Array.isArray(targets) ? targets : [{ text: targets, level: fallbackLevel }])
@@ -400,6 +526,20 @@ const createHighlightedHtml = (value = "", targets = [], fallbackLevel = "high")
 };
 
 const tokenizeForRedline = (value = "") => String(value).match(/\s+|[^\s]+/g) ?? [];
+
+// Matches the whitespace normalization `paginateTextToPages`/
+// `paginateTextByMeasurement` apply while splitting into pages (trim each
+// paragraph, rejoin on a plain "\n\n"). Diffing raw prop text against
+// content that came back out of pagination — which drops "\f" separators
+// and collapses "\r\n"/stray whitespace — would otherwise make every page
+// look changed from the very first paragraph break, even with zero edits.
+const normalizeDocumentWhitespace = (value = "") =>
+  String(value)
+    .trim()
+    .split(/\n\s*\n/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean)
+    .join("\n\n");
 
 const createRedlineHtml = (originalValue = "", currentValue = "") => {
   const originalTokens = tokenizeForRedline(originalValue);
@@ -436,23 +576,206 @@ const createRedlineHtml = (originalValue = "", currentValue = "") => {
   ].join("").replace(/\n/g, "<br>");
 };
 
-const createAppliedRedlineHtml = (value = "", changes = []) => {
-  let remainingText = String(value);
-  let result = "";
-  let hasAppliedChange = false;
+// Diffs the *whole* document's original text against its whole current text
+// (not page-by-page — see `sliceChangeSegmentsByPageLengths` below for why)
+// into an ordered list of { type: "equal" | "del" | "ins", text, commentId? }
+// segments. Known applied suggestions (`changes`) get their own precise
+// del/ins pair (tagged with `commentId` for the comment popover anchor); the
+// gaps around them — which cover any freeform typing, whether or not it's
+// near an applied suggestion — are diffed the same way a plain edit would
+// be. This is the single source of truth for what counts as "changed" for
+// the show/hide-changes toggle, regardless of where the change came from.
+// Token-level diff of one span of text against another, trimming the common
+// prefix/suffix so only the actual differing middle renders as a del/ins
+// pair — e.g. a fixed clause number ("4.1 ") that both the original and the
+// applied suggestion restate verbatim comes back as a leading "equal"
+// segment instead of being redlined away and reinserted.
+const diffTextToSegments = (originalText, currentText) => {
+  const originalTokens = tokenizeForRedline(originalText);
+  const currentTokens = tokenizeForRedline(currentText);
+  let prefixLength = 0;
+  let suffixLength = 0;
 
-  changes.forEach(({ originalText = "", proposedText = "", commentId }) => {
-    const changeIndex = proposedText ? remainingText.indexOf(proposedText) : -1;
-    if (changeIndex < 0) return;
+  while (
+    prefixLength < originalTokens.length &&
+    prefixLength < currentTokens.length &&
+    originalTokens[prefixLength] === currentTokens[prefixLength]
+  ) {
+    prefixLength += 1;
+  }
 
-    hasAppliedChange = true;
-    result += escapeHtml(remainingText.slice(0, changeIndex)).replace(/\n/g, "<br>");
-    const redline = `<del>${escapeHtml(originalText)}</del><ins>${escapeHtml(proposedText)}</ins>`;
-    result += commentId ? `<span data-document-comment-anchor="${commentId}">${redline}</span>` : redline;
-    remainingText = remainingText.slice(changeIndex + proposedText.length);
+  while (
+    suffixLength < originalTokens.length - prefixLength &&
+    suffixLength < currentTokens.length - prefixLength &&
+    originalTokens[originalTokens.length - 1 - suffixLength] === currentTokens[currentTokens.length - 1 - suffixLength]
+  ) {
+    suffixLength += 1;
+  }
+
+  const unchangedStart = originalTokens.slice(0, prefixLength).join("");
+  const removed = originalTokens.slice(prefixLength, originalTokens.length - suffixLength).join("");
+  const added = currentTokens.slice(prefixLength, currentTokens.length - suffixLength).join("");
+  const unchangedEnd = suffixLength ? originalTokens.slice(originalTokens.length - suffixLength).join("") : "";
+
+  const result = [];
+  if (unchangedStart) result.push({ type: "equal", text: unchangedStart });
+  if (removed) result.push({ type: "del", text: removed });
+  if (added) result.push({ type: "ins", text: added });
+  if (unchangedEnd) result.push({ type: "equal", text: unchangedEnd });
+  return result;
+};
+
+const computeChangeSegments = (originalValue = "", currentValue = "", changes = []) => {
+  const originalText = String(originalValue);
+  const segments = [];
+
+  // Only anchor on changes whose original clause is still present in the
+  // original text, ordered by where they occur, so multiple applied
+  // suggestions each get their own precise del/ins pair instead of being
+  // swallowed into one wide diff.
+  const orderedChanges = changes
+    .map((change) => ({ ...change, index: change?.originalText ? originalText.indexOf(change.originalText) : -1 }))
+    .filter((change) => change.index >= 0)
+    .sort((a, b) => a.index - b.index);
+
+  let originalCursor = 0;
+  let remainingCurrent = String(currentValue);
+
+  orderedChanges.forEach((change) => {
+    if (change.index < originalCursor) return;
+
+    const proposedText = change.proposedText ?? "";
+    const changeIndexInCurrent = proposedText ? remainingCurrent.indexOf(proposedText) : -1;
+    if (changeIndexInCurrent < 0) return;
+
+    segments.push(...diffTextToSegments(
+      originalText.slice(originalCursor, change.index),
+      remainingCurrent.slice(0, changeIndexInCurrent)
+    ));
+
+    diffTextToSegments(change.originalText, proposedText).forEach((segment) => {
+      segments.push(segment.type === "equal" ? segment : { ...segment, commentId: change.commentId });
+    });
+
+    originalCursor = change.index + change.originalText.length;
+    remainingCurrent = remainingCurrent.slice(changeIndexInCurrent + proposedText.length);
   });
 
-  return hasAppliedChange ? `${result}${escapeHtml(remainingText).replace(/\n/g, "<br>")}` : "";
+  segments.push(...diffTextToSegments(originalText.slice(originalCursor), remainingCurrent));
+
+  return segments;
+};
+
+const renderChangeSegmentToHtml = (segment, isActive) => {
+  const html = escapeHtml(segment.text).replace(/\n/g, "<br>");
+  const activeAttr = isActive ? ' data-document-highlight="active"' : "";
+  if (segment.type === "del") return `<del${activeAttr}>${html}</del>`;
+  if (segment.type === "ins") return `<ins${activeAttr}>${html}</ins>`;
+  return html;
+};
+
+// Renders a page's change segments (diff + applied-suggestion decoration)
+// and finding highlights in one pass, so a page that has both at once — an
+// applied change plus another finding still waiting for review — shows
+// both instead of one clobbering the other: "equal" text (the only text a
+// finding's highlight target can still match) gets highlight-scanned, while
+// del/ins segments render as redline decoration. `activeChangeText` marks
+// an already-applied change as the active scroll target (mirroring how a
+// highlight target becomes "active") since its original clause no longer
+// exists as plain text to highlight-scan once it's been redlined away.
+const renderChangeSegmentsToHtml = (segments, highlightTargets = [], highlightFallbackLevel, activeChangeText) => {
+  let html = "";
+  let index = 0;
+
+  while (index < segments.length) {
+    const segment = segments[index];
+    const next = segments[index + 1];
+    const isActiveChange = (segment.type === "del" || segment.type === "ins") && !!activeChangeText && segment.text === activeChangeText;
+
+    // Group an adjacent del+ins pair from the same applied change into one
+    // annotated span, so the comment popover anchors to the whole
+    // replacement rather than just half of it.
+    if (segment.type === "del" && next?.type === "ins" && segment.commentId && segment.commentId === next.commentId) {
+      const nextIsActive = !!activeChangeText && next.text === activeChangeText;
+      html += `<span data-document-comment-anchor="${segment.commentId}">${renderChangeSegmentToHtml(segment, isActiveChange)}${renderChangeSegmentToHtml(next, nextIsActive)}</span>`;
+      index += 2;
+      continue;
+    }
+
+    html += segment.type === "equal" && highlightTargets.length > 0
+      ? createHighlightedHtml(segment.text, highlightTargets, highlightFallbackLevel)
+      : renderChangeSegmentToHtml(segment, isActiveChange);
+    index += 1;
+  }
+
+  return html;
+};
+
+// Splits one whole-document segment list back out per page, cutting exactly
+// at each page's current-text length (with `gapLength` characters discarded
+// between pages, matching the separator used to join page contents into the
+// single string `computeChangeSegments` diffed against). This is what lets
+// the diff be computed once, correctly, against the *whole* document instead
+// of comparing each page's content against an independently-paginated slice
+// of the original — two pagination passes (one character-count based, one
+// real-height-measurement based) rarely land on the same page boundaries,
+// which is what used to make a single small edit look like it deleted most
+// of a page: the "original" and "current" slices being compared for that
+// page simply weren't the same span of the document.
+const sliceChangeSegmentsByPageLengths = (segments, pageLengths, gapLength = 1) => {
+  const pages = pageLengths.map(() => []);
+  const plan = [];
+  pageLengths.forEach((length, index) => {
+    plan.push({ type: "page", index, length });
+    if (index < pageLengths.length - 1) plan.push({ type: "gap", length: gapLength });
+  });
+
+  let planIndex = 0;
+  let consumedInRegion = 0;
+
+  const currentPageIndex = () => {
+    for (let i = planIndex; i >= 0; i -= 1) {
+      if (plan[i]?.type === "page") return plan[i].index;
+    }
+    return 0;
+  };
+
+  segments.forEach((segment) => {
+    if (segment.type === "del") {
+      // Zero-width in the current text — attach it wherever the cursor
+      // currently sits so it renders right where the removed text used to
+      // be, without advancing past any current-text region.
+      pages[currentPageIndex()]?.push(segment);
+      return;
+    }
+
+    let remainingText = segment.text;
+    while (remainingText.length > 0) {
+      if (planIndex >= plan.length) {
+        pages[pages.length - 1]?.push({ ...segment, text: remainingText });
+        break;
+      }
+
+      const region = plan[planIndex];
+      const spaceLeft = region.length - consumedInRegion;
+      const takeLength = Math.min(Math.max(spaceLeft, 0), remainingText.length);
+      const takenText = remainingText.slice(0, takeLength);
+
+      if (region.type === "page" && takenText) {
+        pages[region.index].push({ ...segment, text: takenText });
+      }
+
+      consumedInRegion += takeLength;
+      remainingText = remainingText.slice(takeLength);
+
+      if (consumedInRegion >= region.length) {
+        planIndex += 1;
+        consumedInRegion = 0;
+      }
+    }
+  });
+
+  return pages;
 };
 
 const normalizePageRecord = (page, index) => {
@@ -543,6 +866,79 @@ export const paginateTextToPages = ({
   return pages.length > 0 ? pages : [{ id: "page-1", content: normalizedText }];
 };
 
+// Word-boundary-safe chunking of a single paragraph that is taller than one
+// page, using the real rendered height (via `measurementNode`) rather than a
+// character-count proxy, so a chunk never gets clipped when it is displayed.
+const splitParagraphByMeasurement = (paragraph, measurementNode, maxHeight) => {
+  const words = String(paragraph).split(/\s+/).filter(Boolean);
+  const chunks = [];
+  let currentChunk = "";
+
+  words.forEach((word) => {
+    const candidate = currentChunk ? `${currentChunk} ${word}` : word;
+    measurementNode.innerHTML = toEditableHtml(candidate);
+    if (!currentChunk || measurementNode.scrollHeight <= maxHeight) {
+      currentChunk = candidate;
+      return;
+    }
+
+    chunks.push(currentChunk);
+    currentChunk = word;
+  });
+
+  if (currentChunk) {
+    chunks.push(currentChunk);
+  }
+
+  return chunks;
+};
+
+// Paragraph-level pagination that measures the real rendered height of each
+// candidate page against `maxHeight` (via a hidden clone of the editable
+// page, `measurementNode`) instead of estimating from character counts. This
+// is what keeps in-progress edits from overflowing/clipping a page: once a
+// paragraph no longer fits, it is pushed whole onto the next page, exactly
+// like a word processor reflowing text past a page break.
+const paginateTextByMeasurement = (text, measurementNode, maxHeight) => {
+  const normalizedText = String(text ?? "").trim();
+
+  if (!normalizedText) {
+    return [{ id: "page-1", content: "" }];
+  }
+
+  const paragraphs = normalizedText
+    .split(/\n\s*\n/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean)
+    .flatMap((paragraph) => {
+      measurementNode.innerHTML = toEditableHtml(paragraph);
+      return measurementNode.scrollHeight > maxHeight
+        ? splitParagraphByMeasurement(paragraph, measurementNode, maxHeight)
+        : [paragraph];
+    });
+
+  const pages = [];
+  let currentPage = "";
+
+  paragraphs.forEach((paragraph) => {
+    const candidate = currentPage ? `${currentPage}\n\n${paragraph}` : paragraph;
+    measurementNode.innerHTML = toEditableHtml(candidate);
+    if (!currentPage || measurementNode.scrollHeight <= maxHeight) {
+      currentPage = candidate;
+      return;
+    }
+
+    pages.push({ id: `page-${pages.length + 1}`, content: currentPage });
+    currentPage = paragraph;
+  });
+
+  if (currentPage) {
+    pages.push({ id: `page-${pages.length + 1}`, content: currentPage });
+  }
+
+  return pages.length > 0 ? pages : [{ id: "page-1", content: normalizedText }];
+};
+
 export const DocumentViewer = ({
   pdfFile,
   pages,
@@ -611,8 +1007,6 @@ export const DocumentViewer = ({
   const editablePageHtmlRef = useRef([]);
   const [editablePages, setEditablePages] = useState(null);
   const editablePageCapacityRef = useRef(maxCharactersPerPage);
-  const originalPageTextRef = useRef(null);
-  const [redlineHtmlByPage, setRedlineHtmlByPage] = useState({});
   const [editingPageIndex, setEditingPageIndex] = useState(null);
   const [internalComments, setInternalComments] = useState({});
   const [activeCommentId, setActiveCommentId] = useState(null);
@@ -637,6 +1031,26 @@ export const DocumentViewer = ({
   }, [editable, editToolbarActions]);
 
   const displayedPages = editable && !pdfDoc && editablePages ? editablePages : normalizedPages;
+
+  // Diff the *whole* document once against its original text, then slice the
+  // result back out per page — see `sliceChangeSegmentsByPageLengths` for why
+  // this has to happen at the whole-document level rather than by diffing
+  // each page against an independently-paginated slice of the original.
+  const pageChangeSegmentsByIndex = useMemo(() => {
+    if (!editable || pdfDoc) return [];
+
+    const fullOriginalText = normalizeDocumentWhitespace(originalText ?? text);
+    // Matches the "\n\n" pagination itself rejoins paragraphs with, so a
+    // page break that falls on a natural paragraph boundary (the common
+    // case) doesn't introduce its own spurious whitespace diff.
+    const pageGap = "\n\n";
+    const fullCurrentText = displayedPages.map((page) => String(page?.content ?? "")).join(pageGap);
+    const segments = computeChangeSegments(fullOriginalText, fullCurrentText, appliedRedlines);
+    const pageLengths = displayedPages.map((page) => String(page?.content ?? "").length);
+
+    return sliceChangeSegmentsByPageLengths(segments, pageLengths, pageGap.length);
+  }, [editable, pdfDoc, originalText, text, displayedPages, appliedRedlines]);
+
   const totalPages = pdfDoc ? pdfDoc.numPages : displayedPages.length || 1;
   const [currentPage, setCurrentPage] = useState(clamp(defaultPage, 1, totalPages));
   const [zoom, setZoom] = useState(clamp(defaultZoom, minZoom, maxZoom));
@@ -646,19 +1060,65 @@ export const DocumentViewer = ({
   const pageRefs = useRef([]);
   const editableRefs = useRef([]);
   const isProgrammaticScrollRef = useRef(false);
+  const measurementNodeRef = useRef(null);
+  const pendingCaretIndexRef = useRef(null);
+  const pendingCaretPointRef = useRef(null);
+
+  const registerEditableRef = useCallback((index, node) => {
+    editableRefs.current[index] = node;
+  }, []);
+
+  const getMeasurementNode = (referenceNode) => {
+    if (typeof document === "undefined" || !referenceNode) return null;
+
+    if (!measurementNodeRef.current) {
+      const node = document.createElement("div");
+      node.setAttribute("aria-hidden", "true");
+      node.style.position = "absolute";
+      node.style.top = "0";
+      node.style.left = "-99999px";
+      node.style.height = "auto";
+      node.style.visibility = "hidden";
+      node.style.pointerEvents = "none";
+      node.style.whiteSpace = "pre-wrap";
+      node.style.wordBreak = "break-word";
+      node.style.boxSizing = "border-box";
+      document.body.appendChild(node);
+      measurementNodeRef.current = node;
+    }
+
+    const node = measurementNodeRef.current;
+    const computedStyle = window.getComputedStyle(referenceNode);
+    node.style.width = `${referenceNode.clientWidth}px`;
+    node.style.fontFamily = computedStyle.fontFamily;
+    node.style.fontSize = computedStyle.fontSize;
+    node.style.fontWeight = computedStyle.fontWeight;
+    node.style.lineHeight = computedStyle.lineHeight;
+    node.style.letterSpacing = computedStyle.letterSpacing;
+    return node;
+  };
+
+  useEffect(() => {
+    return () => {
+      measurementNodeRef.current?.remove();
+      measurementNodeRef.current = null;
+    };
+  }, []);
 
   useEffect(() => {
     editablePageHtmlRef.current = displayedPages.map((page) => toEditableHtml(page.content ?? ""));
   }, [displayedPages]);
 
-  useEffect(() => {
-    originalPageTextRef.current = paginateTextToPages({
-      text: originalText ?? text,
-      maxCharactersPerPage,
-      pageSeparator,
-    }).map((page) => String(page.content ?? ""));
+  // A blur-triggered reflow (see `onBlur` below) can snapshot the page's
+  // *pre*-change content into `editablePages` in the same batch that a
+  // controlled `text` update (e.g. applying a redline) lands in — since
+  // `displayedPages` prefers a non-null `editablePages` over fresh
+  // `normalizedPages`, that stale snapshot would otherwise briefly hide the
+  // just-applied change (and the scroll-to-highlight effect below would find
+  // no active mark to scroll to). Running this as a layout effect clears the
+  // stale snapshot synchronously, before paint, instead of one tick later.
+  useLayoutEffect(() => {
     setEditablePages(null);
-    setRedlineHtmlByPage({});
     setEditingPageIndex(null);
   }, [maxCharactersPerPage, originalText, pageSeparator, text]);
 
@@ -668,7 +1128,10 @@ export const DocumentViewer = ({
 
   const updateCommentAnchorPositions = () => {
     const viewer = viewerRef.current;
-    if (!viewer) return;
+    const viewport = viewportRef.current;
+    if (!viewer || !viewport) return;
+
+    const viewportRect = viewport.getBoundingClientRect();
 
     const positions = commentThread.flatMap((comment) => {
       const anchor = viewer.querySelector(`[data-document-comment-anchor="${comment.id}"]`);
@@ -676,7 +1139,15 @@ export const DocumentViewer = ({
       const anchorRect = anchor.getBoundingClientRect();
       const pageRect = anchor.closest(".document-viewer__page")?.getBoundingClientRect();
       if (!pageRect) return [];
-      return [{ id: comment.id, top: anchorRect.top, left: pageRect.right + 24 }];
+
+      // Coordinates are relative to the scrollable viewport's own content box
+      // (not the browser viewport), so the marker stays put inside the
+      // document-viewer while scrolling instead of needing to be recomputed.
+      const top = anchorRect.top - viewportRect.top + viewport.scrollTop;
+      const maxLeft = Math.max(viewportRect.width - COMMENT_MARKER_SIZE - 8, 0);
+      const left = Math.min(Math.max(pageRect.right - viewportRect.left + 24, 0), maxLeft);
+
+      return [{ id: comment.id, top, left }];
     });
     setCommentAnchorPositions((previousPositions) => {
       const hasSamePositions = previousPositions.length === positions.length && previousPositions.every(
@@ -691,14 +1162,38 @@ export const DocumentViewer = ({
 
   useLayoutEffect(() => {
     updateCommentAnchorPositions();
-  }, [appliedRedlines, commentThread, displayedPages, resolvedLiveChanges]);
+  }, [appliedRedlines, commentThread, displayedPages, resolvedLiveChanges, zoom]);
+
+  useEffect(() => {
+    if (!activeCommentId) return;
+
+    const handlePointerDown = (event) => {
+      if (event.target.closest?.("[data-comment-popover-root]")) return;
+      setActiveCommentId(null);
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    return () => document.removeEventListener("mousedown", handlePointerDown);
+  }, [activeCommentId]);
 
   useLayoutEffect(() => {
     if (!highlightText) return;
 
+    let frameId;
+    let attemptsRemaining = 5;
+
     const scrollToHighlight = () => {
       const viewport = viewportRef.current;
       const highlight = viewport?.querySelector('[data-document-highlight="active"]');
+      // The active mark can briefly be absent for a render or two right
+      // after an applied change updates `text` (its decorated markup lands
+      // one paint after the underlying pages re-derive) — retry a few
+      // frames instead of silently giving up on that transient miss.
+      if (viewport && !highlight && attemptsRemaining > 0) {
+        attemptsRemaining -= 1;
+        frameId = window.requestAnimationFrame(scrollToHighlight);
+        return;
+      }
       if (!viewport || !highlight) return;
 
       const topOffset = 24;
@@ -708,7 +1203,7 @@ export const DocumentViewer = ({
         behavior: "smooth",
       });
     };
-    const frameId = window.requestAnimationFrame(scrollToHighlight);
+    frameId = window.requestAnimationFrame(scrollToHighlight);
     return () => window.cancelAnimationFrame(frameId);
   }, [highlightLevel, highlightText, displayedPages]);
 
@@ -797,8 +1292,6 @@ export const DocumentViewer = ({
 
   const handleScroll = () => {
     if (isProgrammaticScrollRef.current) return;
-
-    updateCommentAnchorPositions();
 
     const viewport = viewportRef.current;
     if (!viewport || pageRefs.current.length === 0) return;
@@ -935,35 +1428,36 @@ export const DocumentViewer = ({
     onEditAction?.(action);
   };
 
-  const reflowEditablePages = (editedEditor) => {
+  const reflowEditablePages = (editedEditor, editedIndex) => {
     if (!editable || pdfDoc) return;
 
+    // Join with blank lines (not `pageSeparator`) so the whole document is
+    // re-measured and re-paginated from scratch on every reflow — joining on
+    // `pageSeparator` here would make `paginateTextToPages` just split back
+    // on the markers this same join re-inserts, which is why overflowing
+    // text used to stay stuck/clipped on its original page instead of
+    // flowing onto the next one.
     const text = editableRefs.current
       .map((editor, index) => editor?.innerText ?? displayedPages[index]?.content ?? "")
-      .join(pageSeparator);
-    if (editedEditor?.scrollHeight > editedEditor.clientHeight) {
-      const currentLength = Math.max(1, editedEditor.innerText.length);
-      const measuredCapacity = Math.floor(
-        currentLength * (editedEditor.clientHeight / editedEditor.scrollHeight)
-      );
-      editablePageCapacityRef.current = Math.max(1, measuredCapacity);
-    }
+      .join("\n\n");
 
-    const nextPages = paginateTextToPages({
-      text,
-      maxCharactersPerPage: editablePageCapacityRef.current,
-      pageSeparator,
-    });
+    const referenceNode = editedEditor || editableRefs.current.find(Boolean);
+    const measurementNode = getMeasurementNode(referenceNode);
+
+    const nextPages = measurementNode
+      ? paginateTextByMeasurement(text, measurementNode, referenceNode.clientHeight)
+      : paginateTextToPages({ text, maxCharactersPerPage: editablePageCapacityRef.current, pageSeparator });
 
     editablePageHtmlRef.current = nextPages.map((page) => toEditableHtml(page.content ?? ""));
-    setRedlineHtmlByPage(
-      Object.fromEntries(
-        nextPages.map((page, index) => [
-          index,
-          createRedlineHtml(originalPageTextRef.current?.[index] ?? "", page.content),
-        ])
-      )
-    );
+
+    // If the page being typed into was the last one and it just overflowed
+    // into a brand-new page, follow the caret onto that new page — the
+    // common case of typing continuously past the bottom of the document.
+    const wasLastPage = editedIndex === displayedPages.length - 1;
+    if (wasLastPage && nextPages.length > displayedPages.length) {
+      pendingCaretIndexRef.current = nextPages.length - 1;
+    }
+
     setEditablePages(nextPages);
     onEditablePagesChange?.(nextPages);
   };
@@ -980,23 +1474,25 @@ export const DocumentViewer = ({
     }
 
     const rawTextContent = String(content ?? "").trim();
-    const appliedRedlineHtml = editingPageIndex !== index && appliedRedlines.length > 0
-      ? createAppliedRedlineHtml(content, appliedRedlines)
-      : "";
-    const editableHtml = appliedRedlineHtml || (editingPageIndex !== index && resolvedLiveChanges && redlineHtmlByPage[index]
-      ? redlineHtmlByPage[index]
-      : (highlightText || highlights.length > 0) && editingPageIndex !== index
-      ? createHighlightedHtml(
-        content,
+    // Diff decoration (from an applied suggestion or freeform typing) and
+    // finding highlights render together in one pass — see
+    // `renderChangeSegmentsToHtml` — so a page with both an applied change
+    // and another finding still awaiting review shows both at once, and the
+    // `--show-live-changes`/`--hide-live-changes` root classes are what
+    // toggle the del/ins decoration's visibility.
+    const editableHtml = editingPageIndex !== index
+      ? renderChangeSegmentsToHtml(
+        pageChangeSegmentsByIndex[index] ?? [{ type: "equal", text: content }],
         [
           ...highlights.map((highlight) => ({ ...highlight, active: highlight.text === highlightText })),
           ...(highlightText && !highlights.some((highlight) => highlight.text === highlightText)
             ? [{ text: highlightText, level: highlightLevel, active: true }]
             : []),
         ],
-        highlightLevel
+        highlightLevel,
+        highlightText
       )
-      : editablePageHtmlRef.current[index] ?? toEditableHtml(content ?? ""));
+      : editablePageHtmlRef.current[index] ?? toEditableHtml(content ?? "");
 
     if (!rawTextContent && !editableHtml) {
       return <div className="document-viewer__empty">{emptyState}</div>;
@@ -1007,25 +1503,34 @@ export const DocumentViewer = ({
     }
 
     return (
-      <div
-        ref={(node) => {
-          editableRefs.current[index] = node;
-          if (node && node.innerHTML !== editableHtml) {
-            node.innerHTML = editableHtml;
+      <EditablePageEditor
+        index={index}
+        html={editableHtml}
+        onRegisterRef={registerEditableRef}
+        pendingCaretIndexRef={pendingCaretIndexRef}
+        pendingCaretPointRef={pendingCaretPointRef}
+        onMouseDown={(event) => {
+          // Entering edit mode swaps this page's markup (redline/highlight
+          // decoration -> plain editable text), which would otherwise reset
+          // the caret to the start. Remember where the click landed (as a
+          // plain-text offset, since <del> segments drop out of the swap) so
+          // it can be re-resolved against the swapped-in DOM below.
+          if (editingPageIndex !== index) {
+            pendingCaretPointRef.current = {
+              index,
+              offset: getPlainTextOffsetAtPoint(event.currentTarget, event.clientX, event.clientY),
+            };
           }
         }}
-        className="document-viewer__page-text document-viewer__page-text--editable"
-        contentEditable
-        suppressContentEditableWarning
         onFocus={() => setEditingPageIndex(index)}
         onInput={(event) => {
           editablePageHtmlRef.current[index] = event.currentTarget.innerHTML;
           if (event.currentTarget.scrollHeight > event.currentTarget.clientHeight) {
-            reflowEditablePages(event.currentTarget);
+            reflowEditablePages(event.currentTarget, index);
           }
         }}
         onBlur={(event) => {
-          reflowEditablePages(event.currentTarget);
+          reflowEditablePages(event.currentTarget, index);
           setEditingPageIndex(null);
         }}
       />
@@ -1209,18 +1714,22 @@ export const DocumentViewer = ({
                 </div>
               );
             })}
-      </div>
 
-      {editable && showCommentPopover && commentAnchorPositions.map((position) => {
-        const comment = commentThread.find((item) => item.id === position.id);
-        if (!comment) return null;
-        return (
-          <div key={comment.id} style={{ position: "fixed", top: position.top, left: position.left, zIndex: 3 }}>
-            <Button variant="tertiary" size="md" iconOnly aria-label="Open comment" iconLeading={<ChatBubbleLeftRightIcon />} onClick={() => setActiveCommentId(comment.id)} />
-            <CommentPopover open={activeCommentId === comment.id} onClose={() => setActiveCommentId(null)} comments={commentThread.filter((item) => item.targetText === comment.targetText)} onSubmit={(value) => onCommentSubmit?.(value, comment.targetText)} />
-          </div>
-        );
-      })}
+        {editable && showCommentPopover && commentAnchorPositions.map((position) => {
+          const comment = commentThread.find((item) => item.id === position.id);
+          if (!comment) return null;
+          return (
+            <div
+              key={comment.id}
+              data-comment-popover-root
+              style={{ position: "absolute", top: position.top, left: position.left, zIndex: 3 }}
+            >
+              <Button variant="tertiary" size="md" iconOnly aria-label="Open comment" iconLeading={<ChatBubbleLeftRightIcon />} onClick={() => setActiveCommentId(comment.id)} />
+              <CommentPopover open={activeCommentId === comment.id} onClose={() => setActiveCommentId(null)} comments={commentThread.filter((item) => item.targetText === comment.targetText)} onSubmit={(value) => onCommentSubmit?.(value, comment.targetText)} />
+            </div>
+          );
+        })}
+      </div>
 
       {showToolbar && (
         <div className="document-viewer__toolbar">
@@ -1228,11 +1737,11 @@ export const DocumentViewer = ({
             <Button
               variant="secondary"
               size="sm"
+              iconOnly
               iconLeading={<Icon name="ChevronLeft" size="sm" />}
               onClick={() => scrollToPage(currentPage - 1)}
               disabled={currentPage <= 1}
               aria-label="Go to previous page"
-              style={{ width: 24, padding: 0, justifyContent: "center" }}
             />
             <div className="document-viewer__counter" aria-live="polite">
               <span className="document-viewer__counter-current">{currentPage}</span>
@@ -1242,11 +1751,11 @@ export const DocumentViewer = ({
             <Button
               variant="secondary"
               size="sm"
+              iconOnly
               iconLeading={<Icon name="ChevronRight" size="sm" />}
               onClick={() => scrollToPage(currentPage + 1)}
               disabled={currentPage >= totalPages}
               aria-label="Go to next page"
-              style={{ width: 24, padding: 0, justifyContent: "center" }}
             />
           </div>
 
@@ -1256,31 +1765,21 @@ export const DocumentViewer = ({
             <Button
               variant="secondary"
               size="sm"
+              iconOnly
               iconLeading={<Icon name="Minus" size="sm" />}
               onClick={() => updateZoom(-1)}
               disabled={zoom <= minZoom}
               aria-label="Zoom out"
-              style={{ width: 24, padding: 0, justifyContent: "center" }}
             />
             <Button
               variant="secondary"
               size="sm"
+              iconOnly
               iconLeading={<Icon name="Plus" size="sm" />}
               onClick={() => updateZoom(1)}
               disabled={zoom >= maxZoom}
               aria-label="Zoom in"
-              style={{ width: 24, padding: 0, justifyContent: "center" }}
             />
-            {showExportButton && (
-              <Button
-                variant="secondary"
-                size="sm"
-                iconLeading={<Icon name="ArrowDownTray" size="sm" />}
-                onClick={handleExportPdf}
-                aria-label="Export to PDF"
-                style={{ width: 24, padding: 0, justifyContent: "center" }}
-              />
-            )}
           </div>
         </div>
       )}
@@ -1291,6 +1790,69 @@ export const DocumentViewer = ({
 
 DocumentViewer.displayName = "DocumentViewer";
 DocumentViewer.paginateTextToPages = paginateTextToPages;
+
+// A single editable page's contentEditable surface. Pulled out into its own
+// component (rather than an inline ref callback on the div) so the node's
+// identity is stable across re-renders and the HTML-sync/caret-restore work
+// runs as an effect keyed on the actual `html` value, instead of re-running
+// on every parent re-render regardless of whether this page's content
+// changed.
+const EditablePageEditor = ({
+  index,
+  html,
+  onRegisterRef,
+  pendingCaretIndexRef,
+  pendingCaretPointRef,
+  onMouseDown,
+  onFocus,
+  onInput,
+  onBlur,
+}) => {
+  const nodeRef = useRef(null);
+  const appliedHtmlRef = useRef(null);
+
+  useEffect(() => {
+    onRegisterRef(index, nodeRef.current);
+    return () => onRegisterRef(index, null);
+  }, [index, onRegisterRef]);
+
+  useLayoutEffect(() => {
+    const node = nodeRef.current;
+    if (!node || html === appliedHtmlRef.current || node.innerHTML === html) {
+      appliedHtmlRef.current = html;
+      return;
+    }
+    appliedHtmlRef.current = html;
+
+    const caretPoint = pendingCaretPointRef.current?.index === index ? pendingCaretPointRef.current : null;
+    node.innerHTML = html;
+
+    if (pendingCaretIndexRef.current === index) {
+      pendingCaretIndexRef.current = null;
+      node.focus();
+      placeCaretAtEnd(node);
+    } else if (caretPoint) {
+      pendingCaretPointRef.current = null;
+      node.focus();
+      placeCaretAtPlainOffset(node, caretPoint.offset);
+    }
+  }, [html, index, pendingCaretIndexRef, pendingCaretPointRef]);
+
+  return (
+    <div
+      ref={nodeRef}
+      className="document-viewer__page-text document-viewer__page-text--editable"
+      contentEditable
+      suppressContentEditableWarning
+      onMouseDown={onMouseDown}
+      onFocus={onFocus}
+      onInput={onInput}
+      onBlur={onBlur}
+    />
+  );
+};
+
+EditablePageEditor.displayName = "EditablePageEditor";
 
 // PDF Page Renderer Component
 const PdfPageRenderer = React.memo(({ pdfDoc, pageNumber, zoom, pageWidth, pageHeight }) => {

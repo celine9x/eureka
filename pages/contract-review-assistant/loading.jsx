@@ -380,7 +380,12 @@ export const AiObligationExtractionPage = () => {
   fillStyle={{ background: "var(--color-action-fill-primary-enabled)" }}
   usePhaseMode={true}
   phaseCount={4}
-  phaseLabels={["Phase 1", "Phase 2", "Phase 3", "Phase 4"]}
+  phaseLabels={[
+    "Reading the contract...",
+    "Extracting key clauses...",
+    "Comparing against precedent and policy...",
+    "Compiling findings...",
+  ]}
 />
           
        
