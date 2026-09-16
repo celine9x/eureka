@@ -718,7 +718,7 @@ export const AiObligationExtractionPage = () => {
                         ) : (
                           <Button
                             variant="primary"
-                            iconLeading={<Icon name="ArrowTurnUpLeft" size="sm" />}
+                            iconLeading={<Icon name="ArrowTurnDownLeft" size="sm" />}
                             onClick={() => handleApplyFinding(finding)}
                           >
                             Apply
