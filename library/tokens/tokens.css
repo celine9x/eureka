@@ -604,8 +604,8 @@
      --color-content-redline-delete: var(--color-content-negative);
      --color-content-redline-add: var(--color-content-positive);
    --color-redline-highlight-high: color-mix(in srgb, var(--color-accent-red) 20%, transparent);
-   --color-redline-highlight-medium: color-mix(in srgb, var(--color-accent-yellow) 30%, transparent);
-   --color-redline-highlight-low: color-mix(in srgb, var(--color-accent-blue) 30%, transparent);
+   --color-redline-highlight-medium: color-mix(in srgb, var(--color-accent-orange) 30%, transparent);
+   --color-redline-highlight-low: color-mix(in srgb, var(--color-accent-yellow) 30%, transparent);
 
   /* ===========================================
      TRANSITION

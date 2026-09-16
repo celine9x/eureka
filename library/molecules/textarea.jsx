@@ -152,9 +152,9 @@ const styles = {
     minHeight: 64,
     padding: "var(--spacing-xs) var(--spacing-3)",
     fontFamily: "var(--font-family-primary)",
-    fontSize: "var(--text-body-lg)",
+    fontSize: "var(--text-body-md)",
     fontWeight: "var(--font-weight-regular)",
-    lineHeight: "var(--line-height-body-lg)",
+    lineHeight: "var(--line-height-body-md)",
     color: "var(--color-content-primary)",
     background: "var(--color-interaction-fill-enabled)",
     border: "none",
@@ -180,7 +180,7 @@ const styles = {
     fontFamily: "var(--font-family-primary)",
     fontSize: "var(--text-body-md)",
     fontWeight: "var(--font-weight-regular)",
-    lineHeight: "var(--line-height-body-lg)",
+    lineHeight: "var(--line-height-body-md)",
     color: "var(--color-content-primary)",
     background: "var(--color-interaction-fill-enabled)",
     border: "none",
@@ -429,7 +429,7 @@ export const TextareaField = forwardRef(
           onBlur={() => setIsFocused(false)}
           {...props}
         />
-        {variant === TEXTAREA_VARIANTS.ai && (
+        {variant === TEXTAREA_VARIANTS.ai && !(isAiEdited && isTextareaReadOnly) && (
           <div style={styles.aiContent}>
             {isAiEdited ? (
               <Tooltip content="Revert to AI">
@@ -576,8 +576,12 @@ export const Textarea = forwardRef(
               aria-label="Edit AI suggestion"
               className="eureka-textarea-redline-preview"
               style={{ ...styles.redlinePreview, ...styles.textareaAi }}
-              onClick={() => setIsRedlineEditing(true)}
+              onClick={() => {
+                if (fieldDisabled || fieldReadOnly) return;
+                setIsRedlineEditing(true);
+              }}
               onKeyDown={(event) => {
+                if (fieldDisabled || fieldReadOnly) return;
                 if (event.key === "Enter" || event.key === " ") {
                   event.preventDefault();
                   setIsRedlineEditing(true);

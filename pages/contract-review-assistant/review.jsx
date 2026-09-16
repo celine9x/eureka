@@ -12,7 +12,7 @@ import { DocumentViewer } from "../../library/organisms/document-viewer/document
 import { CreationFormPanel } from "../../library/organisms/creation-form-panel.jsx";
 import { Button } from "../../library/atoms/button.jsx";
 import { Icon } from "../../library/atoms/icon.jsx";
-import { Chip } from "../../library/atoms/chip.jsx";
+import { ColorStatus } from "../../library/atoms/color-status.jsx";
 import { Badge } from "../../library/atoms/badge.jsx";
 import InpartLogo from "../../library/organisms/side-menu/Inpart.svg";
 import InpartLogoCollapsed from "../../library/organisms/side-menu/Inpart1.svg";
@@ -65,6 +65,15 @@ const DOCUMENT_PARAGRAPH_STYLES = [
 const EXPORT_FORMATS = {
   redlined: "redlined",
   clean: "clean",
+};
+
+// Matches router-app.jsx's route for the guidance/upload page — pushState
+// alone doesn't trigger a re-render, so the popstate event is dispatched
+// manually too, same as guidance.jsx's own navigateToPath.
+const CONTRACT_REVIEW_ASSISTANT_GUIDANCE_PATH = "/contract-review-assistant/guidance";
+const navigateToPath = (nextPath) => {
+  window.history.pushState({}, "", nextPath);
+  window.dispatchEvent(new PopStateEvent("popstate"));
 };
 
 // Each row needs a stable id for React keys and (for the regulatory
@@ -178,7 +187,7 @@ const FINDINGS = [
   {
     id: "assignment-change-of-control-gap",
     title: "17.1 Assignment: Change of Control assignment has no competitor carve-out",
-    severity: "Moderate",
+    severity: "Medium",
     reason:
       "Clause 17.1(b) lets LICENSEE assign the entire Agreement upon a Change in Control without MERIDIAN's consent and without any carve-out for a direct competitor of MERIDIAN. If LICENSEE is acquired by a competitor, the exclusive license — and the Licensed Technology it covers — could transfer to that competitor with no renegotiation or termination right for MERIDIAN.",
     originalClause: "17.1 Assignment. LICENSEE may not assign its rights and obligations under this Agreement without MERIDIAN' prior written consent, except that: (a) LICENSEE may assign its rights and obligations under this Agreement in whole or in part to one or more of its Affiliates without the consent of MERIDIAN; and (b) LICENSEE may assign this Agreement in the event of a Change in Control.",
@@ -203,11 +212,13 @@ const FINDINGS = [
   },
 ];
 
-const SEVERITY_ORDER = { High: 0, Moderate: 1, Low: 2 };
-const SEVERITY_CHIP_VARIANTS = { High: "negative", Moderate: "warning", Low: "blue" };
-// Drives the document highlight color from the same severity that labels
-// the finding's accordion badge, so the two can never drift out of sync.
-const SEVERITY_HIGHLIGHT_LEVEL = { High: "high", Moderate: "medium", Low: "low" };
+const SEVERITY_ORDER = { High: 0, Medium: 1, Low: 2 };
+// Red/orange/yellow for High/Medium/Low — same mapping drives the
+// ColorStatus badge color and the document highlight color (see
+// SEVERITY_HIGHLIGHT_LEVEL and --color-redline-highlight-* in tokens.css),
+// so the two can never drift out of sync.
+const SEVERITY_COLOR_STATUS_VARIANT = { High: "red", Medium: "orange", Low: "yellow" };
+const SEVERITY_HIGHLIGHT_LEVEL = { High: "high", Medium: "medium", Low: "low" };
 const ORDERED_FINDINGS = [...FINDINGS].sort(
   (first, second) => SEVERITY_ORDER[first.severity] - SEVERITY_ORDER[second.severity]
 );
@@ -520,8 +531,8 @@ const styles = {
   reason: {
     margin: 0,
     fontFamily: "var(--font-family-primary)",
-    fontSize: "var(--text-body-lg)",
-    lineHeight: "var(--line-height-body-lg)",
+    fontSize: "var(--text-body-md)",
+    lineHeight: "var(--line-height-body-md)",
     color: "var(--color-content-primary)",
   },
   sources: {
@@ -758,6 +769,13 @@ export const AiObligationExtractionPage = () => {
       (change) => change.originalText === splitClauseNumber(finding.originalClause).body
     );
 
+  const handleApplyAllFindings = () => {
+    ORDERED_FINDINGS.forEach((finding) => {
+      if (isFindingApplied(finding)) return;
+      handleApplyFinding(finding);
+    });
+  };
+
   const handleExportContract = () => {
     const isRedlined = exportFormat === EXPORT_FORMATS.redlined;
     const link = document.createElement("a");
@@ -860,6 +878,14 @@ export const AiObligationExtractionPage = () => {
             <CreationFormPanel
               title="Contract review"
               headerBadge={<Badge color="neutral" size="md">{ORDERED_FINDINGS.length}</Badge>}
+              headerButtons={[
+                {
+                  label: "Apply all",
+                  variant: "secondary",
+                  onClick: handleApplyAllFindings,
+                  isDisabled: needsReviewFindings.length === 0,
+                },
+              ]}
               infoMessage="Inaccuracies may occur with AI. Please review carefully."
               showNavigation
               navigationSubContent={
@@ -880,7 +906,14 @@ export const AiObligationExtractionPage = () => {
                       showActionButton={false}
                     />
                   ) : (
-                    <p style={styles.reviewLabel}>No findings need review.</p>
+                    <EmptyState
+                      size="sm"
+                      illustrationVariant="noIssues"
+                      title="All findings resolved"
+                      description="Every finding in this contract has been reviewed and resolved. Upload another document to start a new review."
+                      actionLabel="Upload another document"
+                      onAction={() => navigateToPath(CONTRACT_REVIEW_ASSISTANT_GUIDANCE_PATH)}
+                    />
                   )
                 )}
                 {visibleFindings.map((finding) => (
@@ -888,7 +921,7 @@ export const AiObligationExtractionPage = () => {
                     key={finding.id}
                     title={
                       <span style={styles.accordionTitle}>
-                        <Chip variant={SEVERITY_CHIP_VARIANTS[finding.severity]} size="md">{finding.severity}</Chip>
+                        <ColorStatus variant={SEVERITY_COLOR_STATUS_VARIANT[finding.severity]}>{finding.severity}</ColorStatus>
                         <span style={styles.accordionTitleLabel}>{finding.title}</span>
                       </span>
                     }
@@ -944,13 +977,16 @@ export const AiObligationExtractionPage = () => {
                         value={suggestionDrafts[finding.id] ?? finding.suggestion}
                         onChange={(event) => setSuggestionDrafts((drafts) => ({ ...drafts, [finding.id]: event.target.value }))}
                         onRevert={(value) => setSuggestionDrafts((drafts) => ({ ...drafts, [finding.id]: value }))}
+                        isReadOnly={isFindingApplied(finding)}
                       />
-                      <Textarea
-                        label="Comment"
-                        placeholder="Leave your comment"
-                        value={commentDrafts[finding.id] ?? ""}
-                        onChange={(event) => setCommentDrafts((drafts) => ({ ...drafts, [finding.id]: event.target.value }))}
-                      />
+                      {!isFindingApplied(finding) && (
+                        <Textarea
+                          label="Comment"
+                          placeholder="Leave your comment"
+                          value={commentDrafts[finding.id] ?? ""}
+                          onChange={(event) => setCommentDrafts((drafts) => ({ ...drafts, [finding.id]: event.target.value }))}
+                        />
+                      )}
                       <div style={styles.findingActions}>
                         {isFindingApplied(finding) ? (
                           <Badge.WithIcon
