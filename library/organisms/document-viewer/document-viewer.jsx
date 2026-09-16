@@ -130,6 +130,10 @@ const styles = {
       overflow: hidden;
     }
 
+    [data-document-highlight="active"] {
+      scroll-margin-top: var(--spacing-6);
+    }
+
     .document-viewer--show-live-changes ins,
     .document-viewer--show-live-changes del {
       text-decoration: none;
@@ -693,11 +697,23 @@ const renderChangeSegmentsToHtml = (segments, highlightTargets = [], highlightFa
     const isActiveChange = (segment.type === "del" || segment.type === "ins") && !!activeChangeText && segment.text === activeChangeText;
 
     // Group an adjacent del+ins pair from the same applied change into one
-    // annotated span, so the comment popover anchors to the whole
-    // replacement rather than just half of it.
-    if (segment.type === "del" && next?.type === "ins" && segment.commentId && segment.commentId === next.commentId) {
+    // wrapping span whenever they're adjacent (the diff always emits them
+    // back to back for a single change, with an "equal" segment separating
+    // any two different changes) — not just when a comment was left. The
+    // comment-anchor attribute is only added when there's a real shared
+    // commentId, but the active scroll marker must go on this wrapper
+    // regardless, so scroll-to-highlight anchors at the top of the whole
+    // deletion+insertion block instead of just the insertion — otherwise a
+    // long struck-through original clause scrolls mostly out of view above
+    // a short inserted replacement. (Applying a finding without leaving a
+    // comment sets commentId to null, which previously skipped this
+    // grouping entirely and silently reintroduced that bug.)
+    if (segment.type === "del" && next?.type === "ins") {
       const nextIsActive = !!activeChangeText && next.text === activeChangeText;
-      html += `<span data-document-comment-anchor="${segment.commentId}">${renderChangeSegmentToHtml(segment, isActiveChange)}${renderChangeSegmentToHtml(next, nextIsActive)}</span>`;
+      const hasSharedComment = Boolean(segment.commentId) && segment.commentId === next.commentId;
+      const anchorAttr = hasSharedComment ? ` data-document-comment-anchor="${segment.commentId}"` : "";
+      const pairActiveAttr = (isActiveChange || nextIsActive) ? ' data-document-highlight="active"' : "";
+      html += `<span${anchorAttr}${pairActiveAttr}>${renderChangeSegmentToHtml(segment, false)}${renderChangeSegmentToHtml(next, false)}</span>`;
       index += 2;
       continue;
     }
@@ -1196,12 +1212,13 @@ export const DocumentViewer = ({
       }
       if (!viewport || !highlight) return;
 
-      const topOffset = 24;
-      const highlightTop = highlight.getBoundingClientRect().top - viewport.getBoundingClientRect().top;
-      viewport.scrollTo({
-        top: viewport.scrollTop + highlightTop - topOffset,
-        behavior: "smooth",
-      });
+      // scrollIntoView measures the element's actual box at scroll time (via
+      // scroll-margin-top for the offset below), so it stays correct
+      // regardless of how tall the target block is — unlike a manual
+      // getBoundingClientRect + fixed-offset calc, which drifts whenever an
+      // applied change's del+ins block is a different height than what was
+      // previously on screen.
+      highlight.scrollIntoView({ behavior: "smooth", block: "start" });
     };
     frameId = window.requestAnimationFrame(scrollToHighlight);
     return () => window.cancelAnimationFrame(frameId);
