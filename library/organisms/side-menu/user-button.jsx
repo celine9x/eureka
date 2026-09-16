@@ -34,6 +34,7 @@ export const USER_BUTTON_STATES = {
 const styles = {
   base: {
     alignSelf: "stretch",
+    height: 48,
     padding: "var(--spacing-1)",
     background: "var(--color-general-white)",
     borderRadius: "var(--radius-sm)",

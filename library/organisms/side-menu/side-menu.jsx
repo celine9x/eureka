@@ -20,6 +20,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Icon } from "../../atoms/icon.jsx";
+import { Badge } from "../../atoms/badge.jsx";
 import { Search } from "../../molecules/search.jsx";
 import { SideMenuItem } from "./side-menu-item.jsx";
 import { UserButton } from "./user-button.jsx";
@@ -39,6 +40,40 @@ export const SIDE_MENU_POSITIONS = {
   fixed: "fixed",
   embedded: "embedded",
 };
+
+export const SIDE_MENU_CONTENT_VARIANTS = {
+  default: "default",
+  deal: "deal",
+};
+
+const DEAL_SECTIONS = [
+  {
+    items: [
+      { label: "Home", iconName: "Home" },
+      { label: "AI assistant", iconName: "Sparkles" },
+      { label: "Dashboard", iconName: "ChartBar" },
+      { label: "Network", iconName: "Share" },
+    ],
+  },
+  {
+    title: "Workspace",
+    items: [
+      { label: "Initiatives", iconName: "initiative" },
+      { label: "Opportunities", iconName: "opportunity" },
+      { label: "Agreements", iconName: "agreement" },
+      { label: "Alliances", iconName: "alliance" },
+      { label: "Obligations", iconName: "obligation" },
+    ],
+  },
+  {
+    title: "Directory",
+    items: [
+      { label: "Companies", iconName: "company" },
+      { label: "Contacts", iconName: "contact" },
+      { label: "Meetings", iconName: "meeting" },
+    ],
+  },
+];
 
 const EXPANDED_WIDTH = 250;
 const COLLAPSED_WIDTH = 80;
@@ -97,7 +132,7 @@ const styles = {
     alignSelf: "stretch",
     display: "flex",
     flexDirection: "column",
-    justifyContent: "flex-start",
+    justifyContent: "space-between",
     alignItems: "flex-start",
     gap: 16,
     overflowY: "auto",
@@ -105,6 +140,15 @@ const styles = {
     scrollbarWidth: "none",
     msOverflowStyle: "none",
     minHeight: 0,
+  },
+
+  // Groups nav sections into a single flex item so space-between pushes
+  // the Buttons section down without spreading gaps between nav sections
+  sectionsGroup: {
+    alignSelf: "stretch",
+    display: "flex",
+    flexDirection: "column",
+    gap: 16,
   },
 
   // Logo and search area
@@ -337,6 +381,76 @@ const styles = {
     wordWrap: "break-word",
   },
 
+  // Notification button (tertiary)
+  notificationButton: {
+    alignSelf: "stretch",
+    height: 32,
+    paddingLeft: 8,
+    paddingRight: 8,
+    background: "var(--color-action-fill-tertiary-enabled)",
+    borderRadius: "var(--radius-sm)",
+    display: "inline-flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 8,
+    border: "none",
+    cursor: "pointer",
+    transition: "all var(--transition-fast)",
+  },
+
+  notificationButtonHover: {
+    background: "var(--color-action-fill-tertiary-hover)",
+  },
+
+  notificationButtonCollapsed: {
+    width: 32,
+    paddingLeft: 8,
+    paddingRight: 8,
+    justifyContent: "center",
+  },
+
+  notificationButtonContent: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 8,
+    minWidth: 0,
+  },
+
+  notificationButtonIcon: {
+    width: 16,
+    height: 16,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
+    color: "var(--color-action-content-tertiary-enabled)",
+    flexShrink: 0,
+  },
+
+  notificationDot: {
+    position: "absolute",
+    top: -2,
+    right: -2,
+    width: 8,
+    height: 8,
+    borderRadius: "var(--radius-full)",
+    background: "var(--color-accent-red)",
+    border: "1.5px solid var(--color-general-white)",
+  },
+
+  notificationButtonLabel: {
+    flex: 1,
+    textAlign: "left",
+    color: "var(--color-action-content-tertiary-enabled)",
+    fontSize: "var(--text-body-md)",
+    fontFamily: "var(--font-family-primary)",
+    fontWeight: "var(--font-weight-regular)",
+    lineHeight: "var(--line-height-body-md)",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+  },
+
   // User section
   userWrapper: {
     alignSelf: "stretch",
@@ -381,8 +495,12 @@ export const SideMenu = ({
   onSearchChange,
   onSearchClick,
   sections = [],
+  menuVariant = SIDE_MENU_CONTENT_VARIANTS.default,
   createButtonLabel = "Create",
   onCreateClick,
+  hasUnreadNotifications = true,
+  notificationCount = 1,
+  onNotificationClick,
   user,
   onUserClick,
   style,
@@ -390,10 +508,18 @@ export const SideMenu = ({
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [createHovered, setCreateHovered] = useState(false);
+  const [notificationHovered, setNotificationHovered] = useState(false);
+
+  const resolvedSections =
+    sections.length > 0
+      ? sections
+      : menuVariant === SIDE_MENU_CONTENT_VARIANTS.deal
+        ? DEAL_SECTIONS
+        : sections;
 
   const fallbackActiveItemId = useMemo(() => {
-    for (let sectionIndex = 0; sectionIndex < sections.length; sectionIndex += 1) {
-      const items = sections[sectionIndex]?.items || [];
+    for (let sectionIndex = 0; sectionIndex < resolvedSections.length; sectionIndex += 1) {
+      const items = resolvedSections[sectionIndex]?.items || [];
       for (let itemIndex = 0; itemIndex < items.length; itemIndex += 1) {
         const item = items[itemIndex];
         if (item?.state === "active") {
@@ -402,7 +528,7 @@ export const SideMenu = ({
       }
     }
     return undefined;
-  }, [sections]);
+  }, [resolvedSections]);
 
   const [internalActiveItemId, setInternalActiveItemId] = useState(
     defaultActiveItemId ?? fallbackActiveItemId
@@ -508,7 +634,7 @@ export const SideMenu = ({
 
   // Render sections
   const renderSections = () => {
-    return sections.map((section, sectionIndex) => (
+    return resolvedSections.map((section, sectionIndex) => (
       <div key={sectionIndex} style={{ alignSelf: "stretch", display: "flex", flexDirection: "column", gap: 16 }}>
         {/* Divider before section */}
         {section.dividerBefore && (
@@ -601,6 +727,53 @@ export const SideMenu = ({
     );
   };
 
+  // Render notification button
+  const renderNotificationButton = () => {
+    const notificationButtonStyle = {
+      ...styles.notificationButton,
+      ...(isCollapsed && styles.notificationButtonCollapsed),
+      ...(notificationHovered && styles.notificationButtonHover),
+    };
+
+    return (
+      <button
+        type="button"
+        style={notificationButtonStyle}
+        onClick={onNotificationClick}
+        onMouseEnter={() => setNotificationHovered(true)}
+        onMouseLeave={() => setNotificationHovered(false)}
+        aria-label="Notification"
+      >
+        <span style={styles.notificationButtonContent}>
+          <span style={styles.notificationButtonIcon}>
+            <Icon name="ChatBubbleLeftRight" variant="outline" size="sm" style={{ color: "inherit", width: 16, height: 16 }} />
+            {isCollapsed && hasUnreadNotifications && <span style={styles.notificationDot} />}
+          </span>
+          {!isCollapsed && <span style={styles.notificationButtonLabel}>Notifications</span>}
+        </span>
+        {!isCollapsed && hasUnreadNotifications && notificationCount > 0 && (
+          <Badge color="brand" size="sm">{notificationCount}</Badge>
+        )}
+      </button>
+    );
+  };
+
+  // Render bottom buttons section (Notification + Create), scoped to the deal menu content
+  const renderButtonsSection = () => {
+    const buttonsWrapperStyle = {
+      ...styles.footerContent,
+      paddingBottom: "var(--spacing-md)",
+      ...(isCollapsed && styles.footerContentCollapsed),
+    };
+
+    return (
+      <div style={buttonsWrapperStyle}>
+        {renderNotificationButton()}
+        {renderCreateButton()}
+      </div>
+    );
+  };
+
   // Render user button
   const renderUserButton = () => {
     if (!user) return null;
@@ -640,16 +813,21 @@ export const SideMenu = ({
 
         {/* Scrollable Menu Sections */}
         <div className="side-menu-scrollable" style={styles.scrollableArea}>
-          {renderSections()}
+          <div style={styles.sectionsGroup}>
+            {renderSections()}
+          </div>
+          {menuVariant === SIDE_MENU_CONTENT_VARIANTS.deal && renderButtonsSection()}
         </div>
       </div>
 
       {/* Footer Section: Create Button + User */}
       <div style={styles.footer}>
-        {/* Create Button */}
-        <div style={footerContentStyle}>
-          {renderCreateButton()}
-        </div>
+        {/* Create Button (deal variant renders it in the scrollable Buttons section instead) */}
+        {menuVariant !== SIDE_MENU_CONTENT_VARIANTS.deal && (
+          <div style={footerContentStyle}>
+            {renderCreateButton()}
+          </div>
+        )}
 
         {/* User Button */}
         <div style={userWrapperStyle}>
@@ -663,6 +841,7 @@ export const SideMenu = ({
 SideMenu.displayName = "SideMenu";
 SideMenu.variants = SIDE_MENU_VARIANTS;
 SideMenu.positions = SIDE_MENU_POSITIONS;
+SideMenu.contentVariants = SIDE_MENU_CONTENT_VARIANTS;
 SideMenu.Item = SideMenuItem;
 SideMenu.UserButton = UserButton;
 SideMenu.Icon = Icon;

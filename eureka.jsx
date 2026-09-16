@@ -4876,42 +4876,6 @@ const SideMenuPage = () => (
 import InpartLogo from "@/Inpart.svg";
 import InpartLogoCollapsed from "@/Inpart1.svg";
 
-      const dealSections = [
-        {
-          items: [
-            { label: "Home", iconName: "Home" },
-              { label: "AI assistant", iconName: "Sparkle" },
-            { label: "Dashboard", iconName: "ChartBar" },
-            { label: "Network", iconName: "Share" },
-          ],
-        },
-        {
-          title: "Workspace",
-          items: [
-            { label: "Initiatives", iconName: "initiative" },
-            { label: "Opportunities", iconName: "opportunity", state: "active" },
-            { label: "Agreements", iconName: "agreement" },
-            { label: "Alliances", iconName: "alliance" },
-            { label: "Obligations", iconName: "obligation" },
-          ],
-        },
-        {
-          title: "Directory",
-          items: [
-            { label: "Companies", iconName: "company" },
-            { label: "Contacts", iconName: "contact" },
-            { label: "Meetings", iconName: "meeting" },
-          ],
-          dividerAfter: true,
-        },
-        {
-          title: "Recent Initiatives",
-          items: [
-            { label: "ALLINPART", iconColor: "var(--color-content-brand)", iconLetter: "A" },
-          ],
-        },
-      ];
-
 <SideMenu
   variant="collapsed"
   expandOnHover
@@ -4919,8 +4883,11 @@ import InpartLogoCollapsed from "@/Inpart1.svg";
   collapsedLogoSrc={InpartLogoCollapsed}
   showSearch
   searchPlaceholder="Quick search"
-  sections={dealSections}
+  menuVariant="deal"
   createButtonLabel="Create"
+  hasUnreadNotifications
+  notificationCount={12}
+  onNotificationClick={() => {}}
   user={{
     name: "Linh Nguyen",
     email: "linh.nguyen@inpart.io",
@@ -4939,41 +4906,11 @@ import InpartLogoCollapsed from "@/Inpart1.svg";
             collapsedLogoSrc="/Inpart1.svg"
             showSearch={true}
             searchPlaceholder="Quick search"
-            sections={[
-              {
-                items: [
-                  { label: "Home", iconName: "Home" },
-                  { label: "Dashboard", iconName: "ChartBar" },
-                  { label: "Network", iconName: "Share" },
-                ],
-              },
-              {
-                title: "Workspace",
-                items: [
-                  { label: "Initiatives", iconName: "initiative" },
-                  { label: "Opportunities", iconName: "opportunity", state: "active" },
-                  { label: "Agreements", iconName: "agreement" },
-                  { label: "Alliances", iconName: "alliance" },
-                  { label: "Obligations", iconName: "obligation" },
-                ],
-              },
-              {
-                title: "Directory",
-                items: [
-                  { label: "Companies", iconName: "company" },
-                  { label: "Contacts", iconName: "contact" },
-                  { label: "Meetings", iconName: "meeting" },
-                ],
-                dividerAfter: true,
-              },
-              {
-                title: "Recent Initiatives",
-                items: [
-                  { label: "ALLINPART", iconColor: "var(--color-content-brand)", iconLetter: "A" },
-                ],
-              },
-            ]}
+            menuVariant="deal"
             createButtonLabel="Create"
+            hasUnreadNotifications
+            notificationCount={12}
+            onNotificationClick={() => alert("Notification clicked")}
             user={{ name: "Linh Nguyen", email: "linh.nguyen@inpart.io", avatarInitials: "LN" }}
             onCreateClick={() => alert("Create clicked")}
             style={{ position: "relative" }}

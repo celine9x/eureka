@@ -34,40 +34,6 @@ const EXPORT_FORMATS = {
   clean: "clean",
 };
 
-const dealSections = [
-  {
-    items: [
-      { label: "Home", iconName: "Home" },
-      { label: "AI assistant", iconName: "Sparkles" },
-      { label: "Dashboard", iconName: "ChartBar" },
-      { label: "Network", iconName: "Share" },
-    ],
-  },
-  {
-    title: "Workspace",
-    items: [
-      { label: "Initiatives", iconName: "initiative" },
-      { label: "Opportunities", iconName: "opportunity" },
-      { label: "Agreements", iconName: "agreement" },
-      { label: "Alliances", iconName: "alliance" },
-      { label: "Obligations", iconName: "obligation" },
-    ],
-  },
-  {
-    title: "Directory",
-    items: [
-      { label: "Companies", iconName: "company" },
-      { label: "Contacts", iconName: "contact" },
-      { label: "Meetings", iconName: "meeting" },
-    ],
-    dividerAfter: true,
-  },
-  {
-    title: "Recent Initiatives",
-    items: [{ label: "ALLINPART", iconColor: "var(--color-content-brand)", iconLetter: "A" }],
-  },
-];
-
 const SAMPLE_DOCUMENT_TEXT = `COLLABORATION AND LICENSE AGREEMENT
 
 This Collaboration and License Agreement (this "Agreement") is entered into as of the Effective Date by and between Veltarix Therapeutics, Inc., a Delaware corporation with offices at 1200 Research Parkway, Boston, Massachusetts 02110 ("Veltarix"), and Meridian Biosciences Ltd., a company organized under the laws of England and Wales with offices at 14 Cambridge Science Park, Cambridge CB4 0FY, United Kingdom ("Meridian"). Veltarix and Meridian are each referred to as a "Party" and together as the "Parties."
@@ -586,7 +552,7 @@ export const AiObligationExtractionPage = () => {
         collapsedLogoSrc={InpartLogoCollapsed}
         showSearch
         searchPlaceholder="Quick search"
-        sections={dealSections}
+        menuVariant="deal"
         createButtonLabel="Create"
         user={{
           name: "Linh Nguyen",
