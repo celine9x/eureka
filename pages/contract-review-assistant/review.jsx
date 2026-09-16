@@ -138,7 +138,48 @@ const FINDINGS = [
         excerpt:
           "Section 5.3's diligence obligation used 'commercially reasonable efforts' without defined FTE or spend commitments.",
         documentContent:
-          "Section 5.3's diligence obligation used 'commercially reasonable efforts' without defined FTE or spend commitments. When Helios deprioritized the program following an internal portfolio review, Kestrel had no contractual basis to demonstrate breach, despite 14 months of inactivity. Recommendation: future agreements should tie diligence obligations to measurable inputs (FTEs, budget) rather than effort-based standards.",
+          `ALLIANCE POST-MORTEM REPORT
+
+Kestrel Biosciences x Helios Pharma — Exclusive License Alliance
+Alliance ID: KB-HP-2021-014
+Status: Closed (mutual wind-down) | Closed: March 2024
+Prepared by: Alliance Management
+Distribution: Business Development, Legal, Portfolio Committee
+
+1. EXECUTIVE SUMMARY
+
+This alliance was closed in March 2024 following 14 months of undisclosed program inactivity on Helios's side. Kestrel's Alliance Management team had no contractual mechanism to compel disclosure or demonstrate breach, and ultimately negotiated a mutual wind-down rather than pursue a drawn-out dispute. This post-mortem was commissioned by the Portfolio Committee to identify contract-drafting gaps that should be corrected in future licensing agreements with Helios and with similarly-profiled counterparties.
+
+2. BACKGROUND
+
+Kestrel granted Helios an exclusive, worldwide license to develop and commercialize a small-molecule asset (then in IND-enabling studies) in exchange for an upfront payment, development and regulatory milestones, and tiered royalties. Section 5.3 of the license agreement obligated Helios to "use commercially reasonable efforts" to develop the licensed product, consistent with market-standard drafting at the time.
+
+3. TIMELINE OF KEY EVENTS
+
+- Q3 2021: Agreement executed; upfront payment received; Helios initiates IND-enabling toxicology studies.
+- Q1 2022: Helios reports on track for IND submission in H2 2022.
+- Q3 2022: Last substantive development update received from Helios.
+- Q4 2022: Helios undergoes an internal portfolio reprioritization following a leadership change; the program is quietly deprioritized. No notice is given to Kestrel.
+- Q1 2023 to Q3 2023: Kestrel's Alliance Management team sends quarterly check-in requests per the relationship cadence; responses are increasingly generic and non-substantive.
+- Q4 2023: Kestrel formally requests a written development status update and raises the possibility of a diligence breach.
+- Q1 2024: Parties agree to a mutual wind-down and reversion of rights rather than litigate the diligence standard.
+
+4. ROOT CAUSE ANALYSIS
+
+Section 5.3's diligence obligation used 'commercially reasonable efforts' without defined FTE or spend commitments. When Helios deprioritized the program following an internal portfolio review, Kestrel had no contractual basis to demonstrate breach, despite 14 months of inactivity. Because the clause set no measurable floor — no minimum headcount, no spend commitment, no activity-based checkpoint — Helios's internal deprioritization was never a clear breach event, and Kestrel's only real recourse was negotiation, not enforcement.
+
+5. LESSONS LEARNED
+
+An effort-based diligence standard is only as strong as its ability to be tested against objective facts. Without a measurable floor, "commercially reasonable efforts" becomes a subjective standard that a counterparty in good standing can quietly fail to meet for well over a year before the licensor has any contractual trigger to act on.
+
+6. RECOMMENDATIONS FOR FUTURE AGREEMENTS
+
+Recommendation: future agreements should tie diligence obligations to measurable inputs (FTEs, budget) rather than effort-based standards. Specifically:
+- Require a minimum FTE count or dedicated budget for Development activities.
+- Add a written notice obligation triggered by any material reduction in Development activity.
+- Define an objective inactivity trigger (e.g., a defined period without a Regulatory Filing or Development milestone) that constitutes a diligence failure without requiring proof of subjective intent.
+
+Filed alongside: Corvale Biosciences Post-Mortem (2025) — same counterparty, same underlying failure mode.`,
       },
       {
         label: "Post-Mortem — Helios Pharma / Corvale Biosciences Alliance (Closed 2025)",
@@ -147,7 +188,52 @@ const FINDINGS = [
         excerpt:
           "This is the second of Helios's last four licensing deals where this exact standard has failed to hold up",
         documentContent:
-          "The diligence clause mirrored standard 'commercially reasonable efforts' language. A shift in Helios's R&D priorities following a portfolio reprioritization led to an 18-month stall with no remedy available to Corvale under the existing terms. This is the second of Helios's last four licensing deals where this exact standard has failed to hold up (see also the Kestrel Bio post-mortem, 2024 — and the milestone-slippage pattern already flagged in Risk #1 above).",
+          `ALLIANCE POST-MORTEM REPORT
+
+Corvale Biosciences x Helios Pharma — Exclusive License Alliance
+Alliance ID: CB-HP-2022-009
+Status: Closed (terminated for convenience by Corvale) | Closed: January 2025
+Prepared by: Alliance Management
+Distribution: Business Development, Legal, Portfolio Committee
+
+1. EXECUTIVE SUMMARY
+
+Corvale terminated this alliance in January 2025 after an 18-month stall in Development activity that Helios never formally disclosed. As with the Kestrel Bio alliance closed in 2024, the underlying diligence clause used undefined "commercially reasonable efforts" language, leaving Corvale without a clear remedy until the relationship had already deteriorated past the point of repair.
+
+2. BACKGROUND
+
+Corvale licensed Helios exclusive rights to develop and commercialize a biologics candidate in the Field, on terms materially similar to the earlier Kestrel Bio agreement: development and regulatory milestones, tiered royalties, and a diligence clause requiring Helios to use "commercially reasonable efforts" to advance the program, with no defined FTE, spend, or activity floor.
+
+3. ALLIANCE RISK REGISTER (EXCERPT)
+
+Risk #1 — Milestone-slippage pattern: Across this and prior Helios alliances, 3 of Helios's last 4 licensing milestones have slipped by 6+ months from the originally forecast date, with no proactive notice provided to the licensing partner in any instance. Flagged as the highest-priority risk for any future agreement with this counterparty.
+Risk #2 — Diligence-standard failure: see Root Cause Analysis below.
+
+4. TIMELINE OF KEY EVENTS
+
+- Q2 2022: Agreement executed; Helios begins preclinical Development activities.
+- Q4 2022: Program status reported as on-track in the annual Development report.
+- Q2 2023: Helios undergoes a portfolio reprioritization; the program is quietly moved to a lower internal priority tier. Corvale is not notified.
+- Q3 2023 to Q1 2024: Corvale's follow-up requests receive delayed, non-substantive responses; no Development report is provided for the required annual cycle.
+- Q2 2024: Corvale escalates internally and formally requests evidence of continued diligence.
+- Q4 2024: Corvale determines the program has been effectively inactive for approximately 18 months and issues a notice of termination for convenience rather than pursue a contested breach claim.
+- January 2025: Alliance formally closed; rights revert to Corvale.
+
+5. ROOT CAUSE ANALYSIS
+
+The diligence clause mirrored standard 'commercially reasonable efforts' language. A shift in Helios's R&D priorities following a portfolio reprioritization led to an 18-month stall with no remedy available to Corvale under the existing terms. This is the second of Helios's last four licensing deals where this exact standard has failed to hold up (see also the Kestrel Bio post-mortem, 2024 — and the milestone-slippage pattern already flagged in Risk #1 above).
+
+6. LESSONS LEARNED
+
+Two alliances with the same counterparty, three years apart, produced the same failure mode under the same style of diligence clause. This is no longer an isolated drafting oversight — it is a pattern specific to how Helios's internal portfolio-prioritization process interacts with effort-based diligence language, and it should inform how future agreements with Helios (or similarly-situated counterparties) are drafted.
+
+7. RECOMMENDATIONS FOR FUTURE AGREEMENTS
+
+- Do not rely on "commercially reasonable efforts" alone as the sole diligence standard for a counterparty with a documented history of quiet deprioritization.
+- Require a standing notice obligation tied to internal portfolio review cycles, not just Development milestones.
+- Consider a defined inactivity trigger and an explicit remedy (e.g., reversion of rights) that does not require proving subjective bad faith.
+
+Filed alongside: Kestrel Biosciences Post-Mortem (2024) — same counterparty, same underlying failure mode.`,
       },
     ],
     suggestion: "Milestone Payments. In further consideration of the licenses and rights granted to LICENSEE, LICENSEE shall notify MERIDIAN in writing within ten (10) business days after achievement of each Milestone, and within sixty (60) days after such achievement, LICENSEE shall, subject to Section 1.6, pay to MERIDIAN the corresponding non-creditable and non-refundable milestone payment (each, a \"Milestone Payment\"), together with reasonable supporting documentation evidencing such achievement. For the avoidance of doubt each Milestone Payment shall be payable only once upon achievement of the applicable Milestone.",
@@ -173,7 +259,39 @@ const FINDINGS = [
         excerpt:
           "Alliance Management first learned of the achievement five months later, when Kestrel's BD team followed up asking about the outstanding payment.",
         documentContent:
-          "Milestone Event 3 (IND clearance) was achieved on record by Helios's own development team. No internal process notified Alliance Management or Finance, and the contract itself contained no explicit notice obligation — only a payment-timing clause tied to achievement. Alliance Management first learned of the achievement five months later, when Kestrel's BD team followed up asking about the outstanding payment. The payment was processed immediately upon discovery, but the delay prompted a formal notice-of-breach warning from Kestrel's legal team.",
+          `ISSUE #ISS-2291
+
+Title: Late milestone payment, discovered via partner follow-up
+Type: Process Incident | Priority: High | Status: Resolved
+Reporter: Alliance Management | Assignee: Finance Operations
+Related Alliance: Kestrel Biosciences x Helios Pharma (KB-HP-2021-014)
+Created: 2023-08-14 | Resolved: 2023-08-21
+
+DESCRIPTION
+
+Milestone Event 3 (IND clearance) was achieved on record by Helios's own development team. No internal process notified Alliance Management or Finance, and the contract itself contained no explicit notice obligation — only a payment-timing clause tied to achievement. Alliance Management first learned of the achievement five months later, when Kestrel's BD team followed up asking about the outstanding payment. The payment was processed immediately upon discovery, but the delay prompted a formal notice-of-breach warning from Kestrel's legal team.
+
+ACTIVITY LOG
+
+2023-08-14 — Reported by Alliance Management: Kestrel's BD contact reached out asking about the status of the Milestone Event 3 payment, which by their calculation was already overdue.
+2023-08-15 — Finance Operations confirms no payment request was ever initiated; the achievement was recorded only in the R&D program tracker, which is not monitored by Alliance Management or Finance.
+2023-08-16 — Legal confirms the contract's payment clause is triggered solely by achievement, with no corresponding notice obligation on Helios's side and no internal cross-functional trigger on Kestrel's own side either.
+2023-08-18 — Payment issued to Helios, five months after the triggering achievement date.
+2023-08-21 — Kestrel's legal team issues a formal notice-of-breach warning citing the payment delay; relationship is repaired after a written apology and a proposed process fix.
+
+ROOT CAUSE
+
+The contract's milestone payment clause created an obligation tied entirely to a triggering event (achievement) that only the counterparty could observe and self-report, with no corresponding internal alert on Kestrel's own side and no notice requirement placed on Helios. The R&D program tracker where the achievement was recorded is not integrated with Finance or Alliance Management systems.
+
+RESOLUTION
+
+Payment processed in full upon discovery. Kestrel's Alliance Management team implemented a manual quarterly cross-check against the R&D program tracker as an interim mitigation.
+
+ACTION ITEMS
+
+- Recommend all future licensing agreements include an explicit written-notice obligation triggered by Milestone achievement, not just a payment-timing clause.
+- Recommend requiring supporting documentation alongside any Milestone Payment to create an auditable trigger event.
+- Flag for future contract negotiations with Helios specifically, given the counterparty's demonstrated pattern of not proactively disclosing achievement events.`,
       },
     ],
     suggestion: "LICENSEE shall itself, or through its Affiliates or Sublicensees, use Commercially Reasonable Efforts, including maintaining at least the equivalent of two (2) full-time employees dedicated to Development of the Products until the first Regulatory Approval, to Develop Products in the Major Markets in the Field, and LICENSEE shall undertake all Development activities relating to the Compounds and Products in the Field at its sole expense.",
@@ -199,7 +317,32 @@ const FINDINGS = [
         excerpt:
           "Reviewers should always check for a competitor carve-out and a renegotiation or termination right — particularly when the counterparty's financial position suggests M&A is plausible.",
         documentContent:
-          "Generic M&A assignment clauses are among the most overlooked risk points in licensing agreements. A clause permitting assignment 'without consent' in connection with a merger or acquisition, without a carve-out for direct competitors, can transfer an exclusive license into a competitor's hands with zero renegotiation rights. Reviewers should always check for a competitor carve-out and a renegotiation or termination right — particularly when the counterparty's financial position suggests M&A is plausible.",
+          `INPART ALLIANCE MANAGEMENT — BEST PRACTICE PLAYBOOK
+
+Section 7: Contract Red Flags in Licensing Agreements
+
+Purpose: This section is a working reference for Alliance Management and Legal reviewers conducting diligence on incoming or existing licensing agreements. It is maintained by Alliance Management and updated as new failure patterns are identified through post-mortems and issue reviews.
+
+7.1 Effort-Based Diligence Standards
+
+Diligence obligations defined solely by "commercially reasonable efforts," "best efforts," or similar language, without a measurable floor (minimum FTEs, spend commitment, or activity-based checkpoint), are difficult to enforce and easy for a counterparty to quietly fail to meet. Reviewers should flag any diligence clause lacking a measurable component for negotiation, particularly with counterparties that have a documented history of portfolio deprioritization.
+
+7.2 Notice Obligations Tied to Milestone or Development Events
+
+Payment or reporting clauses that are triggered solely by a counterparty's self-reported achievement, with no corresponding written-notice obligation, create a structural blind spot: the paying party has no way to know an obligation has arisen until the counterparty chooses to disclose it. Reviewers should require an explicit notice obligation (with a defined notice window) alongside any Milestone- or Development-triggered payment clause.
+
+7.3 Assignment and Change of Control
+
+Generic M&A assignment clauses are among the most overlooked risk points in licensing agreements. A clause permitting assignment "without consent" in connection with a merger or acquisition, without a carve-out for direct competitors, can transfer an exclusive license into a competitor's hands with zero renegotiation rights. Reviewers should always check for a competitor carve-out and a renegotiation or termination right — particularly when the counterparty's financial position suggests M&A is plausible.
+
+7.4 Checklist Summary
+
+- Diligence standard includes a measurable floor (FTEs, spend, or activity-based checkpoint)
+- Milestone/Development payment clauses include a written-notice obligation with a defined window
+- Assignment clause includes a direct-competitor carve-out on Change of Control
+- Assignment clause preserves a renegotiation or termination right where a competitor carve-out is triggered
+
+Related material: Kestrel Biosciences Post-Mortem (2024), Corvale Biosciences Post-Mortem (2025), Issue #ISS-2291.`,
       },
     ],
     suggestion: "Assignment. LICENSEE may not assign its rights and obligations under this Agreement without MERIDIAN' prior written consent, except that: (a) LICENSEE may assign its rights and obligations under this Agreement in whole or in part to one or more of its Affiliates without the consent of MERIDIAN; and (b) LICENSEE may assign this Agreement in the event of a Change in Control, provided that the acquiring party is not a direct competitor of MERIDIAN in the Field; if the acquiring party is a direct competitor of MERIDIAN in the Field, such assignment shall require MERIDIAN's prior written consent, not to be unreasonably withheld.",
@@ -580,13 +723,21 @@ const styles = {
     lineHeight: "var(--line-height-body-md)",
   },
   sourceDocument: {
-    margin: 0,
-    padding: "var(--spacing-6)",
+    // Styled to read as a scanned/exported page (Times New Roman, page
+    // shadow, capped width) rather than app UI — matches the Times New
+    // Roman "paper" treatment DocumentViewer uses for the contract itself
+    // (see --document-viewer-page-text-font-family below), so a source
+    // excerpt and the contract preview feel like the same kind of object.
+    margin: "0 auto",
+    maxWidth: "44rem",
+    padding: "var(--spacing-10) var(--spacing-8)",
     background: "var(--color-general-white)",
-    borderRadius: "var(--radius-lg)",
-    border: "1px solid var(--color-action-outline-secondary-enabled)",
-    fontFamily: "var(--font-family-primary)",
-    fontSize: "var(--text-body-lg)",
+    borderRadius: "var(--radius-sm)",
+    boxShadow: "var(--shadow-button-light)",
+    outline: "1px solid var(--color-action-outline-secondary-enabled)",
+    outlineOffset: "-1px",
+    fontFamily: '"Times New Roman", Times, serif',
+    fontSize: "var(--text-body-md)",
     lineHeight: "var(--line-height-body-lg)",
     color: "var(--color-content-primary)",
     whiteSpace: "pre-wrap",
