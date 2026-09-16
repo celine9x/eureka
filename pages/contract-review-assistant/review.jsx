@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useMemo, useState } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { SideMenu } from "../../library/organisms/side-menu/side-menu.jsx";
 import {
   HubHeader,
@@ -24,6 +24,7 @@ import { Textarea, TextareaField } from "../../library/molecules/textarea.jsx";
 import { SidePanel } from "../../library/templates/side-panel.jsx";
 import { Tabs, Tab } from "@/library/molecules/tabs";
 import { EmptyState } from "../../library/molecules/empty-state.jsx";
+import { useToast } from "../../library/molecules/toast.jsx";
 import { Modal } from "../../library/organisms/modal.jsx";
 import { RadioCardGroup, RadioCard } from "../../library/molecules/radio-card.jsx";
 import fileDocIcon from "../../library/atoms/custom-icons/file-doc.svg";
@@ -761,6 +762,7 @@ const REVIEW_TABS = {
 };
 
 export const AiObligationExtractionPage = () => {
+  const { success: showSuccessToast } = useToast();
   const [activeTab, setActiveTab] = useState(REVIEW_TABS.needsReview);
   const [resolvedFindingIds, setResolvedFindingIds] = useState({});
   const [expandedFindingId, setExpandedFindingId] = useState(null);
@@ -773,6 +775,19 @@ export const AiObligationExtractionPage = () => {
   const [regulatoryTableRows, setRegulatoryTableRows] = useState(INITIAL_REGULATORY_TABLE_ROWS);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [exportFormat, setExportFormat] = useState(EXPORT_FORMATS.redlined);
+  const hasAnnouncedFindingsRef = useRef(false);
+
+  useEffect(() => {
+    if (hasAnnouncedFindingsRef.current) return;
+    hasAnnouncedFindingsRef.current = true;
+    const count = ORDERED_FINDINGS.length;
+    showSuccessToast({
+      message:
+        count === 1
+          ? "Contract review complete — found 1 issue that needs review."
+          : `Contract review complete — found ${count} issues that need review.`,
+    });
+  }, [showSuccessToast]);
   // Pagination measured against the real A4 page box (see
   // paginateDocumentByMeasurement), so each fixed-size page — including ones
   // that contain a table — is packed to capacity instead of a table always
@@ -871,9 +886,18 @@ export const AiObligationExtractionPage = () => {
     return id;
   };
 
-  const handleApplyFinding = (finding) => {
+  const handleApplyFinding = (finding, { silent = false } = {}) => {
     const suggestion = suggestionDrafts[finding.id] ?? finding.suggestion;
     const commentId = addDocumentComment(commentDrafts[finding.id] ?? "", suggestion);
+
+    const notifyApplied = () => {
+      if (silent) return;
+      const clauseLabel = finding.title.split(":")[0].trim();
+      const message = commentId
+        ? `Suggestion applied to ${clauseLabel} and comment added.`
+        : `Suggestion applied to ${clauseLabel}.`;
+      showSuccessToast({ message });
+    };
 
     // Table-targeted findings update a specific regulatory-milestone row's
     // payment cell directly instead of doing a text replace in the flowing
@@ -892,6 +916,7 @@ export const AiObligationExtractionPage = () => {
         return changes.map((change, index) => (index === existingIndex ? nextChange : change));
       });
       setCommentDrafts((drafts) => ({ ...drafts, [finding.id]: "" }));
+      notifyApplied();
       return;
     }
 
@@ -910,6 +935,7 @@ export const AiObligationExtractionPage = () => {
       return changes.map((change, index) => (index === existingIndex ? nextChange : change));
     });
     setCommentDrafts((drafts) => ({ ...drafts, [finding.id]: "" }));
+    notifyApplied();
   };
 
   const handleResolveFinding = (finding) => {
@@ -927,10 +953,20 @@ export const AiObligationExtractionPage = () => {
     );
 
   const handleApplyAllFindings = () => {
-    ORDERED_FINDINGS.forEach((finding) => {
-      if (isFindingApplied(finding)) return;
-      handleApplyFinding(finding);
-    });
+    const pendingFindings = ORDERED_FINDINGS.filter((finding) => !isFindingApplied(finding));
+    if (pendingFindings.length === 0) return;
+    const commentedCount = pendingFindings.filter((finding) => (commentDrafts[finding.id] ?? "").trim()).length;
+    pendingFindings.forEach((finding) => handleApplyFinding(finding, { silent: true }));
+
+    const findingsSummary =
+      pendingFindings.length === 1 ? "Suggestion applied to 1 finding" : `Suggestions applied to all ${pendingFindings.length} findings`;
+    const commentsSummary =
+      commentedCount === 0
+        ? ""
+        : commentedCount === 1
+        ? " and 1 comment added"
+        : ` and ${commentedCount} comments added`;
+    showSuccessToast({ message: `${findingsSummary}${commentsSummary}.` });
   };
 
   const handleExportContract = () => {
@@ -1035,14 +1071,28 @@ export const AiObligationExtractionPage = () => {
             <CreationFormPanel
               title="Contract review"
               headerBadge={<Badge color="neutral" size="md">{ORDERED_FINDINGS.length}</Badge>}
-              headerButtons={[
-                {
-                  label: "Apply all",
-                  variant: "secondary",
-                  onClick: handleApplyAllFindings,
-                  isDisabled: needsReviewFindings.length === 0,
-                },
-              ]}
+              {...(needsReviewFindings.length === 0
+                ? {
+                    headerActionsContent: (
+                      <Badge.WithIcon
+                        color="positive"
+                        size="md"
+                        iconLeading={<Icon name="Check" size="sm" />}
+                        style={styles.appliedBadge}
+                      >
+                        All applied
+                      </Badge.WithIcon>
+                    ),
+                  }
+                : {
+                    headerButtons: [
+                      {
+                        label: "Apply all",
+                        variant: "secondary",
+                        onClick: handleApplyAllFindings,
+                      },
+                    ],
+                  })}
               infoMessage="Inaccuracies may occur with AI. Please review carefully."
               showNavigation
               navigationSubContent={

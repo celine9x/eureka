@@ -397,6 +397,7 @@ export const CreationFormPanel = forwardRef(
       title,
       headerBadge,
       headerButtons = [],
+      headerActionsContent,
       infoMessage,
       infoVariant = "info",
 
@@ -430,7 +431,7 @@ export const CreationFormPanel = forwardRef(
 
     const classes = ["creation-form-panel", className].filter(Boolean).join(" ");
 
-    const showHeader = title || headerBadge || headerButtons.length > 0 || infoMessage;
+    const showHeader = title || headerBadge || headerButtons.length > 0 || headerActionsContent || infoMessage;
     const resolvedFooterButtons = Array.isArray(footerButtons) ? footerButtons.filter(Boolean) : [];
     const shouldShowFooter = showFooter === true || (showFooter !== false && resolvedFooterButtons.length > 0);
 
@@ -491,6 +492,11 @@ export const CreationFormPanel = forwardRef(
                       {btn.label}
                     </Button>
                   ))}
+                </div>
+              )}
+              {headerActionsContent && (
+                <div className="creation-form-panel__header-actions">
+                  {headerActionsContent}
                 </div>
               )}
             </div>

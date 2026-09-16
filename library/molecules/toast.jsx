@@ -45,6 +45,7 @@ const VARIANT_META = {
     bg: "var(--color-general-positive)",
     iconColor: "var(--color-content-positive)",
     iconName: "CheckCircle",
+    iconVariant: "solid",
   },
   [TOAST_VARIANTS.warning]: {
     bg: "var(--color-general-warning)",
@@ -75,7 +76,7 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     gap: "var(--spacing-4)",
-    width: "min(92vw, 720px)",
+    maxWidth: "min(92vw, 480px)",
     pointerEvents: "none",
   },
   positions: {
@@ -101,7 +102,8 @@ const styles = {
     },
   },
   toast: {
-    width: "100%",
+    width: "fit-content",
+    maxWidth: "100%",
     minHeight: 48,
     padding: "var(--spacing-sm)",
     borderRadius: "var(--radius-sm)",
@@ -179,11 +181,13 @@ export const Toast = ({
   const resolvedShowActionButton = showActionButton ?? Boolean(actionLabel);
   const resolvedShowCloseButton = showCloseButton ?? dismissible;
 
+  // Slides in horizontally from the right; the toast rests at the bottom
+  // of the viewport (see TOAST_POSITIONS["bottom-right"]).
   const phaseStyle =
     phase === "from"
-      ? { opacity: 0, transform: "translateX(16px)" }
+      ? { opacity: 0, transform: "translateX(24px)" }
       : phase === "leaving"
-      ? { opacity: 0, transform: "translateX(16px)" }
+      ? { opacity: 0, transform: "translateX(24px)" }
       : { opacity: 1, transform: "translateX(0)" };
 
   return (
@@ -198,7 +202,7 @@ export const Toast = ({
     >
       <div style={styles.left}>
         <span style={{ ...styles.iconWrap, color: meta.iconColor }}>
-          <Icon name={iconName || meta.iconName} size="sm" />
+          <Icon name={iconName || meta.iconName} variant={meta.iconVariant || "outline"} size="sm" />
         </span>
         <p style={styles.message}>{message}</p>
       </div>
