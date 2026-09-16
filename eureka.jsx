@@ -25,6 +25,7 @@ import { Step, STEP_STATUS } from "./library/atoms/step.jsx";
 import { ButtonBadge } from "./library/atoms/button-badge.jsx";
 import { AiButton } from "./library/atoms/ai-button.jsx";
 import { ProgressIndicator, PROGRESS_INDICATOR_LABEL_POSITIONS } from "./library/atoms/progress-indicator.jsx";
+import { ColorStatus } from "./library/atoms/color-status.jsx";
 
 // ─────────────────────────────────────────────
 // MOLECULES
@@ -949,6 +950,99 @@ const BadgePage = () => (
         <Badge color="brand" size="md" shape="rounded" icon>Rounded with Icon</Badge>
         <Badge color="brand" size="md" shape="pill">Pill</Badge>
         <Badge color="brand" size="md" shape="pill" icon>Pill with Icon</Badge>
+      </div>
+    </PreviewComponent>
+  </Section>
+);
+
+const ColorStatusPage = () => (
+  <Section title="ColorStatus" description="A pill-shaped status indicator with a leading icon, label, and optional trailing icon.">
+    {/* 1. All Variants */}
+    <PreviewComponent
+      title="All Variants"
+      code={`import { ColorStatus } from "@/library/atoms/color-status";
+import { Icon } from "@/library/atoms/icon";
+
+<ColorStatus variant="grey" leadingIcon={<Icon name="MinusCircle" />}>Draft</ColorStatus>
+<ColorStatus variant="green" leadingIcon={<Icon name="CheckCircle" />}>Active</ColorStatus>
+<ColorStatus variant="blue" leadingIcon={<Icon name="InformationCircle" />}>In review</ColorStatus>
+<ColorStatus variant="yellow" leadingIcon={<Icon name="Clock" />}>Pending</ColorStatus>
+<ColorStatus variant="orange" leadingIcon={<Icon name="ExclamationTriangle" />}>At risk</ColorStatus>
+<ColorStatus variant="red" leadingIcon={<Icon name="XCircle" />}>Blocked</ColorStatus>`}
+    >
+      <div style={DEMO_ROW_STYLE}>
+        <ColorStatus variant="grey" leadingIcon={<Icon name="MinusCircle" />}>Draft</ColorStatus>
+        <ColorStatus variant="green" leadingIcon={<Icon name="CheckCircle" />}>Active</ColorStatus>
+        <ColorStatus variant="blue" leadingIcon={<Icon name="InformationCircle" />}>In review</ColorStatus>
+        <ColorStatus variant="yellow" leadingIcon={<Icon name="Clock" />}>Pending</ColorStatus>
+        <ColorStatus variant="orange" leadingIcon={<Icon name="ExclamationTriangle" />}>At risk</ColorStatus>
+        <ColorStatus variant="red" leadingIcon={<Icon name="XCircle" />}>Blocked</ColorStatus>
+      </div>
+    </PreviewComponent>
+
+    {/* 2. With Trailing Icon */}
+    <PreviewComponent
+      title="With Trailing Icon"
+      code={`import { ColorStatus } from "@/library/atoms/color-status";
+import { Icon } from "@/library/atoms/icon";
+
+<ColorStatus
+  variant="green"
+  leadingIcon={<Icon name="CheckCircle" />}
+  trailingIcon={<Icon name="ChevronDown" />}
+>
+  Active
+</ColorStatus>`}
+    >
+      <div style={DEMO_ROW_STYLE}>
+        <ColorStatus
+          variant="green"
+          leadingIcon={<Icon name="CheckCircle" />}
+          trailingIcon={<Icon name="ChevronDown" />}
+        >
+          Active
+        </ColorStatus>
+        <ColorStatus
+          variant="red"
+          leadingIcon={<Icon name="XCircle" />}
+          trailingIcon={<Icon name="ChevronDown" />}
+        >
+          Blocked
+        </ColorStatus>
+      </div>
+    </PreviewComponent>
+
+    {/* 3. Label Only */}
+    <PreviewComponent
+      title="Label Only"
+      code={`import { ColorStatus } from "@/library/atoms/color-status";
+
+<ColorStatus variant="grey">Draft</ColorStatus>
+<ColorStatus variant="green">Active</ColorStatus>
+<ColorStatus variant="blue">In review</ColorStatus>`}
+    >
+      <div style={DEMO_ROW_STYLE}>
+        <ColorStatus variant="grey">Draft</ColorStatus>
+        <ColorStatus variant="green">Active</ColorStatus>
+        <ColorStatus variant="blue">In review</ColorStatus>
+      </div>
+    </PreviewComponent>
+
+    {/* 4. Risk Impact */}
+    <PreviewComponent
+      title="Risk Impact"
+      code={`import { ColorStatus } from "@/library/atoms/color-status";
+
+<ColorStatus variant="risk-impact" level="very-high">Very High</ColorStatus>
+<ColorStatus variant="risk-impact" level="high">High</ColorStatus>
+<ColorStatus variant="risk-impact" level="medium">Medium</ColorStatus>
+<ColorStatus variant="risk-impact" level="low">Low</ColorStatus>`}
+    >
+      <div style={DEMO_ROW_STYLE}>
+        <ColorStatus variant="risk-impact" level="very-high">Very High</ColorStatus>
+        <ColorStatus variant="risk-impact" level="high">High</ColorStatus>
+        <ColorStatus variant="risk-impact" level="medium">Medium</ColorStatus>
+        <ColorStatus variant="risk-impact" level="low">Low</ColorStatus>
       </div>
     </PreviewComponent>
   </Section>
@@ -7515,6 +7609,7 @@ const PAGES = {
   // Atoms
   button: { title: "Button", component: ButtonPage, category: "atoms" },
   badge: { title: "Badge", component: BadgePage, category: "atoms" },
+  colorStatus: { title: "ColorStatus", component: ColorStatusPage, category: "atoms" },
   avatar: { title: "Avatar", component: AvatarPage, category: "atoms" },
   checkbox: { title: "Checkbox", component: CheckboxPage, category: "atoms" },
   toggle: { title: "Toggle", component: TogglePage, category: "atoms" },

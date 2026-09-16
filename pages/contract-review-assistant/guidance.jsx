@@ -13,7 +13,7 @@ import { CreationFormPanel } from "../../library/organisms/creation-form-panel.j
 import { Button } from "../../library/atoms/button.jsx";
 import { Icon } from "../../library/atoms/icon.jsx";
 import { ExportIcon } from "@phosphor-icons/react";
-import { Badge } from "../../library/atoms/badge.jsx";
+import { ColorStatus, RISK_LEVELS } from "../../library/atoms/color-status.jsx";
 import { Checkbox } from "../../library/atoms/checkbox.jsx";
 import InpartLogo from "../../library/organisms/side-menu/Inpart.svg";
 import InpartLogoCollapsed from "../../library/organisms/side-menu/Inpart1.svg";
@@ -75,11 +75,18 @@ const ALLIANCE_POST_MORTEMS = [
 ];
 
 const LINKED_OPEN_RISKS = [
-  { id: "liability-cap-gap", label: "Liability cap excludes confidentiality breach — Clause 12.3", severity: "High", color: "warning" },
-  { id: "exclusivity-term-cap", label: "Exclusivity term exceeds 12-month policy cap — Clause 8.2", severity: "Moderate", color: "informative" },
-  { id: "unbudgeted-spend-gap", label: "Unbudgeted spend approval gap — Clause 2.4", severity: "Moderate", color: "informative" },
-  { id: "royalty-term-ambiguity", label: "Royalty term end-date ambiguity — Clause 1.20", severity: "Low", color: "neutral" },
+  { id: "liability-cap-gap", label: "Liability cap excludes confidentiality breach — Clause 12.3", severity: "High" },
+  { id: "exclusivity-term-cap", label: "Exclusivity term exceeds 12-month policy cap — Clause 8.2", severity: "Moderate" },
+  { id: "unbudgeted-spend-gap", label: "Unbudgeted spend approval gap — Clause 2.4", severity: "Moderate" },
+  { id: "royalty-term-ambiguity", label: "Royalty term end-date ambiguity — Clause 1.20", severity: "Low" },
 ];
+
+const SEVERITY_TO_RISK_LEVEL = {
+  "Very High": RISK_LEVELS.veryHigh,
+  High: RISK_LEVELS.high,
+  Moderate: RISK_LEVELS.medium,
+  Low: RISK_LEVELS.low,
+};
 
 const SAMPLE_DOCUMENT_TEXT = `COLLABORATION AND LICENSE AGREEMENT
 
@@ -442,7 +449,7 @@ export const AiObligationExtractionPage = () => {
         </Link>
       </Tooltip>
     </div>
-    <Badge size="sm" color={item.color}>{item.severity}</Badge>
+    <ColorStatus variant="risk-impact" level={SEVERITY_TO_RISK_LEVEL[item.severity]}>{item.severity}</ColorStatus>
   </div>
 ))}
 
