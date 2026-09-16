@@ -328,7 +328,7 @@ export const AiObligationExtractionPage = () => {
               <HubHeaderRight>
                 <HubHeaderActions>
                   <Button variant="secondary" size="sm">Save and close</Button>
-                  <Button variant="secondary" iconLeading={<Icon name="Export" size="sm" />} size="sm">Export</Button>
+                
                 </HubHeaderActions>
               </HubHeaderRight>
             </HubHeaderRow>

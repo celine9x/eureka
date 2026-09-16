@@ -83,14 +83,14 @@ const RISK_IMPACT_CONFIG = {
     leadingIconColor: "var(--color-status-orange)",
   },
   [RISK_LEVELS.medium]: {
-    outline: "1px solid var(--color-status-yellow)",
-    background: "var(--color-status-background-yellow)",
-    leadingIconColor: "var(--color-status-yellow)",
+    outline: "1px solid var(--color-status-blue)",
+    background: "var(--color-status-background-blue)",
+    leadingIconColor: "var(--color-status-blue)",
   },
   [RISK_LEVELS.low]: {
-    outline: "1px solid var(--color-status-green)",
-    background: "var(--color-status-background-green)",
-    leadingIconColor: "var(--color-status-green)",
+    outline: "1px solid var(--color-status-grey)",
+    background: "var(--color-status-background-grey)",
+    leadingIconColor: "var(--color-status-grey)",
   },
 };
 

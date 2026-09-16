@@ -88,6 +88,13 @@ const SEVERITY_TO_RISK_LEVEL = {
   Low: RISK_LEVELS.low,
 };
 
+const RISK_LEVEL_LABELS = {
+  [RISK_LEVELS.veryHigh]: "Very High",
+  [RISK_LEVELS.high]: "High",
+  [RISK_LEVELS.medium]: "Medium",
+  [RISK_LEVELS.low]: "Low",
+};
+
 const SAMPLE_DOCUMENT_TEXT = `COLLABORATION AND LICENSE AGREEMENT
 
 This Collaboration and License Agreement (this "Agreement") is entered into as of the Effective Date by and between Veltarix Therapeutics, Inc. ("Veltarix") and Meridian Biosciences Ltd. (the "Company," and together with Veltarix, the "Parties").qskfqskljdf
@@ -326,7 +333,7 @@ export const AiObligationExtractionPage = () => {
               <HubHeaderRight>
                 <HubHeaderActions>
                   <Button variant="secondary" size="sm">Save and close</Button>
-                  <Button variant="secondary" iconLeading={<ExportIcon size="var(--size-icon-sm)" />} size="sm">Export</Button>
+               
                 </HubHeaderActions>
               </HubHeaderRight>
             </HubHeaderRow>
@@ -357,7 +364,7 @@ export const AiObligationExtractionPage = () => {
                   variant: "secondary",
                   position: "right",
                   size: "lg",
-                  iconLeading: <Icon name="Sparkles" size="sm" />,
+                  iconLeading: <Icon name="Sparkles" size="lg" variant="outline" />,
                   style: { flex: 1 },
                   onClick: () => navigateToPath(CONTRACT_REVIEW_ASSISTANT_LOADING_PATH),
                 },
@@ -449,7 +456,9 @@ export const AiObligationExtractionPage = () => {
         </Link>
       </Tooltip>
     </div>
-    <ColorStatus variant="risk-impact" level={SEVERITY_TO_RISK_LEVEL[item.severity]}>{item.severity}</ColorStatus>
+    <ColorStatus variant="risk-impact" level={SEVERITY_TO_RISK_LEVEL[item.severity]}>
+      {RISK_LEVEL_LABELS[SEVERITY_TO_RISK_LEVEL[item.severity]]}
+    </ColorStatus>
   </div>
 ))}
 

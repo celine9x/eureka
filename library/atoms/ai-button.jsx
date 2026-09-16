@@ -22,7 +22,7 @@
  * <AiButton variant="secondary" size="md">Generate</AiButton>
  */
 
-import { forwardRef, useId, useMemo, useState, isValidElement, cloneElement, createElement } from "react";
+import { forwardRef, useMemo, useState, isValidElement, cloneElement, createElement } from "react";
 import { Icon } from "./icon.jsx";
 
 const BLOB_KEYFRAMES = `
@@ -58,6 +58,50 @@ const injectAiBlobStyles = () => {
   styleEl.textContent = BLOB_KEYFRAMES;
   document.head.appendChild(styleEl);
   aiBlobStylesInjected = true;
+};
+
+// Shared gradient paint server so secondary/tertiary AI button icons can match
+// the same brand gradient used by the label text (see --gradient-ai-icon).
+const AI_ICON_GRADIENT_ID = "ai-icon-gradient";
+const AI_ICON_GRADIENT_PAINT = `url(#${AI_ICON_GRADIENT_ID})`;
+
+let aiIconGradientInjected = false;
+
+const injectAiIconGradientDef = () => {
+  if (aiIconGradientInjected || typeof document === "undefined") return;
+  const svgNS = "http://www.w3.org/2000/svg";
+
+  const svg = document.createElementNS(svgNS, "svg");
+  svg.setAttribute("width", "0");
+  svg.setAttribute("height", "0");
+  svg.setAttribute("aria-hidden", "true");
+  svg.setAttribute("data-eureka", "ai-icon-gradient-defs");
+  svg.style.position = "absolute";
+
+  const gradient = document.createElementNS(svgNS, "linearGradient");
+  gradient.setAttribute("id", AI_ICON_GRADIENT_ID);
+  gradient.setAttribute("x1", "0");
+  gradient.setAttribute("y1", "0");
+  gradient.setAttribute("x2", "1");
+  gradient.setAttribute("y2", "0");
+
+  const stopStart = document.createElementNS(svgNS, "stop");
+  stopStart.setAttribute("offset", "0%");
+  stopStart.setAttribute("stop-color", "var(--color-ai-gradient-start)");
+
+  const stopEnd = document.createElementNS(svgNS, "stop");
+  stopEnd.setAttribute("offset", "100%");
+  stopEnd.setAttribute("stop-color", "var(--color-ai-gradient-end)");
+
+  gradient.appendChild(stopStart);
+  gradient.appendChild(stopEnd);
+
+  const defs = document.createElementNS(svgNS, "defs");
+  defs.appendChild(gradient);
+  svg.appendChild(defs);
+  document.body.appendChild(svg);
+
+  aiIconGradientInjected = true;
 };
 
 // ─────────────────────────────────────────────
@@ -108,49 +152,6 @@ const SIZE_CONFIG = {
     iconSize: "var(--size-icon-sm)",         // 16px
     borderRadius: "var(--radius-xs)",        // 4px
   },
-};
-
-const AI_ICON_SIZES = {
-  lg: 20,
-  md: 16,
-  sm: 16,
-};
-
-const isSparklesIconInput = (icon) => {
-  if (!icon) return false;
-
-  if (typeof icon === "string") {
-    return icon.toLowerCase() === "sparkles";
-  }
-
-  if (isValidElement(icon)) {
-    const iconName = String(icon.props?.name || icon.props?.type || "").toLowerCase();
-    return iconName === "sparkles";
-  }
-
-  if (typeof icon === "function") {
-    return String(icon.name || "").toLowerCase().includes("sparkles");
-  }
-
-  return false;
-};
-
-const AiSparklesIcon = ({ size = 20, disabled = false }) => {
-  const gradientId = useId().replace(/:/g, "-");
-
-  return (
-    <svg width={size} height={size} viewBox="0 0 20 20" fill="none" aria-hidden="true">
-      <defs>
-        <linearGradient id={gradientId} x1="0" y1="0" x2="20" y2="20" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor={disabled ? "var(--color-ai-content-disabled)" : "var(--color-ai-gradient-start)"} />
-          <stop offset="100%" stopColor={disabled ? "var(--color-ai-content-disabled)" : "var(--color-ai-gradient-end)"} />
-        </linearGradient>
-      </defs>
-      <path d="M7.1 3.1L8.2 5.8L10.9 6.9L8.2 8L7.1 10.7L6 8L3.3 6.9L6 5.8L7.1 3.1Z" fill={`url(#${gradientId})`} />
-      <path d="M14 4.4L14.7 6.2L16.5 6.9L14.7 7.6L14 9.4L13.3 7.6L11.5 6.9L13.3 6.2L14 4.4Z" fill={`url(#${gradientId})`} />
-      <path d="M13.6 10.4L14.5 12.7L16.8 13.6L14.5 14.5L13.6 16.8L12.7 14.5L10.4 13.6L12.7 12.7L13.6 10.4Z" fill={`url(#${gradientId})`} />
-    </svg>
-  );
 };
 
 const OrganicBlobLayer = ({ opacity = "var(--opacity-ai-blob-primary)", isSecondary = false }) => {
@@ -279,6 +280,7 @@ export const AiButton = forwardRef(
     ref
   ) => {
     injectAiBlobStyles();
+    injectAiIconGradientDef();
 
     const [isHovered, setIsHovered] = useState(false);
     const [isActive, setIsActive] = useState(false);
@@ -435,34 +437,45 @@ export const AiButton = forwardRef(
     const renderIcon = (icon, slot) => {
       if (!icon) return null;
 
-      // Ensure Sparkles uses the AI gradient token icon in secondary/tertiary.
-      if ((isSecondary || isTertiary) && isSparklesIconInput(icon)) {
-        return (
-          <span style={iconStyle} data-icon={slot}>
-            <AiSparklesIcon size={AI_ICON_SIZES[size]} disabled={isButtonDisabled} />
-          </span>
-        );
-      }
-
       const iconColor = isPrimary
         ? (isButtonDisabled ? "var(--color-ai-content-disabled)" : "var(--color-content-inverted)")
         : (isButtonDisabled ? "var(--color-ai-content-disabled)" : "var(--color-ai-content-brand)");
 
+      // Secondary/tertiary labels render with the AI brand gradient (see textStyle
+      // above); paint the icon with the same gradient so it matches the label exactly.
+      const getGradientPaintStyle = (iconVariant) => {
+        if (!isSecondaryGradient) return {};
+        return iconVariant === "solid" || iconVariant === "mini" || iconVariant === "fill"
+          ? { fill: AI_ICON_GRADIENT_PAINT }
+          : { stroke: AI_ICON_GRADIENT_PAINT };
+      };
+
       if (isValidElement(icon)) {
         const existingStyle = icon.props?.style || {};
         return cloneElement(icon, {
-          style: { ...iconStyle, color: iconColor, ...existingStyle },
+          style: {
+            ...iconStyle,
+            color: iconColor,
+            ...getGradientPaintStyle(icon.props?.variant),
+            ...existingStyle,
+          },
           "data-icon": slot,
         });
       }
       if (typeof icon === "function") {
         return createElement(icon, {
-          style: { ...iconStyle, color: iconColor },
+          style: { ...iconStyle, color: iconColor, ...getGradientPaintStyle() },
           "data-icon": slot,
         });
       }
       if (typeof icon === "string") {
-        return <Icon name={icon} size={size === "lg" ? "md" : "sm"} style={{ ...iconStyle, color: iconColor }} />;
+        return (
+          <Icon
+            name={icon}
+            size={size === "lg" ? "md" : "sm"}
+            style={{ ...iconStyle, color: iconColor, ...getGradientPaintStyle() }}
+          />
+        );
       }
       return <span style={{ ...iconStyle, color: iconColor }}>{icon}</span>;
     };

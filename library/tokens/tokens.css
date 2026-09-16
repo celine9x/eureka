@@ -581,9 +581,9 @@
     /* ===========================================
     STATUS
      =========================================== */
-     --color-status-grey: var(--grey-80);
+     --color-status-grey: var(--grey-70);
      --color-status-green: var(--green-30);
-     --color-status-blue: var(--blue-50);
+     --color-status-blue: var(--blue-70);
 --color-status-yellow: var(--yellow-50);  
 --color-status-red: var(--red-50);
 --color-status-orange: var(--orange-50);
@@ -593,7 +593,7 @@
 --color-status-background-yellow: var(--yellow-95);
 --color-status-background-blue: var(--blue-95);
 --color-status-background-orange: var(--orange-95);
---color-status-background-grey: var(--grey-90);
+--color-status-background-grey: var(--grey-95);
 
 
 
