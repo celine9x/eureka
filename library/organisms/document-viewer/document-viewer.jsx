@@ -676,8 +676,6 @@ export const DocumentViewer = ({
   onEditAction,
   disableEditToolbar = false,
   showToolbar = true,
-  showExportButton = true,
-  exportFileName = "document-preview",
   renderPage,
   emptyState = "No document content available.",
   onPageChange,
@@ -951,65 +949,6 @@ export const DocumentViewer = ({
       );
       return nextZoom;
     });
-  };
-
-  const handleExportPdf = () => {
-    if (typeof document === "undefined" || typeof window === "undefined") return;
-
-    const iframe = document.createElement("iframe");
-    iframe.style.position = "fixed";
-    iframe.style.right = "0";
-    iframe.style.bottom = "0";
-    iframe.style.width = "0";
-    iframe.style.height = "0";
-    iframe.style.border = "0";
-
-    document.body.appendChild(iframe);
-
-    const printWindow = iframe.contentWindow;
-    const printDocument = printWindow?.document;
-
-    if (!printWindow || !printDocument) {
-      document.body.removeChild(iframe);
-      return;
-    }
-
-    printDocument.open();
-    printDocument.write(`<!doctype html><html><head><title>${exportFileName}</title></head><body></body></html>`);
-    printDocument.close();
-
-    const printStyle = printDocument.createElement("style");
-    printStyle.textContent = `
-      @page {
-        margin: 0;
-        size: auto;
-      }
-      body {
-        margin: 0;
-        padding: var(--spacing-6);
-        background: #d9e0ed;
-      }
-      .document-viewer__page-shell {
-        margin: 0 auto var(--spacing-6);
-        break-after: page;
-      }
-      .document-viewer__page-shell:last-child {
-        break-after: auto;
-      }
-    `;
-    printDocument.head.appendChild(printStyle);
-
-    pageRefs.current.forEach((pageNode) => {
-      if (!pageNode) return;
-      printDocument.body.appendChild(pageNode.cloneNode(true));
-    });
-
-    printWindow.focus();
-    printWindow.print();
-
-    window.setTimeout(() => {
-      document.body.removeChild(iframe);
-    }, 1000);
   };
 
   const getPageCommentValue = (pageKey) => {
@@ -1392,7 +1331,7 @@ export const DocumentViewer = ({
             <Button
               variant="secondary"
               size="sm"
-              iconLeading={<Icon name="Minus" size="sm" />}
+              iconLeading={<Icon name="MagnifyingGlassMinus" size="sm" />}
               onClick={() => updateZoom(-1)}
               disabled={zoom <= minZoom}
               aria-label="Zoom out"
@@ -1401,22 +1340,12 @@ export const DocumentViewer = ({
             <Button
               variant="secondary"
               size="sm"
-              iconLeading={<Icon name="Plus" size="sm" />}
+              iconLeading={<Icon name="MagnifyingGlassPlus" size="sm" />}
               onClick={() => updateZoom(1)}
               disabled={zoom >= maxZoom}
               aria-label="Zoom in"
               style={{ width: 24, padding: 0, justifyContent: "center" }}
             />
-            {showExportButton && (
-              <Button
-                variant="secondary"
-                size="sm"
-                iconLeading={<Icon name="ArrowDownTray" size="sm" />}
-                onClick={handleExportPdf}
-                aria-label="Export to PDF"
-                style={{ width: 24, padding: 0, justifyContent: "center" }}
-              />
-            )}
           </div>
         </div>
       )}

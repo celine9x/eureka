@@ -26,6 +26,12 @@ import { Textarea } from "@/library/molecules/textarea";
 import { FileUploader } from "../../library/molecules/file-uploader.jsx";
 import { FileUploaded } from "../../library/molecules/file-uploaded.jsx";
 import { AiButton } from "@/library/atoms/ai-button";
+import {
+  SAMPLE_DOCUMENT_TEXT,
+  DOCUMENT_PARAGRAPH_STYLES,
+  DOCUMENT_BLOCK_HTML_OVERRIDES,
+  useContractDocumentPages,
+} from "./contract-document-view.js";
 
 const CONTRACT_REVIEW_ASSISTANT_LOADING_PATH = "/contract-review-assistant/loading";
 
@@ -58,45 +64,6 @@ const RISK_LEVEL_LABELS = {
   [RISK_LEVELS.medium]: "Medium",
   [RISK_LEVELS.low]: "Low",
 };
-
-const SAMPLE_DOCUMENT_TEXT = `COLLABORATION AND LICENSE AGREEMENT
-
-This Collaboration and License Agreement (this "Agreement") is entered into as of the Effective Date by and between Veltarix Therapeutics, Inc. ("Veltarix") and Meridian Biosciences Ltd. (the "Company," and together with Veltarix, the "Parties").qskfqskljdf
-
-RECITALS
-
-WHEREAS, Veltarix owns or controls certain intellectual property relating to the Compound and desires to grant a license to the Company on the terms set out herein;
-
-WHEREAS, the Company has expertise in the development and commercialization of therapeutic products and desires to obtain such license;
-
-NOW, THEREFORE, in consideration of the mutual covenants contained herein, the Parties agree as follows.
-
-1. DEFINITIONS
-1.1 "Affiliate" means any entity controlling, controlled by, or under common control with a Party.
-
-1.7 "Compound" means the proprietary molecule designated VTX-338 and any salt, ester or polymorph thereof.
-
-1.9 "Field" means all human therapeutic, prophylactic and diagnostic uses.
-
-1.20 "Royalty Term" means, on a product-by-product and country-by-country basis, the period beginning on First Commercial Sale and ending on the later of patent expiry or ten (10) years thereafter.
-
-\f
-
-2. LICENSE GRANT
-
-2.1 Subject to the terms and conditions of this Agreement, Veltarix hereby grants to Company an exclusive, royalty-bearing license in the Field and Territory under Licensed IP.
-
-\f
-
-3. GOVERNANCE
-
-3.1 A Joint Steering Committee (JSC) will oversee development and commercialization activities.
-
-\f
-
-4. TERM AND TERMINATION
-
-4.1 This Agreement commences on the Effective Date and remains in effect unless earlier terminated.`;
 
 const styles = {
   shell: {
@@ -264,6 +231,8 @@ export const AiObligationExtractionPage = () => {
   const removeContextFile = (index) =>
     setContextFiles((current) => current.filter((_, fileIndex) => fileIndex !== index));
 
+  const documentPages = useContractDocumentPages(SAMPLE_DOCUMENT_TEXT);
+
   return (
     <div style={styles.shell}>
           <SideMenu
@@ -308,12 +277,18 @@ export const AiObligationExtractionPage = () => {
           <div style={styles.viewerPane}>
             <DocumentViewer
               text={SAMPLE_DOCUMENT_TEXT}
+              pages={documentPages}
+              paragraphStyles={DOCUMENT_PARAGRAPH_STYLES}
+              blockHtmlOverrides={DOCUMENT_BLOCK_HTML_OVERRIDES}
               defaultPage={1}
               editable
               showToolbar
               showEditToolbar
-              
-              style={{ height: "100%", "--document-viewer-height": "100%" }}
+              style={{
+                height: "100%",
+                "--document-viewer-height": "100%",
+                "--document-viewer-page-text-font-family": '"Times New Roman", Times, serif',
+              }}
             />
           </div>
 
@@ -327,8 +302,8 @@ export const AiObligationExtractionPage = () => {
                   buttonType: "ai",
                   variant: "secondary",
                   position: "right",
-                  size: "lg",
-                  iconLeading: <Icon name="Sparkles" size="lg" variant="outline" />,
+                  size: "md",
+                  iconLeading: <Icon name="Sparkles" size="md" variant="outline" />,
                   style: { flex: 1 },
                   onClick: () => navigateToPath(CONTRACT_REVIEW_ASSISTANT_LOADING_PATH),
                 },
