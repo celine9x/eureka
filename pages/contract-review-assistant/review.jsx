@@ -1025,7 +1025,7 @@ export const AiObligationExtractionPage = () => {
                 <Button variant="secondary" size="sm" iconLeading={<Icon name="ChevronLeft" size="sm" />}>
                   Back
                 </Button>
-                <HubHeaderTitle size="md">Meridian bio alliance</HubHeaderTitle>
+                <HubHeaderTitle size="md">Draft License Agreement Meridian - Helios</HubHeaderTitle>
               </HubHeaderLeft>
               <HubHeaderRight>
                 <HubHeaderActions>
