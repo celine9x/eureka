@@ -15,6 +15,23 @@
 import { useState, forwardRef, useRef } from "react";
 import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/16/solid";
 
+let placeholderStylesInjected = false;
+
+const injectPlaceholderStyles = () => {
+  if (placeholderStylesInjected || typeof document === "undefined") return;
+
+  const styleEl = document.createElement("style");
+  styleEl.setAttribute("data-eureka", "search-placeholder");
+  styleEl.textContent = `
+    .eureka-search-input::placeholder {
+      color: var(--color-content-tertiary);
+      opacity: 1;
+    }
+  `;
+  document.head.appendChild(styleEl);
+  placeholderStylesInjected = true;
+};
+
 // ─────────────────────────────────────────────
 // CONSTANTS
 // ─────────────────────────────────────────────
@@ -98,7 +115,6 @@ const styles = {
       outlineColor: "var(--color-interaction-outline-enabled)",
       boxShadow: "none",
       textColor: "var(--color-content-secondary)",
-      placeholderColor: "var(--color-content-secondary)",
       iconColor: "var(--color-content-secondary)",
     },
     hover: {
@@ -106,7 +122,6 @@ const styles = {
       outlineColor: "var(--color-interaction-outline-hover)",
       boxShadow: "var(--shadow-medium-down)",
       textColor: "var(--color-content-secondary)",
-      placeholderColor: "var(--color-content-secondary)",
       iconColor: "var(--color-content-secondary)",
     },
     active: {
@@ -114,7 +129,6 @@ const styles = {
       outlineColor: "var(--color-interaction-outline-active)",
       boxShadow: "var(--shadow-focus)",
       textColor: "var(--color-content-primary)",
-      placeholderColor: "var(--color-content-primary)",
       iconColor: "var(--color-content-secondary)",
     },
     filled: {
@@ -122,7 +136,6 @@ const styles = {
       outlineColor: "var(--color-interaction-outline-enabled)",
       boxShadow: "var(--shadow-light-down)",
       textColor: "var(--color-content-primary)",
-      placeholderColor: "var(--color-content-primary)",
       iconColor: "var(--color-content-secondary)",
     },
     disabled: {
@@ -130,7 +143,6 @@ const styles = {
       outlineColor: "var(--color-interaction-outline-enabled)",
       boxShadow: "none",
       textColor: "var(--color-general-neutral-dark)",
-      placeholderColor: "var(--color-general-neutral-dark)",
       iconColor: "var(--color-general-neutral-dark)",
     },
   },
@@ -196,6 +208,8 @@ export const Search = forwardRef(
     },
     ref
   ) => {
+    injectPlaceholderStyles();
+
     const inputRef = useRef(null);
     const [internalValue, setInternalValue] = useState(defaultValue || "");
     const [isFocused, setIsFocused] = useState(false);
@@ -319,6 +333,7 @@ export const Search = forwardRef(
             <input
               ref={setRefs}
               type="text"
+              className="eureka-search-input"
               placeholder={placeholder}
               value={currentValue}
               disabled={isSearchDisabled}

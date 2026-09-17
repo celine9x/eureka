@@ -667,6 +667,7 @@ export const DocumentViewer = ({
   showCommentPopover = true,
   commentThread = DEFAULT_COMMENT_THREAD,
   onCommentSubmit,
+  replyInitials,
   showPageComments = false,
   pageComments,
   onPageCommentChange,
@@ -1291,7 +1292,7 @@ export const DocumentViewer = ({
               style={{ position: "absolute", top: position.top, left: position.left, zIndex: 3 }}
             >
               <Button variant="tertiary" size="md" iconOnly aria-label="Open comment" iconLeading={<ChatBubbleLeftRightIcon />} onClick={() => setActiveCommentId(comment.id)} />
-              <CommentPopover open={activeCommentId === comment.id} onClose={() => setActiveCommentId(null)} comments={commentThread.filter((item) => item.targetText === comment.targetText)} onSubmit={(value) => onCommentSubmit?.(value, comment.targetText)} />
+              <CommentPopover open={activeCommentId === comment.id} onClose={() => setActiveCommentId(null)} comments={commentThread.filter((item) => item.targetText === comment.targetText)} onSubmit={(value) => onCommentSubmit?.(value, comment.targetText)} {...(replyInitials ? { replyInitials } : {})} />
             </div>
           );
         })}

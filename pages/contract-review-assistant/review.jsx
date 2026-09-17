@@ -879,8 +879,8 @@ export const AiObligationExtractionPage = () => {
       ...comments,
       {
         id,
-        author: "Linh Nguyen",
-        initials: "LN",
+        author: "Julie Settipani",
+        initials: "JS",
         timestamp: "Now",
         content: value,
         targetText,
@@ -1065,6 +1065,7 @@ export const AiObligationExtractionPage = () => {
               blockHtmlOverrides={blockHtmlOverrides}
               commentThread={documentComments}
               onCommentSubmit={addDocumentComment}
+              replyInitials="JS"
               defaultPage={1}
               editable
               showToolbar

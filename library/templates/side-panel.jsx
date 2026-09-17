@@ -81,7 +81,7 @@ const styles = `
     padding: 0 var(--spacing-6);
   }
   .side-panel__header .object-header {
-    gap: 0;
+    gap: var(--spacing-md);
   }
   .side-panel__header .object-header-top-bar {
     border-bottom: none;

@@ -173,7 +173,7 @@ const styles = {
       flex: 1 1 auto;
       overflow-y: auto;
       scrollbar-gutter: stable;
-      padding: var(--spacing-6);
+      padding: var(--spacing-6) var(--spacing-md);
       display: flex;
       flex-direction: column;
       gap: var(--spacing-4);
