@@ -955,6 +955,11 @@ export const AiObligationExtractionPage = () => {
       (change) => change.originalText === splitClauseNumber(finding.originalClause).body
     );
 
+  const allFindingsApplied = useMemo(
+    () => ORDERED_FINDINGS.every((finding) => isFindingApplied(finding)),
+    [appliedRedlines]
+  );
+
   const handleApplyAllFindings = () => {
     const pendingFindings = ORDERED_FINDINGS.filter((finding) => !isFindingApplied(finding));
     if (pendingFindings.length === 0) return;
@@ -1074,7 +1079,7 @@ export const AiObligationExtractionPage = () => {
             <CreationFormPanel
               title="Contract review"
               headerBadge={<Badge color="neutral" size="md">{ORDERED_FINDINGS.length}</Badge>}
-              {...(needsReviewFindings.length === 0
+              {...(allFindingsApplied
                 ? {
                     headerActionsContent: (
                       <Badge.WithIcon
