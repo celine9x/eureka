@@ -251,7 +251,7 @@ Filed alongside: Kestrel Biosciences Post-Mortem (2024) — same counterparty, s
     title: "4.1.1 Development: \"Commercially Reasonable Efforts\" diligence has no measurable floor",
     severity: "High",
     reason:
-      "LICENSEE's diligence obligation is defined only by the \"Commercially Reasonable Efforts\" standard, with no minimum FTE count, spend commitment, or activity-based milestone MERIDIAN can point to if LICENSEE deprioritizes the program. This is the same standard that failed to protect the counterparty in two of Helios's last four licensing alliances (Kestrel Bio, 2024, and Corvale Biosciences, 2025), in both cases following an internal portfolio reprioritization at Helios.",
+      "This exact phrase, undefined, is the cited root cause in two prior alliance post-mortems — in both cases the licensee deprioritized the asset without any provable breach of the diligence obligation, because \"commercially reasonable\" was never pinned to anything measurable.",
     originalClause: "4.1.1 LICENSEE shall itself, or through its Affiliates or Sublicensees, use Commercially Reasonable Efforts to Develop Products in the Major Markets in the Field, and LICENSEE shall undertake all Development activities relating to the Compounds and Products in the Field at its sole expense.",
     sources: [
       {
@@ -309,7 +309,7 @@ ACTION ITEMS
     title: "17.1 Assignment: Change of Control assignment has no competitor carve-out",
     severity: "Medium",
     reason:
-      "Clause 17.1(b) lets LICENSEE assign the entire Agreement upon a Change in Control without MERIDIAN's consent and without any carve-out for a direct competitor of MERIDIAN. If LICENSEE is acquired by a competitor, the exclusive license — and the Licensed Technology it covers — could transfer to that competitor with no renegotiation or termination right for MERIDIAN.",
+      "This reads as standard boilerplate and usually gets skimmed past — most licensing agreements carry some version of it. It's flagged here against Inpart's AM best-practice playbook, which calls out generic M&A assignment language with no competitor carve-out as one of the most commonly overlooked risk points in licensing agreements — not because of one bad incident, but because it's a known blind spot experienced AMs are trained to check for. It matters here specifically because it's no longer hypothetical: Meridian is already \"exploring strategic alternatives\" (see notification #3). If an acquirer turns out to be a direct competitor of Helios's, this clause hands over the exclusive license with no renegotiation and no consent required. ",
     originalClause: "17.1 Assignment. LICENSEE may not assign its rights and obligations under this Agreement without MERIDIAN' prior written consent, except that: (a) LICENSEE may assign its rights and obligations under this Agreement in whole or in part to one or more of its Affiliates without the consent of MERIDIAN; and (b) LICENSEE may assign this Agreement in the event of a Change in Control.",
     sources: [
       {

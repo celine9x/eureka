@@ -47,7 +47,7 @@ const ALLIANCE_POST_MORTEMS = [
 
 const LINKED_OPEN_RISKS = [
   { id: "liability-cap-gap", label: "Milestone slippage pattern", severity: "High" },
-  { id: "exclusivity-term-cap", label: " Partner cash runway2", severity: "High" },
+  { id: "exclusivity-term-cap", label: " Partner cash runway", severity: "High" },
   { id: "unbudgeted-spend-gap", label: "Competitive timeline pressure", severity: "Moderate" },
 ];
 
