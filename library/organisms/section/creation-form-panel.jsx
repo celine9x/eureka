@@ -55,7 +55,7 @@ const styles = {
       display: flex;
       flex-direction: column;
       gap: var(--spacing-2);
-      padding: var(--spacing-2) var(--spacing-6) var(--spacing-2);
+      padding: var(--spacing-2) var(--spacing-md) var(--spacing-2);
       background: var(--color-general-white);
       border-bottom: 1px solid var(--color-action-outline-secondary-enabled);
       position: sticky;

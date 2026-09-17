@@ -944,6 +944,8 @@ export const AiObligationExtractionPage = () => {
   const handleResolveFinding = (finding) => {
     setResolvedFindingIds((current) => ({ ...current, [finding.id]: true }));
     collapseIfExpanded(finding.id);
+    const clauseLabel = finding.title.split(":")[0].trim();
+    showSuccessToast({ message: `${clauseLabel} marked as resolved.` });
   };
 
   const activeAppliedRedline = appliedRedlines.find(

@@ -80,8 +80,14 @@ const styles = `
     border-bottom: 1px solid var(--color-action-outline-secondary-enabled);
     padding: 0 var(--spacing-6);
   }
+  .side-panel__header .object-header {
+    gap: 0;
+  }
   .side-panel__header .object-header-top-bar {
     border-bottom: none;
+  }
+  .side-panel__header .object-header-title-row {
+    align-items: flex-start;
   }
   .side-panel__header .object-header-title-icon {
     color: var(--color-content-secondary);
