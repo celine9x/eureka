@@ -29,7 +29,7 @@ import { Modal } from "../../library/organisms/modal.jsx";
 import { FileUploader } from "../../library/molecules/file-uploader.jsx";
 import { RadioCardGroup, RadioCard } from "../../library/molecules/radio-card.jsx";
 import fileDocIcon from "../../library/atoms/custom-icons/file-doc.svg";
-import redlinedContractFile from "./Collaboration-License-Agreement-REDLINE.docx?url";
+import redlinedContractFile from "./Draft License Agreement Meridian - Helios-REDLINE.docx?url";
 import {
   SAMPLE_DOCUMENT_TEXT,
   CONTRACT_TABLE_DEVELOPMENT_MARKER,
@@ -978,7 +978,7 @@ export const AiObligationExtractionPage = () => {
 
     if (isRedlined) {
       link.href = redlinedContractFile;
-      link.download = "Collaboration-License-Agreement-REDLINE.docx";
+      link.download = "Draft License Agreement Meridian - Helios-REDLINE.docx";
       document.body.appendChild(link);
       link.click();
       link.remove();
