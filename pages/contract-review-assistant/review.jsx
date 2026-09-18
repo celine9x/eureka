@@ -358,11 +358,11 @@ Related material: Kestrel Biosciences Post-Mortem (2024), Corvale Biosciences Po
 ];
 
 const SEVERITY_ORDER = { High: 0, Medium: 1, Low: 2 };
-// Red/orange/yellow for High/Medium/Low — same mapping drives the
-// ColorStatus badge color and the document highlight color (see
-// SEVERITY_HIGHLIGHT_LEVEL and --color-redline-highlight-* in tokens.css),
-// so the two can never drift out of sync.
-const SEVERITY_COLOR_STATUS_VARIANT = { High: "red", Medium: "orange", Low: "yellow" };
+// Risk-impact variant with filled dot icon — level maps to color (very-high
+// = red, high = orange, medium = blue, low = grey). Same severity-to-level
+// mapping drives the document highlight color (see SEVERITY_HIGHLIGHT_LEVEL
+// and --color-redline-highlight-* in tokens.css).
+const SEVERITY_RISK_LEVEL = { High: "very-high", Medium: "high", Low: "medium" };
 const SEVERITY_HIGHLIGHT_LEVEL = { High: "high", Medium: "medium", Low: "low" };
 const ORDERED_FINDINGS = [...FINDINGS].sort(
   (first, second) => SEVERITY_ORDER[first.severity] - SEVERITY_ORDER[second.severity]
@@ -1139,7 +1139,7 @@ export const AiObligationExtractionPage = () => {
                     key={finding.id}
                     title={
                       <span style={styles.accordionTitle}>
-                        <ColorStatus variant={SEVERITY_COLOR_STATUS_VARIANT[finding.severity]} style={{ flexShrink: 0 }}>{finding.severity}</ColorStatus>
+                        <ColorStatus variant="risk-impact" level={SEVERITY_RISK_LEVEL[finding.severity]} style={{ flexShrink: 0 }}>{finding.severity}</ColorStatus>
                         <span style={styles.accordionTitleLabel}>{finding.title}</span>
                       </span>
                     }

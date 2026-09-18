@@ -7,11 +7,19 @@
  * trailing icon. Uses inline styles with CSS variables from tokens.css for
  * consistent styling.
  *
- * Supports two variant types:
+ * Supports four variant types:
  * - Default color variants ("grey" | "green" | "blue" | "yellow" | "orange" | "red"):
  *   fully customizable leading/trailing icons.
  * - "risk-impact": a fixed-appearance variant driven by a required `level`
  *   prop ("very-high" | "high" | "medium" | "low"). Colors and the leading
+ *   icon (filled dot) are fixed per level and cannot be overridden;
+ *   `leadingIcon`/`trailingIcon` are ignored.
+ * - "risk-likelihood": a fixed-appearance variant driven by a required `level`
+ *   prop ("very-high" | "high" | "medium" | "low"). Colors and the leading
+ *   icon (ExclamationTriangleIcon) are fixed per level and cannot be
+ *   overridden; `leadingIcon`/`trailingIcon` are ignored.
+ * - "issue-priority": a fixed-appearance variant driven by a required `level`
+ *   prop ("critical" | "high" | "medium" | "low"). Colors and the leading
  *   icon (ExclamationTriangleIcon) are fixed per level and cannot be
  *   overridden; `leadingIcon`/`trailingIcon` are ignored.
  *
@@ -21,9 +29,19 @@
  * <ColorStatus variant="red" leadingIcon={<Icon name="XCircle" />} trailingIcon={<Icon name="ChevronDown" />}>Blocked</ColorStatus>
  *
  * @example
- * // Risk-impact variant — fixed icon/colors per level, no trailing icon
+ * // Risk-impact variant — filled dot icon/colors per level, no trailing icon
  * <ColorStatus variant="risk-impact" level="very-high">Very High</ColorStatus>
  * <ColorStatus variant="risk-impact" level="medium">Medium</ColorStatus>
+ *
+ * @example
+ * // Risk-likelihood variant — warning icon/colors per level, no trailing icon
+ * <ColorStatus variant="risk-likelihood" level="very-high">Very High</ColorStatus>
+ * <ColorStatus variant="risk-likelihood" level="medium">Medium</ColorStatus>
+ *
+ * @example
+ * // Issue-priority variant — warning icon/colors per level, no trailing icon
+ * <ColorStatus variant="issue-priority" level="critical">Critical</ColorStatus>
+ * <ColorStatus variant="issue-priority" level="high">High</ColorStatus>
  */
 
 /**
@@ -40,13 +58,36 @@
  *
  * @typedef {Object} ColorStatusRiskImpactProps
  * @property {"risk-impact"} variant
- * @property {"very-high"|"high"|"medium"|"low"} level - Required. Selects the fixed risk color/icon.
+ * @property {"very-high"|"high"|"medium"|"low"} level - Required. Selects the fixed risk color/icon (filled dot).
  *
- * @typedef {(ColorStatusDefaultProps|ColorStatusRiskImpactProps) & {onClick?: Function, style?: Object, children?: *}} ColorStatusProps
+ * @typedef {Object} ColorStatusRiskLikelihoodProps
+ * @property {"risk-likelihood"} variant
+ * @property {"very-high"|"high"|"medium"|"low"} level - Required. Selects the fixed risk color/icon (warning triangle).
+ *
+ * @typedef {Object} ColorStatusIssuePriorityProps
+ * @property {"issue-priority"} variant
+ * @property {"critical"|"high"|"medium"|"low"} level - Required. Selects the fixed priority color/icon (warning triangle).
+ *
+ * @typedef {(ColorStatusDefaultProps|ColorStatusRiskImpactProps|ColorStatusRiskLikelihoodProps|ColorStatusIssuePriorityProps) & {onClick?: Function, style?: Object, children?: *}} ColorStatusProps
  */
 
 import { useState, cloneElement, isValidElement, createElement } from "react";
 import { ExclamationTriangleIcon } from "@heroicons/react/16/solid";
+
+// Filled dot icon for risk-impact variant (8px)
+// Explicitly sets width/height to override the container's icon size
+const FilledDotIcon = ({ style, ...props }) => (
+  <svg
+    width="8"
+    height="8"
+    viewBox="0 0 8 8"
+    fill="currentColor"
+    style={{ ...style, width: 8, height: 8 }}
+    {...props}
+  >
+    <circle cx="4" cy="4" r="4" />
+  </svg>
+);
 
 // ─────────────────────────────────────────────
 // CONSTANTS
@@ -60,10 +101,19 @@ export const COLOR_STATUS_VARIANTS = {
   orange: "orange",
   red: "red",
   riskImpact: "risk-impact",
+  riskLikelihood: "risk-likelihood",
+  issuePriority: "issue-priority",
 };
 
 export const RISK_LEVELS = {
   veryHigh: "very-high",
+  high: "high",
+  medium: "medium",
+  low: "low",
+};
+
+export const ISSUE_PRIORITY_LEVELS = {
+  critical: "critical",
   high: "high",
   medium: "medium",
   low: "low",
@@ -88,6 +138,31 @@ const RISK_IMPACT_CONFIG = {
     leadingIconColor: "var(--color-status-blue)",
   },
   [RISK_LEVELS.low]: {
+    outline: "1px solid var(--color-status-grey)",
+    background: "var(--color-status-background-grey)",
+    leadingIconColor: "var(--color-status-grey)",
+  },
+};
+
+// Fixed color tokens per issue priority level — critical=red, high=orange,
+// medium=blue, low=grey.
+const ISSUE_PRIORITY_CONFIG = {
+  [ISSUE_PRIORITY_LEVELS.critical]: {
+    outline: "1px solid var(--color-status-red)",
+    background: "var(--color-status-background-red)",
+    leadingIconColor: "var(--color-status-red)",
+  },
+  [ISSUE_PRIORITY_LEVELS.high]: {
+    outline: "1px solid var(--color-status-orange)",
+    background: "var(--color-status-background-orange)",
+    leadingIconColor: "var(--color-status-orange)",
+  },
+  [ISSUE_PRIORITY_LEVELS.medium]: {
+    outline: "1px solid var(--color-status-blue)",
+    background: "var(--color-status-background-blue)",
+    leadingIconColor: "var(--color-status-blue)",
+  },
+  [ISSUE_PRIORITY_LEVELS.low]: {
     outline: "1px solid var(--color-status-grey)",
     background: "var(--color-status-background-grey)",
     leadingIconColor: "var(--color-status-grey)",
@@ -223,20 +298,44 @@ export const ColorStatus = ({
   const [isActive, setIsActive] = useState(false);
 
   const isRiskImpact = variant === COLOR_STATUS_VARIANTS.riskImpact;
-  const riskConfig = isRiskImpact ? RISK_IMPACT_CONFIG[level] : null;
+  const isRiskLikelihood = variant === COLOR_STATUS_VARIANTS.riskLikelihood;
+  const isIssuePriority = variant === COLOR_STATUS_VARIANTS.issuePriority;
+  const isRiskVariant = isRiskImpact || isRiskLikelihood;
+  const isFixedVariant = isRiskVariant || isIssuePriority;
 
-  if (isRiskImpact && !riskConfig && typeof console !== "undefined") {
+  // Get config based on variant type
+  let fixedConfig = null;
+  if (isRiskVariant) {
+    fixedConfig = RISK_IMPACT_CONFIG[level];
+  } else if (isIssuePriority) {
+    fixedConfig = ISSUE_PRIORITY_CONFIG[level];
+  }
+
+  if (isRiskVariant && !fixedConfig && typeof console !== "undefined") {
     console.warn(
-      `ColorStatus: variant="risk-impact" requires a valid "level" prop (one of ${Object.values(RISK_LEVELS).join(", ")}). Received: ${level}`
+      `ColorStatus: variant="${variant}" requires a valid "level" prop (one of ${Object.values(RISK_LEVELS).join(", ")}). Received: ${level}`
     );
   }
 
-  // Risk-impact colors are fixed per level and take priority over the
+  if (isIssuePriority && !fixedConfig && typeof console !== "undefined") {
+    console.warn(
+      `ColorStatus: variant="${variant}" requires a valid "level" prop (one of ${Object.values(ISSUE_PRIORITY_LEVELS).join(", ")}). Received: ${level}`
+    );
+  }
+
+  // Fixed variants colors are fixed per level and take priority over the
   // default variant color config; leading icon is likewise fixed and
-  // trailing icon is not supported for this variant.
-  const variantStyles = riskConfig || styles.variants[variant] || styles.variants.grey;
-  const resolvedLeadingIcon = isRiskImpact ? <ExclamationTriangleIcon /> : leadingIcon;
-  const resolvedTrailingIcon = isRiskImpact ? null : trailingIcon;
+  // trailing icon is not supported for these variants.
+  const variantStyles = fixedConfig || styles.variants[variant] || styles.variants.grey;
+
+  let resolvedLeadingIcon = leadingIcon;
+  if (isRiskImpact) {
+    resolvedLeadingIcon = <FilledDotIcon />;
+  } else if (isRiskLikelihood || isIssuePriority) {
+    resolvedLeadingIcon = <ExclamationTriangleIcon />;
+  }
+
+  const resolvedTrailingIcon = isFixedVariant ? null : trailingIcon;
 
   // Compose container styles
   const containerStyle = {
@@ -276,5 +375,6 @@ export const ColorStatus = ({
 ColorStatus.displayName = "ColorStatus";
 ColorStatus.variants = COLOR_STATUS_VARIANTS;
 ColorStatus.riskLevels = RISK_LEVELS;
+ColorStatus.issuePriorityLevels = ISSUE_PRIORITY_LEVELS;
 
 export default ColorStatus;

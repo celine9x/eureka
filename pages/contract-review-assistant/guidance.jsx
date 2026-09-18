@@ -13,7 +13,7 @@ import { CreationFormPanel } from "../../library/organisms/creation-form-panel.j
 import { Button } from "../../library/atoms/button.jsx";
 import { Icon } from "../../library/atoms/icon.jsx";
 import { ExportIcon } from "@phosphor-icons/react";
-import { ColorStatus, RISK_LEVELS } from "../../library/atoms/color-status.jsx";
+import { ColorStatus, RISK_LEVELS, ISSUE_PRIORITY_LEVELS } from "../../library/atoms/color-status.jsx";
 import { Checkbox } from "../../library/atoms/checkbox.jsx";
 import InpartLogo from "../../library/organisms/side-menu/Inpart.svg";
 import InpartLogoCollapsed from "../../library/organisms/side-menu/Inpart1.svg";
@@ -40,29 +40,67 @@ const navigateToPath = (nextPath) => {
   window.dispatchEvent(new PopStateEvent("popstate"));
 };
 
-const ALLIANCE_POST_MORTEMS = [
-  { id: "nuvexa-cmc-overrun", label: "Post-Mortem — Helios Pharma / Kestrel Bio Alliance (Closed 2024)" },
-  { id: "helix-milestone-dispute", label: " Post-Mortem — Helios Pharma / Corvale Biosciences Alliance (Closed 2025)" },
+const POST_MORTEMS = [
+  {
+    id: "kestrel-helios-postmortem",
+    label: "Undisclosed development inactivity",
+    meta: "Kestrel Bio - Helios Pharma — closed 2024",
+  },
+  {
+    id: "corvale-helios-postmortem",
+    label: "Programme deprioritisation and milestone delays",
+    meta: "Corvale Biosciences - Helios Pharma — closed 2025",
+  },
 ];
 
-const LINKED_OPEN_RISKS = [
-  { id: "liability-cap-gap", label: "Milestone slippage pattern", severity: "High" },
-  { id: "exclusivity-term-cap", label: " Partner cash runway", severity: "High" },
-  { id: "unbudgeted-spend-gap", label: "Competitive timeline pressure", severity: "Moderate" },
+const RELEVANT_ISSUES = [
+  {
+    id: "late-milestone-payment-notification",
+    label: "Late milestone payment following delayed partner notification",
+    priority: "high",
+    meta: "Kestrel Bio - Helios Pharma",
+  },
+  {
+    id: "development-status-update-missed",
+    label: "Missed development status update following programme deprioritisation",
+    priority: "high",
+    meta: "Corvale Biosciences - Helios Pharma",
+  },
 ];
 
-const SEVERITY_TO_RISK_LEVEL = {
-  "Very High": RISK_LEVELS.veryHigh,
-  High: RISK_LEVELS.high,
-  Moderate: RISK_LEVELS.medium,
-  Low: RISK_LEVELS.low,
+const RELEVANT_RISKS = [
+  {
+    id: "funding-continuity-risk",
+    label: "Risk of insufficient funding to complete development",
+    impact: "very-high",
+    meta: "Meridian due diligence",
+  },
+  {
+    id: "milestone-delivery-risk",
+    label: "Risk of delayed development and regulatory milestones",
+    impact: "high",
+    meta: "Meridian due diligence",
+  },
+  {
+    id: "competitive-position-risk",
+    label: "Risk of loss of competitive position",
+    impact: "medium",
+    meta: "Meridian due diligence",
+  },
+];
+
+const ISSUE_PRIORITY_LABELS = {
+  [ISSUE_PRIORITY_LEVELS.critical]: "Priority: Critical",
+  [ISSUE_PRIORITY_LEVELS.high]: "Priority: High",
+  [ISSUE_PRIORITY_LEVELS.medium]: "Priority: Medium",
+  [ISSUE_PRIORITY_LEVELS.low]: "Priority: Low",
 };
 
-const RISK_LEVEL_LABELS = {
-  [RISK_LEVELS.veryHigh]: "Very High",
-  [RISK_LEVELS.high]: "High",
-  [RISK_LEVELS.medium]: "Medium",
-  [RISK_LEVELS.low]: "Low",
+const RISK_IMPACT_LABELS = {
+  [RISK_LEVELS.veryHigh]: "Impact: Very High",
+  [RISK_LEVELS.high]: "Impact: High",
+  [RISK_LEVELS.medium]: "Impact: Medium",
+  [RISK_LEVELS.low]: "Impact: Low",
 };
 
 const styles = {
@@ -160,21 +198,21 @@ const styles = {
   },
   guidanceline: {
     display: "flex",
-    alignItems: "center",
+    alignItems: "flex-start",
     justifyContent: "flex-start",
     gap: "var(--spacing-2)",
     minWidth: 0,
   },
   guidancelineWithBadge: {
     display: "flex",
-    alignItems: "center",
+    alignItems: "flex-start",
     justifyContent: "space-between",
     gap: "var(--spacing-2)",
     minWidth: 0,
   },
   guidancelineLeft: {
     display: "flex",
-    alignItems: "center",
+    alignItems: "flex-start",
     gap: "var(--spacing-2)",
     minWidth: 0,
     flex: "1 1 auto",
@@ -186,34 +224,82 @@ const styles = {
     textOverflow: "ellipsis",
     whiteSpace: "nowrap",
   },
-
+  guidancelineContent: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "var(--spacing-xs)",
+    minWidth: 0,
+    flex: "1 1 auto",
+  },
+  guidancelineMeta: {
+    margin: 0,
+    color: "var(--color-content-secondary)",
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-sm)",
+    lineHeight: "var(--line-height-body-sm)",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+  },
+  guidancelineMetaRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: "var(--spacing-xs)",
+    minWidth: 0,
+  },
+  guidancelineMetaText: {
+    color: "var(--color-content-secondary)",
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-sm)",
+    lineHeight: "var(--line-height-body-sm)",
+    whiteSpace: "nowrap",
+  },
+  guidancelineMetaSeparator: {
+    color: "var(--color-content-secondary)",
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-sm)",
+    lineHeight: "var(--line-height-body-sm)",
+  },
+  checkboxContainer: {
+    paddingTop: 4,
+  },
 };
 
 const withAllSetTo = (items, isSelected) => Object.fromEntries(items.map((item) => [item.id, isSelected]));
 
 export const AiObligationExtractionPage = () => {
-  const [guidanceChecked, setGuidanceChecked] = useState(() => withAllSetTo(ALLIANCE_POST_MORTEMS, true));
-  const [riskChecked, setRiskChecked] = useState(() => withAllSetTo(LINKED_OPEN_RISKS, true));
+  const [postMortemChecked, setPostMortemChecked] = useState(() => withAllSetTo(POST_MORTEMS, true));
+  const [issueChecked, setIssueChecked] = useState(() => withAllSetTo(RELEVANT_ISSUES, true));
+  const [riskChecked, setRiskChecked] = useState(() => withAllSetTo(RELEVANT_RISKS, true));
 
-  const selectedGuidanceCount = useMemo(
-    () => ALLIANCE_POST_MORTEMS.filter((item) => guidanceChecked[item.id]).length,
-    [guidanceChecked]
+  const selectedPostMortemCount = useMemo(
+    () => POST_MORTEMS.filter((item) => postMortemChecked[item.id]).length,
+    [postMortemChecked]
+  );
+  const selectedIssueCount = useMemo(
+    () => RELEVANT_ISSUES.filter((item) => issueChecked[item.id]).length,
+    [issueChecked]
   );
   const selectedRiskCount = useMemo(
-    () => LINKED_OPEN_RISKS.filter((item) => riskChecked[item.id]).length,
+    () => RELEVANT_RISKS.filter((item) => riskChecked[item.id]).length,
     [riskChecked]
   );
 
-  const isGuidanceHeaderChecked = selectedGuidanceCount > 0;
+  const isPostMortemHeaderChecked = selectedPostMortemCount > 0;
+  const isIssueHeaderChecked = selectedIssueCount > 0;
   const isRiskHeaderChecked = selectedRiskCount > 0;
 
-  const toggleGuidanceItem = (id, isSelected) =>
-    setGuidanceChecked((current) => ({ ...current, [id]: isSelected }));
-  const toggleAllGuidance = (isSelected) => setGuidanceChecked(withAllSetTo(ALLIANCE_POST_MORTEMS, isSelected));
+  const togglePostMortemItem = (id, isSelected) =>
+    setPostMortemChecked((current) => ({ ...current, [id]: isSelected }));
+  const toggleAllPostMortems = (isSelected) => setPostMortemChecked(withAllSetTo(POST_MORTEMS, isSelected));
+
+  const toggleIssueItem = (id, isSelected) =>
+    setIssueChecked((current) => ({ ...current, [id]: isSelected }));
+  const toggleAllIssues = (isSelected) => setIssueChecked(withAllSetTo(RELEVANT_ISSUES, isSelected));
 
   const toggleRiskItem = (id, isSelected) =>
     setRiskChecked((current) => ({ ...current, [id]: isSelected }));
-  const toggleAllRisk = (isSelected) => setRiskChecked(withAllSetTo(LINKED_OPEN_RISKS, isSelected));
+  const toggleAllRisks = (isSelected) => setRiskChecked(withAllSetTo(RELEVANT_RISKS, isSelected));
 
   const contextFileInputRef = useRef(null);
   const [contextFiles, setContextFiles] = useState([]);
@@ -326,65 +412,67 @@ export const AiObligationExtractionPage = () => {
                 </p>
               </div>
 
-  {/* ACCORDION */}
+  {/* POST-MORTEMS ACCORDION */}
 <Accordion
-  title="Alliance post-mortems"
+  title="Post-mortems"
   size="sm"
   showCheckbox
   checkboxProps={{
-    isSelected: isGuidanceHeaderChecked,
-    onChange: (isSelected) => toggleAllGuidance(isSelected),
+    isSelected: isPostMortemHeaderChecked,
+    onChange: (isSelected) => toggleAllPostMortems(isSelected),
   }}
-  badgeLabel={`${selectedGuidanceCount}/${ALLIANCE_POST_MORTEMS.length}`}
+  badgeLabel={`${selectedPostMortemCount}/${POST_MORTEMS.length}`}
   showBadge
-
 >
-  {/* Accordion content */}
-
-{ALLIANCE_POST_MORTEMS.map((item) => (
-  <div key={item.id} style={styles.guidanceline}>
-    <Checkbox
-      isSelected={Boolean(guidanceChecked[item.id])}
-      onChange={(isSelected) => toggleGuidanceItem(item.id, isSelected)}
-    />
-    <Tooltip content={item.label} placement="bottom-left" style={{ flex: "1 1 auto", minWidth: 0, justifyContent: "flex-start" }}>
-      <Link
-        size="md"
-        href="#"
-        style={{ minWidth: 0, justifyContent: "flex-start" }}
-        iconLeading={<Icon name="DocumentText" variant="outline" size="sm" />}
-      >
-        <span style={styles.guidancelineLinkLabel}>{item.label}</span>
-      </Link>
-    </Tooltip>
-  </div>
-))}
-
-</Accordion>
-
-{/* ACCORDION */}
-<Accordion
-  title="Linked open risks"
-  size="sm"
-  showCheckbox
-  checkboxProps={{ 
-    isSelected: isRiskHeaderChecked,
-    onChange: (isSelected) => toggleAllRisk(isSelected),
-  }}
-  badgeLabel={`${selectedRiskCount}/${LINKED_OPEN_RISKS.length}`}
-  showBadge
-
->
-  {/* Linked risks */}
-
-{LINKED_OPEN_RISKS.map((item) => (
+{POST_MORTEMS.map((item) => (
   <div key={item.id} style={styles.guidancelineWithBadge}>
     <div style={styles.guidancelineLeft}>
+      <div style={styles.checkboxContainer}>
+        <Checkbox
+          isSelected={Boolean(postMortemChecked[item.id])}
+          onChange={(isSelected) => togglePostMortemItem(item.id, isSelected)}
+        />
+      </div>
+      <div style={styles.guidancelineContent}>
+        <Tooltip content={item.label} placement="bottom-left" style={{ minWidth: 0, justifyContent: "flex-start" }}>
+          <Link
+            size="md"
+            href="#"
+            style={{ minWidth: 0, justifyContent: "flex-start" }}
+            iconLeading={<Icon name="DocumentText" variant="outline" size="sm" />}
+          >
+            <span style={styles.guidancelineLinkLabel}>{item.label}</span>
+          </Link>
+        </Tooltip>
+        <p style={styles.guidancelineMeta}>{item.meta}</p>
+      </div>
+    </div>
+  </div>
+))}
+</Accordion>
+
+{/* RELEVANT ISSUES ACCORDION */}
+<Accordion
+  title="Relevant issues"
+  size="sm"
+  showCheckbox
+  checkboxProps={{
+    isSelected: isIssueHeaderChecked,
+    onChange: (isSelected) => toggleAllIssues(isSelected),
+  }}
+  badgeLabel={`${selectedIssueCount}/${RELEVANT_ISSUES.length}`}
+  showBadge
+>
+{RELEVANT_ISSUES.map((item) => (
+  <div key={item.id} style={styles.guidanceline}>
+    <div style={styles.checkboxContainer}>
       <Checkbox
-        isSelected={Boolean(riskChecked[item.id])}
-        onChange={(isSelected) => toggleRiskItem(item.id, isSelected)}
+        isSelected={Boolean(issueChecked[item.id])}
+        onChange={(isSelected) => toggleIssueItem(item.id, isSelected)}
       />
-      <Tooltip content={item.label} placement="bottom-left" style={{ flex: "1 1 auto", minWidth: 0, justifyContent: "flex-start" }}>
+    </div>
+    <div style={styles.guidancelineContent}>
+      <Tooltip content={item.label} placement="bottom-left" style={{ minWidth: 0, justifyContent: "flex-start" }}>
         <Link
           size="md"
           href="#"
@@ -394,13 +482,59 @@ export const AiObligationExtractionPage = () => {
           <span style={styles.guidancelineLinkLabel}>{item.label}</span>
         </Link>
       </Tooltip>
+      <div style={styles.guidancelineMetaRow}>
+        <ColorStatus variant="issue-priority" level={item.priority}>
+          {ISSUE_PRIORITY_LABELS[item.priority]}
+        </ColorStatus>
+        <span style={styles.guidancelineMetaSeparator}>·</span>
+        <span style={styles.guidancelineMetaText}>{item.meta}</span>
+      </div>
     </div>
-    <ColorStatus variant="risk-impact" level={SEVERITY_TO_RISK_LEVEL[item.severity]}>
-      {RISK_LEVEL_LABELS[SEVERITY_TO_RISK_LEVEL[item.severity]]}
-    </ColorStatus>
   </div>
 ))}
+</Accordion>
 
+{/* RELEVANT RISKS ACCORDION */}
+<Accordion
+  title="Relevant risks"
+  size="sm"
+  showCheckbox
+  checkboxProps={{
+    isSelected: isRiskHeaderChecked,
+    onChange: (isSelected) => toggleAllRisks(isSelected),
+  }}
+  badgeLabel={`${selectedRiskCount}/${RELEVANT_RISKS.length}`}
+  showBadge
+>
+{RELEVANT_RISKS.map((item) => (
+  <div key={item.id} style={styles.guidanceline}>
+    <div style={styles.checkboxContainer}>
+      <Checkbox
+        isSelected={Boolean(riskChecked[item.id])}
+        onChange={(isSelected) => toggleRiskItem(item.id, isSelected)}
+      />
+    </div>
+    <div style={styles.guidancelineContent}>
+      <Tooltip content={item.label} placement="bottom-left" style={{ minWidth: 0, justifyContent: "flex-start" }}>
+        <Link
+          size="md"
+          href="#"
+          style={{ minWidth: 0, justifyContent: "flex-start" }}
+          iconLeading={<Icon name="DocumentText" variant="outline" size="sm" />}
+        >
+          <span style={styles.guidancelineLinkLabel}>{item.label}</span>
+        </Link>
+      </Tooltip>
+      <div style={styles.guidancelineMetaRow}>
+        <ColorStatus variant="risk-impact" level={item.impact}>
+          {RISK_IMPACT_LABELS[item.impact]}
+        </ColorStatus>
+        <span style={styles.guidancelineMetaSeparator}>·</span>
+        <span style={styles.guidancelineMetaText}>{item.meta}</span>
+      </div>
+    </div>
+  </div>
+))}
 </Accordion>
 <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-2)" }}>
     <p style={{ color: "var(--color-content-secondary)", fontSize: "var(--text-body-md)", paddingBottom: "var(--spacing-xs)" }}>Additional files for context</p>
