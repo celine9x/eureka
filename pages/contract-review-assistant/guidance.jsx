@@ -394,6 +394,7 @@ export const AiObligationExtractionPage = () => {
                   onClick: () => navigateToPath(CONTRACT_REVIEW_ASSISTANT_LOADING_PATH),
                 },
               ]}
+              style={{ "--creation-form-panel-content-padding": "var(--spacing-md)" }}
             >
               <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-xs)" }}>
                 <h3
@@ -537,7 +538,14 @@ export const AiObligationExtractionPage = () => {
 ))}
 </Accordion>
 <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-2)" }}>
-    <p style={{ color: "var(--color-content-secondary)", fontSize: "var(--text-body-md)", paddingBottom: "var(--spacing-xs)" }}>Additional files for context</p>
+    <p style={{
+      margin: 0,
+      fontFamily: "var(--font-family-primary)",
+      fontSize: "var(--text-body-md)",
+      fontWeight: "var(--font-weight-regular)",
+      lineHeight: "var(--line-height-body-md)",
+      color: "var(--color-content-secondary)",
+    }}>Additional files for context</p>
 <Button variant="secondary" size="sm" iconLeading={<Icon name="ArrowUpTray" size="sm" />} onClick={openContextFileDialog}>
   Browse files
 </Button>

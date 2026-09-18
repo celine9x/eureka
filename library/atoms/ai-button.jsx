@@ -22,30 +22,46 @@
  * <AiButton variant="secondary" size="md">Generate</AiButton>
  */
 
-import { forwardRef, useMemo, useState, isValidElement, cloneElement, createElement } from "react";
+import { forwardRef, useState, useEffect, useRef, isValidElement, cloneElement, createElement } from "react";
 import { Icon } from "./icon.jsx";
 
 const BLOB_KEYFRAMES = `
-@keyframes ai-blob-float-a {
-  0% { transform: translate(0px, 0px) scale(1); }
-  20% { transform: translate(14px, -10px) scale(1.12); }
-  45% { transform: translate(-10px, 16px) scale(0.9); }
-  70% { transform: translate(-16px, -8px) scale(1.08); }
-  100% { transform: translate(0px, 0px) scale(1); }
+@keyframes ai-blob-blue {
+  0%, 100% {
+    transform: translate3d(-15%, 12%, 0) rotate(-6deg) scale(1);
+  }
+  50% {
+    transform: translate3d(50%, -8%, 0) rotate(5deg) scale(1.08);
+  }
 }
-@keyframes ai-blob-float-b {
-  0% { transform: translate(0px, 0px) scale(1); }
-  25% { transform: translate(-18px, 10px) scale(1.16); }
-  60% { transform: translate(12px, -16px) scale(0.86); }
-  85% { transform: translate(8px, 6px) scale(1.05); }
-  100% { transform: translate(0px, 0px) scale(1); }
+@keyframes ai-blob-cyan {
+  0%, 100% {
+    transform: translate3d(20%, -10%, 0) rotate(8deg) scale(1);
+  }
+  50% {
+    transform: translate3d(-45%, 10%, 0) rotate(-5deg) scale(1.1);
+  }
 }
-@keyframes ai-blob-float-c {
-  0% { transform: rotate(78deg) translate(0px, 0px) scale(1); }
-  30% { transform: rotate(88deg) translate(14px, -12px) scale(1.14); }
-  65% { transform: rotate(68deg) translate(-16px, 10px) scale(0.84); }
-  85% { transform: rotate(82deg) translate(8px, 6px) scale(1.06); }
-  100% { transform: rotate(78deg) translate(0px, 0px) scale(1); }
+@keyframes ai-blob-mint {
+  0%, 100% {
+    transform: translate3d(-10%, 15%, 0) scale(0.98);
+  }
+  50% {
+    transform: translate3d(35%, -12%, 0) scale(1.06);
+  }
+}
+@keyframes ai-sheen {
+  from { transform: translateX(-72%) rotate(8deg); }
+  to { transform: translateX(72%) rotate(8deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ai-button-blob {
+    animation: none !important;
+  }
+  .ai-button-sheen {
+    animation: none !important;
+    opacity: 0 !important;
+  }
 }
 `;
 
@@ -154,18 +170,37 @@ const SIZE_CONFIG = {
   },
 };
 
-const OrganicBlobLayer = ({ opacity = "var(--opacity-ai-blob-primary)", isSecondary = false }) => {
-  const animationConfig = useMemo(
-    () => ({
-      durA: `${5 + Math.random() * 2.5}s`,
-      durB: `${5.7 + Math.random() * 2.8}s`,
-      durC: `${6.2 + Math.random() * 3.1}s`,
-      delayA: `${-Math.random() * 2.5}s`,
-      delayB: `${-Math.random() * 3.2}s`,
-      delayC: `${-Math.random() * 3.8}s`,
-    }),
-    []
-  );
+const OrganicBlobLayer = ({
+  opacity = "var(--opacity-ai-blob-primary)",
+  isSecondary = false,
+  isHovered = false,
+  buttonWidth = 150,
+  mousePos = { x: 0.5, y: 0.5 },
+}) => {
+  const blur = isSecondary ? "10px" : "12px";
+
+  // When hovered: magnetic cursor-following (all blobs cluster tightly at cursor)
+  // When not hovered: CSS keyframe animation plays
+  const cursorX = (mousePos.x - 0.5) * buttonWidth;
+  const cursorY = (mousePos.y - 0.5) * 40;
+
+  const getBlueTransform = () => {
+    if (!isHovered) return undefined;
+    // Small offset from cursor center
+    return `translate3d(${cursorX - 8}px, ${cursorY - 4}px, 0) scale(1.05)`;
+  };
+
+  const getCyanTransform = () => {
+    if (!isHovered) return undefined;
+    // Small offset from cursor center
+    return `translate3d(${cursorX + 6}px, ${cursorY + 3}px, 0) scale(1.08)`;
+  };
+
+  const getMintTransform = () => {
+    if (!isHovered) return undefined;
+    // Small offset from cursor center
+    return `translate3d(${cursorX}px, ${cursorY - 2}px, 0) scale(1.1)`;
+  };
 
   return (
     <span
@@ -178,60 +213,82 @@ const OrganicBlobLayer = ({ opacity = "var(--opacity-ai-blob-primary)", isSecond
         pointerEvents: "none",
         opacity,
         zIndex: 0,
+        filter: isHovered ? "saturate(1.15) brightness(1.04)" : "saturate(1) brightness(1)",
+        transition: "filter 180ms ease",
       }}
     >
-    <span
-      style={{
-        position: "absolute",
-        width: "42%",
-        height: "125%",
-        left: "-14%",
-        top: "28%",
-        borderRadius: "9999px",
-        background: "var(--color-ai-blob-blue)",
-        filter: isSecondary ? "blur(10px)" : "blur(16px)",
-        animationName: "ai-blob-float-a",
-        animationDuration: animationConfig.durA,
-        animationDelay: animationConfig.delayA,
-        animationTimingFunction: "ease-in-out",
-        animationIterationCount: "infinite",
-      }}
-    />
-    <span
-      style={{
-        position: "absolute",
-        width: "24%",
-        height: "112%",
-        right: "1%",
-        top: "-24%",
-        borderRadius: "9999px",
-        background: "var(--color-ai-blob-green)",
-        filter: isSecondary ? "blur(10px)" : "blur(16px)",
-        animationName: "ai-blob-float-b",
-        animationDuration: animationConfig.durB,
-        animationDelay: animationConfig.delayB,
-        animationTimingFunction: "ease-in-out",
-        animationIterationCount: "infinite",
-      }}
-    />
-    <span
-      style={{
-        position: "absolute",
-        width: "56%",
-        height: "118%",
-        right: "-26%",
-        top: "-110%",
-        borderRadius: "9999px",
-        background: "var(--color-ai-blob-cyan)",
-        filter: isSecondary ? "blur(12px)" : "blur(20px)",
-        transformOrigin: "top left",
-        animationName: "ai-blob-float-c",
-        animationDuration: animationConfig.durC,
-        animationDelay: animationConfig.delayC,
-        animationTimingFunction: "ease-in-out",
-        animationIterationCount: "infinite",
-      }}
-    />
+      {/* Blue: ambient animation when idle, magnetic when hovered */}
+      <span
+        className="ai-button-blob"
+        style={{
+          position: "absolute",
+          width: isHovered ? "36%" : "18%",
+          height: "70%",
+          // When hovered, center the blob then let transform position it at cursor
+          left: isHovered ? "41%" : "15%",
+          top: isHovered ? "15%" : "15%",
+          borderRadius: "50%",
+          background: "var(--color-ai-blob-blue)",
+          filter: `blur(${blur})`,
+          opacity: isHovered ? 0.85 : 0.7,
+          willChange: "transform, opacity, left, top",
+          // Delay animation restart so transition can complete first
+          animation: isHovered ? "none" : "ai-blob-blue 4s ease-in-out infinite",
+          animationDelay: isHovered ? "0s" : "0.5s",
+          transform: getBlueTransform(),
+          transition: isHovered
+            ? "transform 120ms ease-out, opacity 180ms ease, left 120ms ease-out, top 120ms ease-out, width 120ms ease-out"
+            : "transform 500ms ease-out, opacity 400ms ease, left 500ms ease-out, top 500ms ease-out, width 500ms ease-out",
+        }}
+      />
+
+      {/* Cyan: ambient animation when idle, magnetic when hovered */}
+      <span
+        className="ai-button-blob"
+        style={{
+          position: "absolute",
+          width: isHovered ? "40%" : "20%",
+          height: "75%",
+          // When hovered, center the blob then let transform position it at cursor
+          left: isHovered ? "40%" : undefined,
+          right: isHovered ? undefined : "12%",
+          top: isHovered ? "12%" : "12%",
+          borderRadius: "50%",
+          background: "var(--color-ai-blob-cyan)",
+          filter: `blur(${blur})`,
+          opacity: isHovered ? 0.8 : 0.65,
+          willChange: "transform, opacity, left, right, top",
+          animation: isHovered ? "none" : "ai-blob-cyan 5s ease-in-out infinite",
+          animationDelay: isHovered ? "0s" : "0.6s",
+          transform: getCyanTransform(),
+          transition: isHovered
+            ? "transform 150ms ease-out, opacity 180ms ease, left 150ms ease-out, top 150ms ease-out, width 150ms ease-out"
+            : "transform 550ms ease-out, opacity 400ms ease, right 550ms ease-out, top 550ms ease-out, width 550ms ease-out",
+        }}
+      />
+
+      {/* Mint: ambient animation when idle, magnetic when hovered */}
+      <span
+        className="ai-button-blob"
+        style={{
+          position: "absolute",
+          width: isHovered ? "32%" : "16%",
+          height: "65%",
+          left: isHovered ? "42%" : "42%",
+          top: isHovered ? "18%" : "18%",
+          borderRadius: "50%",
+          background: "var(--color-ai-blob-green)",
+          filter: isSecondary ? "blur(10px)" : "blur(12px)",
+          opacity: isHovered ? 0.75 : 0.55,
+          willChange: "transform, opacity, left, top",
+          animation: isHovered ? "none" : "ai-blob-mint 4.5s ease-in-out infinite",
+          animationDelay: isHovered ? "0s" : "0.55s",
+          transform: getMintTransform(),
+          transition: isHovered
+            ? "transform 180ms ease-out, opacity 180ms ease, left 180ms ease-out, top 180ms ease-out, width 180ms ease-out"
+            : "transform 520ms ease-out, opacity 400ms ease, left 520ms ease-out, top 520ms ease-out, width 520ms ease-out",
+        }}
+      />
     </span>
   );
 };
@@ -251,6 +308,28 @@ const GradientBorderRing = () => (
       WebkitMaskComposite: "xor",
       maskComposite: "exclude",
       padding: "1px",
+    }}
+  />
+);
+
+// Hover-only sheen sweep effect
+const SheenLayer = ({ isActive = false }) => (
+  <span
+    className="ai-button-sheen"
+    aria-hidden="true"
+    style={{
+      position: "absolute",
+      inset: "-40%",
+      zIndex: 1,
+      pointerEvents: "none",
+      background: "linear-gradient(110deg, transparent 42%, rgba(255, 255, 255, 0.18) 50%, transparent 58%)",
+      transform: isActive ? "translateX(72%) rotate(8deg)" : "translateX(-72%) rotate(8deg)",
+      opacity: isActive ? 1 : 0,
+      transition: isActive ? "none" : "opacity 0.3s ease-out",
+      animationName: isActive ? "ai-sheen" : "none",
+      animationDuration: "700ms",
+      animationTimingFunction: "ease-out",
+      animationFillMode: "both",
     }}
   />
 );
@@ -284,6 +363,36 @@ export const AiButton = forwardRef(
 
     const [isHovered, setIsHovered] = useState(false);
     const [isActive, setIsActive] = useState(false);
+    const [buttonWidth, setButtonWidth] = useState(150);
+    const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 }); // Normalized 0-1
+    const buttonRef = useRef(null);
+
+    // Measure button width for dynamic blob animations
+    useEffect(() => {
+      const measureWidth = () => {
+        if (buttonRef.current) {
+          setButtonWidth(buttonRef.current.offsetWidth);
+        }
+      };
+
+      measureWidth();
+
+      const resizeObserver = new ResizeObserver(measureWidth);
+      if (buttonRef.current) {
+        resizeObserver.observe(buttonRef.current);
+      }
+
+      return () => resizeObserver.disconnect();
+    }, []);
+
+    // Track mouse position for blob following
+    const handleMouseMove = (e) => {
+      if (!buttonRef.current) return;
+      const rect = buttonRef.current.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width;
+      const y = (e.clientY - rect.top) / rect.height;
+      setMousePos({ x: Math.max(0, Math.min(1, x)), y: Math.max(0, Math.min(1, y)) });
+    };
 
     const isButtonDisabled = isDisabled || disabled;
 
@@ -313,19 +422,8 @@ export const AiButton = forwardRef(
         : "var(--color-ai-content-brand)";
     };
 
-    // ── Outline (filled only) ──
+    // ── Outline (disabled) ──
     const getOutlineStyle = () => {
-      if (isTertiary || isSecondary) return {};
-      if (isPrimary) {
-        if (isButtonDisabled) return {};
-        if (isActive || isHovered) {
-          return {
-            outline: `1px solid var(--color-ai-outline-hover)`,
-            outlineOffset: "-1px",
-          };
-        }
-        return {};
-      }
       return {};
     };
 
@@ -365,14 +463,12 @@ export const AiButton = forwardRef(
     const getShadow = () => {
       if (isTertiary || isButtonDisabled) return "none";
       if (isPrimary) {
-        return isActive
-          ? "var(--shadow-button-hover)"
-          : "var(--shadow-button-enabled)";
+        if (isHovered || isActive) return "var(--shadow-md)";
+        return "var(--shadow-button-enabled)";
       }
       // secondary
-      return isActive
-        ? "var(--shadow-button-hover)"
-        : "var(--shadow-button-light)";
+      if (isHovered || isActive) return "var(--shadow-md)";
+      return "var(--shadow-button-light)";
     };
 
     const buttonStyle = {
@@ -387,6 +483,7 @@ export const AiButton = forwardRef(
       fontWeight: "var(--font-weight-regular)",
       whiteSpace: "nowrap",
       boxSizing: "border-box",
+      isolation: "isolate",
       transition: "box-shadow var(--transition-fast), outline-color var(--transition-fast)",
       height: sizeConfig.height,
       padding: iconOnly ? sizeConfig.padding : sizeConfig.padding,
@@ -486,8 +583,12 @@ export const AiButton = forwardRef(
           <OrganicBlobLayer
             opacity={isPrimary ? "var(--opacity-ai-blob-primary)" : "var(--opacity-ai-blob-secondary)"}
             isSecondary={isSecondary}
+            isHovered={isHovered && !isButtonDisabled}
+            buttonWidth={buttonWidth}
+            mousePos={mousePos}
           />
         )}
+        {isPrimary && !isButtonDisabled && <SheenLayer isActive={isHovered} />}
         {isSecondary && !isButtonDisabled && <GradientBorderRing />}
         {renderIcon(effectiveLeading, "leading")}
         {!iconOnly && children && <span style={textStyle}>{children}</span>}
@@ -495,14 +596,26 @@ export const AiButton = forwardRef(
       </>
     );
 
+    // Combine forwarded ref with internal buttonRef
+    const setRefs = (node) => {
+      buttonRef.current = node;
+      if (typeof ref === "function") {
+        ref(node);
+      } else if (ref) {
+        ref.current = node;
+      }
+    };
+
     const commonProps = {
-      ref,
+      ref: setRefs,
       style: buttonStyle,
       onClick: isButtonDisabled ? undefined : onClick,
+      onMouseMove: handleMouseMove,
       onMouseEnter: () => setIsHovered(true),
       onMouseLeave: () => {
         setIsHovered(false);
         setIsActive(false);
+        setMousePos({ x: 0.5, y: 0.5 }); // Reset to center
       },
       onMouseDown: () => setIsActive(true),
       onMouseUp: () => setIsActive(false),

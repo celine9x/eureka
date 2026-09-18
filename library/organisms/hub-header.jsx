@@ -27,7 +27,7 @@ const styles = {
       flex-direction: column;
       gap: var(--spacing-4);
       width: 100%;
-      padding: var(--spacing-4) 0;
+      padding: var(--spacing-md) 0;
       background: var(--color-general-neutral-light);
       border-bottom: 1px solid var(--color-action-outline-secondary-enabled);
       box-sizing: border-box;

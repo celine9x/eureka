@@ -358,6 +358,8 @@ Related material: Kestrel Biosciences Post-Mortem (2024), Corvale Biosciences Po
 ];
 
 const SEVERITY_ORDER = { High: 0, Medium: 1, Low: 2 };
+// Maps severity to ColorStatus color variant for the accordion title.
+const SEVERITY_COLOR = { High: "red", Medium: "orange", Low: "blue" };
 // Risk-impact variant with filled dot icon — level maps to color (very-high
 // = red, high = orange, medium = blue, low = grey). Same severity-to-level
 // mapping drives the document highlight color (see SEVERITY_HIGHLIGHT_LEVEL
@@ -1139,7 +1141,7 @@ export const AiObligationExtractionPage = () => {
                     key={finding.id}
                     title={
                       <span style={styles.accordionTitle}>
-                        <ColorStatus variant="risk-impact" level={SEVERITY_RISK_LEVEL[finding.severity]} style={{ flexShrink: 0 }}>{finding.severity}</ColorStatus>
+                        <ColorStatus variant={SEVERITY_COLOR[finding.severity]} style={{ flexShrink: 0 }}>{finding.severity}</ColorStatus>
                         <span style={styles.accordionTitleLabel}>{finding.title}</span>
                       </span>
                     }

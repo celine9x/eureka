@@ -44,8 +44,7 @@ const styles = {
       flex-direction: column;
       background: var(--color-general-white);
       border-radius: var(--radius-sm);
-      outline: 1px solid var(--color-action-outline-secondary-enabled);
-      outline-offset: -1px;
+      border: 1px solid var(--color-action-outline-secondary-enabled);
       overflow: hidden;
       height: 100%;
     }
@@ -99,7 +98,7 @@ const styles = {
       flex-direction: column;
       align-items: stretch;
       gap: var(--spacing-2);
-      padding: var(--spacing-2) var(--spacing-4);
+      padding: var(--spacing-2) var(--spacing-4) 0;
       background: var(--color-general-white);
       border-bottom: 1px solid var(--color-action-outline-secondary-enabled);
       position: sticky;
@@ -173,7 +172,7 @@ const styles = {
       flex: 1 1 auto;
       overflow-y: auto;
       scrollbar-gutter: stable;
-      padding: var(--spacing-6) var(--spacing-md);
+      padding: var(--creation-form-panel-content-padding, var(--spacing-6) var(--spacing-md));
       display: flex;
       flex-direction: column;
       gap: var(--spacing-4);
