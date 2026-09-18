@@ -834,7 +834,7 @@ export const AiObligationExtractionPage = () => {
     try {
       const paragraphs = documentText.split(/\n\s*\n/).map((paragraph) => paragraph.trim()).filter(Boolean);
       setMeasuredTextPages(
-        paginateDocumentByMeasurement(paragraphs, measurer, tableHtmlByMarker, appliedRedlines, FINDING_ORIGINAL_CLAUSES)
+        paginateDocumentByMeasurement(paragraphs, measurer, tableHtmlByMarker, [], FINDING_ORIGINAL_CLAUSES)
       );
     } finally {
       measurer.remove();
@@ -889,58 +889,6 @@ export const AiObligationExtractionPage = () => {
       },
     ]);
     return id;
-  };
-
-  const handleApplyFinding = (finding, { silent = false } = {}) => {
-    const suggestion = suggestionDrafts[finding.id] ?? finding.suggestion;
-    const commentId = addDocumentComment(commentDrafts[finding.id] ?? "", suggestion);
-
-    const notifyApplied = () => {
-      if (silent) return;
-      const clauseLabel = finding.title.split(":")[0].trim();
-      const message = commentId
-        ? `Suggestion applied to ${clauseLabel} and comment added.`
-        : `Suggestion applied to ${clauseLabel}.`;
-      showSuccessToast({ message });
-    };
-
-    // Table-targeted findings update a specific regulatory-milestone row's
-    // payment cell directly instead of doing a text replace in the flowing
-    // contract text.
-    if (finding.milestoneRowId) {
-      const nextPayment = extractPaymentAmount(suggestion) ?? suggestion;
-      setRegulatoryTableRows((rows) =>
-        rows.map((row) =>
-          row.id === finding.milestoneRowId ? { ...row, cells: [row.cells[0], nextPayment] } : row
-        )
-      );
-      setAppliedRedlines((changes) => {
-        const nextChange = { originalText: finding.originalClause, proposedText: suggestion, commentId };
-        const existingIndex = changes.findIndex((change) => change.originalText === nextChange.originalText);
-        if (existingIndex < 0) return [...changes, nextChange];
-        return changes.map((change, index) => (index === existingIndex ? nextChange : change));
-      });
-      setCommentDrafts((drafts) => ({ ...drafts, [finding.id]: "" }));
-      notifyApplied();
-      return;
-    }
-
-    // Keep the clause number (e.g. "4.1 ") fixed: apply the suggestion to
-    // the clause body only, so the number is never part of the redline swap
-    // and the final document text still starts with it.
-    const { number, body: originalBody } = splitClauseNumber(finding.originalClause);
-    const suggestionBody = number && suggestion.startsWith(number) ? suggestion.slice(number.length) : suggestion;
-    const fullSuggestion = `${number}${suggestionBody}`;
-
-    setDocumentText((currentText) => currentText.replace(finding.originalClause, fullSuggestion));
-    setAppliedRedlines((changes) => {
-      const nextChange = { originalText: originalBody, proposedText: suggestionBody, commentId };
-      const existingIndex = changes.findIndex((change) => change.originalText === nextChange.originalText);
-      if (existingIndex < 0) return [...changes, nextChange];
-      return changes.map((change, index) => (index === existingIndex ? nextChange : change));
-    });
-    setCommentDrafts((drafts) => ({ ...drafts, [finding.id]: "" }));
-    notifyApplied();
   };
 
   const handleResolveFinding = (finding) => {
@@ -1084,28 +1032,6 @@ export const AiObligationExtractionPage = () => {
             <CreationFormPanel
               title="Contract review"
               headerBadge={<Badge color="neutral" size="md">{ORDERED_FINDINGS.length}</Badge>}
-              {...(allFindingsApplied
-                ? {
-                    headerActionsContent: (
-                      <Badge.WithIcon
-                        color="positive"
-                        size="md"
-                        iconLeading={<Icon name="Check" size="sm" />}
-                        style={styles.appliedBadge}
-                      >
-                        All applied
-                      </Badge.WithIcon>
-                    ),
-                  }
-                : {
-                    headerButtons: [
-                      {
-                        label: "Apply all",
-                        variant: "secondary",
-                        onClick: handleApplyAllFindings,
-                      },
-                    ],
-                  })}
               infoMessage="Inaccuracies may occur with AI. Please review carefully."
               showNavigation
               navigationSubContent={
@@ -1187,45 +1113,6 @@ export const AiObligationExtractionPage = () => {
                             </div>
                           ))}
                         </div>
-                      </div>
-                      <Textarea
-                        label="Suggestion"
-                        variant="ai"
-                        aiValue={finding.suggestion}
-                        originalValue={splitClauseNumber(finding.originalClause).body}
-                        showRedlinePreview
-                        value={suggestionDrafts[finding.id] ?? finding.suggestion}
-                        onChange={(event) => setSuggestionDrafts((drafts) => ({ ...drafts, [finding.id]: event.target.value }))}
-                        onRevert={(value) => setSuggestionDrafts((drafts) => ({ ...drafts, [finding.id]: value }))}
-                        isReadOnly={isFindingApplied(finding)}
-                      />
-                      {!isFindingApplied(finding) && (
-                        <Textarea
-                          label="Comment"
-                          placeholder="Leave your comment"
-                          value={commentDrafts[finding.id] ?? ""}
-                          onChange={(event) => setCommentDrafts((drafts) => ({ ...drafts, [finding.id]: event.target.value }))}
-                        />
-                      )}
-                      <div style={styles.findingActions}>
-                        {isFindingApplied(finding) ? (
-                          <Badge.WithIcon
-                            color="positive"
-                            size="md"
-                            iconLeading={<Icon name="Check" size="sm" />}
-                            style={styles.appliedBadge}
-                          >
-                            Applied
-                          </Badge.WithIcon>
-                        ) : (
-                          <Button
-                            variant="primary"
-                            iconLeading={<Icon name="ArrowTurnDownLeft" size="sm" />}
-                            onClick={() => handleApplyFinding(finding)}
-                          >
-                            Apply
-                          </Button>
-                        )}
                       </div>
                     </div>
                   </Accordion>
