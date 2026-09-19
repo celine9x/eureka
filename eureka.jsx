@@ -26,6 +26,7 @@ import { ButtonBadge } from "./library/atoms/button-badge.jsx";
 import { AiButton } from "./library/atoms/ai-button.jsx";
 import { ProgressIndicator, PROGRESS_INDICATOR_LABEL_POSITIONS } from "./library/atoms/progress-indicator.jsx";
 import { ColorStatus } from "./library/atoms/color-status.jsx";
+import { ContentField } from "./library/atoms/content-field.jsx";
 
 // ─────────────────────────────────────────────
 // MOLECULES
@@ -1044,6 +1045,55 @@ import { Icon } from "@/library/atoms/icon";
         <ColorStatus variant="risk-impact" level="high">High</ColorStatus>
         <ColorStatus variant="risk-impact" level="medium">Medium</ColorStatus>
         <ColorStatus variant="risk-impact" level="low">Low</ColorStatus>
+      </div>
+    </PreviewComponent>
+  </Section>
+);
+
+const ContentFieldPage = () => (
+  <Section title="ContentField" description="A compact field with a label, optional description tooltip, and text or chip content.">
+    <PreviewComponent
+      title="Text Variant"
+      code={`import { ContentField } from "@/library/atoms/content-field";
+
+<ContentField
+  label="Owner"
+  description="The person responsible for this item"
+  value="Emma Dupont"
+/>`}
+    >
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(180px, 1fr))", gap: 24 }}>
+        <ContentField
+          label="Owner"
+          description="The person responsible for this item"
+          value="Emma Dupont"
+        />
+        <ContentField
+          label="Stage"
+          description="Current workflow stage"
+          value="In review"
+        />
+      </div>
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="Chip Variant"
+      code={`import { ContentField } from "@/library/atoms/content-field";
+
+<ContentField
+  label="Tags"
+  description="Categories assigned to this item"
+  variant="chip"
+  value={["Legal", "Finance", "Operations"]}
+/>`}
+    >
+      <div style={{ maxWidth: 420 }}>
+        <ContentField
+          label="Tags"
+          description="Categories assigned to this item"
+          variant="chip"
+          value={["Legal", "Finance", "Operations"]}
+        />
       </div>
     </PreviewComponent>
   </Section>
@@ -7689,6 +7739,7 @@ const PAGES = {
   button: { title: "Button", component: ButtonPage, category: "atoms" },
   badge: { title: "Badge", component: BadgePage, category: "atoms" },
   colorStatus: { title: "ColorStatus", component: ColorStatusPage, category: "atoms" },
+  contentField: { title: "ContentField", component: ContentFieldPage, category: "atoms" },
   avatar: { title: "Avatar", component: AvatarPage, category: "atoms" },
   checkbox: { title: "Checkbox", component: CheckboxPage, category: "atoms" },
   toggle: { title: "Toggle", component: TogglePage, category: "atoms" },
@@ -7769,6 +7820,7 @@ const PAGE_SECTIONS = [
 const PAGE_ICON_MAP = {
   button: "CursorArrowRays",
   badge: "Tag",
+  contentField: "DocumentText",
   avatar: "UserCircle",
   checkbox: "CheckCircle",
   toggle: "AdjustmentsHorizontal",
