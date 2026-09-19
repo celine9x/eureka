@@ -103,6 +103,7 @@ import {
 import { FilterPanel, Row as FilterPanelRow, DEFAULT_FILTER_PANEL_OPTIONS } from "./library/organisms/filter-panel.jsx";
 import { DocumentViewer } from "./library/organisms/document-viewer/document-viewer.jsx";
 import pharmaAgreementPdf from "./library/organisms/document-viewer/pharma_agreement.pdf";
+import { ObjectPageTabContent, OBJECT_PAGE_TAB_CONTENT_VARIANTS } from "./library/organisms/object-page-tab-content.jsx";
 import { Pagination as PaginationOrganism } from "./library/organisms/pagination.jsx";
 import { StatusUpdate } from "./library/organisms/status-update.jsx";
 import { CreationFormPanel } from "./library/organisms/section/creation-form-panel.jsx";
@@ -4095,7 +4096,7 @@ const DropdownListPage = () => {
 const SubinfoPage = () => (
   <Section title="Subinfo" description="A flexible info display component for showing various types of data.">
     <PreviewComponent
-      title="All Subinfo Variants"
+      title="Value Variants"
       code={`import { Subinfo } from "@/library/molecules/subinfo";
 
 <Subinfo label="Owner">John Doe</Subinfo>
@@ -4106,6 +4107,19 @@ const SubinfoPage = () => (
         <Subinfo label="Owner">John Doe</Subinfo>
         <Subinfo label="Status" iconName="Clock">In Progress</Subinfo>
         <Subinfo label="Priority" href="#">High</Subinfo>
+      </div>
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="Label And Status Variants"
+      code={`import { Subinfo } from "@/library/molecules/subinfo";
+
+<Subinfo variant="label">Last reviewed</Subinfo>
+<Subinfo variant="status" statusIconName="CheckCircle">Approved</Subinfo>`}
+    >
+      <div style={{ display: "flex", gap: 24, alignItems: "flex-start", flexWrap: "wrap" }}>
+        <Subinfo variant="label">Last reviewed</Subinfo>
+        <Subinfo variant="status" statusIconName="CheckCircle">Approved</Subinfo>
       </div>
     </PreviewComponent>
 
@@ -4151,6 +4165,51 @@ const SubinfoPage = () => (
         ]}
         maxItems={5}
       />
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="Links Variant"
+      code={`import { Subinfo } from "@/library/molecules/subinfo";
+
+<Subinfo
+  variant="links"
+  items={[
+    { text: "Master services agreement", iconName: "DocumentText", href: "#" },
+    { text: "Security addendum", iconName: "ShieldCheck", href: "#" },
+    { text: "Pricing appendix", iconName: "PaperClip", href: "#" },
+  ]}
+/>`}
+    >
+      <div style={{ maxWidth: 320 }}>
+        <Subinfo
+          variant="links"
+          items={[
+            { text: "Master services agreement", iconName: "DocumentText", href: "#" },
+            { text: "Security addendum", iconName: "ShieldCheck", href: "#" },
+            { text: "Pricing appendix", iconName: "PaperClip", href: "#" },
+          ]}
+        />
+      </div>
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="Chips Variant"
+      code={`import { Chip } from "@/library/atoms/chip";
+import { Subinfo } from "@/library/molecules/subinfo";
+
+<Subinfo variant="chips">
+  <Chip>Clinical</Chip>
+  <Chip>Priority</Chip>
+  <Chip>Renewal 2026</Chip>
+</Subinfo>`}
+    >
+      <div style={{ maxWidth: 320 }}>
+        <Subinfo variant="chips">
+          <Chip>Clinical</Chip>
+          <Chip>Priority</Chip>
+          <Chip>Renewal 2026</Chip>
+        </Subinfo>
+      </div>
     </PreviewComponent>
   </Section>
 );
@@ -6019,6 +6078,26 @@ const PaginationOrganismPage = () => {
   );
 };
 
+const ObjectPageTabContentPage = () => (
+  <Section title="ObjectPageTabContent" description="A tab content organism for object pages with list and content layouts.">
+    <PreviewComponent
+      title="List Variant"
+      code={`import { ObjectPageTabContent } from "@/library/organisms/object-page-tab-content";
+
+<ObjectPageTabContent />`}
+    >
+      <ObjectPageTabContent />
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="Content Variant"
+      code={`<ObjectPageTabContent variant="content" />`}
+    >
+      <ObjectPageTabContent variant={OBJECT_PAGE_TAB_CONTENT_VARIANTS.content} />
+    </PreviewComponent>
+  </Section>
+);
+
 const DOCUMENT_VIEWER_SAMPLE_TEXT = `1. Milestone Payment Obligation
 
 1.1 ABC agrees to make milestone payments to TO upon the achievement of the following milestones related to the licensed product, "Product X".
@@ -7663,6 +7742,7 @@ const PAGES = {
   modal: { title: "Modal", component: ModalPage, category: "organisms" },
   table: { title: "Table", component: TablePage, category: "organisms" },
   objectHeader: { title: "ObjectHeader", component: ObjectHeaderPage, category: "organisms" },
+  objectPageTabContent: { title: "ObjectPageTabContent", component: ObjectPageTabContentPage, category: "organisms" },
   hubHeader: { title: "HubHeader", component: HubHeaderPage, category: "organisms" },
   statusUpdate: { title: "StatusUpdate", component: StatusUpdatePage, category: "organisms" },
   sideMenuRichTextInput: { title: "SideMenuRichTextInput", component: SideMenuRichTextInputPage, category: "organisms" },
@@ -7728,6 +7808,7 @@ const PAGE_ICON_MAP = {
   modal: "Square2Stack",
   table: "TableCells",
   objectHeader: "DocumentText",
+  objectPageTabContent: "RectangleStack",
   hubHeader: "RectangleGroup",
   filterPanel: "Funnel",
   creationFormPanel: "RectangleStack",

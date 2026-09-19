@@ -436,8 +436,6 @@ export const Button = forwardRef(
       iconOnly = false,
       noTextPadding = false,
       showTextWhileLoading = false,
-      ariaLabel,
-      ariaDescription,
       onClick,
       style,
       children,
@@ -467,11 +465,11 @@ export const Button = forwardRef(
     const isLinkTypeColor = ["link-color", "link-gray", "link-destructive"].includes(effectiveColor);
     const isButtonDisabled = isDisabled || disabled || effectiveLoading;
 
-    // Get size styles with safe fallback for invalid or missing values
-    const sizeStyles = styles.sizes?.[size] ?? styles.sizes.md;
+    // Get size styles
+    const sizeStyles = styles.sizes[size];
 
-    // Get variant styles with safe fallback for invalid or missing values
-    const variantStyles = styles.variants?.[effectiveVariant] ?? styles.variants.primary;
+    // Get variant styles based on state
+    const variantStyles = styles.variants[effectiveVariant];
     const getStateStyles = () => {
       if (isButtonDisabled) return variantStyles.disabled;
       if (isActive) return variantStyles.active;
@@ -576,12 +574,6 @@ export const Button = forwardRef(
         setIsHovered(false);
         setIsActive(false);
       },
-      ...(ariaLabel !== undefined && ariaLabel !== null && ariaLabel !== false
-        ? { ["aria-label"]: ariaLabel }
-        : {}),
-      ...(ariaDescription !== undefined && ariaDescription !== null && ariaDescription !== false
-        ? { ["aria-description"]: ariaDescription }
-        : {}),
       ...props,
     };
 
