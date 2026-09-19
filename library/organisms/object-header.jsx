@@ -59,6 +59,12 @@ const styles = {
       align-items: center;
       gap: var(--spacing-2);
     }
+    .object-header-divider {
+      width: 1px;
+      align-self: stretch;
+      background-color: var(--color-outline-neutral);
+      margin-inline: var(--spacing-2);
+    }
   `,
 
   meta: `
@@ -345,6 +351,21 @@ export const ObjectHeaderTitleSection = forwardRef(({
     </div>
   );
 });
+
+/**
+ * ObjectHeaderDivider
+ *
+ * Visual divider between top-bar action groups.
+ */
+export const ObjectHeaderDivider = ({ className = "", ...props }) => {
+  return (
+    <div
+      aria-hidden="true"
+      className={`object-header-divider ${className}`.trim()}
+      {...props}
+    />
+  );
+};
 
 ObjectHeaderTitleSection.displayName = "ObjectHeaderTitleSection";
 
