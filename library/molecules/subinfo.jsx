@@ -15,6 +15,7 @@
 import React, { useState } from "react";
 import { Icon } from "../atoms/icon.jsx";
 import { Badge } from "../atoms/badge.jsx";
+import { Button } from "../atoms/button.jsx";
 
 // ─────────────────────────────────────────────
 // CONSTANTS
@@ -26,6 +27,8 @@ export const SUBINFO_VARIANTS = {
   avatar: "avatar",
   list: "list",
   chips: "chips",
+  status: "status",
+  links: "links",
 };
 
 // ─────────────────────────────────────────────
@@ -163,24 +166,6 @@ const styles = {
     textOverflow: "ellipsis",
   },
 
-  listItemLink: {
-    flex: 1,
-    color: "var(--color-content-brand)",
-    fontFamily: "var(--font-family-primary)",
-    fontSize: "var(--text-body-md)",
-    fontWeight: "var(--font-weight-regular)",
-    lineHeight: "var(--line-height-body-md)",
-    textDecoration: "none",
-    cursor: "pointer",
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-  },
-
-  listItemLinkHover: {
-    textDecoration: "underline",
-  },
-
   listFooter: {
     display: "inline-flex",
     alignItems: "center",
@@ -202,6 +187,50 @@ const styles = {
     alignContent: "flex-start",
     gap: 4,
     alignSelf: "stretch",
+  },
+
+  // Status variant
+  status: {
+    display: "inline-flex",
+    alignItems: "center",
+  },
+
+  // Links variant
+  links: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "var(--spacing-xs)",
+    width: "100%",
+  },
+
+  linkItem: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "var(--spacing-xs)",
+  },
+
+  linkIcon: {
+    flexShrink: 0,
+    width: 16,
+    height: 16,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "var(--color-content-secondary)",
+  },
+
+  linkText: {
+    color: "var(--color-content-brand)",
+    fontFamily: "var(--font-family-primary)",
+    fontSize: "var(--text-body-md)",
+    fontWeight: "var(--font-weight-regular)",
+    lineHeight: "var(--line-height-body-md)",
+    textDecoration: "none",
+    cursor: "pointer",
+  },
+
+  linkTextHover: {
+    textDecoration: "underline",
   },
 };
 
@@ -238,46 +267,67 @@ SubinfoAvatar.displayName = "SubinfoAvatar";
 export const SubinfoListItem = ({
   icon,
   iconName,
+  truncate = true,
+  style,
+  children,
+}) => {
+  const iconElement = icon || (iconName ? <Icon name={iconName} size="sm" /> : null);
+  const textStyle = truncate ? {} : { whiteSpace: "normal" };
+
+  return (
+    <div style={{ ...styles.listItem, ...style }}>
+      {iconElement && <span style={styles.listItemIcon}>{iconElement}</span>}
+      <span style={{ ...styles.listItemText, ...textStyle }}>{children}</span>
+    </div>
+  );
+};
+
+SubinfoListItem.displayName = "SubinfoListItem";
+
+// ─────────────────────────────────────────────
+// SUBINFO LINK ITEM
+// ─────────────────────────────────────────────
+
+/**
+ * SubinfoLinkItem
+ *
+ * A single link item for the links variant.
+ *
+ */
+export const SubinfoLinkItem = ({
+  icon,
+  iconName,
   href,
   onClick,
-  truncate = true,
   style,
   children,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
 
   const iconElement = icon || (iconName ? <Icon name={iconName} size="sm" /> : null);
-  const isLink = href || onClick;
-
-  const textStyle = truncate ? {} : { whiteSpace: "normal" };
 
   const linkStyle = {
-    ...styles.listItemLink,
-    ...textStyle,
-    ...(isHovered && styles.listItemLinkHover),
+    ...styles.linkText,
+    ...(isHovered && styles.linkTextHover),
   };
 
   return (
-    <div style={{ ...styles.listItem, ...style }}>
-      {iconElement && <span style={styles.listItemIcon}>{iconElement}</span>}
-      {isLink ? (
-        <a
-          href={href}
-          onClick={onClick}
-          style={linkStyle}
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-        >
-          {children}
-        </a>
-      ) : (
-        <span style={{ ...styles.listItemText, ...textStyle }}>{children}</span>
-      )}
+    <div style={{ ...styles.linkItem, ...style }}>
+      {iconElement && <span style={styles.linkIcon}>{iconElement}</span>}
+      <a
+        href={href}
+        onClick={onClick}
+        style={linkStyle}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        {children}
+      </a>
     </div>
   );
 };
 
-SubinfoListItem.displayName = "SubinfoListItem";
+SubinfoLinkItem.displayName = "SubinfoLinkItem";
 
 // ─────────────────────────────────────────────
 // SUBINFO COMPONENT
@@ -301,6 +351,9 @@ export const Subinfo = ({
   initials,
   items = [],
   maxItems = 5,
+  // Status variant props
+  statusIcon,
+  statusIconName,
   style,
   children,
   ...props
@@ -374,8 +427,6 @@ export const Subinfo = ({
                     <SubinfoListItem
                       icon={item.icon}
                       iconName={item.iconName}
-                      href={item.href}
-                      onClick={item.onClick}
                     >
                       {item.text}
                     </SubinfoListItem>
@@ -390,8 +441,6 @@ export const Subinfo = ({
                 key={index}
                 icon={item.icon}
                 iconName={item.iconName}
-                href={item.href}
-                onClick={item.onClick}
               >
                 {item.text}
               </SubinfoListItem>
@@ -407,6 +456,47 @@ export const Subinfo = ({
     return (
       <div style={baseStyle} {...props}>
         <div style={styles.chips}>{children}</div>
+      </div>
+    );
+  }
+
+  // Status variant - button with icon, label, and chevron down
+  if (variant === "status") {
+    const statusIconElement = statusIcon || (statusIconName ? <Icon name={statusIconName} size="sm" /> : null);
+    return (
+      <div style={baseStyle} {...props}>
+        <div style={styles.status}>
+          <Button
+            variant="secondary"
+            size="sm"
+            iconLeading={statusIconElement}
+            iconTrailing={<Icon name="ChevronDown" size="sm" />}
+            onClick={onClick}
+          >
+            {children || label}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Links variant - flex column of links with icons
+  if (variant === "links") {
+    return (
+      <div style={baseStyle} {...props}>
+        <div style={styles.links}>
+          {items.map((item, index) => (
+            <SubinfoLinkItem
+              key={index}
+              icon={item.icon}
+              iconName={item.iconName}
+              href={item.href}
+              onClick={item.onClick}
+            >
+              {item.text || item.title}
+            </SubinfoLinkItem>
+          ))}
+        </div>
       </div>
     );
   }
@@ -446,5 +536,6 @@ Subinfo.variants = SUBINFO_VARIANTS;
 // Sub-components
 Subinfo.Avatar = SubinfoAvatar;
 Subinfo.ListItem = SubinfoListItem;
+Subinfo.LinkItem = SubinfoLinkItem;
 
 export default Subinfo;

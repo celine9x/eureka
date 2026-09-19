@@ -23,46 +23,12 @@ import {
   ObjectHeaderBackButton,
 } from "../organisms/object-header.jsx";
 import { Accordion } from "../molecules/accordion.jsx";
+import { Tabs, Tab } from "@/library/molecules/tabs";
 
 const OBJECT_PAGE_MENU_VARIANTS = {
   default: "default",
   deal: "deal",
 };
-
-const DEAL_MENU_SECTIONS = [
-  {
-    items: [
-      { label: "Home", iconName: "Home" },
-      { label: "Dashboard", iconName: "ChartBar" },
-      { label: "Network", iconName: "Share" },
-    ],
-  },
-  {
-    title: "Workspace",
-    items: [
-      { label: "Initiatives", iconName: "initiative" },
-      { label: "Opportunities", iconName: "opportunity", state: "active" },
-      { label: "Agreements", iconName: "agreement" },
-      { label: "Alliances", iconName: "alliance" },
-      { label: "Obligations", iconName: "obligation" },
-    ],
-  },
-  {
-    title: "Directory",
-    items: [
-      { label: "Companies", iconName: "company" },
-      { label: "Contacts", iconName: "contact" },
-      { label: "Meetings", iconName: "meeting" },
-    ],
-    dividerAfter: true,
-  },
-  {
-    title: "Recent Initiatives",
-    items: [
-      { label: "ALLINPART", iconColor: "var(--color-content-brand)", iconLetter: "A" },
-    ],
-  },
-];
 
 /* ===========================================
    STYLE CONFIGURATION
@@ -88,10 +54,13 @@ const styles = {
       flex-direction: column;
       overflow: hidden;
       background: var(--color-general-neutral-light);
+      position: relative;
+    }
+    .object-page__scroll-container {
+      flex: 1;
+      overflow-y: auto;
     }
     .object-page__header {
-      flex-shrink: 0;
-      border-bottom: 1px solid var(--color-action-outline-secondary-enabled);
       display: grid;
       grid-template-columns: repeat(12, 1fr);
       column-gap: var(--spacing-6);
@@ -101,8 +70,6 @@ const styles = {
       grid-column: 2 / span 10;
     }
     .object-page__body {
-      flex: 1;
-      overflow-y: auto;
       display: grid;
       grid-template-columns: repeat(12, 1fr);
       column-gap: var(--spacing-6);
@@ -130,7 +97,7 @@ const styles = {
       gap: var(--spacing-4);
     }
     .object-page__section {
-      background: var(--color-general-white);
+   
       border-radius: var(--radius-lg);
       border: 1px solid var(--color-action-outline-secondary-enabled);
       overflow: hidden;
@@ -166,28 +133,6 @@ const injectStyles = () => {
  *
  * A complete object/detail page template with sidebar navigation, object header,
  * and two-column content area with accordions.
- *
- * @example
- * <ObjectPage
- *   title="Initiative Name"
- *   titleIconName="ExclamationTriangle"
- *   titleIconVariant="warning"
- *   meta={{ label: "Last updated on", date: "Jan 15, 2024", author: "Emma" }}
- *   subinfoItems={[
- *     { label: "Owner", value: "Emma Dupont" },
- *     { label: "Status", value: "In Progress" },
- *   ]}
- *   steps={[{ title: "Draft" }, { title: "Review" }, { title: "Approved" }]}
- *   currentStep={1}
- *   onBack={() => navigate(-1)}
- *   leftColumnSections={[
- *     { title: "Details", content: <DetailsForm />, defaultExpanded: true },
- *     { title: "History", content: <HistoryList /> },
- *   ]}
- *   rightColumnSections={[
- *     { title: "Related Items", content: <RelatedItems /> },
- *   ]}
- * />
  */
 export const ObjectPage = ({
   // Title props
@@ -211,6 +156,7 @@ export const ObjectPage = ({
   menuExpandOnHover,
   menuVariantState,
   menuSections = [],
+  menuActiveItemId,
   menuUser,
   logoSrc,
   onMenuCreate,
@@ -229,17 +175,11 @@ export const ObjectPage = ({
   injectStyles();
 
   const classes = ["object-page", className].filter(Boolean).join(" ");
-
   const contentClasses = singleColumn ? "object-page__content--single" : "";
 
   const hasCustomMenuSections = Array.isArray(menuSections) && menuSections.length > 0;
   const isDealMenuVariant = menuVariant === OBJECT_PAGE_MENU_VARIANTS.deal;
-  const resolvedMenuSections =
-    hasCustomMenuSections
-      ? menuSections
-      : isDealMenuVariant
-        ? DEAL_MENU_SECTIONS
-        : [];
+  const resolvedMenuSections = hasCustomMenuSections ? menuSections : [];
   const resolvedMenuVariant = menuVariantState || (isDealMenuVariant ? "collapsed" : undefined);
   const resolvedMenuExpandOnHover =
     typeof menuExpandOnHover === "boolean"
@@ -255,7 +195,7 @@ export const ObjectPage = ({
         defaultExpanded={section.defaultExpanded}
         actionLabel={section.actionLabel}
         onActionClick={section.onActionClick}
-        size={section.size || "md"}
+        size={section.size || "lg"}
       >
         {section.content}
       </Accordion>
@@ -276,6 +216,7 @@ export const ObjectPage = ({
           logoSrc={logoSrc}
           collapsedLogoSrc={menuCollapsedLogoSrc}
           sections={resolvedMenuSections}
+          defaultActiveItemId={menuActiveItemId}
           user={menuUser}
           onCreateClick={onMenuCreate}
           onSearchChange={onMenuSearch}
@@ -284,95 +225,94 @@ export const ObjectPage = ({
 
       {/* Main Content */}
       <div className="object-page__main">
-        {/* Object Header */}
-        <div className="object-page__header">
-          <ObjectHeader>
-            {/* Top Bar */}
-            <ObjectHeaderTopBar>
-              <ObjectHeaderTopBarLeft>
-                {topBarLeft || defaultTopBarLeft}
-              </ObjectHeaderTopBarLeft>
-              {topBarRight && (
-                <ObjectHeaderTopBarRight>
-                  {topBarRight}
-                </ObjectHeaderTopBarRight>
+        {/* Scrollable Content */}
+        <div className="object-page__scroll-container">
+          {/* Object Header - scrolls with content */}
+          <div className="object-page__header">
+            <ObjectHeader>
+              {/* Top Bar */}
+              <ObjectHeaderTopBar>
+                <ObjectHeaderTopBarLeft>
+                  {topBarLeft || defaultTopBarLeft}
+                </ObjectHeaderTopBarLeft>
+                {topBarRight && (
+                  <ObjectHeaderTopBarRight>
+                    {topBarRight}
+                  </ObjectHeaderTopBarRight>
+                )}
+              </ObjectHeaderTopBar>
+
+              {/* Title Section */}
+              <ObjectHeaderTitleSection>
+                {meta && (
+                  <ObjectHeaderMeta
+                    label={meta.label}
+                    date={meta.date}
+                    time={meta.time}
+                    author={meta.author}
+                  />
+                )}
+                <ObjectHeaderTitle>
+                  {title}
+                </ObjectHeaderTitle>
+              </ObjectHeaderTitleSection>
+
+              {/* Subinfo Row */}
+              {subinfoItems.length > 0 && (
+                <ObjectHeaderSubinfoRow>
+                  {subinfoItems.map((item, index) => (
+                    <ObjectHeaderSubinfoItem key={item.id || index}>
+                      {item.component || (
+                        <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-1)" }}>
+                          <span style={{ fontSize: "var(--text-body-caption)", color: "var(--color-content-secondary)" }}>
+                            {item.label}
+                          </span>
+                          <span style={{ fontSize: "var(--text-body-md)", color: "var(--color-content-primary)" }}>
+                            {item.value}
+                          </span>
+                        </div>
+                      )}
+                    </ObjectHeaderSubinfoItem>
+                  ))}
+                </ObjectHeaderSubinfoRow>
               )}
-            </ObjectHeaderTopBar>
 
-            {/* Title Section */}
-            <ObjectHeaderTitleSection>
-              {meta && (
-                <ObjectHeaderMeta
-                  label={meta.label}
-                  date={meta.date}
-                  time={meta.time}
-                  author={meta.author}
-                />
+              {/* Stepper */}
+              {steps.length > 0 && (
+                <ObjectHeaderStepperSection steps={steps} currentStep={currentStep} />
               )}
-              <ObjectHeaderTitle
-                icon={titleIcon}
-                iconName={titleIconName}
-                iconVariant={titleIconVariant}
-              >
-                {title}
-              </ObjectHeaderTitle>
-            </ObjectHeaderTitleSection>
 
-            {/* Subinfo Row */}
-            {subinfoItems.length > 0 && (
-              <ObjectHeaderSubinfoRow>
-                {subinfoItems.map((item, index) => (
-                  <ObjectHeaderSubinfoItem key={item.id || index}>
-                    {item.component || (
-                      <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-1)" }}>
-                        <span style={{ fontSize: "var(--text-body-caption)", color: "var(--color-content-secondary)" }}>
-                          {item.label}
-                        </span>
-                        <span style={{ fontSize: "var(--text-body-md)", color: "var(--color-content-primary)" }}>
-                          {item.value}
-                        </span>
-                      </div>
-                    )}
-                  </ObjectHeaderSubinfoItem>
-                ))}
-              </ObjectHeaderSubinfoRow>
-            )}
+              {/* Tabs */}
+              {tabs && (
+                <ObjectHeaderTabsSection>
+                  {tabs}
+                </ObjectHeaderTabsSection>
+              )}
+            </ObjectHeader>
+          </div>
 
-            {/* Stepper */}
-            {steps.length > 0 && (
-              <ObjectHeaderStepperSection steps={steps} currentStep={currentStep} />
-            )}
-
-            {/* Tabs */}
-            {tabs && (
-              <ObjectHeaderTabsSection>
-                {tabs}
-              </ObjectHeaderTabsSection>
-            )}
-          </ObjectHeader>
-        </div>
-
-        {/* Body with Two Columns */}
-        <div className="object-page__body">
-          {children || (
-            <div className={`object-page__container ${contentClasses}`}>
-              {/* Left Column */}
-              <div className="object-page__column">
-                <div className="object-page__column-inner">
-                  {leftColumnContent || renderSections(leftColumnSections)}
-                </div>
-              </div>
-
-              {/* Right Column */}
-              {!singleColumn && (
+          {/* Body with Two Columns */}
+          <div className="object-page__body">
+            {children || (
+              <div className={`object-page__container ${contentClasses}`}>
+                {/* Left Column */}
                 <div className="object-page__column">
                   <div className="object-page__column-inner">
-                    {rightColumnContent || renderSections(rightColumnSections)}
+                    {leftColumnContent || renderSections(leftColumnSections)}
                   </div>
                 </div>
-              )}
-            </div>
-          )}
+
+                {/* Right Column */}
+                {!singleColumn && (
+                  <div className="object-page__column">
+                    <div className="object-page__column-inner">
+                      {rightColumnContent || renderSections(rightColumnSections)}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -394,8 +334,8 @@ ObjectPage.HeaderSubinfoRow = ObjectHeader.SubinfoRow;
 ObjectPage.HeaderSubinfoItem = ObjectHeader.SubinfoItem;
 ObjectPage.HeaderStepper = ObjectHeader.StepperSection;
 ObjectPage.HeaderTabs = ObjectHeader.TabsSection;
-ObjectPage.Tabs = ObjectHeader.Tabs;
-ObjectPage.Tab = ObjectHeader.Tab;
+ObjectPage.Tabs = Tabs;
+ObjectPage.Tab = Tab;
 ObjectPage.Stepper = ObjectHeader.Stepper;
 ObjectPage.Accordion = Accordion;
 ObjectPage.Button = ObjectHeader.Button;

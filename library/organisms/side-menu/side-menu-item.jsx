@@ -99,7 +99,7 @@ const styles = {
         paddingLeft: "calc(var(--spacing-8) - var(--spacing-xxs))",
       },
       icon: {
-        color: "var(--color-action-fill-primary-enabled)",
+        color: "var(--color-action-fill-primary-active)",
       },
       label: {
         color: "var(--color-content-primary)",

@@ -74,7 +74,7 @@ const styles = {
     fontWeight: "var(--font-weight-regular, 400)",
     lineHeight: "var(--line-height-body-md, 20px)",
     wordWrap: "break-word",
-    pointerEvents: "none",
+    cursor: "text",
     userSelect: "none",
   },
 
@@ -86,6 +86,7 @@ const styles = {
     fontWeight: "var(--font-weight-regular, 400)",
     lineHeight: "var(--line-height-body-md, 20px)",
     wordWrap: "break-word",
+    cursor: "text",
   },
 
   toolbar: {

@@ -6,6 +6,7 @@
  * Uses design tokens from tokens.css.
  */
 
+import { forwardRef } from "react";
 import { Button } from "../atoms/button.jsx";
 import { Icon } from "../atoms/icon.jsx";
 import { Badge } from "../atoms/badge.jsx";
@@ -25,10 +26,10 @@ const styles = {
   base: `
     .object-header {
       width: 100%;
-      padding-top: var(--spacing-6);
+      padding-top: var(--spacing-md);
       display: flex;
       flex-direction: column;
-      gap: var(--spacing-6);
+      gap: var(--spacing-sm);
     }
   `,
 
@@ -58,11 +59,6 @@ const styles = {
       align-items: center;
       gap: var(--spacing-2);
     }
-    .object-header-divider {
-      width: 1px;
-      height: 32px;
-      background: var(--color-outline-neutral);
-    }
   `,
 
   meta: `
@@ -90,12 +86,12 @@ const styles = {
     .object-header-title-section {
       display: flex;
       flex-direction: column;
-      gap: var(--spacing-4);
+      gap: var(--spacing-sm);
     }
     .object-header-title-row {
       display: flex;
       align-items: center;
-      gap: var(--spacing-2);
+      gap: var(--spacing-xs);
     }
     .object-header-title-icon {
       width: 24px;
@@ -121,7 +117,7 @@ const styles = {
   subinfo: `
     .object-header-subinfo-row {
       display: flex;
-      align-items: flex-start;
+      align-items: stretch;
       gap: var(--spacing-4);
       flex-wrap: wrap;
     }
@@ -132,7 +128,9 @@ const styles = {
       border-right: 1px solid var(--color-outline-neutral);
       display: flex;
       flex-direction: column;
+      justify-content: center;
       gap: var(--spacing-2);
+      align-self: stretch;
     }
     .object-header-subinfo-item:last-child {
       border-right: none;
@@ -303,17 +301,6 @@ export const ObjectHeaderActionsGroup = ({
 };
 
 /**
- * ObjectHeaderDivider
- *
- * Vertical divider between action groups.
- */
-export const ObjectHeaderDivider = ({ className = "", ...props }) => {
-  return (
-    <div className={`object-header-divider ${className}`.trim()} {...props} />
-  );
-};
-
-/**
  * ObjectHeaderMeta
  *
  * Metadata row showing "last updated" info.
@@ -347,17 +334,19 @@ export const ObjectHeaderMeta = ({
  *
  * Container for meta and title.
  */
-export const ObjectHeaderTitleSection = ({
+export const ObjectHeaderTitleSection = forwardRef(({
   className = "",
   children,
   ...props
-}) => {
+}, ref) => {
   return (
-    <div className={`object-header-title-section ${className}`.trim()} {...props}>
+    <div ref={ref} className={`object-header-title-section ${className}`.trim()} {...props}>
       {children}
     </div>
   );
-};
+});
+
+ObjectHeaderTitleSection.displayName = "ObjectHeaderTitleSection";
 
 /**
  * ObjectHeaderTitle
@@ -522,7 +511,6 @@ export const ObjectHeaderTabsSection = ({
  *   ObjectHeaderTopBarLeft,
  *   ObjectHeaderTopBarRight,
  *   ObjectHeaderActionsGroup,
- *   ObjectHeaderDivider,
  *   ObjectHeaderMeta,
  *   ObjectHeaderTitleSection,
  *   ObjectHeaderTitle,
@@ -565,7 +553,6 @@ export const ObjectHeaderTabsSection = ({
  *               Manage access
  *             </Button>
  *           </ObjectHeaderActionsGroup>
- *           <ObjectHeaderDivider />
  *           <ObjectHeaderActionsGroup>
  *             <Button variant="secondary" size="md" iconLeading={<Icon name="Bookmark" size="sm" />} />
  *             <Button variant="secondary" size="md" iconLeading={<Icon name="Share" size="sm" />} />
@@ -830,7 +817,6 @@ ObjectHeader.TopBar = ObjectHeaderTopBar;
 ObjectHeader.TopBarLeft = ObjectHeaderTopBarLeft;
 ObjectHeader.TopBarRight = ObjectHeaderTopBarRight;
 ObjectHeader.ActionsGroup = ObjectHeaderActionsGroup;
-ObjectHeader.Divider = ObjectHeaderDivider;
 ObjectHeader.Meta = ObjectHeaderMeta;
 ObjectHeader.TitleSection = ObjectHeaderTitleSection;
 ObjectHeader.Title = ObjectHeaderTitle;

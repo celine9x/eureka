@@ -49,7 +49,6 @@ export const BUTTON_COLORS = {
 };
 
 export const BUTTON_SIZES = {
-  xs: "xs",
   sm: "sm",
   md: "md",
   lg: "lg",
@@ -98,32 +97,25 @@ const styles = {
   },
 
   // Size configurations using tokens
-  // xs=24px, sm=32px, md=32px, lg=40px, xl=48px
-  // Radius: xs=4px, sm=8px, md=10px (from Figma)
+  // sm=24px, md=32px, lg=40px, xl=48px
+  // Radius: sm=4px, md=8px (from Figma)
   sizes: {
-    xs: {
+    sm: {
       padding: "0 var(--spacing-xs)",           // 0 4px
       fontSize: "var(--text-button-md)",        // 12px
       lineHeight: "var(--line-height-button-md)", // 16px
       height: "var(--size-button-xs)",          // 24px
+      minWidth: "var(--size-button-xs)",        // 24px
       gap: "var(--spacing-xs)",                 // 4px
       iconSize: "var(--size-icon-sm)",          // 16px
       borderRadius: "var(--radius-xs)",         // 4px
-    },
-    sm: {
-      padding: "var(--spacing-xs)",             // 4px all sides
-      fontSize: "var(--text-button-md)",        // 12px
-      lineHeight: "var(--line-height-button-md)", // 16px
-      height: "var(--size-button-sm)",          // 32px
-      gap: "var(--spacing-sm)",                 // 8px
-      iconSize: "var(--size-icon-sm)",          // 16px
-      borderRadius: "var(--radius-sm)",         // 8px
     },
     md: {
       padding: "0 var(--spacing-sm)",           // 0 8px
       fontSize: "var(--text-button-md)",        // 12px
       lineHeight: "var(--line-height-button-md)", // 16px
       height: "var(--size-button-md)",          // 32px
+      minWidth: "var(--size-button-md)",        // 32px
       gap: "var(--spacing-sm)",                 // 8px
       iconSize: "var(--size-icon-sm)",          // 16px
       borderRadius: "var(--radius-sm)",         // 8px
@@ -133,6 +125,7 @@ const styles = {
       fontSize: "var(--text-button-lg)",        // 14px
       lineHeight: "var(--line-height-button-lg)", // 20px
       height: "var(--size-button-lg)",          // 40px
+      minWidth: "var(--size-button-lg)",        // 40px
       gap: "var(--spacing-sm)",                 // 8px
       iconSize: "var(--size-icon-md)",          // 20px
       borderRadius: "var(--radius-sm)",         // 8px
@@ -142,6 +135,7 @@ const styles = {
       fontSize: "var(--text-button-lg)",        // 14px
       lineHeight: "var(--line-height-button-lg)", // 20px
       height: "var(--size-button-xl)",          // 48px
+      minWidth: "var(--size-button-xl)",        // 48px
       gap: "var(--spacing-sm)",                 // 8px
       iconSize: "var(--size-icon-md)",          // 20px
       borderRadius: "var(--radius-sm)",         // 8px
@@ -500,6 +494,7 @@ export const Button = forwardRef(
         fontSize: sizeStyles.fontSize,
         lineHeight: sizeStyles.lineHeight,
         height: sizeStyles.height,
+        minWidth: sizeStyles.minWidth,
         gap: sizeStyles.gap,
         borderRadius: sizeStyles.borderRadius,
       }),

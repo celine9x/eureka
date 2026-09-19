@@ -495,7 +495,7 @@ export const SideMenu = ({
   onSearchChange,
   onSearchClick,
   sections = [],
-  menuVariant = SIDE_MENU_CONTENT_VARIANTS.default,
+  menuVariant = SIDE_MENU_CONTENT_VARIANTS.deal,
   createButtonLabel = "Create",
   onCreateClick,
   hasUnreadNotifications = true,
