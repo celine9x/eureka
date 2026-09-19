@@ -290,7 +290,7 @@ export const ObjectPageTabContent = ({
                 iconLeading={<Icon name="Cog6Tooth" size="sm" />}
                 onClick={onSettings}
               >
-                Settings
+                
               </Button>
             </div>
           </div>
