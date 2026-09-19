@@ -4,8 +4,10 @@ import { ComponentLibraryDemo } from "../../eureka.jsx";
 import ContractReviewAssistantGuidancePage from "./guidance.jsx";
 import ContractReviewAssistantLoadingPage from "./loading.jsx";
 import ContractReviewAssistantReviewPage from "./review.jsx";
+import OpportunityPage from "../test/opportunity-page.jsx";
 
 const LIBRARY_PATH = "/library";
+const TEST_OPPORTUNITY_PAGE_PATH = "/test/opportunity-page";
 
 const CONTRACT_REVIEW_ASSISTANT_GUIDANCE_PATH = "/contract-review-assistant/guidance";
 const CONTRACT_REVIEW_ASSISTANT_LOADING_PATH = "/contract-review-assistant/loading";
@@ -15,6 +17,7 @@ const PAGE_TITLES = {
   [CONTRACT_REVIEW_ASSISTANT_GUIDANCE_PATH]: "Inpart",
   [CONTRACT_REVIEW_ASSISTANT_LOADING_PATH]: "Inpart",
   [CONTRACT_REVIEW_ASSISTANT_REVIEW_PATH]: "Inpart",
+  [TEST_OPPORTUNITY_PAGE_PATH]: "Opportunity page",
   [LIBRARY_PATH]: "Eureka library",
 };
 
@@ -22,6 +25,7 @@ const ROUTE_COMPONENTS = {
   [CONTRACT_REVIEW_ASSISTANT_GUIDANCE_PATH]: <ContractReviewAssistantGuidancePage />,
   [CONTRACT_REVIEW_ASSISTANT_LOADING_PATH]: <ContractReviewAssistantLoadingPage />,
   [CONTRACT_REVIEW_ASSISTANT_REVIEW_PATH]: <ContractReviewAssistantReviewPage />,
+  [TEST_OPPORTUNITY_PAGE_PATH]: <OpportunityPage />,
   [LIBRARY_PATH]: <ComponentLibraryDemo />,
 };
 
