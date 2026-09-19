@@ -69,10 +69,9 @@ const styles = {
   filters: {
     display: "inline-flex",
     justifyContent: "flex-start",
-    alignItems: "center",
+    alignItems: "flex-end",
     gap: "var(--spacing-sm)",
     flexWrap: "wrap",
-    alignItems: 'flex-end'
   },
   toolbarRight: {
     display: "inline-flex",
