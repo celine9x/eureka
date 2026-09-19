@@ -963,7 +963,6 @@ export const AiObligationExtractionPage = () => {
         collapsedLogoSrc={InpartLogoCollapsed}
         showSearch
         searchPlaceholder="Quick search"
-        menuVariant="deal"
         createButtonLabel="Create"
         user={{
           name: "Julie Settipani",
@@ -1075,7 +1074,7 @@ export const AiObligationExtractionPage = () => {
                     variant="vertical"
                     action={
                       activeTab !== REVIEW_TABS.resolved && (
-                        <Button iconLeading={<Icon name="Check" size="sm" />} variant="secondary" size="xs" onClick={() => handleResolveFinding(finding)}>
+                        <Button iconLeading={<Icon name="Check" size="sm" />} variant="secondary" size="sm" onClick={() => handleResolveFinding(finding)}>
                           Resolve
                         </Button>
                       )

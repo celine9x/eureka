@@ -4,17 +4,20 @@ import { ComponentLibraryDemo } from "../../eureka.jsx";
 import ContractReviewAssistantGuidancePage from "./guidance.jsx";
 import ContractReviewAssistantLoadingPage from "./loading.jsx";
 import ContractReviewAssistantReviewPage from "./review.jsx";
+import OpportunityPage from "../test/opportunity-page.jsx";
 
 const LIBRARY_PATH = "/library";
 
 const CONTRACT_REVIEW_ASSISTANT_GUIDANCE_PATH = "/contract-review-assistant/guidance";
 const CONTRACT_REVIEW_ASSISTANT_LOADING_PATH = "/contract-review-assistant/loading";
 const CONTRACT_REVIEW_ASSISTANT_REVIEW_PATH = "/contract-review-assistant/review";
+const OPPORTUNITY_PATH = "/test/opportunity";
 
 const PAGE_TITLES = {
   [CONTRACT_REVIEW_ASSISTANT_GUIDANCE_PATH]: "Contract Review Assistant Guidance — Eureka",
   [CONTRACT_REVIEW_ASSISTANT_LOADING_PATH]: "Contract Review Assistant Loading — Eureka",
   [CONTRACT_REVIEW_ASSISTANT_REVIEW_PATH]: "Contract Review Assistant Review — Eureka",
+  [OPPORTUNITY_PATH]: "Opportunity — Eureka",
   [LIBRARY_PATH]: "Component Library — Eureka",
 };
 
@@ -22,6 +25,7 @@ const ROUTE_COMPONENTS = {
   [CONTRACT_REVIEW_ASSISTANT_GUIDANCE_PATH]: <ContractReviewAssistantGuidancePage />,
   [CONTRACT_REVIEW_ASSISTANT_LOADING_PATH]: <ContractReviewAssistantLoadingPage />,
   [CONTRACT_REVIEW_ASSISTANT_REVIEW_PATH]: <ContractReviewAssistantReviewPage />,
+  [OPPORTUNITY_PATH]: <OpportunityPage />,
   [LIBRARY_PATH]: <ComponentLibraryDemo />,
 };
 

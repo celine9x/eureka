@@ -26,6 +26,7 @@ import { ButtonBadge } from "./library/atoms/button-badge.jsx";
 import { AiButton } from "./library/atoms/ai-button.jsx";
 import { ProgressIndicator, PROGRESS_INDICATOR_LABEL_POSITIONS } from "./library/atoms/progress-indicator.jsx";
 import { ColorStatus } from "./library/atoms/color-status.jsx";
+import { ContentField } from "./library/atoms/content-field.jsx";
 
 // ─────────────────────────────────────────────
 // MOLECULES
@@ -80,7 +81,6 @@ import {
   ObjectHeaderTopBarLeft,
   ObjectHeaderTopBarRight,
   ObjectHeaderActionsGroup,
-  ObjectHeaderDivider,
   ObjectHeaderMeta,
   ObjectHeaderTitleSection,
   ObjectHeaderTitle,
@@ -105,6 +105,8 @@ import { DocumentViewer } from "./library/organisms/document-viewer/document-vie
 import pharmaAgreementPdf from "./library/organisms/document-viewer/pharma_agreement.pdf";
 import { Pagination as PaginationOrganism } from "./library/organisms/pagination.jsx";
 import { StatusUpdate } from "./library/organisms/status-update.jsx";
+import DescriptionCard from "./library/organisms/description-card.jsx";
+import { ObjectPageTabContent } from "./library/organisms/object-page-tab-content.jsx";
 import { CreationFormPanel } from "./library/organisms/section/creation-form-panel.jsx";
 import { SideMenuRichTextInput } from "./library/organisms/side-menu/rich-text-input.jsx";
 
@@ -1044,6 +1046,63 @@ import { Icon } from "@/library/atoms/icon";
         <ColorStatus variant="risk-impact" level="medium">Medium</ColorStatus>
         <ColorStatus variant="risk-impact" level="low">Low</ColorStatus>
       </div>
+    </PreviewComponent>
+  </Section>
+);
+
+const ContentFieldPage = () => (
+  <Section title="ContentField" description="A field component with a label (with info icon tooltip) and content that can be text or chips.">
+    <PreviewComponent
+      title="Text Variant with Description"
+      code={`import { ContentField } from "@/library/atoms/content-field";
+
+<ContentField
+  label="Owner"
+  description="The person responsible for this item"
+  value="Emma Dupont"
+/>`}
+    >
+      <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+        <ContentField label="Owner" description="The person responsible for this item" value="Emma Dupont" />
+        <ContentField label="Status" description="Current status of the item" value="Active" />
+        <ContentField label="Created" description="Date when the item was created" value="Feb 20, 2024" />
+      </div>
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="Chip Variant"
+      code={`import { ContentField } from "@/library/atoms/content-field";
+
+<ContentField
+  label="Tags"
+  description="Categories assigned to this item"
+  variant="chip"
+  value={["Legal", "Finance", "Operations"]}
+/>`}
+    >
+      <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+        <ContentField
+          label="Tags"
+          description="Categories assigned to this item"
+          variant="chip"
+          value={["Legal", "Finance", "Operations"]}
+        />
+        <ContentField
+          label="Categories"
+          description="Business categories for classification"
+          variant="chip"
+          value={["Compliance", "Risk Management"]}
+        />
+      </div>
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="Without Description"
+      code={`import { ContentField } from "@/library/atoms/content-field";
+
+<ContentField label="Simple Field" value="This field has no info icon." />`}
+    >
+      <ContentField label="Simple Field" value="This field has no info icon." />
     </PreviewComponent>
   </Section>
 );
@@ -4095,17 +4154,32 @@ const DropdownListPage = () => {
 const SubinfoPage = () => (
   <Section title="Subinfo" description="A flexible info display component for showing various types of data.">
     <PreviewComponent
-      title="All Subinfo Variants"
+      title="Value Variant (Default)"
       code={`import { Subinfo } from "@/library/molecules/subinfo";
 
-<Subinfo label="Owner">John Doe</Subinfo>
-<Subinfo label="Status" iconName="Clock">In Progress</Subinfo>
-<Subinfo label="Priority" href="#">High</Subinfo>`}
+<Subinfo>John Doe</Subinfo>
+<Subinfo iconName="Clock">In Progress</Subinfo>
+<Subinfo href="#">High Priority</Subinfo>`}
     >
       <div style={{ display: "flex", gap: 24 }}>
-        <Subinfo label="Owner">John Doe</Subinfo>
-        <Subinfo label="Status" iconName="Clock">In Progress</Subinfo>
-        <Subinfo label="Priority" href="#">High</Subinfo>
+        <Subinfo>John Doe</Subinfo>
+        <Subinfo iconName="Clock">In Progress</Subinfo>
+        <Subinfo href="#">High Priority</Subinfo>
+      </div>
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="Status Variant"
+      code={`import { Subinfo } from "@/library/molecules/subinfo";
+
+<Subinfo variant="status" statusIconName="CheckCircle">Active</Subinfo>
+<Subinfo variant="status" statusIconName="Clock">Pending</Subinfo>
+<Subinfo variant="status" statusIconName="XCircle">Inactive</Subinfo>`}
+    >
+      <div style={{ display: "flex", gap: 24 }}>
+        <Subinfo variant="status" statusIconName="CheckCircle">Active</Subinfo>
+        <Subinfo variant="status" statusIconName="Clock">Pending</Subinfo>
+        <Subinfo variant="status" statusIconName="XCircle">Inactive</Subinfo>
       </div>
     </PreviewComponent>
 
@@ -4123,6 +4197,29 @@ const SubinfoPage = () => (
     </PreviewComponent>
 
     <PreviewComponent
+      title="Links Variant"
+      code={`import { Subinfo } from "@/library/molecules/subinfo";
+
+<Subinfo
+  variant="links"
+  items={[
+    { iconName: "Document", text: "Contract.pdf", href: "#" },
+    { iconName: "Link", text: "External Link", href: "#" },
+    { iconName: "Folder", text: "Project Files", href: "#" },
+  ]}
+/>`}
+    >
+      <Subinfo
+        variant="links"
+        items={[
+          { iconName: "Document", text: "Contract.pdf", href: "#" },
+          { iconName: "Link", text: "External Link", href: "#" },
+          { iconName: "Folder", text: "Project Files", href: "#" },
+        ]}
+      />
+    </PreviewComponent>
+
+    <PreviewComponent
       title="List Variant"
       code={`import { Subinfo } from "@/library/molecules/subinfo";
 
@@ -4130,7 +4227,7 @@ const SubinfoPage = () => (
   variant="list"
   items={[
     { text: "Marketing", iconName: "Folder" },
-    { text: "Design", iconName: "Folder", href: "#" },
+    { text: "Design", iconName: "Folder" },
     { text: "Engineering", iconName: "Folder" },
     { text: "Sales", iconName: "Folder" },
     { text: "Support", iconName: "Folder" },
@@ -4143,7 +4240,7 @@ const SubinfoPage = () => (
         variant="list"
         items={[
           { text: "Marketing", iconName: "Folder" },
-          { text: "Design", iconName: "Folder", href: "#" },
+          { text: "Design", iconName: "Folder" },
           { text: "Engineering", iconName: "Folder" },
           { text: "Sales", iconName: "Folder" },
           { text: "Support", iconName: "Folder" },
@@ -4151,6 +4248,24 @@ const SubinfoPage = () => (
         ]}
         maxItems={5}
       />
+    </PreviewComponent>
+
+    <PreviewComponent
+      title="Chips Variant"
+      code={`import { Subinfo } from "@/library/molecules/subinfo";
+import { Chip } from "@/library/atoms/chip";
+
+<Subinfo variant="chips">
+  <Chip>Tag 1</Chip>
+  <Chip>Tag 2</Chip>
+  <Chip>Tag 3</Chip>
+</Subinfo>`}
+    >
+      <Subinfo variant="chips">
+        <Chip>Tag 1</Chip>
+        <Chip>Tag 2</Chip>
+        <Chip>Tag 3</Chip>
+      </Subinfo>
     </PreviewComponent>
   </Section>
 );
@@ -4844,6 +4959,128 @@ const StatusUpdatePage = () => (
   </Section>
 );
 
+const DescriptionCardPage = () => {
+  const [emptyValue, setEmptyValue] = useState("");
+  const [filledValue, setFilledValue] = useState("This initiative focuses on establishing a strategic partnership between Meridian Therapeutics and Helios Pharma for the co-development of novel gene therapy treatments. The agreement outlines shared responsibilities for clinical trials, regulatory submissions, and commercialization efforts across major markets.");
+
+  return (
+    <Section title="DescriptionCard" description="A card component for displaying and editing descriptions with author attribution and rich text editing.">
+      <PreviewComponent
+        title="Empty State"
+        code={`import { DescriptionCard } from "@/library/organisms/description-card";
+
+<DescriptionCard
+  authorName="Emma Dupont"
+  authorInitials="ED"
+  timestamp="Last edited Feb 20, 2024"
+  placeholder="Add description"
+/>`}
+      >
+        <div style={{ maxWidth: 600 }}>
+          <DescriptionCard
+            authorName="Emma Dupont"
+            authorInitials="ED"
+            timestamp="Last edited Feb 20, 2024"
+            value={emptyValue}
+            onChange={setEmptyValue}
+          />
+        </div>
+      </PreviewComponent>
+
+      <PreviewComponent
+        title="Filled State"
+        code={`<DescriptionCard
+  authorName="Emma Dupont"
+  authorInitials="ED"
+  timestamp="Last edited Feb 20, 2024"
+  value="This initiative focuses on..."
+  onChange={(value) => console.log(value)}
+/>`}
+      >
+        <div style={{ maxWidth: 600 }}>
+          <DescriptionCard
+            authorName="Emma Dupont"
+            authorInitials="ED"
+            timestamp="Last edited Feb 20, 2024"
+            value={filledValue}
+            onChange={setFilledValue}
+          />
+        </div>
+      </PreviewComponent>
+
+      <PreviewComponent
+        title="Without Author"
+        code={`<DescriptionCard
+  timestamp="Last edited Feb 20, 2024"
+  value="Description content without author attribution."
+/>`}
+      >
+        <div style={{ maxWidth: 600 }}>
+          <DescriptionCard
+            timestamp="Last edited Feb 20, 2024"
+            value="Description content without author attribution."
+          />
+        </div>
+      </PreviewComponent>
+    </Section>
+  );
+};
+
+const ObjectPageTabContentPage = () => {
+  const [variant, setVariant] = useState("list");
+
+  return (
+    <Section
+      title="ObjectPageTabContent"
+      description="A page-level content organism with heading, toolbar, filters, and table/content layouts for ObjectPage tabs."
+    >
+      <PreviewComponent
+        title="List Variant"
+        code={`import { ObjectPageTabContent } from "@/library/organisms/object-page-tab-content";
+
+<ObjectPageTabContent
+  variant="list"
+  title="Companies"
+  badgeCount={124}
+/>`}
+      >
+        <ObjectPageTabContent variant="list" title="Companies" badgeCount={124} />
+      </PreviewComponent>
+
+      <PreviewComponent
+        title="Content Variant"
+        code={`<ObjectPageTabContent
+  variant="content"
+  title="Company details"
+  badgeCount={8}
+/>`}
+      >
+        <ObjectPageTabContent variant="content" title="Company details" badgeCount={8} />
+      </PreviewComponent>
+
+      <PreviewComponent
+        title="Switch Variant"
+        code={`const [variant, setVariant] = useState("list");
+
+<ButtonGroup value={variant} onChange={setVariant}>
+  <ButtonGroupItem value="list">List</ButtonGroupItem>
+  <ButtonGroupItem value="content">Content</ButtonGroupItem>
+</ButtonGroup>
+
+<ObjectPageTabContent variant={variant} />`}
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <ButtonGroup value={variant} onChange={setVariant}>
+            <ButtonGroupItem value="list">List</ButtonGroupItem>
+            <ButtonGroupItem value="content">Content</ButtonGroupItem>
+          </ButtonGroup>
+          <ObjectPageTabContent variant={variant} />
+        </div>
+      </PreviewComponent>
+    </Section>
+  );
+};
+
 const SideMenuRichTextInputPage = () => {
   const [enabledValue, setEnabledValue] = useState("");
   const [activeValue, setActiveValue] = useState("Draft update prepared for legal review and stakeholder sign-off.");
@@ -5360,7 +5597,6 @@ import {
   ObjectHeaderTopBarLeft,
   ObjectHeaderTopBarRight,
   ObjectHeaderActionsGroup,
-  ObjectHeaderDivider,
   ObjectHeaderMeta,
   ObjectHeaderTitleSection,
   ObjectHeaderTitle,
@@ -5403,7 +5639,6 @@ const Example = () => {
               Manage access
             </Button>
           </ObjectHeaderActionsGroup>
-          <ObjectHeaderDivider />
           <ObjectHeaderActionsGroup>
             <Button variant="secondary" size="md" iconLeading={<Icon name="Bookmark" size="sm" />} />
             <Button variant="secondary" size="md" iconLeading={<Icon name="Share" size="sm" />} />
@@ -5491,7 +5726,6 @@ const Example = () => {
                     Manage access
                   </Button>
                 </ObjectHeaderActionsGroup>
-                <ObjectHeaderDivider />
                 <ObjectHeaderActionsGroup>
                   <Button variant="secondary" size="md" iconLeading={<Icon name="Bookmark" size="sm" />} />
                   <Button variant="secondary" size="md" iconLeading={<Icon name="Share" size="sm" />} />
@@ -7610,6 +7844,7 @@ const PAGES = {
   button: { title: "Button", component: ButtonPage, category: "atoms" },
   badge: { title: "Badge", component: BadgePage, category: "atoms" },
   colorStatus: { title: "ColorStatus", component: ColorStatusPage, category: "atoms" },
+  contentField: { title: "ContentField", component: ContentFieldPage, category: "atoms" },
   avatar: { title: "Avatar", component: AvatarPage, category: "atoms" },
   checkbox: { title: "Checkbox", component: CheckboxPage, category: "atoms" },
   toggle: { title: "Toggle", component: TogglePage, category: "atoms" },
@@ -7665,6 +7900,8 @@ const PAGES = {
   objectHeader: { title: "ObjectHeader", component: ObjectHeaderPage, category: "organisms" },
   hubHeader: { title: "HubHeader", component: HubHeaderPage, category: "organisms" },
   statusUpdate: { title: "StatusUpdate", component: StatusUpdatePage, category: "organisms" },
+  descriptionCard: { title: "DescriptionCard", component: DescriptionCardPage, category: "organisms" },
+  objectPageTabContent: { title: "ObjectPageTabContent", component: ObjectPageTabContentPage, category: "organisms" },
   sideMenuRichTextInput: { title: "SideMenuRichTextInput", component: SideMenuRichTextInputPage, category: "organisms" },
   filterPanel: { title: "FilterPanel", component: FilterPanelPage, category: "organisms" },
   creationFormPanel: { title: "CreationFormPanel", component: CreationFormPanelPage, category: "organisms" },
@@ -7729,6 +7966,7 @@ const PAGE_ICON_MAP = {
   table: "TableCells",
   objectHeader: "DocumentText",
   hubHeader: "RectangleGroup",
+  objectPageTabContent: "Squares2X2",
   filterPanel: "Funnel",
   creationFormPanel: "RectangleStack",
   documentViewer: "DocumentText",
@@ -7769,10 +8007,36 @@ const getPageFromPathname = (pathname) => {
 
 const getLibraryRouteForPage = (pageKey) => `${LIBRARY_BASE_PATH}/${pageKey.toLowerCase()}`;
 
-const matchesPageQuery = (query, key, page) =>
-  page.title.toLowerCase().includes(query) ||
-  page.category.toLowerCase().includes(query) ||
-  key.toLowerCase().includes(query);
+const toSearchableWords = (value = "") =>
+  value
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/[^a-zA-Z0-9]+/g, " ")
+    .toLowerCase()
+    .trim();
+
+const matchesPageQuery = (query, key, page) => {
+  const terms = query
+    .toLowerCase()
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (terms.length === 0) return true;
+
+  const searchable = [
+    page.title,
+    page.category,
+    key,
+    toSearchableWords(page.title),
+    toSearchableWords(key),
+    toKebabCase(page.title),
+    toKebabCase(key),
+  ]
+    .join(" ")
+    .toLowerCase();
+
+  return terms.every((term) => searchable.includes(term));
+};
 
 const groupEntriesByCategory = (entries) =>
   entries.reduce((accumulator, [key, page]) => {
