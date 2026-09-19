@@ -23,7 +23,7 @@ import {
   ObjectHeaderBackButton,
 } from "../organisms/object-header.jsx";
 import { Accordion } from "../molecules/accordion.jsx";
-import { Tabs, Tab } from "@/library/molecules/tabs";
+import { Tabs, Tab } from "../molecules/tabs.jsx";
 
 const OBJECT_PAGE_MENU_VARIANTS = {
   default: "default",
