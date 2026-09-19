@@ -1051,9 +1051,9 @@ import { Icon } from "@/library/atoms/icon";
 );
 
 const ContentFieldPage = () => (
-  <Section title="ContentField" description="A field component with a label (with info icon tooltip) and content that can be text or chips.">
+  <Section title="ContentField" description="A compact field with a label, optional description tooltip, and text or chip content.">
     <PreviewComponent
-      title="Text Variant with Description"
+      title="Text Variant"
       code={`import { ContentField } from "@/library/atoms/content-field";
 
 <ContentField
@@ -7926,6 +7926,7 @@ const PAGE_SECTIONS = [
 const PAGE_ICON_MAP = {
   button: "CursorArrowRays",
   badge: "Tag",
+  contentField: "DocumentText",
   avatar: "UserCircle",
   checkbox: "CheckCircle",
   toggle: "AdjustmentsHorizontal",
