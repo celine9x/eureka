@@ -12,10 +12,10 @@ const CONTRACT_REVIEW_ASSISTANT_LOADING_PATH = "/contract-review-assistant/loadi
 const CONTRACT_REVIEW_ASSISTANT_REVIEW_PATH = "/contract-review-assistant/review";
 
 const PAGE_TITLES = {
-  [CONTRACT_REVIEW_ASSISTANT_GUIDANCE_PATH]: "Contract Review Assistant Guidance — Eureka",
-  [CONTRACT_REVIEW_ASSISTANT_LOADING_PATH]: "Contract Review Assistant Loading — Eureka",
-  [CONTRACT_REVIEW_ASSISTANT_REVIEW_PATH]: "Contract Review Assistant Review — Eureka",
-  [LIBRARY_PATH]: "Component Library — Eureka",
+  [CONTRACT_REVIEW_ASSISTANT_GUIDANCE_PATH]: "Inpart",
+  [CONTRACT_REVIEW_ASSISTANT_LOADING_PATH]: "Inpart",
+  [CONTRACT_REVIEW_ASSISTANT_REVIEW_PATH]: "Inpart",
+  [LIBRARY_PATH]: "Eureka library",
 };
 
 const ROUTE_COMPONENTS = {
