@@ -223,7 +223,7 @@ const styles = {
     grey: {
       outline: "1px solid var(--color-status-grey)",
       background: "var(--color-general-neutral)",
-      leadingIconColor: "var(--color-status-background-grey)",
+      leadingIconColor: "var(--color-status-grey)",
     },
     green: {
       outline: "1px solid var(--color-status-green)",

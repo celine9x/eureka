@@ -60,6 +60,7 @@ export * from "./organisms/document-viewer/document-viewer.jsx";
 export * from "./organisms/hub-header.jsx";
 export * from "./organisms/modal.jsx";
 export * from "./organisms/object-header.jsx";
+export * from "./organisms/object-page-tab-content.jsx";
 export * from "./organisms/pagination.jsx";
 export * from "./organisms/status-update.jsx";
 export * from "./organisms/section/creation-form-panel.jsx";
