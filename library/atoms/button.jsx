@@ -49,6 +49,7 @@ export const BUTTON_COLORS = {
 };
 
 export const BUTTON_SIZES = {
+  xs: "xs",
   sm: "sm",
   md: "md",
   lg: "lg",
@@ -97,9 +98,19 @@ const styles = {
   },
 
   // Size configurations using tokens
-  // sm=24px, md=32px, lg=40px, xl=48px
+  // xs/sm=24px, md=32px, lg=40px, xl=48px
   // Radius: sm=4px, md=8px (from Figma)
   sizes: {
+    xs: {
+      padding: "0 var(--spacing-xs)",           // 0 4px
+      fontSize: "var(--text-button-md)",        // 12px
+      lineHeight: "var(--line-height-button-md)", // 16px
+      height: "var(--size-button-xs)",          // 24px
+      minWidth: "var(--size-button-xs)",        // 24px
+      gap: "var(--spacing-xs)",                 // 4px
+      iconSize: "var(--size-icon-sm)",          // 16px
+      borderRadius: "var(--radius-xs)",         // 4px
+    },
     sm: {
       padding: "0 var(--spacing-xs)",           // 0 4px
       fontSize: "var(--text-button-md)",        // 12px

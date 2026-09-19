@@ -62,7 +62,8 @@ const styles = {
     .object-header-divider {
       width: 1px;
       align-self: stretch;
-      background: var(--color-outline-neutral);
+      background-color: var(--color-outline-neutral);
+      margin-inline: var(--spacing-2);
     }
   `,
 
@@ -306,18 +307,6 @@ export const ObjectHeaderActionsGroup = ({
 };
 
 /**
- * ObjectHeaderDivider
- *
- * Vertical divider used between action groups in the top bar.
- */
-export const ObjectHeaderDivider = ({
-  className = "",
-  ...props
-}) => {
-  return <div className={`object-header-divider ${className}`.trim()} aria-hidden="true" {...props} />;
-};
-
-/**
  * ObjectHeaderMeta
  *
  * Metadata row showing "last updated" info.
@@ -362,6 +351,21 @@ export const ObjectHeaderTitleSection = forwardRef(({
     </div>
   );
 });
+
+/**
+ * ObjectHeaderDivider
+ *
+ * Visual divider between top-bar action groups.
+ */
+export const ObjectHeaderDivider = ({ className = "", ...props }) => {
+  return (
+    <div
+      aria-hidden="true"
+      className={`object-header-divider ${className}`.trim()}
+      {...props}
+    />
+  );
+};
 
 ObjectHeaderTitleSection.displayName = "ObjectHeaderTitleSection";
 
@@ -834,9 +838,9 @@ ObjectHeader.TopBar = ObjectHeaderTopBar;
 ObjectHeader.TopBarLeft = ObjectHeaderTopBarLeft;
 ObjectHeader.TopBarRight = ObjectHeaderTopBarRight;
 ObjectHeader.ActionsGroup = ObjectHeaderActionsGroup;
-ObjectHeader.Divider = ObjectHeaderDivider;
 ObjectHeader.Meta = ObjectHeaderMeta;
 ObjectHeader.TitleSection = ObjectHeaderTitleSection;
+ObjectHeader.Divider = ObjectHeaderDivider;
 ObjectHeader.Title = ObjectHeaderTitle;
 ObjectHeader.SubinfoRow = ObjectHeaderSubinfoRow;
 ObjectHeader.SubinfoItem = ObjectHeaderSubinfoItem;
